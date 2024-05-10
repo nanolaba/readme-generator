@@ -19,6 +19,7 @@
 
         <!-- libs-->
         <nanolaba-sugar.version>1.0-SNAPSHOT</nanolaba-sugar.version>
+        <nanolaba-nanolog.version>1.0-SNAPSHOT</nanolaba-nanolog.version>
 
         <junit5.version>5.10.2</junit5.version>
         <commons-cli.version>1.7.0</commons-cli.version>
@@ -57,6 +58,11 @@
             <groupId>com.nanolaba</groupId>
             <artifactId>sugar</artifactId>
             <version>${nanolaba-sugar.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.nanolaba</groupId>
+            <artifactId>nanolog</artifactId>
+            <version>${nanolaba-nanolog.version}</version>
         </dependency>
         <dependency>
             <groupId>commons-cli</groupId>
