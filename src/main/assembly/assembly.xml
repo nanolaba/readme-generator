@@ -1,0 +1,18 @@
+<assembly>
+    <id>
+        assembly
+    </id>
+    <formats>
+        <format>dir</format>
+    </formats>
+    <includeBaseDirectory>false</includeBaseDirectory>
+    <fileSets>
+        <fileSet>
+            <directory>${project.basedir}/target/classes</directory>
+            <outputDirectory>/</outputDirectory>
+            <includes>
+                <include>version.txt</include>
+            </includes>
+        </fileSet>
+    </fileSets>
+</assembly>
