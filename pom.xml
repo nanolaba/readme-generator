@@ -24,6 +24,7 @@
         <junit5.version>5.10.2</junit5.version>
         <commons-cli.version>1.7.0</commons-cli.version>
         <commons-lang3.version>3.12.0</commons-lang3.version>
+        <commons-io.version>2.8.0</commons-io.version>
 
         <!-- Maven plugins -->
         <maven-compiler-plugin.version>3.13.0</maven-compiler-plugin.version>
@@ -75,6 +76,11 @@
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
             <version>${commons-lang3.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>${commons-io.version}</version>
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
