@@ -10,7 +10,7 @@ class CmdMessagesTest extends ConsoleOutputSupportTest {
 
     @Test
     public void printVersionTest() throws IOException {
-        ReadmeGenerator.main("--version");
+        NRG.main("--version");
         String result = getOutAndClear();
         originalOut.println(result);
 
@@ -26,7 +26,7 @@ class CmdMessagesTest extends ConsoleOutputSupportTest {
 
     @Test
     public void printHelpTest() throws IOException {
-        ReadmeGenerator.main("--help");
+        NRG.main("--help");
         String result = getOutAndClear();
         originalOut.println(result);
 
@@ -37,7 +37,7 @@ class CmdMessagesTest extends ConsoleOutputSupportTest {
 
     @Test
     public void printMessageForIncorrectArgumentsTest() throws IOException {
-        ReadmeGenerator.main("--incorrect arguments");
+        NRG.main("--incorrect arguments");
         String result = getErrAndClear();
         originalOut.println(result);
 
@@ -49,7 +49,7 @@ class CmdMessagesTest extends ConsoleOutputSupportTest {
 
     @Test
     public void printMessageForIncorrectCharsetTest() throws IOException {
-        ReadmeGenerator.main("--charset", "UTF-9", "-f", "test.src.md");
+        NRG.main("--charset", "UTF-9", "-f", "test.src.md");
         String result = getErrAndClear();
         originalOut.println(result);
 
@@ -60,7 +60,7 @@ class CmdMessagesTest extends ConsoleOutputSupportTest {
 
     @Test
     public void printMessageForNonexistentFileTest() throws IOException {
-        ReadmeGenerator.main("-f", "nonexistent file");
+        NRG.main("-f", "nonexistent file");
         String result = getErrAndClear();
         originalOut.println(result);
 

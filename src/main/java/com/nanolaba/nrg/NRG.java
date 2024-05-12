@@ -13,11 +13,11 @@ import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
-public class ReadmeGenerator {
+import static com.nanolaba.nrg.NRGConstants.DEFAULT_CHARSET;
 
-    public static final Charset DEFAULT_CHARSET = StandardCharsets.UTF_8;
+public class NRG {
 
-    public static void main(String... args) throws IOException {
+    public static void main(String... args) {
         try {
             parseCommandLine(args);
         } catch (ParseException e) {
@@ -77,15 +77,18 @@ public class ReadmeGenerator {
     }
 
     private static void printVersion() {
+        System.out.println("Nanolaba Readme Generator " + getVersion());
+        System.out.println("https://github.com/nanolaba/readme-generator");
+    }
+
+    public static String getVersion() {
         URL versionFile = Thread.currentThread().getContextClassLoader().getResource("version.txt");
-        Object version = versionFile == null ?
+        return versionFile == null ?
                 "<unrecognized version>" :
                 Code.run(() -> {
                     try (InputStream stream = versionFile.openConnection().getInputStream()) {
                         return IOUtils.toString(stream, StandardCharsets.UTF_8);
                     }
                 });
-        System.out.println("Nanolaba Readme Generator " + version);
-        System.out.println("https://github.com/nanolaba/readme-generator");
     }
 }

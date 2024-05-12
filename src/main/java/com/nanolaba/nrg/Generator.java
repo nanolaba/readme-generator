@@ -10,6 +10,9 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.nanolaba.nrg.NRGConstants.PROPERTY_DEFAULT_LANGUAGE;
+import static com.nanolaba.nrg.NRGConstants.PROPERTY_LANGUAGES;
+
 public class Generator {
 
     private final String source;
@@ -25,11 +28,11 @@ public class Generator {
         try (BufferedReader reader = new BufferedReader(new StringReader(source))) {
             String line = reader.readLine();
             while (line != null) {
-                String languages = getProperty(line, GeneratorConfig.PROPERTY_LANGUAGES);
+                String languages = getProperty(line, PROPERTY_LANGUAGES);
                 if (languages != null && !languages.isEmpty()) {
                     config.setLanguages(Arrays.stream(languages.split(",")).map(String::trim).toList());
                 }
-                String defaultLang = getProperty(line, GeneratorConfig.PROPERTY_DEFAULT_LANGUAGE);
+                String defaultLang = getProperty(line, PROPERTY_DEFAULT_LANGUAGE);
                 if (defaultLang != null && !defaultLang.isEmpty()) {
                     config.setDefaultLanguage(defaultLang);
                 }

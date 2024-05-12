@@ -8,10 +8,9 @@ import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
 
-public class GeneratorConfig {
-    public static final String PROPERTY_LANGUAGES = "nrg.languages";
-    public static final String PROPERTY_DEFAULT_LANGUAGE = "nrg.defaultLanguage";
+import static com.nanolaba.nrg.NRGConstants.PROPERTY_LANGUAGES;
 
+public class GeneratorConfig {
     private List<String> languages = new ArrayList<>();
     private String defaultLanguage;
 
