@@ -57,6 +57,7 @@ class GeneratorTest {
         List<String> langs = config.getLanguages();
         assertEquals(2, langs.size());
         assertEquals("zz", langs.get(0));
+        assertEquals("xx", langs.get(1));
         assertEquals("xx", config.getDefaultLanguage());
     }
 
