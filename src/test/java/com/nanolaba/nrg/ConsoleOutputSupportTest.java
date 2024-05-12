@@ -1,4 +1,4 @@
-package com.nanolaba.readme_generator;
+package com.nanolaba.nrg;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -6,7 +6,7 @@ import org.junit.jupiter.api.BeforeEach;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 
-public abstract class CheckConsoleOutputTest {
+public abstract class ConsoleOutputSupportTest {
 
     protected final ByteArrayOutputStream outContent = new ByteArrayOutputStream();
     protected final ByteArrayOutputStream errContent = new ByteArrayOutputStream();
