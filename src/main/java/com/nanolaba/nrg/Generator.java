@@ -29,8 +29,16 @@ public class Generator {
                 if (languages != null && !languages.isEmpty()) {
                     config.setLanguages(Arrays.stream(languages.split(",")).map(String::trim).toList());
                 }
+                String defaultLang = getProperty(line, GeneratorConfig.PROPERTY_DEFAULT_LANGUAGE);
+                if (defaultLang != null && !defaultLang.isEmpty()) {
+                    config.setDefaultLanguage(defaultLang);
+                }
+
                 line = reader.readLine();
             }
+
+            config.init();
+
         } catch (IOException ex) {
             throw new RuntimeException(ex);
         }
