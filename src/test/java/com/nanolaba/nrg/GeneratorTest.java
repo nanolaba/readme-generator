@@ -63,6 +63,18 @@ class GeneratorTest {
     }
 
     @Test
+    public void testParseConfigWithContent() {
+        GeneratorConfig config = new Generator("<!--nrg.languages=en,ru-->\n" +
+                                               "<!--nrg.defaultLanguage=en-->\n" +
+                                               "# Nanolaba Readme Generator (NRG)\n").getConfig();
+        List<String> langs = config.getLanguages();
+        assertEquals(2, langs.size());
+        assertEquals("en", langs.get(0));
+        assertEquals("ru", langs.get(1));
+        assertEquals("en", config.getDefaultLanguage());
+    }
+
+    @Test
     public void testIncorrectDefaultLanguage() {
         assertThrows(IllegalStateException.class,
                 () -> new Generator("<!-- " + PROPERTY_LANGUAGES + "=xx-->" + System.lineSeparator() +
@@ -115,6 +127,5 @@ class GeneratorTest {
         assertEquals("", generator.clearNrgComments("<!-- nrg.test = test --><!--ru-->"));
         assertEquals("123", generator.clearNrgComments("1<!-- nrg.test = test -->2<!--ru-->3"));
         assertEquals("123", generator.clearNrgComments("1<!-- nrg.test  =  test  -->2<!--ru-->3"));
-
     }
 }

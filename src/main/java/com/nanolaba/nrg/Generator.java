@@ -57,26 +57,29 @@ public class Generator {
 
     protected String clearNrgComments(String line) {
         for (String language : config.getLanguages()) {
-            line = line.replaceAll("<!--[ ]*" + language + "[ ]*-->", "");
+            line = line.replaceAll("<!-- *" + language + " *-->", "");
         }
-        line = line.replaceAll("<!--[ ]*nrg\\..*-->", "");
+        line = line.replaceAll("<!-- *nrg\\..*-->", "");
         return line;
     }
 
     protected boolean isLineVisible(String line, String language) {
-        boolean hasLanguageMark = line.matches(".*<!--[ ]*[\\w]*[ ]*-->.*");
-        boolean hasCurrentLanguageMark = line.matches(".*<!--[ ]*" + language + "[ ]*-->.*");
-        boolean hasOnlyPropertyDefinition = line.matches("\\W*<!--[ ]*nrg\\..*-->\\W*");
+        boolean hasLanguageMark = line.matches(".*<!-- *\\w* *-->.*");
+        boolean hasCurrentLanguageMark = line.matches(".*<!-- *" + language + " *-->.*");
+        boolean hasOnlyPropertyDefinition = line.matches("\\W*<!-- *nrg\\..*-->\\W*");
 
         return (!hasLanguageMark || hasCurrentLanguageMark) && !hasOnlyPropertyDefinition;
     }
 
     private String getProperty(String line, String property) {
-        for (String comment : StringUtils.substringsBetween(line, "<!--", "-->")) {
-            if (StringUtils.trimToEmpty(comment).contains(property)) {
-                String s = StringUtils.trimToEmpty(StringUtils.substringAfter(comment, property));
-                if (s.contains("=")) {
-                    return StringUtils.trimToEmpty(StringUtils.substringAfter(s, "="));
+        String[] strings = StringUtils.substringsBetween(line, "<!--", "-->");
+        if (strings != null) {
+            for (String comment : strings) {
+                if (StringUtils.trimToEmpty(comment).contains(property)) {
+                    String s = StringUtils.trimToEmpty(StringUtils.substringAfter(comment, property));
+                    if (s.contains("=")) {
+                        return StringUtils.trimToEmpty(StringUtils.substringAfter(s, "="));
+                    }
                 }
             }
         }
