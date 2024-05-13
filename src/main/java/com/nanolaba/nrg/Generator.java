@@ -1,7 +1,5 @@
 package com.nanolaba.nrg;
 
-import org.apache.commons.lang3.StringUtils;
-
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
@@ -9,6 +7,7 @@ import java.util.Map;
 
 import static com.nanolaba.nrg.NRGConstants.PROPERTY_DEFAULT_LANGUAGE;
 import static com.nanolaba.nrg.NRGConstants.PROPERTY_LANGUAGES;
+import static org.apache.commons.lang3.StringUtils.*;
 
 public class Generator {
 
@@ -49,13 +48,13 @@ public class Generator {
 
         source.lines()
                 .filter(line -> isLineVisible(line, language))
-                .map(this::clearNrgComments)
+                .map(this::removeNrgDataFromText)
                 .forEachOrdered(line -> result.getContent().append(line).append(System.lineSeparator()));
 
         return result;
     }
 
-    protected String clearNrgComments(String line) {
+    protected String removeNrgDataFromText(String line) {
         for (String language : config.getLanguages()) {
             line = line.replaceAll("<!-- *" + language + " *-->", "");
         }
@@ -72,13 +71,13 @@ public class Generator {
     }
 
     private String getProperty(String line, String property) {
-        String[] strings = StringUtils.substringsBetween(line, "<!--", "-->");
+        String[] strings = substringsBetween(line, "<!--", "-->");
         if (strings != null) {
             for (String comment : strings) {
-                if (StringUtils.trimToEmpty(comment).contains(property)) {
-                    String s = StringUtils.trimToEmpty(StringUtils.substringAfter(comment, property));
+                if (trimToEmpty(comment).contains(property)) {
+                    String s = trimToEmpty(substringAfter(comment, property));
                     if (s.contains("=")) {
-                        return StringUtils.trimToEmpty(StringUtils.substringAfter(s, "="));
+                        return trimToEmpty(substringAfter(s, "="));
                     }
                 }
             }
@@ -91,7 +90,7 @@ public class Generator {
         return results.get(language);
     }
 
-    public Collection<GenerationResult> getResult() {
+    public Collection<GenerationResult> getResults() {
         return results.values();
     }
 

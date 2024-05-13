@@ -112,20 +112,20 @@ class GeneratorTest {
     }
 
     @Test
-    public void testClearNrgComments() {
+    public void testRemoveNrgDataFromText() {
         Generator generator = new Generator("<!--" + PROPERTY_LANGUAGES + "=ru-->");
 
-        assertEquals("", generator.clearNrgComments(""));
-        assertEquals(" ", generator.clearNrgComments(" "));
-        assertEquals(" ", generator.clearNrgComments(" <!--ru-->"));
-        assertEquals(" ", generator.clearNrgComments("<!--ru--> "));
-        assertEquals("123 ", generator.clearNrgComments("123<!--ru--> "));
-        assertEquals("123<!--en--> ", generator.clearNrgComments("123<!--en--> "));
-        assertEquals("", generator.clearNrgComments("<!--nrg.test-->"));
-        assertEquals("", generator.clearNrgComments("<!--nrg.test -->"));
-        assertEquals("", generator.clearNrgComments("<!--nrg.test = test-->"));
-        assertEquals("", generator.clearNrgComments("<!-- nrg.test = test --><!--ru-->"));
-        assertEquals("123", generator.clearNrgComments("1<!-- nrg.test = test -->2<!--ru-->3"));
-        assertEquals("123", generator.clearNrgComments("1<!-- nrg.test  =  test  -->2<!--ru-->3"));
+        assertEquals("", generator.removeNrgDataFromText(""));
+        assertEquals(" ", generator.removeNrgDataFromText(" "));
+        assertEquals(" ", generator.removeNrgDataFromText(" <!--ru-->"));
+        assertEquals(" ", generator.removeNrgDataFromText("<!--ru--> "));
+        assertEquals("123 ", generator.removeNrgDataFromText("123<!--ru--> "));
+        assertEquals("123<!--en--> ", generator.removeNrgDataFromText("123<!--en--> "));
+        assertEquals("", generator.removeNrgDataFromText("<!--nrg.test-->"));
+        assertEquals("", generator.removeNrgDataFromText("<!--nrg.test -->"));
+        assertEquals("", generator.removeNrgDataFromText("<!--nrg.test = test-->"));
+        assertEquals("", generator.removeNrgDataFromText("<!-- nrg.test = test --><!--ru-->"));
+        assertEquals("123", generator.removeNrgDataFromText("1<!-- nrg.test = test -->2<!--ru-->3"));
+        assertEquals("123", generator.removeNrgDataFromText("1<!-- nrg.test  =  test  -->2<!--ru-->3"));
     }
 }
