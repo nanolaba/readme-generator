@@ -5,6 +5,7 @@ import com.nanolaba.sugar.Code;
 import org.apache.commons.cli.*;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -63,12 +64,29 @@ public class NRG {
             try {
                 String sourceBody = FileUtils.readFileToString(sourceFile, charset);
                 Generator generator = new Generator(sourceBody);
+                createFiles(sourceFile, generator);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
         } else {
             LOG.error("Source file does not exist: {}", sourceFile.getAbsolutePath());
         }
+    }
+
+    private static void createFiles(File sourceFile, Generator generator) {
+        for (String language : generator.getConfig().getLanguages()) {
+            File readmeFile = getReadmeFile(sourceFile, language, generator.getConfig());
+            LOG.debug("Generating file for language \"{}\" - {}", language, readmeFile.getAbsolutePath());
+            Code.run(() -> FileUtils.write(readmeFile, generator.getResult(language).getContent(), StandardCharsets.UTF_8));
+            LOG.info("File \"{}\" created, total size {}", readmeFile.getName(), FileUtils.byteCountToDisplaySize(readmeFile.length()));
+        }
+    }
+
+    private static File getReadmeFile(File sourceFile, String language, GeneratorConfig config) {
+        String path = StringUtils.substringBeforeLast(sourceFile.getAbsolutePath(), "." + NRGConstants.DEFAULT_SOURCE_EXTENSION) +
+                      (language.equals(config.getDefaultLanguage()) ? ".md" : "." + language + ".md");
+
+        return new File(path);
     }
 
     private static void printHelp(Options options) {

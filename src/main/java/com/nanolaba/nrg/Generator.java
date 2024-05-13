@@ -2,9 +2,6 @@ package com.nanolaba.nrg;
 
 import org.apache.commons.lang3.StringUtils;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.StringReader;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
@@ -22,29 +19,56 @@ public class Generator {
     public Generator(String source) {
         this.source = source;
         fillConfig();
+        generateContents();
     }
 
     private void fillConfig() {
-        try (BufferedReader reader = new BufferedReader(new StringReader(source))) {
-            String line = reader.readLine();
-            while (line != null) {
-                String languages = getProperty(line, PROPERTY_LANGUAGES);
-                if (languages != null && !languages.isEmpty()) {
-                    config.setLanguages(Arrays.stream(languages.split(",")).map(String::trim).toList());
-                }
-                String defaultLang = getProperty(line, PROPERTY_DEFAULT_LANGUAGE);
-                if (defaultLang != null && !defaultLang.isEmpty()) {
-                    config.setDefaultLanguage(defaultLang);
-                }
-
-                line = reader.readLine();
+        source.lines().forEachOrdered(line -> {
+            String languages = getProperty(line, PROPERTY_LANGUAGES);
+            if (languages != null && !languages.isEmpty()) {
+                config.setLanguages(Arrays.stream(languages.split(",")).map(String::trim).toList());
             }
+            String defaultLang = getProperty(line, PROPERTY_DEFAULT_LANGUAGE);
+            if (defaultLang != null && !defaultLang.isEmpty()) {
+                config.setDefaultLanguage(defaultLang);
+            }
+        });
 
-            config.init();
+        config.init();
+    }
 
-        } catch (IOException ex) {
-            throw new RuntimeException(ex);
+    private void generateContents() {
+        for (String language : config.getLanguages()) {
+            results.put(language, generateContent(language));
         }
+    }
+
+    private GenerationResult generateContent(String language) {
+        GenerationResult result = new GenerationResult();
+        result.setLanguage(language);
+
+        source.lines()
+                .filter(line -> isLineVisible(line, language))
+                .map(this::clearNrgComments)
+                .forEachOrdered(line -> result.getContent().append(line).append(System.lineSeparator()));
+
+        return result;
+    }
+
+    protected String clearNrgComments(String line) {
+        for (String language : config.getLanguages()) {
+            line = line.replaceAll("<!--[ ]*" + language + "[ ]*-->", "");
+        }
+        line = line.replaceAll("<!--[ ]*nrg\\..*-->", "");
+        return line;
+    }
+
+    protected boolean isLineVisible(String line, String language) {
+        boolean hasLanguageMark = line.matches(".*<!--[ ]*[\\w]*[ ]*-->.*");
+        boolean hasCurrentLanguageMark = line.matches(".*<!--[ ]*" + language + "[ ]*-->.*");
+        boolean hasOnlyPropertyDefinition = line.matches("\\W*<!--[ ]*nrg\\..*-->\\W*");
+
+        return (!hasLanguageMark || hasCurrentLanguageMark) && !hasOnlyPropertyDefinition;
     }
 
     private String getProperty(String line, String property) {
@@ -58,6 +82,10 @@ public class Generator {
         }
 
         return null;
+    }
+
+    public GenerationResult getResult(String language) {
+        return results.get(language);
     }
 
     public Collection<GenerationResult> getResult() {
