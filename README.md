@@ -1,7 +1,8 @@
-<!--nrg.languages=en,ru-->
+# Nanolaba Readme Generator (NRG)
 
-# readme-generator<!--ru-->
+**Nanolaba Readme Generator (NRG)** — is a program for automatically
+generating [Markdown files]( https://en.wikipedia.org/wiki/Markdown) based on a prototype file.
 
-# readme-generator<!--en-->
+## Overview
 
-asd 
+TODO
