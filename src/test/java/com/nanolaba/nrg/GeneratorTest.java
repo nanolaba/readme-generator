@@ -4,14 +4,15 @@ import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static com.nanolaba.nrg.NRGConstants.PROPERTY_DEFAULT_LANGUAGE;
+import static com.nanolaba.nrg.NRGConstants.PROPERTY_LANGUAGES;
+import static org.junit.jupiter.api.Assertions.*;
 
 class GeneratorTest {
 
     @Test
     public void testConfigLanguages1() {
-        GeneratorConfig config = new Generator("<!--" + GeneratorConfig.PROPERTY_LANGUAGES + "=ru-->").getConfig();
+        GeneratorConfig config = new Generator("<!--" + PROPERTY_LANGUAGES + "=ru-->").getConfig();
         List<String> langs = config.getLanguages();
         assertEquals(1, langs.size());
         assertEquals("ru", langs.get(0));
@@ -20,7 +21,7 @@ class GeneratorTest {
 
     @Test
     public void testConfigLanguages2() {
-        GeneratorConfig config = new Generator("<!--comment-->some text<!-- " + GeneratorConfig.PROPERTY_LANGUAGES + " = zz -->some text").getConfig();
+        GeneratorConfig config = new Generator("<!--comment-->some text<!-- " + PROPERTY_LANGUAGES + " = zz -->some text").getConfig();
         List<String> langs = config.getLanguages();
         assertEquals(1, langs.size());
         assertEquals("zz", langs.get(0));
@@ -29,7 +30,7 @@ class GeneratorTest {
 
     @Test
     public void testConfigLanguages3() {
-        GeneratorConfig config = new Generator("<!--comment-->some text<!-- " + GeneratorConfig.PROPERTY_LANGUAGES + " = aa ,bb, cc , dd-->some text").getConfig();
+        GeneratorConfig config = new Generator("<!--comment-->some text<!-- " + PROPERTY_LANGUAGES + " = aa ,bb, cc , dd-->some text").getConfig();
         List<String> langs = config.getLanguages();
         assertEquals(4, langs.size());
         assertEquals("aa", langs.get(0));
@@ -41,8 +42,8 @@ class GeneratorTest {
 
     @Test
     public void testConfigLanguagesWithDefaultLanguage1() {
-        GeneratorConfig config = new Generator("<!-- " + GeneratorConfig.PROPERTY_LANGUAGES + "=xx-->" + System.lineSeparator() +
-                                               "<!--" + GeneratorConfig.PROPERTY_DEFAULT_LANGUAGE + "=xx-->").getConfig();
+        GeneratorConfig config = new Generator("<!-- " + PROPERTY_LANGUAGES + "=xx-->" + System.lineSeparator() +
+                                               "<!--" + PROPERTY_DEFAULT_LANGUAGE + "=xx-->").getConfig();
         List<String> langs = config.getLanguages();
         assertEquals(1, langs.size());
         assertEquals("xx", langs.get(0));
@@ -52,8 +53,8 @@ class GeneratorTest {
     @Test
     public void testConfigLanguagesWithDefaultLanguage2() {
         GeneratorConfig config = new Generator("<!--comment-->some text" +
-                                               "<!-- " + GeneratorConfig.PROPERTY_LANGUAGES + " = zz, xx -->some text" +
-                                               "<!--" + GeneratorConfig.PROPERTY_DEFAULT_LANGUAGE + "=xx-->").getConfig();
+                                               "<!-- " + PROPERTY_LANGUAGES + " = zz, xx -->some text" +
+                                               "<!--" + PROPERTY_DEFAULT_LANGUAGE + "=xx-->").getConfig();
         List<String> langs = config.getLanguages();
         assertEquals(2, langs.size());
         assertEquals("zz", langs.get(0));
@@ -64,7 +65,56 @@ class GeneratorTest {
     @Test
     public void testIncorrectDefaultLanguage() {
         assertThrows(IllegalStateException.class,
-                () -> new Generator("<!-- " + GeneratorConfig.PROPERTY_LANGUAGES + "=xx-->" + System.lineSeparator() +
-                                    "<!--" + GeneratorConfig.PROPERTY_DEFAULT_LANGUAGE + "=zz-->"));
+                () -> new Generator("<!-- " + PROPERTY_LANGUAGES + "=xx-->" + System.lineSeparator() +
+                                    "<!--" + PROPERTY_DEFAULT_LANGUAGE + "=zz-->"));
+    }
+
+    @Test
+    public void testLineVisibility() {
+        Generator generator = new Generator("");
+
+        assertTrue(generator.isLineVisible("", "ru"));
+        assertTrue(generator.isLineVisible(" ", "ru"));
+        assertTrue(generator.isLineVisible("test <!--ru-->", "ru"));
+        assertTrue(generator.isLineVisible("test <!-- ru -->", "ru"));
+        assertTrue(generator.isLineVisible("test <!-- ru --> test", "ru"));
+        assertTrue(generator.isLineVisible("test <!-- ru --><!--en-->", "ru"));
+        assertTrue(generator.isLineVisible("<!--ru-->", "ru"));
+        assertTrue(generator.isLineVisible("<!--ru--> test", "ru"));
+        assertTrue(generator.isLineVisible("<!-- ru -->", "ru"));
+        assertTrue(generator.isLineVisible("<!-- ru --> test", "ru"));
+        assertTrue(generator.isLineVisible("<!--  ru  --> test", "ru"));
+
+        assertFalse(generator.isLineVisible("<!--en-->", "ru"));
+        assertFalse(generator.isLineVisible("<!--en--> test", "ru"));
+        assertFalse(generator.isLineVisible("test <!--en-->", "ru"));
+        assertFalse(generator.isLineVisible("test <!-- en-->", "ru"));
+        assertFalse(generator.isLineVisible("test <!-- en -->", "ru"));
+        assertFalse(generator.isLineVisible("test  <!-- en -->", "ru"));
+
+        assertFalse(generator.isLineVisible("<!--nrg.someproperty-->", "ru"));
+        assertFalse(generator.isLineVisible("<!--nrg.some property-->", "ru"));
+        assertFalse(generator.isLineVisible("<!--nrg.some=property-->", "ru"));
+        assertFalse(generator.isLineVisible("<!--nrg.some = property-->", "ru"));
+        assertFalse(generator.isLineVisible("<!--  nrg.some  =  property  -->", "ru"));
+    }
+
+    @Test
+    public void testClearNrgComments() {
+        Generator generator = new Generator("<!--" + PROPERTY_LANGUAGES + "=ru-->");
+
+        assertEquals("", generator.clearNrgComments(""));
+        assertEquals(" ", generator.clearNrgComments(" "));
+        assertEquals(" ", generator.clearNrgComments(" <!--ru-->"));
+        assertEquals(" ", generator.clearNrgComments("<!--ru--> "));
+        assertEquals("123 ", generator.clearNrgComments("123<!--ru--> "));
+        assertEquals("123<!--en--> ", generator.clearNrgComments("123<!--en--> "));
+        assertEquals("", generator.clearNrgComments("<!--nrg.test-->"));
+        assertEquals("", generator.clearNrgComments("<!--nrg.test -->"));
+        assertEquals("", generator.clearNrgComments("<!--nrg.test = test-->"));
+        assertEquals("", generator.clearNrgComments("<!-- nrg.test = test --><!--ru-->"));
+        assertEquals("123", generator.clearNrgComments("1<!-- nrg.test = test -->2<!--ru-->3"));
+        assertEquals("123", generator.clearNrgComments("1<!-- nrg.test  =  test  -->2<!--ru-->3"));
+
     }
 }
