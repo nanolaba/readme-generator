@@ -138,18 +138,18 @@ class GeneratorTest {
         assertNull(generator.getWidgetTag(""));
         assertNull(generator.getWidgetTag("123"));
         assertNull(generator.getWidgetTag("123<!--test-->"));
-        assertNull(generator.getWidgetTag("123<!--nrg.widget-->"));
-        assertNull(generator.getWidgetTag("<!--nrg:widget:languages-->"));
+        assertNull(generator.getWidgetTag("123${nrg.widget}"));
+        assertNull(generator.getWidgetTag("${nrg:widget:languages}"));
 
-        assertEquals("languages", generator.getWidgetTag("<!--nrg.widget.languages-->").getName());
-        assertEquals("languages", generator.getWidgetTag("<!-- nrg.widget.languages -->").getName());
-        assertEquals("languages", generator.getWidgetTag(" <!-- nrg.widget.languages --> ").getName());
-        assertEquals("languages", generator.getWidgetTag("qwe <!-- nrg.widget.languages --> 123").getName());
+        assertEquals("languages", generator.getWidgetTag("${nrg.widget:languages}").getName());
+        assertEquals("languages", generator.getWidgetTag("${ nrg.widget:languages }").getName());
+        assertEquals("languages", generator.getWidgetTag(" ${ nrg.widget:languages } ").getName());
+        assertEquals("languages", generator.getWidgetTag("qwe ${ nrg.widget:languages } 123").getName());
 
-        assertNull(generator.getWidgetTag("<!--nrg.widget.languages-->").getParameters());
-        assertEquals("", generator.getWidgetTag("<!--nrg.widget.languages()-->").getParameters());
-        assertEquals("parameters", generator.getWidgetTag("<!--nrg.widget.languages(parameters)-->").getParameters());
-        assertEquals("a b c", generator.getWidgetTag("<!--nrg.widget.languages(a b c)-->").getParameters());
+        assertNull(generator.getWidgetTag("${nrg.widget:languages}").getParameters());
+        assertEquals("", generator.getWidgetTag("${nrg.widget:languages()}").getParameters());
+        assertEquals("parameters", generator.getWidgetTag("${nrg.widget:languages(parameters)}").getParameters());
+        assertEquals("a b c", generator.getWidgetTag("${nrg.widget:languages(a b c)}").getParameters());
     }
 
     @Test
@@ -178,11 +178,11 @@ class GeneratorTest {
             }
         });
 
-        assertEquals("test widget body null", generator.renderWidgets("<!--nrg.widget.test-->", "ru"));
-        assertEquals("test widget body null", generator.renderWidgets("<!--nrg.widget.test-->", "ru"));
-        assertEquals("test widget body ", generator.renderWidgets("<!-- nrg.widget.test() -->", "ru"));
-        assertEquals("test widget body AAA", generator.renderWidgets("<!-- nrg.widget.test(AAA) -->", "ru"));
-        assertEquals("test widget body AAA=123", generator.renderWidgets("<!-- nrg.widget.test(AAA=123) -->", "ru"));
-        assertEquals("test widget body AAA=123, BBB=234", generator.renderWidgets("<!-- nrg.widget.test(AAA=123, BBB=234) -->", "ru"));
+        assertEquals("test widget body null", generator.renderWidgets("${nrg.widget:test}", "ru"));
+        assertEquals("test widget body null", generator.renderWidgets("${nrg.widget:test}", "ru"));
+        assertEquals("test widget body ", generator.renderWidgets("${ nrg.widget:test() }", "ru"));
+        assertEquals("test widget body AAA", generator.renderWidgets("${ nrg.widget:test(AAA) }", "ru"));
+        assertEquals("test widget body AAA=123", generator.renderWidgets("${ nrg.widget:test(AAA=123) }", "ru"));
+        assertEquals("test widget body AAA=123, BBB=234", generator.renderWidgets("${ nrg.widget:test(AAA=123, BBB=234) }", "ru"));
     }
 }

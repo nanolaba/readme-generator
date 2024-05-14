@@ -15,7 +15,7 @@ import static org.apache.commons.lang3.StringUtils.*;
 
 public class Generator {
 
-    public static final Pattern WIDGET_TAG_PATTERN = Pattern.compile(".*<!-- *nrg\\.widget\\.(\\w*)(\\((.*)\\))? *-->.*");
+    public static final Pattern WIDGET_TAG_PATTERN = Pattern.compile(".*\\$\\{ *nrg\\.widget:(\\w*)(\\((.*)\\))? *}.*");
 
     private final String source;
     private final GeneratorConfig config = new GeneratorConfig();
@@ -74,7 +74,7 @@ public class Generator {
             NRGWidget widget = getWidget(widgetTag.getName());
             if (widget != null) {
                 String body = widget.getBody(widgetTag, config, language);
-                line = line.replaceAll("<!-- *nrg\\.widget\\." + widgetTag.getName() + ".*-->", body);
+                line = line.replaceAll("\\$\\{ *nrg\\.widget:" + widgetTag.getName() + ".*}", body);
             } else {
                 LOG.warn("Unknown widget name: {}", widgetTag.getName());
             }
