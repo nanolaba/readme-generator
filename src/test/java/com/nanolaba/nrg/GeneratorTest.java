@@ -1,5 +1,7 @@
 package com.nanolaba.nrg;
 
+import com.nanolaba.nrg.widgets.NRGWidget;
+import com.nanolaba.nrg.widgets.WidgetTag;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -127,5 +129,60 @@ class GeneratorTest {
         assertEquals("", generator.removeNrgDataFromText("<!-- nrg.test = test --><!--ru-->"));
         assertEquals("123", generator.removeNrgDataFromText("1<!-- nrg.test = test -->2<!--ru-->3"));
         assertEquals("123", generator.removeNrgDataFromText("1<!-- nrg.test  =  test  -->2<!--ru-->3"));
+    }
+
+    @Test
+    public void testGetWidgetTag() {
+        Generator generator = new Generator("<!--" + PROPERTY_LANGUAGES + "=ru-->");
+
+        assertNull(generator.getWidgetTag(""));
+        assertNull(generator.getWidgetTag("123"));
+        assertNull(generator.getWidgetTag("123<!--test-->"));
+        assertNull(generator.getWidgetTag("123<!--nrg.widget-->"));
+        assertNull(generator.getWidgetTag("<!--nrg:widget:languages-->"));
+
+        assertEquals("languages", generator.getWidgetTag("<!--nrg.widget.languages-->").getName());
+        assertEquals("languages", generator.getWidgetTag("<!-- nrg.widget.languages -->").getName());
+        assertEquals("languages", generator.getWidgetTag(" <!-- nrg.widget.languages --> ").getName());
+        assertEquals("languages", generator.getWidgetTag("qwe <!-- nrg.widget.languages --> 123").getName());
+
+        assertNull(generator.getWidgetTag("<!--nrg.widget.languages-->").getParameters());
+        assertEquals("", generator.getWidgetTag("<!--nrg.widget.languages()-->").getParameters());
+        assertEquals("parameters", generator.getWidgetTag("<!--nrg.widget.languages(parameters)-->").getParameters());
+        assertEquals("a b c", generator.getWidgetTag("<!--nrg.widget.languages(a b c)-->").getParameters());
+    }
+
+    @Test
+    public void testGetWidget() {
+        Generator generator = new Generator("<!--" + PROPERTY_LANGUAGES + "=ru-->");
+
+        assertNull(generator.getWidget(null));
+        assertNull(generator.getWidget(""));
+        assertNull(generator.getWidget("123"));
+
+        assertNotNull(generator.getWidget("languages"));
+    }
+
+    @Test
+    public void testRenderWidget() {
+        Generator generator = new Generator("<!--" + PROPERTY_LANGUAGES + "=ru-->");
+        generator.getWidgets().add(new NRGWidget() {
+            @Override
+            public String getName() {
+                return "test";
+            }
+
+            @Override
+            public String getBody(WidgetTag tag, GeneratorConfig config, String language) {
+                return "test widget body " + tag.getParameters();
+            }
+        });
+
+        assertEquals("test widget body null", generator.renderWidgets("<!--nrg.widget.test-->", "ru"));
+        assertEquals("test widget body null", generator.renderWidgets("<!--nrg.widget.test-->", "ru"));
+        assertEquals("test widget body ", generator.renderWidgets("<!-- nrg.widget.test() -->", "ru"));
+        assertEquals("test widget body AAA", generator.renderWidgets("<!-- nrg.widget.test(AAA) -->", "ru"));
+        assertEquals("test widget body AAA=123", generator.renderWidgets("<!-- nrg.widget.test(AAA=123) -->", "ru"));
+        assertEquals("test widget body AAA=123, BBB=234", generator.renderWidgets("<!-- nrg.widget.test(AAA=123, BBB=234) -->", "ru"));
     }
 }

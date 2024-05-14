@@ -1,9 +1,13 @@
 package com.nanolaba.nrg;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import com.nanolaba.logging.LOG;
+import com.nanolaba.nrg.widgets.LanguagesWidget;
+import com.nanolaba.nrg.widgets.NRGWidget;
+import com.nanolaba.nrg.widgets.WidgetTag;
+
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static com.nanolaba.nrg.NRGConstants.PROPERTY_DEFAULT_LANGUAGE;
 import static com.nanolaba.nrg.NRGConstants.PROPERTY_LANGUAGES;
@@ -11,17 +15,26 @@ import static org.apache.commons.lang3.StringUtils.*;
 
 public class Generator {
 
+    public static final Pattern WIDGET_TAG_PATTERN = Pattern.compile(".*<!-- *nrg\\.widget\\.(\\w*)(\\((.*)\\))? *-->.*");
+
     private final String source;
     private final GeneratorConfig config = new GeneratorConfig();
     private final Map<String, GenerationResult> results = new HashMap<>();
+    private final List<NRGWidget> widgets = new ArrayList<>();
 
     public Generator(String source) {
         this.source = source;
-        fillConfig();
+
+        initWidgets();
+        initConfig();
         generateContents();
     }
 
-    private void fillConfig() {
+    private void initWidgets() {
+        widgets.add(new LanguagesWidget());
+    }
+
+    private void initConfig() {
         source.lines().forEachOrdered(line -> {
             String languages = getProperty(line, PROPERTY_LANGUAGES);
             if (languages != null && !languages.isEmpty()) {
@@ -47,11 +60,45 @@ public class Generator {
         result.setLanguage(language);
 
         source.lines()
+                .map(line -> renderWidgets(line, language))
                 .filter(line -> isLineVisible(line, language))
                 .map(this::removeNrgDataFromText)
                 .forEachOrdered(line -> result.getContent().append(line).append(System.lineSeparator()));
 
         return result;
+    }
+
+    protected String renderWidgets(String line, String language) {
+        WidgetTag widgetTag = getWidgetTag(line);
+        if (widgetTag != null) {
+            NRGWidget widget = getWidget(widgetTag.getName());
+            if (widget != null) {
+                String body = widget.getBody(widgetTag, config, language);
+                line = line.replaceAll("<!-- *nrg\\.widget\\." + widgetTag.getName() + ".*-->", body);
+            } else {
+                LOG.warn("Unknown widget name: {}", widgetTag.getName());
+            }
+        }
+        return line;
+    }
+
+    protected NRGWidget getWidget(String widgetName) {
+        return widgets.stream()
+                .filter(e -> e.getName().equals(widgetName))
+                .findFirst().orElse(null);
+    }
+
+    protected WidgetTag getWidgetTag(String line) {
+        Matcher m = WIDGET_TAG_PATTERN.matcher(line);
+
+        if (m.find()) {
+            WidgetTag result = new WidgetTag();
+            result.setName(m.group(1));
+            result.setParameters(m.group(3));
+            return result;
+        } else {
+            return null;
+        }
     }
 
     protected String removeNrgDataFromText(String line) {
@@ -70,7 +117,7 @@ public class Generator {
         return (!hasLanguageMark || hasCurrentLanguageMark) && !hasOnlyPropertyDefinition;
     }
 
-    private String getProperty(String line, String property) {
+    protected String getProperty(String line, String property) {
         String[] strings = substringsBetween(line, "<!--", "-->");
         if (strings != null) {
             for (String comment : strings) {
@@ -96,5 +143,9 @@ public class Generator {
 
     public GeneratorConfig getConfig() {
         return config;
+    }
+
+    public List<NRGWidget> getWidgets() {
+        return widgets;
     }
 }
