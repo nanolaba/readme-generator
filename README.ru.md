@@ -3,7 +3,7 @@
 
 # Nanolaba Readme Generator (NRG)
 
-class com.nanolaba.nrg.widgets.LanguagesWidget: TODO
+[ [en](README.md) | **ru** ]
 
 **Nanolaba Readme Generator (NRG)** — это программа для автоматической генерации файлов в формате
 [Markdown]( https://en.wikipedia.org/wiki/Markdown) на основе файла-прототипа.

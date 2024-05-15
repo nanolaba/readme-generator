@@ -5,6 +5,7 @@ import com.nanolaba.nrg.widgets.LanguagesWidget;
 import com.nanolaba.nrg.widgets.NRGWidget;
 import com.nanolaba.sugar.Code;
 
+import java.io.File;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
@@ -18,10 +19,12 @@ public class GeneratorConfig {
 
     private final List<NRGWidget> widgets = new ArrayList<>();
 
+    private final File sourceFile;
     private List<String> languages = new ArrayList<>();
     private String defaultLanguage;
 
-    public GeneratorConfig(String templateText) {
+    public GeneratorConfig(File sourceFile, String templateText) {
+        this.sourceFile = sourceFile;
         templateText.lines()
                 .map(s -> new TemplateLine(this, s))
                 .forEachOrdered(line -> {
@@ -68,6 +71,10 @@ public class GeneratorConfig {
         return getWidgets().stream()
                 .filter(e -> e.getName().equals(widgetName))
                 .findFirst().orElse(null);
+    }
+
+    public File getSourceFile() {
+        return sourceFile;
     }
 
     public List<String> getLanguages() {

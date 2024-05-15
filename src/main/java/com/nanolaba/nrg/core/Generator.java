@@ -1,5 +1,6 @@
 package com.nanolaba.nrg.core;
 
+import java.io.File;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -11,9 +12,9 @@ public class Generator {
     private final GeneratorConfig config;
     private final Map<String, GenerationResult> results = new HashMap<>();
 
-    public Generator(String source) {
+    public Generator(File sourceFile, String source) {
         this.source = source;
-        config = new GeneratorConfig(source);
+        config = new GeneratorConfig(sourceFile, source);
         generateContents();
     }
 
