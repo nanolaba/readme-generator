@@ -47,11 +47,7 @@ class TemplateLineTest {
 
     @Test
     public void testRemoveNrgDataFromText() {
-        Function<String, String> action = s -> {
-            TemplateLine l = line(s);
-            l.removeNrgDataFromText();
-            return l.getLine();
-        };
+        Function<String, String> action = s -> line(s).removeNrgDataFromText(s);
 
         assertEquals("", action.apply(""));
         assertEquals(" ", action.apply(" "));
@@ -103,8 +99,7 @@ class TemplateLineTest {
                     return "test widget body " + tag.getParameters();
                 }
             });
-            l.renderWidgets(lang);
-            return l.getLine();
+            return l.renderWidgets(lang);
         };
 
 
