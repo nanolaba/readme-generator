@@ -1,4 +1,4 @@
-package com.nanolaba.nrg;
+package com.nanolaba.nrg.core;
 
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
