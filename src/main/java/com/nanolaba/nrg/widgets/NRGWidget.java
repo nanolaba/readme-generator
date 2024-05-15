@@ -1,6 +1,6 @@
 package com.nanolaba.nrg.widgets;
 
-import com.nanolaba.nrg.GeneratorConfig;
+import com.nanolaba.nrg.core.GeneratorConfig;
 
 public interface NRGWidget {
 

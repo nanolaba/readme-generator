@@ -1,6 +1,9 @@
 package com.nanolaba.nrg;
 
 import com.nanolaba.logging.LOG;
+import com.nanolaba.nrg.core.Generator;
+import com.nanolaba.nrg.core.GeneratorConfig;
+import com.nanolaba.nrg.core.NRGConstants;
 import com.nanolaba.sugar.Code;
 import org.apache.commons.cli.*;
 import org.apache.commons.io.FileUtils;
@@ -14,7 +17,7 @@ import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
-import static com.nanolaba.nrg.NRGConstants.DEFAULT_CHARSET;
+import static com.nanolaba.nrg.core.NRGConstants.DEFAULT_CHARSET;
 
 public class NRG {
 

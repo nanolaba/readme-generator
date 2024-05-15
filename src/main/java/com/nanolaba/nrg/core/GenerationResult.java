@@ -1,4 +1,4 @@
-package com.nanolaba.nrg;
+package com.nanolaba.nrg.core;
 
 public class GenerationResult {
 
