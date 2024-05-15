@@ -4,6 +4,7 @@ import com.nanolaba.nrg.widgets.NRGWidget;
 import com.nanolaba.nrg.widgets.WidgetTag;
 import org.junit.jupiter.api.Test;
 
+import java.io.File;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
@@ -13,7 +14,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class TemplateLineTest {
 
     private TemplateLine line(String line) {
-        return new TemplateLine(new GeneratorConfig("<!--" + PROPERTY_LANGUAGES + "=ru-->"), line);
+        return new TemplateLine(new GeneratorConfig(new File("README.src.md"), "<!--" + PROPERTY_LANGUAGES + "=ru-->"), line);
     }
 
     @Test
