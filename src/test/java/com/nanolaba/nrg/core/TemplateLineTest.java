@@ -5,8 +5,10 @@ import com.nanolaba.nrg.widgets.WidgetTag;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static com.nanolaba.nrg.core.NRGConstants.PROPERTY_LANGUAGES;
 import static org.junit.jupiter.api.Assertions.*;
@@ -14,7 +16,12 @@ import static org.junit.jupiter.api.Assertions.*;
 class TemplateLineTest {
 
     private TemplateLine line(String line) {
-        return new TemplateLine(new GeneratorConfig(new File("README.src.md"), "<!--" + PROPERTY_LANGUAGES + "=ru-->"), line);
+        return line(line, "ru");
+    }
+
+    private TemplateLine line(String line, String... languages) {
+        String configBody = Arrays.stream(languages).map(s -> "<!--@" + PROPERTY_LANGUAGES + "=" + s + "-->").collect(Collectors.joining()) + line;
+        return new TemplateLine(new GeneratorConfig(new File("README.src.md"), configBody), line);
     }
 
     @Test
@@ -25,25 +32,27 @@ class TemplateLineTest {
         assertTrue(line("test <!--ru-->").isLineVisible("ru"));
         assertTrue(line("test <!-- ru -->").isLineVisible("ru"));
         assertTrue(line("test <!-- ru --> test").isLineVisible("ru"));
-        assertTrue(line("test <!-- ru --><!--en-->").isLineVisible("ru"));
+        assertTrue(line("test <!-- ru --><!--en-->", "ru", "en").isLineVisible("ru"));
         assertTrue(line("<!--ru-->").isLineVisible("ru"));
         assertTrue(line("<!--ru--> test").isLineVisible("ru"));
         assertTrue(line("<!-- ru -->").isLineVisible("ru"));
         assertTrue(line("<!-- ru --> test").isLineVisible("ru"));
         assertTrue(line("<!--  ru  --> test").isLineVisible("ru"));
+        assertTrue(line("test  <!-- fr -->", "ru", "en").isLineVisible("ru"));
+        assertTrue(line("test  <!-- fr -->", "ru", "en").isLineVisible("en"));
 
-        assertFalse(line("<!--en-->").isLineVisible("ru"));
-        assertFalse(line("<!--en--> test").isLineVisible("ru"));
-        assertFalse(line("test <!--en-->").isLineVisible("ru"));
-        assertFalse(line("test <!-- en-->").isLineVisible("ru"));
-        assertFalse(line("test <!-- en -->").isLineVisible("ru"));
-        assertFalse(line("test  <!-- en -->").isLineVisible("ru"));
+        assertFalse(line("<!--en-->", "ru", "en").isLineVisible("ru"));
+        assertFalse(line("<!--en--> test", "ru", "en").isLineVisible("ru"));
+        assertFalse(line("test <!--en-->", "ru", "en").isLineVisible("ru"));
+        assertFalse(line("test <!-- en-->", "ru", "en").isLineVisible("ru"));
+        assertFalse(line("test <!-- en -->", "ru", "en").isLineVisible("ru"));
+        assertFalse(line("test  <!-- en -->", "ru", "en").isLineVisible("ru"));
 
-        assertFalse(line("<!--nrg.someproperty-->").isLineVisible("ru"));
-        assertFalse(line("<!--nrg.some property-->").isLineVisible("ru"));
-        assertFalse(line("<!--nrg.some=property-->").isLineVisible("ru"));
-        assertFalse(line("<!--nrg.some = property-->").isLineVisible("ru"));
-        assertFalse(line("<!--  nrg.some  =  property  -->").isLineVisible("ru"));
+        assertFalse(line("<!--@nrg.someproperty-->").isLineVisible("ru"));
+        assertFalse(line("<!--@nrg.some property-->").isLineVisible("ru"));
+        assertFalse(line("<!--@nrg.some=property-->").isLineVisible("ru"));
+        assertFalse(line("<!--@nrg.some = property-->").isLineVisible("ru"));
+        assertFalse(line("<!--  @nrg.some  =  property  -->").isLineVisible("ru"));
     }
 
     @Test
@@ -56,12 +65,12 @@ class TemplateLineTest {
         assertEquals(" ", action.apply("<!--ru--> "));
         assertEquals("123 ", action.apply("123<!--ru--> "));
         assertEquals("123<!--en--> ", action.apply("123<!--en--> "));
-        assertEquals("", action.apply("<!--nrg.test-->"));
-        assertEquals("", action.apply("<!--nrg.test -->"));
-        assertEquals("", action.apply("<!--nrg.test = test-->"));
-        assertEquals("", action.apply("<!-- nrg.test = test --><!--ru-->"));
-        assertEquals("123", action.apply("1<!-- nrg.test = test -->2<!--ru-->3"));
-        assertEquals("123", action.apply("1<!-- nrg.test  =  test  -->2<!--ru-->3"));
+        assertEquals("", action.apply("<!--@nrg.test-->"));
+        assertEquals("", action.apply("<!--@nrg.test -->"));
+        assertEquals("", action.apply("<!--@nrg.test = test-->"));
+        assertEquals("", action.apply("<!-- @nrg.test = test --><!--ru-->"));
+        assertEquals("123", action.apply("1<!-- @nrg.test = test -->2<!--ru-->3"));
+        assertEquals("123", action.apply("1<!-- @nrg.test  =  test  -->2<!--ru-->3"));
     }
 
     @Test
@@ -100,9 +109,8 @@ class TemplateLineTest {
                     return "test widget body " + tag.getParameters();
                 }
             });
-            return l.renderWidgets(lang);
+            return l.generateLine(lang);
         };
-
 
         assertEquals("test widget body null", action.apply("${nrg.widget:test}", "ru"));
         assertEquals("test widget body null", action.apply("${nrg.widget:test}", "ru"));
@@ -110,5 +118,41 @@ class TemplateLineTest {
         assertEquals("test widget body AAA", action.apply("${ nrg.widget:test(AAA) }", "ru"));
         assertEquals("test widget body AAA=123", action.apply("${ nrg.widget:test(AAA=123) }", "ru"));
         assertEquals("test widget body AAA=123, BBB=234", action.apply("${ nrg.widget:test(AAA=123, BBB=234) }", "ru"));
+    }
+
+    @Test
+    public void testReadProperties() {
+        TemplateLine line = line("");
+        assertEquals(0, line.getProperties().size());
+
+        line = line("<!--@AAA=BBB-->");
+        assertEquals(1, line.getProperties().size());
+        assertEquals("BBB", line.getProperties().getProperty("AAA"));
+
+        line = line("<!--@AAA-->");
+        assertEquals(1, line.getProperties().size());
+        assertEquals("", line.getProperties().getProperty("AAA"));
+
+        line = line("<!--@AAA=BBB-->");
+        assertEquals(1, line.getProperties().size());
+        assertEquals("BBB", line.getProperties().getProperty("AAA"));
+
+        line = line("<!--@AAA=BBB--><!--@AAA.BBB=CCC.DDD-->");
+        assertEquals(2, line.getProperties().size());
+        assertEquals("BBB", line.getProperties().getProperty("AAA"));
+        assertEquals("CCC.DDD", line.getProperties().getProperty("AAA.BBB"));
+
+        line = line("<!-- @AAA = BBB --><!--@ AAA.BBB =  CCC.DDD  -->");
+        assertEquals(2, line.getProperties().size());
+        assertEquals("BBB", line.getProperties().getProperty("AAA"));
+        assertEquals("CCC.DDD", line.getProperties().getProperty("AAA.BBB"));
+    }
+
+    @Test
+    public void testRenderProperties() {
+        assertEquals("ru", line("${" + PROPERTY_LANGUAGES + "}").generateLine("ru"));
+        assertEquals("BB", line("<!--@ AA=BB -->${AA}").generateLine("ru"));
+        assertEquals("<!--comment-->BB", line("<!--comment--><!--@ AA=BB -->${AA}").generateLine("ru"));
+        assertEquals("${A_A}", line("<!--@ A.A=BB -->${A_A}").generateLine("ru"));
     }
 }

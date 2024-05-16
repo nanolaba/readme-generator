@@ -9,7 +9,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class CmdMessagesTest extends ConsoleOutputSupportTest {
 
     @Test
-    public void printVersionTest() throws IOException {
+    public void printVersionTest() {
         NRG.main("--version");
         String result = getOutAndClear();
         originalOut.println(result);
@@ -36,7 +36,7 @@ class CmdMessagesTest extends ConsoleOutputSupportTest {
     }
 
     @Test
-    public void printMessageForIncorrectArgumentsTest() throws IOException {
+    public void printMessageForIncorrectArgumentsTest() {
         NRG.main("--incorrect arguments");
         String result = getErrAndClear();
         originalOut.println(result);
@@ -48,7 +48,7 @@ class CmdMessagesTest extends ConsoleOutputSupportTest {
     }
 
     @Test
-    public void printMessageForIncorrectCharsetTest() throws IOException {
+    public void printMessageForIncorrectCharsetTest() {
         NRG.main("--charset", "UTF-9", "-f", "test.src.md");
         String result = getErrAndClear();
         originalOut.println(result);
@@ -59,7 +59,7 @@ class CmdMessagesTest extends ConsoleOutputSupportTest {
     }
 
     @Test
-    public void printMessageForNonexistentFileTest() throws IOException {
+    public void printMessageForNonexistentFileTest() {
         NRG.main("-f", "nonexistent file");
         String result = getErrAndClear();
         originalOut.println(result);

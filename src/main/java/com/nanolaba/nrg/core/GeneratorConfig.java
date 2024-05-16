@@ -11,6 +11,7 @@ import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Properties;
 
 import static com.nanolaba.nrg.core.NRGConstants.PROPERTY_DEFAULT_LANGUAGE;
 import static com.nanolaba.nrg.core.NRGConstants.PROPERTY_LANGUAGES;
@@ -22,21 +23,13 @@ public class GeneratorConfig {
     private final File sourceFile;
     private List<String> languages = new ArrayList<>();
     private String defaultLanguage;
+    private final Properties properties = new Properties();
 
     public GeneratorConfig(File sourceFile, String templateText) {
         this.sourceFile = sourceFile;
         templateText.lines()
                 .map(s -> new TemplateLine(this, s))
-                .forEachOrdered(line -> {
-                    String languages = line.getProperty(PROPERTY_LANGUAGES);
-                    if (languages != null && !languages.isEmpty()) {
-                        GeneratorConfig.this.languages = Arrays.stream(languages.split(",")).map(String::trim).toList();
-                    }
-                    String defaultLang = line.getProperty(PROPERTY_DEFAULT_LANGUAGE);
-                    if (defaultLang != null && !defaultLang.isEmpty()) {
-                        defaultLanguage = defaultLang;
-                    }
-                });
+                .forEach(this::readPropertiesFromLine);
 
         if (defaultLanguage == null && !languages.isEmpty()) {
             defaultLanguage = languages.get(0);
@@ -50,6 +43,20 @@ public class GeneratorConfig {
 
         initWidgets();
         printConfiguration();
+    }
+
+    private void readPropertiesFromLine(TemplateLine line) {
+
+        line.getProperties().forEach((key, value) -> NRGUtil.mergeProperty(key, value, properties));
+
+        String lang = line.getProperty(PROPERTY_LANGUAGES);
+        if (lang != null && !lang.isEmpty()) {
+            languages = Arrays.stream(lang.split(",")).map(String::trim).toList();
+        }
+        String defaultLang = line.getProperty(PROPERTY_DEFAULT_LANGUAGE);
+        if (defaultLang != null && !defaultLang.isEmpty()) {
+            defaultLanguage = defaultLang;
+        }
     }
 
     protected void initWidgets() {
@@ -87,5 +94,9 @@ public class GeneratorConfig {
 
     public List<NRGWidget> getWidgets() {
         return widgets;
+    }
+
+    public Properties getProperties() {
+        return properties;
     }
 }
