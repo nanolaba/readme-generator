@@ -1,5 +1,5 @@
-<!--nrg.languages=en,ru-->
-<!--nrg.defaultLanguage=en-->
+<!--@nrg.languages=en,ru-->
+<!--@nrg.defaultLanguage=en-->
 
 # Nanolaba Readme Generator (NRG)
 

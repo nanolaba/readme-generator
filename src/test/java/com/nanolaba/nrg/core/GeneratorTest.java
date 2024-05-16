@@ -15,7 +15,7 @@ class GeneratorTest {
     @Test
     public void testConfigLanguages1() {
         GeneratorConfig config = new GeneratorConfig(new File("README.src.md"),
-                "<!--" + PROPERTY_LANGUAGES + "=ru-->");
+                "<!--@" + PROPERTY_LANGUAGES + "=ru-->");
         List<String> langs = config.getLanguages();
         assertEquals(1, langs.size());
         assertEquals("ru", langs.get(0));
@@ -25,7 +25,7 @@ class GeneratorTest {
     @Test
     public void testConfigLanguages2() {
         GeneratorConfig config = new GeneratorConfig(new File("README.src.md"),
-                "<!--comment-->some text<!-- " + PROPERTY_LANGUAGES + " = zz -->some text");
+                "<!--comment-->some text<!-- @" + PROPERTY_LANGUAGES + " = zz -->some text");
         List<String> langs = config.getLanguages();
         assertEquals(1, langs.size());
         assertEquals("zz", langs.get(0));
@@ -35,7 +35,7 @@ class GeneratorTest {
     @Test
     public void testConfigLanguages3() {
         GeneratorConfig config = new GeneratorConfig(new File("README.src.md"),
-                "<!--comment-->some text<!-- " + PROPERTY_LANGUAGES + " = aa ,bb, cc , dd-->some text");
+                "<!--comment-->some text<!-- @" + PROPERTY_LANGUAGES + " = aa ,bb, cc , dd-->some text");
         List<String> langs = config.getLanguages();
         assertEquals(4, langs.size());
         assertEquals("aa", langs.get(0));
@@ -48,8 +48,8 @@ class GeneratorTest {
     @Test
     public void testConfigLanguagesWithDefaultLanguage1() {
         GeneratorConfig config = new Generator(new File("README.src.md"),
-                "<!-- " + PROPERTY_LANGUAGES + "=xx-->" + System.lineSeparator() +
-                "<!--" + PROPERTY_DEFAULT_LANGUAGE + "=xx-->").getConfig();
+                "<!-- @" + PROPERTY_LANGUAGES + "=xx-->" + System.lineSeparator() +
+                "<!--@" + PROPERTY_DEFAULT_LANGUAGE + "=xx-->").getConfig();
         List<String> langs = config.getLanguages();
         assertEquals(1, langs.size());
         assertEquals("xx", langs.get(0));
@@ -60,8 +60,8 @@ class GeneratorTest {
     public void testConfigLanguagesWithDefaultLanguage2() {
         GeneratorConfig config = new GeneratorConfig(new File("README.src.md"),
                 "<!--comment-->some text" +
-                "<!-- " + PROPERTY_LANGUAGES + " = zz, xx -->some text" +
-                "<!--" + PROPERTY_DEFAULT_LANGUAGE + "=xx-->");
+                "<!-- @" + PROPERTY_LANGUAGES + " = zz, xx -->some text" +
+                "<!--@" + PROPERTY_DEFAULT_LANGUAGE + "=xx-->");
         List<String> langs = config.getLanguages();
         assertEquals(2, langs.size());
         assertEquals("zz", langs.get(0));
@@ -72,8 +72,8 @@ class GeneratorTest {
     @Test
     public void testParseConfigWithContent() {
         GeneratorConfig config = new GeneratorConfig(new File("README.src.md"),
-                "<!--nrg.languages=en,ru-->\n" +
-                "<!--nrg.defaultLanguage=en-->\n" +
+                "<!--@nrg.languages=en,ru-->\n" +
+                "<!--@nrg.defaultLanguage=en-->\n" +
                 "# Nanolaba Readme Generator (NRG)\n");
         List<String> langs = config.getLanguages();
         assertEquals(2, langs.size());
@@ -86,8 +86,8 @@ class GeneratorTest {
     public void testIncorrectDefaultLanguage() {
         assertThrows(IllegalStateException.class,
                 () -> new Generator(new File("README.src.md"),
-                        "<!-- " + PROPERTY_LANGUAGES + "=xx-->" + System.lineSeparator() +
-                        "<!--" + PROPERTY_DEFAULT_LANGUAGE + "=zz-->"));
+                        "<!-- @" + PROPERTY_LANGUAGES + "=xx-->" + System.lineSeparator() +
+                        "<!--@" + PROPERTY_DEFAULT_LANGUAGE + "=zz-->"));
     }
 
 }

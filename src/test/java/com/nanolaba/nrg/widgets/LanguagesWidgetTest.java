@@ -14,7 +14,7 @@ class LanguagesWidgetTest {
     @Test
     public void testLanguagesWidget() {
         Generator generator = new Generator(new File("README.src.md"),
-                "<!--nrg.languages=en,ru,fr-->" +
+                "<!--@nrg.languages=en,ru,fr-->" +
                 "${nrg.widget:languages}"
         );
 
