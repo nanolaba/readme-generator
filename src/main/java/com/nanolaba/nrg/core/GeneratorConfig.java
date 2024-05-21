@@ -3,6 +3,7 @@ package com.nanolaba.nrg.core;
 import com.nanolaba.logging.LOG;
 import com.nanolaba.nrg.widgets.LanguagesWidget;
 import com.nanolaba.nrg.widgets.NRGWidget;
+import com.nanolaba.nrg.widgets.TableOfContentsWidget;
 import com.nanolaba.sugar.Code;
 
 import java.io.File;
@@ -12,6 +13,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
+import java.util.stream.Stream;
 
 import static com.nanolaba.nrg.core.NRGConstants.PROPERTY_DEFAULT_LANGUAGE;
 import static com.nanolaba.nrg.core.NRGConstants.PROPERTY_LANGUAGES;
@@ -21,15 +23,17 @@ public class GeneratorConfig {
     private final List<NRGWidget> widgets = new ArrayList<>();
 
     private final File sourceFile;
+    private final String sourceFileBody;
     private List<String> languages = new ArrayList<>();
     private String defaultLanguage;
     private final Properties properties = new Properties();
 
+
     public GeneratorConfig(File sourceFile, String templateText) {
         this.sourceFile = sourceFile;
-        templateText.lines()
-                .map(s -> new TemplateLine(this, s))
-                .forEach(this::readPropertiesFromLine);
+        this.sourceFileBody = templateText;
+
+        getSourceLinesStream().forEach(this::readPropertiesFromLine);
 
         if (defaultLanguage == null && !languages.isEmpty()) {
             defaultLanguage = languages.get(0);
@@ -43,6 +47,10 @@ public class GeneratorConfig {
 
         initWidgets();
         printConfiguration();
+    }
+
+    public Stream<TemplateLine> getSourceLinesStream() {
+        return sourceFileBody.lines().map(s -> new TemplateLine(this, s));
     }
 
     private void readPropertiesFromLine(TemplateLine line) {
@@ -61,6 +69,7 @@ public class GeneratorConfig {
 
     protected void initWidgets() {
         widgets.add(new LanguagesWidget());
+        widgets.add(new TableOfContentsWidget());
     }
 
     private void printConfiguration() {
@@ -68,7 +77,9 @@ public class GeneratorConfig {
             LOG.debug("Generator configuration:");
             for (Field field : getClass().getDeclaredFields()) {
                 if (!Modifier.isStatic(field.getModifiers())) {
-                    LOG.debug("{}: {}", field.getName(), Code.run(() -> field.get(this)));
+                    if (!field.getName().equals("sourceFileBody")) {
+                        LOG.debug("{}: {}", field.getName(), Code.run(() -> field.get(this)));
+                    }
                 }
             }
         }
@@ -82,6 +93,10 @@ public class GeneratorConfig {
 
     public File getSourceFile() {
         return sourceFile;
+    }
+
+    public String getSourceFileBody() {
+        return sourceFileBody;
     }
 
     public List<String> getLanguages() {
