@@ -92,7 +92,7 @@ public class TemplateLine {
         }
     }
 
-    protected String renderProperties(String line, String language) {
+    protected String renderProperties(String line) {
         for (Object key : config.getProperties().keySet()) {
             String keyString = key.toString();
             line = line.replaceAll("\\$\\{ *" + Pattern.quote(keyString) + ".*}", config.getProperties().getProperty(keyString));
@@ -105,7 +105,7 @@ public class TemplateLine {
         if (isLineVisible(language)) {
             String result = line;
             result = renderWidgets(result, language);
-            result = renderProperties(result, language);
+            result = renderProperties(result);
             result = removeNrgDataFromText(result);
             return result;
         } else {
