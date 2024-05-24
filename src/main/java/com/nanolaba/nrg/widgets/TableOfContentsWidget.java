@@ -22,21 +22,28 @@ public class TableOfContentsWidget implements NRGWidget {
     @Override
     public String getBody(WidgetTag widgetTag, GeneratorConfig config, String language) {
 
-        TOCConfig tocConfig = getTocConfig(widgetTag.getParameters());
+        TOCConfig tocConfig = getConfig(widgetTag.getParameters());
+
+        String toc = createTOC(widgetTag, config, language, tocConfig);
+
+        return (StringUtils.isNotEmpty(tocConfig.getTitle()) ? "## " + tocConfig.getTitle() + System.lineSeparator() : "") + toc;
+    }
+
+    protected String createTOC(WidgetTag widgetTag, GeneratorConfig config, String language, TOCConfig tocConfig) {
 
         List<Header> allHeaders = new ArrayList<>();
 
-        return (StringUtils.isNotEmpty(tocConfig.getTitle()) ? "## " + tocConfig.getTitle() + System.lineSeparator() : "") +
-               config.getSourceFileBody().lines()
-                       .filter(this::isHeader)
-                       .filter(s -> new TemplateLine(config, s).isLineVisible(language))
-                       .map(s -> new Header(s, tocConfig, allHeaders))
-                       .filter(h -> h.level > 0)
-                       .map(Object::toString)
-                       .collect(Collectors.joining());
+        return config.getSourceFileBody().lines()
+                .skip(widgetTag.getLine().getLineNumber())
+                .filter(this::isHeader)
+                .filter(s -> new TemplateLine(config, s, 0).isLineVisible(language))
+                .map(s -> new Header(s, tocConfig, allHeaders))
+                .filter(h -> h.level > 0)
+                .map(Object::toString)
+                .collect(Collectors.joining());
     }
 
-    private TOCConfig getTocConfig(String parameters) {
+    private TOCConfig getConfig(String parameters) {
         TOCConfig config = new TOCConfig();
         Map<String, String> map = NRGUtil.parseParametersLine(parameters);
 
@@ -56,7 +63,7 @@ public class TableOfContentsWidget implements NRGWidget {
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    private static class TOCConfig {
+    public static class TOCConfig {
         private String title;
         private boolean ordered;
 
@@ -81,7 +88,7 @@ public class TableOfContentsWidget implements NRGWidget {
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    private static class Header {
+    protected static class Header {
 
         public static final Pattern HEADER_PATTERN = Pattern.compile("(#+)(.*)");
         private String title;

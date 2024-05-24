@@ -51,6 +51,7 @@ class TableOfContentsWidgetTest {
         Generator generator = new Generator(new File("README.src.md"),
                 """
                         <!--@nrg.languages=en,ru,fr-->
+                        ## Header before TOC
                         ${nrg.widget:tableOfContents(title = "TOC", ordered = "true")}
                         # MainHeader
                         ## AAA<!--en-->
@@ -68,7 +69,8 @@ class TableOfContentsWidgetTest {
         String bodyEn = generator.getResult("en").getContent().toString();
         LOG.info(bodyEn);
 
-        assertFalse(bodyEn.contains("1. [MainHeader]"));
+        assertFalse(bodyEn.contains("[MainHeader]"));
+        assertFalse(bodyEn.contains("[Header before TOC]"));
         assertTrue(bodyEn.contains(
                 "## TOC" + System.lineSeparator() +
                 "1. [AAA](#aaa)" + System.lineSeparator() +

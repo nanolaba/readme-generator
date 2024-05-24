@@ -21,10 +21,12 @@ public class TemplateLine {
 
     private final GeneratorConfig config;
     private final String line;
+    private final int lineNumber;
 
-    public TemplateLine(GeneratorConfig config, String line) {
+    public TemplateLine(GeneratorConfig config, String line, int lineNumber) {
         this.config = config;
         this.line = line;
+        this.lineNumber = lineNumber;
     }
 
     public String removeNrgDataFromText(String line) {
@@ -86,14 +88,7 @@ public class TemplateLine {
     protected WidgetTag getWidgetTag(String line) {
         Matcher m = WIDGET_TAG_PATTERN.matcher(line);
 
-        if (m.find()) {
-            WidgetTag result = new WidgetTag();
-            result.setName(m.group(1));
-            result.setParameters(m.group(3));
-            return result;
-        } else {
-            return null;
-        }
+        return m.find() ? new WidgetTag(this, m.group(1), m.group(3)) : null;
     }
 
     protected String renderProperties(String line) {
@@ -140,5 +135,13 @@ public class TemplateLine {
 
     public GeneratorConfig getConfig() {
         return config;
+    }
+
+    public String getLine() {
+        return line;
+    }
+
+    public int getLineNumber() {
+        return lineNumber;
     }
 }

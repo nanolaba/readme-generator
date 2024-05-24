@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 
 import static com.nanolaba.nrg.core.NRGConstants.PROPERTY_DEFAULT_LANGUAGE;
@@ -50,7 +51,8 @@ public class GeneratorConfig {
     }
 
     public Stream<TemplateLine> getSourceLinesStream() {
-        return sourceFileBody.lines().map(s -> new TemplateLine(this, s));
+        AtomicInteger counter = new AtomicInteger(0);
+        return sourceFileBody.lines().map(s -> new TemplateLine(this, s, counter.getAndIncrement()));
     }
 
     private void readPropertiesFromLine(TemplateLine line) {
