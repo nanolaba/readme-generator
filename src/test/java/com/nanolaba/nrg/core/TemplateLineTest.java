@@ -5,6 +5,7 @@ import com.nanolaba.nrg.widgets.WidgetTag;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
+import java.util.Properties;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
@@ -78,18 +79,18 @@ class TemplateLineTest {
         assertNull(action.apply(""));
         assertNull(action.apply("123"));
         assertNull(action.apply("123<!--test-->"));
-        assertNull(action.apply("123${nrg.widget}"));
+        assertNull(action.apply("123${widget}"));
         assertNull(action.apply("${nrg:widget:languages}"));
 
-        assertEquals("languages", action.apply("${nrg.widget:languages}").getName());
-        assertEquals("languages", action.apply("${ nrg.widget:languages }").getName());
-        assertEquals("languages", action.apply(" ${ nrg.widget:languages } ").getName());
-        assertEquals("languages", action.apply("qwe ${ nrg.widget:languages } 123").getName());
+        assertEquals("languages", action.apply("${widget:languages}").getName());
+        assertEquals("languages", action.apply("${ widget:languages }").getName());
+        assertEquals("languages", action.apply(" ${ widget:languages } ").getName());
+        assertEquals("languages", action.apply("qwe ${ widget:languages } 123").getName());
 
-        assertNull(action.apply("${nrg.widget:languages}").getParameters());
-        assertEquals("", action.apply("${nrg.widget:languages()}").getParameters());
-        assertEquals("parameters", action.apply("${nrg.widget:languages(parameters)}").getParameters());
-        assertEquals("a b c", action.apply("${nrg.widget:languages(a b c)}").getParameters());
+        assertNull(action.apply("${widget:languages}").getParameters());
+        assertEquals("", action.apply("${widget:languages()}").getParameters());
+        assertEquals("parameters", action.apply("${widget:languages(parameters)}").getParameters());
+        assertEquals("a b c", action.apply("${widget:languages(a b c)}").getParameters());
     }
 
     @Test
@@ -110,51 +111,57 @@ class TemplateLineTest {
             return l.generateLine(lang);
         };
 
-        assertEquals("test widget body null", action.apply("${nrg.widget:test}", "ru"));
-        assertEquals("test widget body null", action.apply("${nrg.widget:test}", "ru"));
-        assertEquals("test widget body ", action.apply("${ nrg.widget:test() }", "ru"));
-        assertEquals("test widget body AAA", action.apply("${ nrg.widget:test(AAA) }", "ru"));
-        assertEquals("test widget body AAA=123", action.apply("${ nrg.widget:test(AAA=123) }", "ru"));
-        assertEquals("test widget body AAA=123, BBB=234", action.apply("${ nrg.widget:test(AAA=123, BBB=234) }", "ru"));
+        assertEquals("test widget body null", action.apply("${widget:test}", "ru"));
+        assertEquals("test widget body null", action.apply("${widget:test}", "ru"));
+        assertEquals("test widget body ", action.apply("${ widget:test() }", "ru"));
+        assertEquals("test widget body AAA", action.apply("${ widget:test(AAA) }", "ru"));
+        assertEquals("test widget body AAA=123", action.apply("${ widget:test(AAA=123) }", "ru"));
+        assertEquals("test widget body AAA=123, BBB=234", action.apply("${ widget:test(AAA=123, BBB=234) }", "ru"));
 
-        assertEquals("test widget body 123", action.apply("${ nrg.widget:test(${ru:'123'}) }", "ru"));
-        assertEquals("test widget body 123", action.apply("${ nrg.widget:test(${ru:\"123\"}) }", "ru"));
-        assertEquals("test widget body 123'", action.apply("${ nrg.widget:test(${ru:\"123'\"}) }", "ru"));
-        assertEquals("test widget body '123'", action.apply("${ nrg.widget:test(${ru:\"'123'\"}) }", "ru"));
-        assertEquals("test widget body 123\"", action.apply("${ nrg.widget:test(${ru:'123\"'}) }", "ru"));
-        assertEquals("test widget body \"123\"", action.apply("${ nrg.widget:test(${ru:'\"123\"'}) }", "ru"));
-        assertEquals("test widget body \"'123'\"", action.apply("${ nrg.widget:test(${ru:'\"'123'\"'}) }", "ru"));
-        assertEquals("test widget body \"'123'\"", action.apply("${ nrg.widget:test(${ru:'\"'123'\"', en:'aa'}) }", "ru"));
-        assertEquals("test widget body \"'123'\"", action.apply("${ nrg.widget:test(${ru:'\"'123'\"', en:\"aa\"}) }", "ru"));
-        assertEquals("test widget body \"'123'\"", action.apply("${ nrg.widget:test(${ru:'\"'123'\"', en:\"'aa\"}) }", "ru"));
+        assertEquals("test widget body 123", action.apply("${ widget:test(${ru:'123'}) }", "ru"));
+        assertEquals("test widget body 123", action.apply("${ widget:test(${ru:\"123\"}) }", "ru"));
+        assertEquals("test widget body 123'", action.apply("${ widget:test(${ru:\"123'\"}) }", "ru"));
+        assertEquals("test widget body '123'", action.apply("${ widget:test(${ru:\"'123'\"}) }", "ru"));
+        assertEquals("test widget body 123\"", action.apply("${ widget:test(${ru:'123\"'}) }", "ru"));
+        assertEquals("test widget body \"123\"", action.apply("${ widget:test(${ru:'\"123\"'}) }", "ru"));
+        assertEquals("test widget body \"'123'\"", action.apply("${ widget:test(${ru:'\"'123'\"'}) }", "ru"));
+        assertEquals("test widget body \"'123'\"", action.apply("${ widget:test(${ru:'\"'123'\"', en:'aa'}) }", "ru"));
+        assertEquals("test widget body \"'123'\"", action.apply("${ widget:test(${ru:'\"'123'\"', en:\"aa\"}) }", "ru"));
+        assertEquals("test widget body \"'123'\"", action.apply("${ widget:test(${ru:'\"'123'\"', en:\"'aa\"}) }", "ru"));
+
+        assertEquals("test widget body \"'123:'\"", action.apply("${ widget:test(${ru:'\"'123:'\"', en:\"'aa\"}) }", "ru"));
     }
 
     @Test
     public void testReadProperties() {
-        TemplateLine line = line("");
-        assertEquals(0, line.getProperties().size());
+        Properties p = line("").getProperties("ru");
+        assertEquals(0, p.size());
 
-        line = line("<!--@AAA=BBB-->");
-        assertEquals(1, line.getProperties().size());
-        assertEquals("BBB", line.getProperties().getProperty("AAA"));
+        p = line("<!--@AAA=BBB-->").getProperties("ru");
+        assertEquals(1, p.size());
+        assertEquals("BBB", p.getProperty("AAA"));
 
-        line = line("<!--@AAA-->");
-        assertEquals(1, line.getProperties().size());
-        assertEquals("", line.getProperties().getProperty("AAA"));
+        p = line("<!--@AAA-->").getProperties("ru");
+        assertEquals(1, p.size());
+        assertEquals("", p.getProperty("AAA"));
 
-        line = line("<!--@AAA=BBB-->");
-        assertEquals(1, line.getProperties().size());
-        assertEquals("BBB", line.getProperties().getProperty("AAA"));
+        p = line("<!--@AAA=BBB-->").getProperties("ru");
+        assertEquals(1, p.size());
+        assertEquals("BBB", p.getProperty("AAA"));
 
-        line = line("<!--@AAA=BBB--><!--@AAA.BBB=CCC.DDD-->");
-        assertEquals(2, line.getProperties().size());
-        assertEquals("BBB", line.getProperties().getProperty("AAA"));
-        assertEquals("CCC.DDD", line.getProperties().getProperty("AAA.BBB"));
+        p = line("<!--@AAA=BBB--><!--@AAA.BBB=CCC.DDD-->").getProperties("ru");
+        assertEquals(2, p.size());
+        assertEquals("BBB", p.getProperty("AAA"));
+        assertEquals("CCC.DDD", p.getProperty("AAA.BBB"));
 
-        line = line("<!-- @AAA = BBB --><!--@ AAA.BBB =  CCC.DDD  -->");
-        assertEquals(2, line.getProperties().size());
-        assertEquals("BBB", line.getProperties().getProperty("AAA"));
-        assertEquals("CCC.DDD", line.getProperties().getProperty("AAA.BBB"));
+        p = line("<!-- @AAA = BBB --><!--@ AAA.BBB =  CCC.DDD  -->").getProperties("ru");
+        assertEquals(2, p.size());
+        assertEquals("BBB", p.getProperty("AAA"));
+        assertEquals("CCC.DDD", p.getProperty("AAA.BBB"));
+
+        p = line("<!--@AAA=${ru:'BBB', en:'CCC'}-->", "en", "ru").getProperties("ru");
+        assertEquals(1, p.size());
+        assertEquals("BBB", p.getProperty("AAA"));
     }
 
     @Test
@@ -171,6 +178,7 @@ class TemplateLineTest {
         assertEquals("", line("${en:'Table of contents'}", "en", "ru").generateLine("ru"));
         assertEquals("", line("${en:\"Table of contents\"}", "en", "ru").generateLine("ru"));
         assertEquals("Содержание", line("${ru:'Содержание'}", "en", "ru").generateLine("ru"));
+        assertEquals("Сод:ержание", line("${ru:'Сод:ержание'}", "en", "ru").generateLine("ru"));
         assertEquals("Содержание", line("${ru:\"Содержание\"}", "en", "ru").generateLine("ru"));
         assertEquals("'Содержание", line("${ru:\"'Содержание\"}", "en", "ru").generateLine("ru"));
         assertEquals("'Содержание'", line("${ru:\"'Содержание'\"}", "en", "ru").generateLine("ru"));

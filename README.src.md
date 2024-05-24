@@ -1,9 +1,10 @@
 <!--@nrg.languages=en,ru-->
 <!--@nrg.defaultLanguage=en-->
+
 <!--@nrg.name=**Nanolaba Readme Generator (NRG)**-->
 <!--@nrg.stableVersion=1.0-->
 
-${nrg.widget:languages}
+${widget:languages}
 
 # Nanolaba Readme Generator (NRG)
 
@@ -12,7 +13,7 @@ ${nrg.name} — это программа для автоматической г
 ${nrg.name} — is a program for automatically<!--en-->
 generating [Markdown files]( https://en.wikipedia.org/wiki/Markdown) based on a prototype file.<!--en-->
 
-## Overview<!--en-->
+## ${en:'Overview', ru:'Краткое описание'}
 
 Using the ${nrg.name} program, you can generate separate files for different languages<!--en-->
 in [Markdown format]( https://en.wikipedia.org/wiki/Markdown) based on a single template file.<!--en-->
@@ -20,9 +21,6 @@ The template allows the use of variables and special components - widgets.<!--en
 This document is an example of the result of this program.<!--en-->
 <!--en-->
 The latest stable version of the program is **${nrg.stableVersion}**.<!--en-->
-
-## Краткое описание<!--ru-->
-
 С помощью программы ${nrg.name} можно генерировать отдельные файлы для разных языков в формате <!--ru-->
 [Markdown]( https://en.wikipedia.org/wiki/Markdown) на основе единого файла-шаблона.<!--ru-->
 В шаблоне можно использовать переменные, а также специальные компоненты - виджеты. <!--ru-->
@@ -30,7 +28,7 @@ The latest stable version of the program is **${nrg.stableVersion}**.<!--en-->
 <!--ru-->
 Последняя стабильная версия программы - **${nrg.stableVersion}**.<!--ru-->
 
-${nrg.widget:tableOfContents(title = "${en:'Table of contents', ru:'Содержание'}", ordered = "true")}
+${widget:tableOfContents(title = "${en:'Table of contents', ru:'Содержание'}", ordered = "true")}
 
 ## Usage
 
@@ -56,5 +54,4 @@ ${nrg.widget:tableOfContents(title = "${en:'Table of contents', ru:'Содерж
 
 ### Feedback
 
-<hr/>
-${en:'Last updated:', ru:'Дата последнего обновления:'} ${nrg.widget:date(pattern= 'dd.MM.yyyy')}
+*${en:'Last updated:', ru:'Дата последнего обновления:'} ${widget:date(pattern= 'dd.MM.yyyy')}*

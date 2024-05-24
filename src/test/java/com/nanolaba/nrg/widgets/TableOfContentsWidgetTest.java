@@ -16,7 +16,7 @@ class TableOfContentsWidgetTest {
         Generator generator = new Generator(new File("README.src.md"),
                 """
                         <!--@nrg.languages=en,ru,fr-->
-                        ${nrg.widget:tableOfContents}
+                        ${widget:tableOfContents}
                         # MainHeader
                         ## AAA<!--en-->
                         ## ЯЯЯ<!--ru-->
@@ -52,7 +52,7 @@ class TableOfContentsWidgetTest {
                 """
                         <!--@nrg.languages=en,ru,fr-->
                         ## Header before TOC
-                        ${nrg.widget:tableOfContents(title = "TOC", ordered = "true")}
+                        ${widget:tableOfContents(title = "TOC", ordered = "true")}
                         # MainHeader
                         ## AAA<!--en-->
                         ## ЯЯЯ<!--ru-->
@@ -87,7 +87,7 @@ class TableOfContentsWidgetTest {
         Generator generator = new Generator(new File("README.src.md"),
                 """
                         <!--@nrg.languages=en,ru,fr-->
-                        ${nrg.widget:tableOfContents(title = "${en:'Table of contents', ru:'Содержание'}", ordered = "true")}
+                        ${widget:tableOfContents(title = "${en:'Table of contents', ru:'Содержание'}", ordered = "true")}
                         # MainHeader
                         ## AAA<!--en-->
                         ## ЯЯЯ<!--ru-->

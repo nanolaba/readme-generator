@@ -16,12 +16,12 @@ class DateWidgetTest {
     @Test
     public void testDateWidget() {
         Generator generator = new Generator(new File("README.src.md"),
-                "${nrg.widget:date}"
+                "${widget:date}"
         );
 
         String body = generator.getResult("en").getContent().toString();
         LOG.info(body);
-        assertFalse(body.contains("${nrg.widget:date}"));
+        assertFalse(body.contains("${widget:date}"));
         assertTrue(body.contains(new SimpleDateFormat("dd.MM.yyyy HH:mm").format(new Date())));
 
     }
@@ -29,12 +29,12 @@ class DateWidgetTest {
     @Test
     public void testDateWidget1() {
         Generator generator = new Generator(new File("README.src.md"),
-                "${nrg.widget:date(pattern='yyyy-MM-dd')}"
+                "${widget:date(pattern='yyyy-MM-dd')}"
         );
 
         String body = generator.getResult("en").getContent().toString();
         LOG.info(body);
-        assertFalse(body.contains("${nrg.widget:date}"));
+        assertFalse(body.contains("${widget:date"));
         assertTrue(body.contains(new SimpleDateFormat("yyyy-MM-dd").format(new Date())));
 
     }

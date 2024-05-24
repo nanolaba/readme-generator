@@ -18,19 +18,19 @@ This document is an example of the result of this program.
 The latest stable version of the program is **1.0**.
 
 ## Table of contents
-
 1. [Usage](#usage)
-    1. [Using the Command Line Interface](#using-the-command-line-interface)
-    2. [Use as a java-library](#use-as-a-java-library)
+	1. [Using the Command Line Interface](#using-the-command-line-interface)
+	2. [Use as a java-library](#use-as-a-java-library)
 2. [Template syntax](#template-syntax)
-    1. [Properties](#properties)
-    2. [Multilanguage support](#multilanguage-support)
-    3. [Language properties](#language-properties)
-    4. [Widgets](#widgets)
-        1. [languages](#languages)
-        2. [tableOfContents](#tableofcontents)
-        3. [date](#date)
-    5. [Feedback](#feedback)
+	1. [Properties](#properties)
+	2. [Multilanguage support](#multilanguage-support)
+	3. [Language properties](#language-properties)
+	4. [Widgets](#widgets)
+		1. [languages](#languages)
+		2. [tableOfContents](#tableofcontents)
+		3. [date](#date)
+	5. [Feedback](#feedback)
+
 
 ## Usage
 
@@ -57,4 +57,4 @@ The latest stable version of the program is **1.0**.
 ### Feedback
 
 <hr/>
-'Last updated 24.05.2024 08:38:00
+Last updated: 24.05.2024

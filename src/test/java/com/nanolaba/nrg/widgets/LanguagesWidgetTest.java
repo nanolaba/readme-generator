@@ -15,17 +15,17 @@ class LanguagesWidgetTest {
     public void testLanguagesWidget() {
         Generator generator = new Generator(new File("README.src.md"),
                 "<!--@nrg.languages=en,ru,fr-->" +
-                "${nrg.widget:languages}"
+                "${widget:languages}"
         );
 
         String bodyEn = generator.getResult("en").getContent().toString();
         LOG.info(bodyEn);
         assertTrue(bodyEn.contains("[ **en** | [ru](README.ru.md) | [fr](README.fr.md) ]"));
-        assertFalse(bodyEn.contains("${nrg.widget:languages}"));
+        assertFalse(bodyEn.contains("${widget:languages}"));
 
         String bodyFr = generator.getResult("fr").getContent().toString();
         LOG.info(bodyFr);
         assertTrue(bodyFr.contains("[ [en](README.md) | [ru](README.ru.md) | **fr** ]"));
-        assertFalse(bodyFr.contains("${nrg.widget:languages}"));
+        assertFalse(bodyFr.contains("${widget:languages}"));
     }
 }

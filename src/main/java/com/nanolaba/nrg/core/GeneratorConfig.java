@@ -27,7 +27,7 @@ public class GeneratorConfig {
     private final File sourceFile;
     private final String sourceFileBody;
     private List<String> languages = List.of("en");
-    private String defaultLanguage = "en";
+    private String defaultLanguage;
     private final Properties properties = new Properties();
 
 
@@ -35,7 +35,7 @@ public class GeneratorConfig {
         this.sourceFile = sourceFile;
         this.sourceFileBody = templateText;
 
-        getSourceLinesStream().forEach(this::readPropertiesFromLine);
+        getSourceLinesStream().forEach(this::readLanguagesPropertiesFromLine);
 
         if (defaultLanguage == null && !languages.isEmpty()) {
             defaultLanguage = languages.get(0);
@@ -47,6 +47,8 @@ public class GeneratorConfig {
                                             "\" property: " + languages);
         }
 
+        getSourceLinesStream().forEach(line -> readPropertiesFromLine(line, defaultLanguage));
+
         initWidgets();
         printConfiguration();
     }
@@ -56,18 +58,20 @@ public class GeneratorConfig {
         return sourceFileBody.lines().map(s -> new TemplateLine(this, s, counter.getAndIncrement()));
     }
 
-    private void readPropertiesFromLine(TemplateLine line) {
+    private void readLanguagesPropertiesFromLine(TemplateLine line) {
 
-        line.getProperties().forEach((key, value) -> NRGUtil.mergeProperty(key, value, properties));
-
-        String lang = line.getProperty(PROPERTY_LANGUAGES);
+        String lang = line.getProperty(PROPERTY_LANGUAGES, null);
         if (lang != null && !lang.isEmpty()) {
             languages = Arrays.stream(lang.split(",")).map(String::trim).toList();
         }
-        String defaultLang = line.getProperty(PROPERTY_DEFAULT_LANGUAGE);
+        String defaultLang = line.getProperty(PROPERTY_DEFAULT_LANGUAGE, null);
         if (defaultLang != null && !defaultLang.isEmpty()) {
             defaultLanguage = defaultLang;
         }
+    }
+
+    private void readPropertiesFromLine(TemplateLine line, String language) {
+        line.getProperties(language).forEach((key, value) -> NRGUtil.mergeProperty(key, value, properties));
     }
 
     protected void initWidgets() {
