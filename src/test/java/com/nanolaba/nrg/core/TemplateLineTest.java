@@ -118,6 +118,15 @@ class TemplateLineTest {
         assertEquals("test widget body AAA=123, BBB=234", action.apply("${ nrg.widget:test(AAA=123, BBB=234) }", "ru"));
 
         assertEquals("test widget body 123", action.apply("${ nrg.widget:test(${ru:'123'}) }", "ru"));
+        assertEquals("test widget body 123", action.apply("${ nrg.widget:test(${ru:\"123\"}) }", "ru"));
+        assertEquals("test widget body 123'", action.apply("${ nrg.widget:test(${ru:\"123'\"}) }", "ru"));
+        assertEquals("test widget body '123'", action.apply("${ nrg.widget:test(${ru:\"'123'\"}) }", "ru"));
+        assertEquals("test widget body 123\"", action.apply("${ nrg.widget:test(${ru:'123\"'}) }", "ru"));
+        assertEquals("test widget body \"123\"", action.apply("${ nrg.widget:test(${ru:'\"123\"'}) }", "ru"));
+        assertEquals("test widget body \"'123'\"", action.apply("${ nrg.widget:test(${ru:'\"'123'\"'}) }", "ru"));
+        assertEquals("test widget body \"'123'\"", action.apply("${ nrg.widget:test(${ru:'\"'123'\"', en:'aa'}) }", "ru"));
+        assertEquals("test widget body \"'123'\"", action.apply("${ nrg.widget:test(${ru:'\"'123'\"', en:\"aa\"}) }", "ru"));
+        assertEquals("test widget body \"'123'\"", action.apply("${ nrg.widget:test(${ru:'\"'123'\"', en:\"'aa\"}) }", "ru"));
     }
 
     @Test
@@ -160,8 +169,14 @@ class TemplateLineTest {
     public void testRenderLanguageProperties() {
         assertEquals("${en:'Table of contents'}", line("${en:'Table of contents'}", "ru").generateLine("ru"));
         assertEquals("", line("${en:'Table of contents'}", "en", "ru").generateLine("ru"));
+        assertEquals("", line("${en:\"Table of contents\"}", "en", "ru").generateLine("ru"));
         assertEquals("Содержание", line("${ru:'Содержание'}", "en", "ru").generateLine("ru"));
+        assertEquals("Содержание", line("${ru:\"Содержание\"}", "en", "ru").generateLine("ru"));
+        assertEquals("'Содержание", line("${ru:\"'Содержание\"}", "en", "ru").generateLine("ru"));
+        assertEquals("'Содержание'", line("${ru:\"'Содержание'\"}", "en", "ru").generateLine("ru"));
+        assertEquals("\"Содержание\"", line("${ru:\"\"Содержание\"\"}", "en", "ru").generateLine("ru"));
         assertEquals("Содержание", line("${en:'Table of contents', ru:'Содержание'}", "en", "ru").generateLine("ru"));
+        assertEquals("Содержание", line("${en:'Table of contents', ru:\"Содержание\"}", "en", "ru").generateLine("ru"));
         assertEquals("Table of contents", line("${en:'Table of contents', ru:'Содержание'}", "en", "ru").generateLine("en"));
     }
 }

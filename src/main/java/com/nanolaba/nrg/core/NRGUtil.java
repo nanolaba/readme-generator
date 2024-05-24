@@ -29,4 +29,9 @@ public class NRGUtil {
         }
         return map;
     }
+
+    public static String unwrapParameterValue(String wrapped) {
+        wrapped = StringUtils.trimToEmpty(wrapped);
+        return wrapped.length() > 1 ? StringUtils.unwrap(wrapped, wrapped.charAt(0)) : "";
+    }
 }
