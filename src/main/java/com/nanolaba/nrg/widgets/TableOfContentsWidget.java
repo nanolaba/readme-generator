@@ -26,7 +26,7 @@ public class TableOfContentsWidget implements NRGWidget {
 
         List<Header> allHeaders = new ArrayList<>();
 
-        return (StringUtils.isNotEmpty(tocConfig.getTitle()) ? "#" + tocConfig.getTitle() + System.lineSeparator() : "") +
+        return (StringUtils.isNotEmpty(tocConfig.getTitle()) ? "## " + tocConfig.getTitle() + System.lineSeparator() : "") +
                config.getSourceFileBody().lines()
                        .filter(this::isHeader)
                        .filter(s -> new TemplateLine(config, s).isLineVisible(language))

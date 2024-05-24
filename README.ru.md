@@ -12,11 +12,12 @@
 
 С помощью программы **Nanolaba Readme Generator (NRG)** можно генерировать отдельные файлы для разных языков в формате
 [Markdown]( https://en.wikipedia.org/wiki/Markdown) на основе единого файла-шаблона.
-В шаблоне возможно использование переменных, а также специальных компонентов - виджетов.
+В шаблоне можно использовать переменные, а также специальные компоненты - виджеты.
 Данный документ является примером результата работы этой программы.
 
 Последняя стабильная версия программы - **1.0**.
 
+## Содержание
 1. [Краткое описание](#краткое-описание)
 2. [Usage](#usage)
 	1. [Using the Command Line Interface](#using-the-command-line-interface)
@@ -25,6 +26,8 @@
 	1. [Multilanguage support](#multilanguage-support)
 	2. [Properties](#properties)
 	3. [Widgets](#widgets)
+		1. [languages](#languages)
+		2. [tableOfContents](#tableofcontents)
 
 ## Usage
 
@@ -39,3 +42,7 @@
 ### Properties
 
 ### Widgets
+
+#### languages
+
+#### tableOfContents

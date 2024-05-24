@@ -3,10 +3,14 @@ package com.nanolaba.nrg.core;
 import com.nanolaba.logging.LOG;
 import com.nanolaba.nrg.widgets.NRGWidget;
 import com.nanolaba.nrg.widgets.WidgetTag;
+import org.apache.commons.lang3.StringUtils;
 
+import java.util.Arrays;
+import java.util.Map;
 import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import static org.apache.commons.lang3.StringUtils.*;
 
@@ -66,12 +70,12 @@ public class TemplateLine {
     }
 
     protected String renderWidgets(String line, String language) {
-        WidgetTag widgetTag = getWidgetTag();
+        WidgetTag widgetTag = getWidgetTag(line);
         if (widgetTag != null) {
             NRGWidget widget = config.getWidget(widgetTag.getName());
             if (widget != null) {
                 String body = widget.getBody(widgetTag, config, language);
-                return line.replaceAll("\\$\\{ *nrg\\.widget:" + Pattern.quote(widgetTag.getName()) + ".*}", body);
+                return line.replaceAll("\\$\\{ *nrg\\.widget:" + Pattern.quote(widgetTag.getName()) + "[^{]*}", body);
             } else {
                 LOG.warn("Unknown widget name: {}", widgetTag.getName());
             }
@@ -79,7 +83,7 @@ public class TemplateLine {
         return line;
     }
 
-    protected WidgetTag getWidgetTag() {
+    protected WidgetTag getWidgetTag(String line) {
         Matcher m = WIDGET_TAG_PATTERN.matcher(line);
 
         if (m.find()) {
@@ -101,11 +105,32 @@ public class TemplateLine {
         return line;
     }
 
+    protected String renderLanguageProperties(String line, String language) {
+        String pairs = config.getLanguages().stream().map(s -> "( *" + Pattern.quote(s) + ": *['\"].*['\"][, ]*)").collect(Collectors.joining("|"));
+        String regex = "\\$\\{ *(" + pairs + ")}";
+
+        Matcher matcher = Pattern.compile(regex).matcher(line);
+        if (matcher.find()) {
+            String params = matcher.group(1);
+            Map<String, String> vals = Arrays.stream(params.split(","))
+                    .map(String::trim)
+                    .filter(s -> s.contains(":"))
+                    .map(s -> s.split(":"))
+                    .collect(Collectors.toMap(s -> s[0], s -> StringUtils.unwrap(StringUtils.unwrap(s[1], "'"), "\"")));
+            line = line.replaceAll(regex, StringUtils.trimToEmpty(vals.get(language)));
+        } else {
+            line = line.replaceAll(regex, "");
+        }
+
+        return line;
+    }
+
     public String generateLine(String language) {
         if (isLineVisible(language)) {
             String result = line;
-            result = renderWidgets(result, language);
+            result = renderLanguageProperties(result, language);
             result = renderProperties(result);
+            result = renderWidgets(result, language);
             result = removeNrgDataFromText(result);
             return result;
         } else {

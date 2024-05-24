@@ -5,10 +5,8 @@ import com.nanolaba.nrg.widgets.WidgetTag;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
-import java.util.Arrays;
 import java.util.function.BiFunction;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import static com.nanolaba.nrg.core.NRGConstants.PROPERTY_LANGUAGES;
 import static org.junit.jupiter.api.Assertions.*;
@@ -20,7 +18,7 @@ class TemplateLineTest {
     }
 
     private TemplateLine line(String line, String... languages) {
-        String configBody = Arrays.stream(languages).map(s -> "<!--@" + PROPERTY_LANGUAGES + "=" + s + "-->").collect(Collectors.joining()) + line;
+        String configBody = "<!--@" + PROPERTY_LANGUAGES + "=" + String.join(", ", languages) + "-->" + line;
         return new TemplateLine(new GeneratorConfig(new File("README.src.md"), configBody), line);
     }
 
@@ -75,7 +73,7 @@ class TemplateLineTest {
 
     @Test
     public void testGetWidgetTag() {
-        Function<String, WidgetTag> action = s -> line(s).getWidgetTag();
+        Function<String, WidgetTag> action = s -> line(s).getWidgetTag(s);
 
         assertNull(action.apply(""));
         assertNull(action.apply("123"));
@@ -118,6 +116,8 @@ class TemplateLineTest {
         assertEquals("test widget body AAA", action.apply("${ nrg.widget:test(AAA) }", "ru"));
         assertEquals("test widget body AAA=123", action.apply("${ nrg.widget:test(AAA=123) }", "ru"));
         assertEquals("test widget body AAA=123, BBB=234", action.apply("${ nrg.widget:test(AAA=123, BBB=234) }", "ru"));
+
+        assertEquals("test widget body 123", action.apply("${ nrg.widget:test(${ru:'123'}) }", "ru"));
     }
 
     @Test
@@ -154,5 +154,14 @@ class TemplateLineTest {
         assertEquals("BB", line("<!--@ AA=BB -->${AA}").generateLine("ru"));
         assertEquals("<!--comment-->BB", line("<!--comment--><!--@ AA=BB -->${AA}").generateLine("ru"));
         assertEquals("${A_A}", line("<!--@ A.A=BB -->${A_A}").generateLine("ru"));
+    }
+
+    @Test
+    public void testRenderLanguageProperties() {
+        assertEquals("${en:'Table of contents'}", line("${en:'Table of contents'}", "ru").generateLine("ru"));
+        assertEquals("", line("${en:'Table of contents'}", "en", "ru").generateLine("ru"));
+        assertEquals("Содержание", line("${ru:'Содержание'}", "en", "ru").generateLine("ru"));
+        assertEquals("Содержание", line("${en:'Table of contents', ru:'Содержание'}", "en", "ru").generateLine("ru"));
+        assertEquals("Table of contents", line("${en:'Table of contents', ru:'Содержание'}", "en", "ru").generateLine("en"));
     }
 }
