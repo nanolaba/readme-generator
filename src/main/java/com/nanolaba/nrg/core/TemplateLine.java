@@ -111,7 +111,7 @@ public class TemplateLine {
                     .map(String::trim)
                     .filter(s -> s.contains(":"))
                     .map(s -> s.split(":"))
-                    .collect(Collectors.toMap(s -> s[0], s -> StringUtils.unwrap(StringUtils.unwrap(s[1], "'"), "\"")));
+                    .collect(Collectors.toMap(s -> s[0], s -> NRGUtil.unwrapParameterValue(s[1])));
             line = line.replaceAll(regex, StringUtils.trimToEmpty(vals.get(language)));
         } else {
             line = line.replaceAll(regex, "");
@@ -119,6 +119,7 @@ public class TemplateLine {
 
         return line;
     }
+
 
     public String generateLine(String language) {
         if (isLineVisible(language)) {
