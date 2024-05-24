@@ -17,6 +17,7 @@ This document is an example of the result of this program.
 
 The latest stable version of the program is **1.0**.
 
+## Table of contents
 1. [Overview](#overview)
 2. [Usage](#usage)
     1. [Using the Command Line Interface](#using-the-command-line-interface)
@@ -25,6 +26,8 @@ The latest stable version of the program is **1.0**.
     1. [Multilanguage support](#multilanguage-support)
     2. [Properties](#properties)
     3. [Widgets](#widgets)
+        1. [languages](#languages)
+        2. [tableOfContents](#tableofcontents)
 
 ## Usage
 
@@ -39,3 +42,7 @@ The latest stable version of the program is **1.0**.
 ### Properties
 
 ### Widgets
+
+#### languages
+
+#### tableOfContents

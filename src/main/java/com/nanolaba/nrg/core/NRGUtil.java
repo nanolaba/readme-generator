@@ -21,7 +21,7 @@ public class NRGUtil {
     public static Map<String, String> parseParametersLine(String parameters) {
         Map<String, String> map = new HashMap<>();
         if (StringUtils.isNotEmpty(parameters)) {
-            Pattern pattern = Pattern.compile("(\\S+) *= *\"([^\"]+)\"");
+            Pattern pattern = Pattern.compile("(\\S+) *= *['\"]([^\"]+)['\"]");
             Matcher matcher = pattern.matcher(parameters);
             while (matcher.find()) {
                 map.put(matcher.group(1), matcher.group(2));

@@ -25,12 +25,12 @@ The latest stable version of the program is **${nrg.stableVersion}**.<!--en-->
 
 С помощью программы ${nrg.name} можно генерировать отдельные файлы для разных языков в формате <!--ru-->
 [Markdown]( https://en.wikipedia.org/wiki/Markdown) на основе единого файла-шаблона.<!--ru-->
-В шаблоне возможно использование переменных, а также специальных компонентов - виджетов. <!--ru-->
+В шаблоне можно использовать переменные, а также специальные компоненты - виджеты. <!--ru-->
 Данный документ является примером результата работы этой программы.<!--ru-->
 <!--ru-->
 Последняя стабильная версия программы - **${nrg.stableVersion}**.<!--ru-->
 
-${nrg.widget:tableOfContents}
+${nrg.widget:tableOfContents(title = "${en:'Table of contents', ru:'Содержание'}", ordered = "true")}
 
 ## Usage
 
@@ -45,3 +45,7 @@ ${nrg.widget:tableOfContents}
 ### Properties
 
 ### Widgets
+
+#### languages
+
+#### tableOfContents
