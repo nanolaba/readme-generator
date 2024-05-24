@@ -22,14 +22,14 @@ public class TableOfContentsWidget implements NRGWidget {
     @Override
     public String getBody(WidgetTag widgetTag, GeneratorConfig config, String language) {
 
-        TOCConfig tocConfig = getConfig(widgetTag.getParameters());
+        Config tocConfig = getConfig(widgetTag.getParameters());
 
         String toc = createTOC(widgetTag, config, language, tocConfig);
 
         return (StringUtils.isNotEmpty(tocConfig.getTitle()) ? "## " + tocConfig.getTitle() + System.lineSeparator() : "") + toc;
     }
 
-    protected String createTOC(WidgetTag widgetTag, GeneratorConfig config, String language, TOCConfig tocConfig) {
+    protected String createTOC(WidgetTag widgetTag, GeneratorConfig config, String language, Config tocConfig) {
 
         List<Header> allHeaders = new ArrayList<>();
 
@@ -43,8 +43,8 @@ public class TableOfContentsWidget implements NRGWidget {
                 .collect(Collectors.joining());
     }
 
-    private TOCConfig getConfig(String parameters) {
-        TOCConfig config = new TOCConfig();
+    private Config getConfig(String parameters) {
+        Config config = new Config();
         Map<String, String> map = NRGUtil.parseParametersLine(parameters);
 
         if (map.containsKey("title")) {
@@ -63,7 +63,7 @@ public class TableOfContentsWidget implements NRGWidget {
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public static class TOCConfig {
+    public static class Config {
         private String title;
         private boolean ordered;
 
@@ -71,7 +71,7 @@ public class TableOfContentsWidget implements NRGWidget {
             return title;
         }
 
-        public TOCConfig setTitle(String title) {
+        public Config setTitle(String title) {
             this.title = title;
             return this;
         }
@@ -80,7 +80,7 @@ public class TableOfContentsWidget implements NRGWidget {
             return ordered;
         }
 
-        public TOCConfig setOrdered(boolean ordered) {
+        public Config setOrdered(boolean ordered) {
             this.ordered = ordered;
             return this;
         }
@@ -96,9 +96,9 @@ public class TableOfContentsWidget implements NRGWidget {
         private int level;
         private int number;
         private final List<Header> headers;
-        private final TOCConfig config;
+        private final Config config;
 
-        public Header(String line, TOCConfig config, List<Header> headers) {
+        public Header(String line, Config config, List<Header> headers) {
             this.headers = headers;
             this.config = config;
 

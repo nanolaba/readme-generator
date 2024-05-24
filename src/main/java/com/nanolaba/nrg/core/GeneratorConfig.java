@@ -1,6 +1,7 @@
 package com.nanolaba.nrg.core;
 
 import com.nanolaba.logging.LOG;
+import com.nanolaba.nrg.widgets.DateWidget;
 import com.nanolaba.nrg.widgets.LanguagesWidget;
 import com.nanolaba.nrg.widgets.NRGWidget;
 import com.nanolaba.nrg.widgets.TableOfContentsWidget;
@@ -25,8 +26,8 @@ public class GeneratorConfig {
 
     private final File sourceFile;
     private final String sourceFileBody;
-    private List<String> languages = new ArrayList<>();
-    private String defaultLanguage;
+    private List<String> languages = List.of("en");
+    private String defaultLanguage = "en";
     private final Properties properties = new Properties();
 
 
@@ -72,6 +73,7 @@ public class GeneratorConfig {
     protected void initWidgets() {
         widgets.add(new LanguagesWidget());
         widgets.add(new TableOfContentsWidget());
+        widgets.add(new DateWidget());
     }
 
     private void printConfiguration() {

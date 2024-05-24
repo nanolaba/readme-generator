@@ -40,12 +40,21 @@ ${nrg.widget:tableOfContents(title = "${en:'Table of contents', ru:'Содерж
 
 ## Template syntax
 
+### Properties
+
 ### Multilanguage support
 
-### Properties
+### Language properties
 
 ### Widgets
 
 #### languages
 
 #### tableOfContents
+
+#### date
+
+### Feedback
+
+<hr/>
+${en:'Last updated:', ru:'Дата последнего обновления:'} ${nrg.widget:date(pattern= 'dd.MM.yyyy')}
