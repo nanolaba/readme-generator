@@ -16,7 +16,7 @@ import static org.apache.commons.lang3.StringUtils.*;
 
 public class TemplateLine {
 
-    public static final Pattern WIDGET_TAG_PATTERN = Pattern.compile(".*\\$\\{ *nrg\\.widget:(\\w*)(\\((.*)\\))? *}.*");
+    public static final Pattern WIDGET_TAG_PATTERN = Pattern.compile(".*\\$\\{ *widget:(\\w*)(\\((.*)\\))? *}.*");
     public static final Properties EMPTY_PROPERTIES = new Properties(0);
 
     private final GeneratorConfig config;
@@ -44,7 +44,7 @@ public class TemplateLine {
         return (!hasLanguageMark || hasCurrentLanguageMark) && !hasOnlyPropertyDefinition;
     }
 
-    public Properties getProperties() {
+    public Properties getProperties(String language) {
         String[] strings = substringsBetween(line, "<!--", "-->");
         if (strings != null) {
             Properties properties = new Properties();
@@ -55,6 +55,7 @@ public class TemplateLine {
                     if (s.contains("=")) {
                         String key = trimToEmpty(substringBefore(s, "="));
                         String value = trimToEmpty(substringAfter(s, "="));
+                        value = renderLanguageProperties(value, language);
                         NRGUtil.mergeProperty(key, value, properties);
                     } else {
                         String key = trimToEmpty(s);
@@ -67,8 +68,8 @@ public class TemplateLine {
         return EMPTY_PROPERTIES;
     }
 
-    public String getProperty(String property) {
-        return getProperties().getProperty(property);
+    public String getProperty(String property, String language) {
+        return getProperties(language).getProperty(property);
     }
 
     protected String renderWidgets(String line, String language) {
@@ -77,7 +78,7 @@ public class TemplateLine {
             NRGWidget widget = config.getWidget(widgetTag.getName());
             if (widget != null) {
                 String body = widget.getBody(widgetTag, config, language);
-                return line.replaceAll("\\$\\{ *nrg\\.widget:" + Pattern.quote(widgetTag.getName()) + "[^{]*}", body);
+                return line.replaceAll("\\$\\{ *widget:" + Pattern.quote(widgetTag.getName()) + "[^{]*}", body);
             } else {
                 LOG.warn("Unknown widget name: {}", widgetTag.getName());
             }
@@ -110,7 +111,7 @@ public class TemplateLine {
             Map<String, String> vals = Arrays.stream(params.split(","))
                     .map(String::trim)
                     .filter(s -> s.contains(":"))
-                    .map(s -> s.split(":"))
+                    .map(s -> StringUtils.split(s, ":", 2))
                     .collect(Collectors.toMap(s -> s[0], s -> NRGUtil.unwrapParameterValue(s[1])));
             line = line.replaceAll(regex, StringUtils.trimToEmpty(vals.get(language)));
         } else {

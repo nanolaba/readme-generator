@@ -18,7 +18,6 @@
 Последняя стабильная версия программы - **1.0**.
 
 ## Содержание
-
 1. [Usage](#usage)
 	1. [Using the Command Line Interface](#using-the-command-line-interface)
 	2. [Use as a java-library](#use-as-a-java-library)
@@ -31,6 +30,7 @@
 		2. [tableOfContents](#tableofcontents)
 		3. [date](#date)
 	5. [Feedback](#feedback)
+
 
 ## Usage
 
@@ -57,4 +57,4 @@
 ### Feedback
 
 <hr/>
-'Дата последнего обновления 24.05.2024 08:38:00
+Дата последнего обновления: 24.05.2024
