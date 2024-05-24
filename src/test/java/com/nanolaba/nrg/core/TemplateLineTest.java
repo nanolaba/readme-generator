@@ -19,7 +19,7 @@ class TemplateLineTest {
 
     private TemplateLine line(String line, String... languages) {
         String configBody = "<!--@" + PROPERTY_LANGUAGES + "=" + String.join(", ", languages) + "-->" + line;
-        return new TemplateLine(new GeneratorConfig(new File("README.src.md"), configBody), line);
+        return new TemplateLine(new GeneratorConfig(new File("README.src.md"), configBody), line, 0);
     }
 
     @Test
