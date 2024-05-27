@@ -6,10 +6,11 @@ import org.junit.jupiter.api.Test;
 
 import java.io.File;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 class TableOfContentsWidgetTest {
+
+    public static final String RN = System.lineSeparator();
 
     @Test
     public void testTOCWidget() {
@@ -36,12 +37,12 @@ class TableOfContentsWidgetTest {
         assertFalse(bodyEn.contains("1. [MainHeader]"));
         assertTrue(bodyEn.contains(
 
-                "- [AAA](#aaa)" + System.lineSeparator() +
-                "\t- [aaa](#aaa)" + System.lineSeparator() +
-                "\t- [bbb](#bbb)" + System.lineSeparator() +
-                "- [BBB](#bbb)" + System.lineSeparator() +
-                "\t- [ccc](#ccc)" + System.lineSeparator() +
-                "\t- [ddd](#ddd)" + System.lineSeparator() +
+                "- [AAA](#aaa)" + RN +
+                "\t- [aaa](#aaa)" + RN +
+                "\t- [bbb](#bbb)" + RN +
+                "- [BBB](#bbb)" + RN +
+                "\t- [ccc](#ccc)" + RN +
+                "\t- [ddd](#ddd)" + RN +
                 "- [CCC](#ccc)"));
     }
 
@@ -72,13 +73,13 @@ class TableOfContentsWidgetTest {
         assertFalse(bodyEn.contains("[MainHeader]"));
         assertFalse(bodyEn.contains("[Header before TOC]"));
         assertTrue(bodyEn.contains(
-                "## TOC" + System.lineSeparator() +
-                "1. [AAA](#aaa)" + System.lineSeparator() +
-                "\t1. [aaa](#aaa)" + System.lineSeparator() +
-                "\t2. [bbb](#bbb)" + System.lineSeparator() +
-                "2. [BBB](#bbb)" + System.lineSeparator() +
-                "\t1. [ccc](#ccc)" + System.lineSeparator() +
-                "\t2. [ddd](#ddd)" + System.lineSeparator() +
+                "## TOC" + RN +
+                "1. [AAA](#aaa)" + RN +
+                "\t1. [aaa](#aaa)" + RN +
+                "\t2. [bbb](#bbb)" + RN +
+                "2. [BBB](#bbb)" + RN +
+                "\t1. [ccc](#ccc)" + RN +
+                "\t2. [ddd](#ddd)" + RN +
                 "3. [CCC](#ccc)"));
     }
 
@@ -87,9 +88,17 @@ class TableOfContentsWidgetTest {
         Generator generator = new Generator(new File("README.src.md"),
                 """
                         <!--@nrg.languages=en,ru,fr-->
+                        someTextBeforeTOC
+                        #headerBeforeTOC
+                        ##headerBeforeTOC2
+                        ###headerBeforeTOC3
                         ${widget:tableOfContents(title = "${en:'Table of contents', ru:'Содержание'}", ordered = "true")}
+                        someTextBeforeHeader
                         # MainHeader
                         ## AAA<!--en-->
+                        someText
+                        someText1<!--en-->
+                        someText2<!--ru-->
                         ## ЯЯЯ<!--ru-->
                         ### aaa
                         ### ююю<!--ru-->
@@ -98,22 +107,77 @@ class TableOfContentsWidgetTest {
                         ### ccc
                         ### ddd
                         ## CCC
+                        ### ccc
+                        #### cccc
                         """
-        );
+        ) {
+            @Override
+            protected String generateHeadComment(String language) {
+                return "";
+            }
+        };
 
         String bodyEn = generator.getResult("en").getContent().toString();
         LOG.info(bodyEn);
 
-        assertFalse(bodyEn.contains("1. [MainHeader]"));
-        assertFalse(bodyEn.contains("Содержание"));
-        assertTrue(bodyEn.contains(
-                "## Table of contents" + System.lineSeparator() +
-                "1. [AAA](#aaa)" + System.lineSeparator() +
-                "\t1. [aaa](#aaa)" + System.lineSeparator() +
-                "\t2. [bbb](#bbb)" + System.lineSeparator() +
-                "2. [BBB](#bbb)" + System.lineSeparator() +
-                "\t1. [ccc](#ccc)" + System.lineSeparator() +
-                "\t2. [ddd](#ddd)" + System.lineSeparator() +
-                "3. [CCC](#ccc)"));
+        assertEquals(bodyEn,
+                "someTextBeforeTOC" + RN +
+                "#headerBeforeTOC" + RN +
+                "##headerBeforeTOC2" + RN +
+                "###headerBeforeTOC3" + RN +
+                "## Table of contents" + RN +
+                "1. [AAA](#aaa)" + RN +
+                "	1. [aaa](#aaa)" + RN +
+                "	2. [bbb](#bbb)" + RN +
+                "2. [BBB](#bbb)" + RN +
+                "	1. [ccc](#ccc)" + RN +
+                "	2. [ddd](#ddd)" + RN +
+                "3. [CCC](#ccc)" + RN +
+                "	1. [ccc](#ccc)" + RN +
+                "		1. [cccc](#cccc)" + RN +
+                "" + RN +
+                "someTextBeforeHeader" + RN +
+                "# MainHeader" + RN +
+                "## AAA" + RN +
+                "someText" + RN +
+                "someText1" + RN +
+                "### aaa" + RN +
+                "### bbb" + RN +
+                "## BBB" + RN +
+                "### ccc" + RN +
+                "### ddd" + RN +
+                "## CCC" + RN +
+                "### ccc" + RN +
+                "#### cccc" + RN
+        );
+    }
+
+    @Test
+    public void testTOCWidget3() {
+        Generator generator = new Generator(new File("README.src.md"),
+                """
+                        <!--@nrg.languages=en,ru,fr-->
+                        ${widget:tableOfContents(title = "${en:'Table of contents', ru:'Содержание'}", ordered = "true")}
+                        ## A<!--en-->
+                        ## B<!--en-->
+                        """
+        ) {
+            @Override
+            protected String generateHeadComment(String language) {
+                return "";
+            }
+        };
+
+        String bodyEn = generator.getResult("en").getContent().toString();
+        LOG.info(bodyEn);
+
+        assertEquals(bodyEn,
+                "## Table of contents" + RN +
+                "1. [A](#a)" + RN +
+                "2. [B](#b)" + RN +
+                "" + RN +
+                "## A" + RN +
+                "## B" + RN
+        );
     }
 }

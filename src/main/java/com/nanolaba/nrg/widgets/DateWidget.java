@@ -34,7 +34,7 @@ public class DateWidget implements NRGWidget {
     }
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public static class Config {
+    protected static class Config {
 
         private String pattern = "dd.MM.yyyy HH:mm:ss";
 
@@ -42,9 +42,8 @@ public class DateWidget implements NRGWidget {
             return pattern;
         }
 
-        public Config setPattern(String pattern) {
+        public void setPattern(String pattern) {
             this.pattern = pattern;
-            return this;
         }
     }
 }

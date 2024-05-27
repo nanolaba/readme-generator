@@ -35,7 +35,6 @@ public class TableOfContentsWidget implements NRGWidget {
 
         return config.getSourceFileBody().lines()
                 .skip(widgetTag.getLine().getLineNumber())
-                .filter(this::isHeader)
                 .filter(s -> new TemplateLine(config, s, 0).isLineVisible(language))
                 .map(s -> new Header(s, tocConfig, allHeaders))
                 .filter(h -> h.level > 0)
@@ -57,13 +56,9 @@ public class TableOfContentsWidget implements NRGWidget {
         return config;
     }
 
-    private boolean isHeader(String line) {
-        return StringUtils.trimToEmpty(line).startsWith("#");
-    }
-
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public static class Config {
+    protected static class Config {
         private String title;
         private boolean ordered;
 
@@ -71,18 +66,16 @@ public class TableOfContentsWidget implements NRGWidget {
             return title;
         }
 
-        public Config setTitle(String title) {
+        public void setTitle(String title) {
             this.title = title;
-            return this;
         }
 
         public boolean isOrdered() {
             return ordered;
         }
 
-        public Config setOrdered(boolean ordered) {
+        public void setOrdered(boolean ordered) {
             this.ordered = ordered;
-            return this;
         }
     }
 
@@ -133,8 +126,7 @@ public class TableOfContentsWidget implements NRGWidget {
                 Header header = headers.get(i);
                 if (header.level < level) {
                     return null;
-                }
-                if (header.level == level) {
+                } else if (header.level == level) {
                     return header;
                 }
             }
