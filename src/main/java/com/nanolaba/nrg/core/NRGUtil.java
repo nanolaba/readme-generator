@@ -11,6 +11,8 @@ import java.util.regex.Pattern;
 
 public class NRGUtil {
 
+    private NRGUtil() {/**/}
+
     public static void mergeProperty(Object key, Object value, Properties properties) {
         if (properties.containsKey(key)) {
             LOG.warn("A duplicate property '{}' declaration was detected", key);
@@ -32,6 +34,6 @@ public class NRGUtil {
 
     public static String unwrapParameterValue(String wrapped) {
         wrapped = StringUtils.trimToEmpty(wrapped);
-        return wrapped.length() > 1 ? StringUtils.unwrap(wrapped, wrapped.charAt(0)) : "";
+        return !wrapped.isEmpty() ? StringUtils.unwrap(wrapped, wrapped.charAt(0)) : "";
     }
 }
