@@ -1,5 +1,6 @@
 package com.nanolaba.nrg.core;
 
+import com.nanolaba.nrg.DefaultNRGTest;
 import com.nanolaba.nrg.widgets.NRGWidget;
 import com.nanolaba.nrg.widgets.WidgetTag;
 import org.junit.jupiter.api.Test;
@@ -12,7 +13,7 @@ import java.util.function.Function;
 import static com.nanolaba.nrg.core.NRGConstants.PROPERTY_LANGUAGES;
 import static org.junit.jupiter.api.Assertions.*;
 
-class TemplateLineTest {
+class TemplateLineTest extends DefaultNRGTest {
 
     private TemplateLine line(String line) {
         return line(line, "ru");
@@ -21,6 +22,12 @@ class TemplateLineTest {
     private TemplateLine line(String line, String... languages) {
         String configBody = "<!--@" + PROPERTY_LANGUAGES + "=" + String.join(", ", languages) + "-->" + line;
         return new TemplateLine(new GeneratorConfig(new File("README.src.md"), configBody), line, 0);
+    }
+
+    @Test
+    public void testLineCreation() {
+        TemplateLine line = line("test");
+        assertEquals("test", line.getLine());
     }
 
     @Test
@@ -96,7 +103,7 @@ class TemplateLineTest {
     @Test
     public void testRenderWidget() {
         BiFunction<String, String, String> action = (s, lang) -> {
-            TemplateLine l = line(s);
+            TemplateLine l = line(s, "ru", "en");
             l.getConfig().getWidgets().add(new NRGWidget() {
                 @Override
                 public String getName() {
@@ -130,6 +137,14 @@ class TemplateLineTest {
         assertEquals("test widget body \"'123'\"", action.apply("${ widget:test(${ru:'\"'123'\"', en:\"'aa\"}) }", "ru"));
 
         assertEquals("test widget body \"'123:'\"", action.apply("${ widget:test(${ru:'\"'123:'\"', en:\"'aa\"}) }", "ru"));
+        assertEquals("test widget body \"'123:'\"", action.apply("${ widget:test(${ru:'\"'123:'\"', en:\"'aa\"}) }<!--ru-->", "ru"));
+
+        assertNull(action.apply("${ widget:test(${ru:'\"'123:'\"', en:\"'aa\"}) }<!--en-->", "ru"));
+
+
+        assertEquals("${widget:unknownWidget}", action.apply("${widget:unknownWidget}", "ru"));
+
+        assertTrue(getOutAndClear().endsWith("Unknown widget name: unknownWidget" + RN));
     }
 
     @Test
@@ -176,6 +191,7 @@ class TemplateLineTest {
     public void testRenderLanguageProperties() {
         assertEquals("${en:'Table of contents'}", line("${en:'Table of contents'}", "ru").generateLine("ru"));
         assertEquals("", line("${en:'Table of contents'}", "en", "ru").generateLine("ru"));
+        assertEquals("", line("${en:'Table of contents', ru:''}", "en", "ru").generateLine("ru"));
         assertEquals("", line("${en:\"Table of contents\"}", "en", "ru").generateLine("ru"));
         assertEquals("Содержание", line("${ru:'Содержание'}", "en", "ru").generateLine("ru"));
         assertEquals("Сод:ержание", line("${ru:'Сод:ержание'}", "en", "ru").generateLine("ru"));

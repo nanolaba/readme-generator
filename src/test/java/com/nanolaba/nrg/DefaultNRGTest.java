@@ -6,7 +6,9 @@ import org.junit.jupiter.api.BeforeEach;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 
-public abstract class ConsoleOutputSupportTest {
+public abstract class DefaultNRGTest {
+
+    public static final String RN = System.lineSeparator();
 
     protected final ByteArrayOutputStream outContent = new ByteArrayOutputStream();
     protected final ByteArrayOutputStream errContent = new ByteArrayOutputStream();

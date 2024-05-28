@@ -1,5 +1,6 @@
 package com.nanolaba.nrg.core;
 
+import com.nanolaba.nrg.DefaultNRGTest;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
@@ -10,7 +11,7 @@ import static com.nanolaba.nrg.core.NRGConstants.PROPERTY_LANGUAGES;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-class GeneratorTest {
+class GeneratorTest extends DefaultNRGTest {
 
     @Test
     public void testConfigLanguages1() {
@@ -48,7 +49,7 @@ class GeneratorTest {
     @Test
     public void testConfigLanguagesWithDefaultLanguage1() {
         GeneratorConfig config = new Generator(new File("README.src.md"),
-                "<!-- @" + PROPERTY_LANGUAGES + "=xx-->" + System.lineSeparator() +
+                "<!-- @" + PROPERTY_LANGUAGES + "=xx-->" + RN +
                 "<!--@" + PROPERTY_DEFAULT_LANGUAGE + "=xx-->").getConfig();
         List<String> langs = config.getLanguages();
         assertEquals(1, langs.size());
@@ -86,7 +87,7 @@ class GeneratorTest {
     public void testIncorrectDefaultLanguage() {
         assertThrows(IllegalStateException.class,
                 () -> new Generator(new File("README.src.md"),
-                        "<!-- @" + PROPERTY_LANGUAGES + "=xx-->" + System.lineSeparator() +
+                        "<!-- @" + PROPERTY_LANGUAGES + "=xx-->" + RN +
                         "<!--@" + PROPERTY_DEFAULT_LANGUAGE + "=zz-->"));
     }
 

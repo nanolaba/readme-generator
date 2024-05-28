@@ -6,7 +6,7 @@ import java.io.IOException;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class CmdMessagesTest extends ConsoleOutputSupportTest {
+public class CmdMessagesTest extends DefaultNRGTest {
 
     @Test
     public void printVersionTest() {
