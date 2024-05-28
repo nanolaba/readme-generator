@@ -1,5 +1,6 @@
 package com.nanolaba.nrg;
 
+import org.apache.commons.io.output.TeeOutputStream;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 
@@ -17,8 +18,8 @@ public abstract class DefaultNRGTest {
 
     @BeforeEach
     public void setUpStreams() {
-        System.setOut(new PrintStream(outContent));
-        System.setErr(new PrintStream(errContent));
+        System.setOut(new PrintStream(new TeeOutputStream(originalOut, outContent)));
+        System.setErr(new PrintStream(new TeeOutputStream(originalErr, errContent)));
     }
 
     @AfterEach
