@@ -1,5 +1,6 @@
 package com.nanolaba.nrg.core;
 
+import com.nanolaba.nrg.DefaultNRGTest;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
@@ -7,7 +8,7 @@ import java.io.File;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
-class GeneratorConfigTest {
+class GeneratorConfigTest extends DefaultNRGTest {
 
     @Test
     public void testGetWidget() {

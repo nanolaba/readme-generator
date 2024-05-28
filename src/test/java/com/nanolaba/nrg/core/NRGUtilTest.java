@@ -1,5 +1,6 @@
 package com.nanolaba.nrg.core;
 
+import com.nanolaba.nrg.DefaultNRGTest;
 import org.junit.jupiter.api.Test;
 
 import java.util.Map;
@@ -7,7 +8,7 @@ import java.util.Map;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class NRGUtilTest {
+class NRGUtilTest extends DefaultNRGTest {
 
     @Test
     public void testParseParametersLine() {

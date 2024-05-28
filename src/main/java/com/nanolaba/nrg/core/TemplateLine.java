@@ -110,7 +110,6 @@ public class TemplateLine {
             String params = matcher.group(1);
             Map<String, String> vals = Arrays.stream(params.split(","))
                     .map(String::trim)
-                    .filter(s -> s.contains(":"))
                     .map(s -> StringUtils.split(s, ":", 2))
                     .collect(Collectors.toMap(s -> s[0], s -> NRGUtil.unwrapParameterValue(s[1])));
             line = line.replaceAll(regex, StringUtils.trimToEmpty(vals.get(language)));

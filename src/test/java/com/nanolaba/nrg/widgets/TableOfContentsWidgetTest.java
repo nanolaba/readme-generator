@@ -1,6 +1,7 @@
 package com.nanolaba.nrg.widgets;
 
 import com.nanolaba.logging.LOG;
+import com.nanolaba.nrg.DefaultNRGTest;
 import com.nanolaba.nrg.core.Generator;
 import org.junit.jupiter.api.Test;
 
@@ -8,9 +9,8 @@ import java.io.File;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class TableOfContentsWidgetTest {
+class TableOfContentsWidgetTest extends DefaultNRGTest {
 
-    public static final String RN = System.lineSeparator();
 
     @Test
     public void testTOCWidget() {

@@ -1,6 +1,7 @@
 package com.nanolaba.nrg.widgets;
 
 import com.nanolaba.logging.LOG;
+import com.nanolaba.nrg.DefaultNRGTest;
 import com.nanolaba.nrg.core.Generator;
 import org.junit.jupiter.api.Test;
 
@@ -9,7 +10,7 @@ import java.io.File;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class LanguagesWidgetTest {
+class LanguagesWidgetTest extends DefaultNRGTest {
 
     @Test
     public void testLanguagesWidget() {
