@@ -25,8 +25,7 @@ public class Generator {
     }
 
     private GenerationResult generateContent(String language) {
-        GenerationResult result = new GenerationResult();
-        result.setLanguage(language);
+        GenerationResult result = new GenerationResult(language);
         result.getContent().append(generateHeadComment(language));
 
         config.getSourceLinesStream()
