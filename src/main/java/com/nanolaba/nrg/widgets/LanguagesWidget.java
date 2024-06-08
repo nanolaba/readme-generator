@@ -3,7 +3,7 @@ package com.nanolaba.nrg.widgets;
 import com.nanolaba.nrg.NRG;
 import com.nanolaba.nrg.core.GeneratorConfig;
 
-public class LanguagesWidget implements NRGWidget {
+public class LanguagesWidget extends DefaultWidget {
 
     @Override
     public String getName() {
