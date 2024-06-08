@@ -13,48 +13,80 @@
 
 С помощью программы **Nanolaba Readme Generator (NRG)** можно генерировать отдельные файлы для разных языков в формате
 [Markdown]( https://en.wikipedia.org/wiki/Markdown) на основе единого файла-шаблона.
-В шаблоне можно использовать переменные, а также специальные компоненты - виджеты.
+В шаблоне можно использовать переменные, а также специальные компоненты (виджеты).
 Данный документ является примером результата работы этой программы.
 
 Последняя стабильная версия - **1.0**.
 
 ## Содержание
-1. [Usage](#usage)
-	1. [Using the Command Line Interface](#using-the-command-line-interface)
-	2. [Use as a java-library](#use-as-a-java-library)
-2. [Template syntax](#template-syntax)
+
+1. [Способы запуска программы](#способы-запуска-программы)
+    1. [Запуск из командной строки](#запуск-из-командной-строки)
+    2. [Использование в качестве java-библиотеки](#использование-в-качестве-java-библиотеки)
+2. [Создание шаблона](#создание-шаблона)
 	1. [Properties](#properties)
 	2. [Multilanguage support](#multilanguage-support)
 	3. [Language properties](#language-properties)
 	4. [Widgets](#widgets)
-		1. [languages](#languages)
-		2. [tableOfContents](#tableofcontents)
-		3. [date](#date)
-	5. [Feedback](#feedback)
+        1. [LanguagesWidget (languages)](#languageswidget-languages)
+        1. [tableOfContents](#tableofcontents)
+        2. [date](#date)
+    1. [Feedback](#feedback)
 
+## Способы запуска программы
 
-## Usage
+TODO
 
-### Using the Command Line Interface
+### Запуск из командной строки
 
-### Use as a java-library
+TODO
 
-## Template syntax
+### Использование в качестве java-библиотеки
+
+TODO
+
+## Создание шаблона
 
 ### Properties
 
+TODO
+
 ### Multilanguage support
+
+TODO
 
 ### Language properties
 
+TODO
+
 ### Widgets
 
-#### languages
+#### LanguagesWidget (languages)
+
+Этот компонент позволяет генерировать ссылки на другие версии документа (написанные на других языках).
+
+Пример использования:
+
+```markdown
+&#36;{widget:languages}
+```
+
+Результат:
+
+```markdown
+[ [en](README.md) | **ru** ]
+```
 
 #### tableOfContents
 
+TODO
+
 #### date
+
+TODO
 
 ### Feedback
 
-*Дата последнего обновления: 27.05.2024*
+TODO
+
+*Дата последнего обновления: 08.06.2024*
