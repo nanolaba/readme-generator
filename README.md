@@ -13,10 +13,11 @@ generating [Markdown files]( https://en.wikipedia.org/wiki/Markdown) based on a 
 
 Using the **Nanolaba Readme Generator (NRG)** program, you can generate separate files for different languages
 in [Markdown format]( https://en.wikipedia.org/wiki/Markdown) based on a single template file.
-The template allows the use of variables and special components - widgets.
+The template allows the use of variables and special components (widgets).
 This document is an example of the result of this program.
 
 The latest stable version of the program is **1.0**.
+
 
 ## Table of contents
 1. [Usage](#usage)
@@ -27,34 +28,66 @@ The latest stable version of the program is **1.0**.
 	2. [Multilanguage support](#multilanguage-support)
 	3. [Language properties](#language-properties)
 	4. [Widgets](#widgets)
-		1. [languages](#languages)
-		2. [tableOfContents](#tableofcontents)
-		3. [date](#date)
-	5. [Feedback](#feedback)
+		1. [LanguagesWidget (languages)](#languageswidget-languages)
+		1. [tableOfContents](#tableofcontents)
+		2. [date](#date)
+	1. [Feedback](#feedback)
 
 
 ## Usage
 
+TODO
+
 ### Using the Command Line Interface
 
+TODO
+
 ### Use as a java-library
+
+TODO
 
 ## Template syntax
 
 ### Properties
 
+TODO
+
 ### Multilanguage support
+
+TODO
 
 ### Language properties
 
+TODO
+
 ### Widgets
 
-#### languages
+#### LanguagesWidget (languages)
+
+This component allows you to generate links to other versions of a document (written in other languages).
+
+Usage example:
+
+```markdown
+&#36;{widget:languages}
+```
+
+Result:
+
+```markdown
+[ **en** | [ru](README.ru.md) ]
+```
 
 #### tableOfContents
 
+TODO
+
 #### date
+
+TODO
 
 ### Feedback
 
-*Last updated: 27.05.2024*
+TODO
+
+*Last updated: 08.06.2024*
