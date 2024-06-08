@@ -77,8 +77,12 @@ public class TemplateLine {
         if (widgetTag != null) {
             NRGWidget widget = config.getWidget(widgetTag.getName());
             if (widget != null) {
-                String body = widget.getBody(widgetTag, config, language);
-                return line.replaceAll("\\$\\{ *widget:" + Pattern.quote(widgetTag.getName()) + "[^{]*}", body);
+                try {
+                    String body = widget.getBody(widgetTag, config, language);
+                    return line.replaceAll("\\$\\{ *widget:" + Pattern.quote(widgetTag.getName()) + "[^{]*}", body);
+                } catch (Throwable e) {
+                    LOG.error(e, "Can't render widget '" + widgetTag.getName() + "' at the line #" + lineNumber + " (" + this.line + ")");
+                }
             } else {
                 LOG.warn("Unknown widget name: {}", widgetTag.getName());
             }
@@ -121,11 +125,20 @@ public class TemplateLine {
     }
 
 
-    public String generateLine(String language) {
+    public String fillLineWithProperties(String language) {
         if (isLineVisible(language)) {
             String result = line;
             result = renderLanguageProperties(result, language);
             result = renderProperties(result);
+            return result;
+        } else {
+            return null;
+        }
+    }
+
+    public String generateLine(String language) {
+        if (isLineVisible(language)) {
+            String result = fillLineWithProperties(language);
             result = renderWidgets(result, language);
             result = removeNrgDataFromText(result);
             return result;

@@ -8,6 +8,7 @@ import org.apache.commons.lang3.StringUtils;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -24,9 +25,9 @@ public class TableOfContentsWidget implements NRGWidget {
 
         Config tocConfig = getConfig(widgetTag.getParameters());
 
-        String toc = createTOC(widgetTag, config, language, tocConfig);
+        String title = StringUtils.isNotEmpty(tocConfig.getTitle()) ? "## " + tocConfig.getTitle() + System.lineSeparator() : "";
 
-        return (StringUtils.isNotEmpty(tocConfig.getTitle()) ? "## " + tocConfig.getTitle() + System.lineSeparator() : "") + toc;
+        return title + createTOC(widgetTag, config, language, tocConfig);
     }
 
     protected String createTOC(WidgetTag widgetTag, GeneratorConfig config, String language, Config tocConfig) {
@@ -35,7 +36,8 @@ public class TableOfContentsWidget implements NRGWidget {
 
         return config.getSourceFileBody().lines()
                 .skip(widgetTag.getLine().getLineNumber())
-                .filter(s -> new TemplateLine(config, s, 0).isLineVisible(language))
+                .map(s -> new TemplateLine(config, s, 0).fillLineWithProperties(language))
+                .filter(Objects::nonNull)
                 .map(s -> new Header(s, tocConfig, allHeaders))
                 .filter(h -> h.level > 0)
                 .map(Object::toString)

@@ -3,6 +3,7 @@ package com.nanolaba.nrg.widgets;
 import com.nanolaba.logging.LOG;
 import com.nanolaba.nrg.DefaultNRGTest;
 import com.nanolaba.nrg.core.Generator;
+import com.nanolaba.nrg.core.NoHeadCommentGenerator;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
@@ -85,7 +86,7 @@ class TableOfContentsWidgetTest extends DefaultNRGTest {
 
     @Test
     public void testTOCWidget2() {
-        Generator generator = new Generator(new File("README.src.md"),
+        Generator generator = new NoHeadCommentGenerator(new File("README.src.md"),
                 """
                         <!--@nrg.languages=en,ru,fr-->
                         someTextBeforeTOC
@@ -110,12 +111,7 @@ class TableOfContentsWidgetTest extends DefaultNRGTest {
                         ### ccc
                         #### cccc
                         """
-        ) {
-            @Override
-            protected String generateHeadComment(String language) {
-                return "";
-            }
-        };
+        );
 
         String bodyEn = generator.getResult("en").getContent().toString();
         LOG.info(bodyEn);
@@ -154,19 +150,16 @@ class TableOfContentsWidgetTest extends DefaultNRGTest {
 
     @Test
     public void testTOCWidget3() {
-        Generator generator = new Generator(new File("README.src.md"),
+        Generator generator = new NoHeadCommentGenerator(new File("README.src.md"),
                 """
                         <!--@nrg.languages=en,ru,fr-->
                         ${widget:tableOfContents(title = "${en:'Table of contents', ru:'Содержание'}", ordered = "true")}
                         ## A<!--en-->
                         ## B<!--en-->
+                        ## Б<!--ru-->
+                        ## ${en:'ENG', ru:'РУС'}
                         """
-        ) {
-            @Override
-            protected String generateHeadComment(String language) {
-                return "";
-            }
-        };
+        );
 
         String bodyEn = generator.getResult("en").getContent().toString();
         LOG.info(bodyEn);
@@ -175,9 +168,11 @@ class TableOfContentsWidgetTest extends DefaultNRGTest {
                 "## Table of contents" + RN +
                 "1. [A](#a)" + RN +
                 "2. [B](#b)" + RN +
+                "3. [ENG](#eng)" + RN +
                 "" + RN +
                 "## A" + RN +
-                "## B" + RN
+                "## B" + RN +
+                "## ENG" + RN
         );
     }
 }
