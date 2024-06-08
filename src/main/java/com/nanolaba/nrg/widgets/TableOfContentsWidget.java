@@ -13,7 +13,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-public class TableOfContentsWidget implements NRGWidget {
+public class TableOfContentsWidget extends DefaultWidget {
 
     @Override
     public String getName() {
