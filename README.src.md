@@ -43,9 +43,13 @@ TODO
 
 TODO
 
-## ${en:'Template syntax', ru:'Создание шаблона'}
+## ${en:'Template syntax', ru:'Синтаксис шаблона'}
 
-### Properties
+### ${en:'Variables', ru:'Переменные'}
+
+TODO
+
+### ${en:'Properties', ru:'Свойства'}
 
 TODO
 
@@ -57,32 +61,79 @@ TODO
 
 TODO
 
-### Widgets
+### ${en:'Widgets', ru:'Виджеты'}
 
-#### LanguagesWidget (languages)
+#### ${en:'Widget', ru:'Виджет'} 'languages'
 
 This component allows you to generate links to other versions of a document (written in other languages).<!--en-->
 Этот компонент позволяет генерировать ссылки на другие версии документа (написанные на других языках).<!--ru-->
 
-${en:'Usage example', ru:'Пример использования'}:
+<table>
+<tr><th>${en:'Usage example', ru:'Пример использования'}</th><th>${en:'Result', ru:'Результат'}</th></tr>
+<tr><td>
 
 ```markdown
-&#36;{widget:languages}
+&#36;{widget:languages} 
 ```
 
-${en:'Result', ru:'Результат'}:
+</td><td>
 
 ```markdown
 ${widget:languages}
 ```
 
-#### tableOfContents
+</td></tr>
+</table>
+
+#### ${en:'Widget', ru:'Виджет'} 'tableOfContents'
 
 TODO
 
-#### date
+#### ${en:'Widget', ru:'Виджет'} 'date'
 
-TODO
+This component allows you to insert the current date into a document.<!--en-->
+Этот компонент позволяет вставить в документ текущую дату.<!--ru-->
+
+<table>
+<tr><th>${en:'Usage example', ru:'Пример использования'}</th><th>${en:'Result', ru:'Результат'}</th></tr>
+<tr><td>
+
+```markdown
+Last updated: &#36;{widget:date}
+```
+
+</td><td>
+
+```markdown
+Last updated: ${widget:date}
+```
+
+</td></tr>
+<tr><td>
+
+```markdown
+&#36;{widget:date(pattern = 'dd.MM.yyyy')}
+```
+
+</td><td>
+
+```markdown
+${widget:date(pattern= 'dd.MM.yyyy')}
+```
+
+</td></tr>
+</table>
+
+${en:'Widget parameters', ru:'Свойства виджета'}:
+
+| ${en:'Name', ru:'Наименование'} | ${en:'Description', ru:'Описание'}                                                                                              | ${en:'Default value', ru:'Значение по умолчанию'} |
+|---------------------------------|---------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------|
+| pattern                         | ${en:'Pattern according to which the date will be formatted', ru:'Шаблон, в соответствии с котором будет отформатирована дата'} | dd.MM.yyyy HH:mm:ss                               |
+
+You can read more about date pattern syntax in the<!--en-->
+[Java documentation](https://docs.oracle.com/javase/8/docs/api/java/text/SimpleDateFormat.html).<!--en-->
+Подробнее о синтаксисе шаблона даты можно прочитать в <!--ru-->
+[документации Java](https://docs.oracle.com/javase/8/docs/api/java/text/SimpleDateFormat.html).<!--ru-->
 
 ### Feedback
 
