@@ -5,9 +5,7 @@ import com.nanolaba.nrg.widgets.NRGWidget;
 import com.nanolaba.nrg.widgets.WidgetTag;
 import org.apache.commons.lang3.StringUtils;
 
-import java.util.Arrays;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -16,7 +14,7 @@ import static org.apache.commons.lang3.StringUtils.*;
 
 public class TemplateLine {
 
-    public static final Pattern WIDGET_TAG_PATTERN = Pattern.compile(".*\\$\\{ *widget:(\\w*)(\\((.*)\\))? *}.*");
+    public static final Pattern WIDGET_TAG_PATTERN = Pattern.compile("\\$\\{ *widget:(\\w*)(\\(([^}]*)\\))? *}");
     public static final Properties EMPTY_PROPERTIES = new Properties(0);
 
     private final GeneratorConfig config;
@@ -73,55 +71,64 @@ public class TemplateLine {
     }
 
     protected String renderWidgets(String line, String language) {
-        WidgetTag widgetTag = getWidgetTag(line);
-        if (widgetTag != null) {
-            NRGWidget widget = config.getWidget(widgetTag.getName());
+        StringBuilder result = new StringBuilder(line);
+        int shift = 0;
+        for (WidgetTag tag : getWidgetTags(line)) {
+            NRGWidget widget = config.getWidget(tag.getName());
             if (widget != null) {
                 try {
-                    String body = widget.getBody(widgetTag, config, language);
-                    return line.replaceAll("\\$\\{ *widget:" + Pattern.quote(widgetTag.getName()) + "[^{]*}", body);
+                    String body = widget.getBody(tag, config, language);
+                    result.replace(shift + tag.getStart(), shift + tag.getEnd(), body);
+                    shift += body.length() - (tag.getEnd() - tag.getStart());
                 } catch (Throwable e) {
-                    LOG.error(e, "Can't render widget '" + widgetTag.getName() + "' at the line #" + lineNumber + " (" + this.line + ")");
+                    LOG.error(e, "Can't render widget '" + tag.getName() + "' at the line #" + lineNumber + " (" + this.line + ")");
                 }
             } else {
-                LOG.warn("Unknown widget name: {}", widgetTag.getName());
+                LOG.warn("Unknown widget name: {}", tag.getName());
             }
         }
-        return line;
+        return result.toString();
     }
 
-    protected WidgetTag getWidgetTag(String line) {
+    protected List<WidgetTag> getWidgetTags(String line) {
+        ArrayList<WidgetTag> res = new ArrayList<>();
         Matcher m = WIDGET_TAG_PATTERN.matcher(line);
 
-        return m.find() ? new WidgetTag(this, m.group(1), m.group(3)) : null;
+        while (m.find()) {
+            res.add(new WidgetTag(this, m.group(1), m.group(3), m.start(), m.end()));
+        }
+
+        return res;
     }
 
     protected String renderProperties(String line) {
         for (Object key : config.getProperties().keySet()) {
             String keyString = key.toString();
-            line = line.replaceAll("\\$\\{ *" + Pattern.quote(keyString) + ".*}", config.getProperties().getProperty(keyString));
+            line = line.replaceAll("\\$\\{ *" + Pattern.quote(keyString) + "[^}]*}", config.getProperties().getProperty(keyString));
         }
 
         return line;
     }
 
     protected String renderLanguageProperties(String line, String language) {
-        String pairs = config.getLanguages().stream().map(s -> "( *" + Pattern.quote(s) + ": *['\"].*['\"][, ]*)").collect(Collectors.joining("|"));
+        String pairs = config.getLanguages().stream().map(s -> "( *" + Pattern.quote(s) + ": *['\"][^}]*['\"][, ]*)").collect(Collectors.joining("|"));
         String regex = "\\$\\{ *(" + pairs + ")}";
 
+        StringBuilder result = new StringBuilder(line);
+        int shift = 0;
         Matcher matcher = Pattern.compile(regex).matcher(line);
-        if (matcher.find()) {
+        while (matcher.find()) {
             String params = matcher.group(1);
             Map<String, String> vals = Arrays.stream(params.split(","))
                     .map(String::trim)
                     .map(s -> StringUtils.split(s, ":", 2))
                     .collect(Collectors.toMap(s -> s[0], s -> NRGUtil.unwrapParameterValue(s[1])));
-            line = line.replaceAll(regex, StringUtils.trimToEmpty(vals.get(language)));
-        } else {
-            line = line.replaceAll(regex, "");
-        }
 
-        return line;
+            String body = StringUtils.trimToEmpty(vals.get(language));
+            result.replace(shift + matcher.start(), shift + matcher.end(), body);
+            shift += body.length() - (matcher.end() - matcher.start());
+        }
+        return result.toString();
     }
 
 

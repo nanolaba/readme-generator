@@ -6,6 +6,9 @@ import com.nanolaba.nrg.widgets.WidgetTag;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.List;
 import java.util.Properties;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -81,7 +84,10 @@ class TemplateLineTest extends DefaultNRGTest {
 
     @Test
     public void testGetWidgetTag() {
-        Function<String, WidgetTag> action = s -> line(s).getWidgetTag(s);
+        Function<String, WidgetTag> action = s -> {
+            List<WidgetTag> tags = line(s).getWidgetTags(s);
+            return tags.isEmpty() ? null : tags.get(0);
+        };
 
         assertNull(action.apply(""));
         assertNull(action.apply("123"));
@@ -202,5 +208,25 @@ class TemplateLineTest extends DefaultNRGTest {
         assertEquals("Содержание", line("${en:'Table of contents', ru:'Содержание'}", "en", "ru").generateLine("ru"));
         assertEquals("Содержание", line("${en:'Table of contents', ru:\"Содержание\"}", "en", "ru").generateLine("ru"));
         assertEquals("Table of contents", line("${en:'Table of contents', ru:'Содержание'}", "en", "ru").generateLine("en"));
+    }
+
+    @Test
+    public void testRenderManyWidgetsInOneLine() {
+        String yyyyMM = new SimpleDateFormat("yyyyMM").format(new Date());
+        assertEquals(yyyyMM, line("${widget:date(pattern='yyyy')}${widget:date(pattern='MM')}", "en", "ru").generateLine("en"));
+    }
+
+    @Test
+    public void testRenderManyLanguagePropertiesInOneLine() {
+        assertEquals("${en:'A'}${en:'B'}", line("${en:'A'}${en:'B'}", "ru").generateLine("ru"));
+        assertEquals("", line("${en:'A'}${en:'B'}", "en", "ru").generateLine("ru"));
+        assertEquals("AB", line("${en:'A'}${en:'B'}", "en", "ru").generateLine("en"));
+        assertEquals("AB", line("${en:'A', ru:'Z'}${en:'B', ru:'X'}", "en", "ru").generateLine("en"));
+    }
+
+    @Test
+    public void testRenderManyPropertiesInOneLine() {
+        assertEquals("BBBB", line("<!--@ AA=BB -->${AA}${AA}").generateLine("ru"));
+        assertEquals("BBDD", line("<!--@ AA=BB --><!--@ CC=DD -->${AA}${CC}").generateLine("ru"));
     }
 }
