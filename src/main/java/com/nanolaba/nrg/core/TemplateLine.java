@@ -122,7 +122,7 @@ public class TemplateLine {
             Map<String, String> vals = Arrays.stream(params.split(","))
                     .map(String::trim)
                     .map(s -> StringUtils.split(s, ":", 2))
-                    .collect(Collectors.toMap(s -> s[0], s -> NRGUtil.unwrapParameterValue(s[1])));
+                    .collect(Collectors.toMap(s -> s[0], s -> s.length > 1 ? NRGUtil.unwrapParameterValue(s[1]) : ""));
 
             String body = StringUtils.trimToEmpty(vals.get(language));
             result.replace(shift + matcher.start(), shift + matcher.end(), body);

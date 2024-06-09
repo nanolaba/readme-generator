@@ -19,19 +19,20 @@
 Последняя стабильная версия - **1.0**.
 
 ## Содержание
-
 1. [Способы запуска программы](#способы-запуска-программы)
-    1. [Запуск из командной строки](#запуск-из-командной-строки)
-    2. [Использование в качестве java-библиотеки](#использование-в-качестве-java-библиотеки)
-2. [Создание шаблона](#создание-шаблона)
-	1. [Properties](#properties)
-	2. [Multilanguage support](#multilanguage-support)
-	3. [Language properties](#language-properties)
-	4. [Widgets](#widgets)
-        1. [LanguagesWidget (languages)](#languageswidget-languages)
-        1. [tableOfContents](#tableofcontents)
-        2. [date](#date)
-    1. [Feedback](#feedback)
+	1. [Запуск из командной строки](#запуск-из-командной-строки)
+	2. [Использование в качестве java-библиотеки](#использование-в-качестве-java-библиотеки)
+2. [Синтаксис шаблона](#синтаксис-шаблона)
+	1. [Переменные](#переменные)
+	2. [Свойства](#свойства)
+	3. [Multilanguage support](#multilanguage-support)
+	4. [Language properties](#language-properties)
+	5. [Виджеты](#виджеты)
+		1. [Виджет 'languages'](#виджет-'languages')
+		1. [Table of contents](#table-of-contents)
+		2. [Виджет 'date'](#виджет-'date')
+	1. [Feedback](#feedback)
+
 
 ## Способы запуска программы
 
@@ -45,9 +46,13 @@ TODO
 
 TODO
 
-## Создание шаблона
+## Синтаксис шаблона
 
-### Properties
+### Переменные
+
+TODO
+
+### Свойства
 
 TODO
 
@@ -59,34 +64,78 @@ TODO
 
 TODO
 
-### Widgets
+### Виджеты
 
-#### LanguagesWidget (languages)
+#### Виджет 'languages'
 
 Этот компонент позволяет генерировать ссылки на другие версии документа (написанные на других языках).
 
-Пример использования:
+<table>
+<tr><th>Пример использования</th><th>Результат</th></tr>
+<tr><td>
 
 ```markdown
-&#36;{widget:languages}
+&#36;{widget:languages} 
 ```
 
-Результат:
+</td><td>
 
 ```markdown
 [ [en](README.md) | **ru** ]
 ```
 
-#### tableOfContents
+</td></tr>
+</table>
+
+#### Table of contents
 
 TODO
 
-#### date
+#### Виджет 'date'
 
-TODO
+Этот компонент позволяет вставить в документ текущую дату.
+
+<table>
+<tr><th>Пример использования</th><th>Результат</th></tr>
+<tr><td>
+
+```markdown
+Last updated: &#36;{widget:date}
+```
+
+</td><td>
+
+```markdown
+Last updated: 09.06.2024 13:58:12
+```
+
+</td></tr>
+<tr><td>
+
+```markdown
+&#36;{widget:date(pattern = 'dd.MM.yyyy')}
+```
+
+</td><td>
+
+```markdown
+09.06.2024
+```
+
+</td></tr>
+</table>
+
+Свойства виджета:
+
+| Наименование | Описание | Значение по умолчанию |
+|--------------|----------|-----------------------|
+| pattern      | 'Шаблон  | dd.MM.yyyy HH:mm:ss   |
+
+Подробнее о синтаксисе шаблона даты можно прочитать в  
+[документации Java](https://docs.oracle.com/javase/8/docs/api/java/text/SimpleDateFormat.html).
 
 ### Feedback
 
 TODO
 
-*Дата последнего обновления: 08.06.2024*
+*Дата последнего обновления: 09.06.2024*

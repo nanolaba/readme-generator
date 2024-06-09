@@ -24,13 +24,14 @@ The latest stable version of the program is **1.0**.
 	1. [Using the Command Line Interface](#using-the-command-line-interface)
 	2. [Use as a java-library](#use-as-a-java-library)
 2. [Template syntax](#template-syntax)
-	1. [Properties](#properties)
-	2. [Multilanguage support](#multilanguage-support)
-	3. [Language properties](#language-properties)
-	4. [Widgets](#widgets)
-		1. [LanguagesWidget (languages)](#languageswidget-languages)
-		1. [tableOfContents](#tableofcontents)
-		2. [date](#date)
+	1. [Variables](#variables)
+	2. [Properties](#properties)
+	3. [Multilanguage support](#multilanguage-support)
+	4. [Language properties](#language-properties)
+	5. [Widgets](#widgets)
+		1. [Widget 'languages'](#widget-'languages')
+		1. [Table of contents](#table-of-contents)
+		2. [Widget 'date'](#widget-'date')
 	1. [Feedback](#feedback)
 
 
@@ -48,6 +49,10 @@ TODO
 
 ## Template syntax
 
+### Variables
+
+TODO
+
 ### Properties
 
 TODO
@@ -62,32 +67,76 @@ TODO
 
 ### Widgets
 
-#### LanguagesWidget (languages)
+#### Widget 'languages'
 
 This component allows you to generate links to other versions of a document (written in other languages).
 
-Usage example:
+<table>
+<tr><th>Usage example</th><th>Result</th></tr>
+<tr><td>
 
 ```markdown
-&#36;{widget:languages}
+&#36;{widget:languages} 
 ```
 
-Result:
+</td><td>
 
 ```markdown
 [ **en** | [ru](README.ru.md) ]
 ```
 
-#### tableOfContents
+</td></tr>
+</table>
+
+#### Table of contents
 
 TODO
 
-#### date
+#### Widget 'date'
 
-TODO
+This component allows you to insert the current date into a document.
+
+<table>
+<tr><th>Usage example</th><th>Result</th></tr>
+<tr><td>
+
+```markdown
+Last updated: &#36;{widget:date}
+```
+
+</td><td>
+
+```markdown
+Last updated: 09.06.2024 13:58:12
+```
+
+</td></tr>
+<tr><td>
+
+```markdown
+&#36;{widget:date(pattern = 'dd.MM.yyyy')}
+```
+
+</td><td>
+
+```markdown
+09.06.2024
+```
+
+</td></tr>
+</table>
+
+Widget parameters:
+
+| Name    | Description                                           | Default value       |
+|---------|-------------------------------------------------------|---------------------|
+| pattern | Pattern according to which the date will be formatted | dd.MM.yyyy HH:mm:ss |
+
+You can read more about date pattern syntax in the
+[Java documentation](https://docs.oracle.com/javase/8/docs/api/java/text/SimpleDateFormat.html).
 
 ### Feedback
 
 TODO
 
-*Last updated: 08.06.2024*
+*Last updated: 09.06.2024*
