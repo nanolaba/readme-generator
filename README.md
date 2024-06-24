@@ -20,10 +20,12 @@ The latest stable version of the program is **1.0**.
 
 
 ## Table of contents
-1. [Usage](#usage)
+
+1. [5 minute guide](#5-minute-guide)
+2. [Usage](#usage)
 	1. [Using the Command Line Interface](#using-the-command-line-interface)
 	2. [Use as a java-library](#use-as-a-java-library)
-2. [Template syntax](#template-syntax)
+3. [Template syntax](#template-syntax)
 	1. [Variables](#variables)
 	1. [Properties](#properties)
 	2. [Multilanguage support](#multilanguage-support)
@@ -49,6 +51,9 @@ The latest stable version of the program is **1.0**.
    1. [Widget 'date'](#widget-'date')
 	1. [Feedback](#feedback)
 
+## 5 minute guide
+
+TODO
 
 ## Usage
 
@@ -102,7 +107,27 @@ This is *My Application* version **1.0.1**
 
 ### Properties
 
-TODO
+Using the syntax for setting variable values in the template,
+you can specify application properties, for example:
+
+```markdown
+&lt;!--@nrg.languages=en,ru--&gt;
+&lt;!--@nrg.defaultLanguage=en--&gt;
+```
+
+Application properties:
+
+**nrg.languages**
+
+For each language, except the default language, a file will be generated with the name in the
+format *source.language.md*, where *source* is the name of the original file and *language* is the
+name of the language. The default value of this property is "en"
+
+**nrg.defaultLanguage**
+
+The language in which the main documentation file will be generated. The language name should be
+included in the list defined by the property *nrg.languages*. The default value of this property is
+the first element in the *nrg.languages* list.
 
 ### Multilanguage support
 
@@ -220,7 +245,7 @@ Last updated: &#36;{widget:date}
 </td><td>
 
 ```markdown
-Last updated: 24.06.2024 11:59:47
+Last updated: 24.06.2024 12:38:41
 ```
 
 </td></tr>
