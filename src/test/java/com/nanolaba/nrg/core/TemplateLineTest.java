@@ -155,32 +155,32 @@ class TemplateLineTest extends DefaultNRGTest {
 
     @Test
     public void testReadProperties() {
-        Properties p = line("").getProperties("ru");
+        Properties p = line("").readProperties("ru");
         assertEquals(0, p.size());
 
-        p = line("<!--@AAA=BBB-->").getProperties("ru");
+        p = line("<!--@AAA=BBB-->").readProperties("ru");
         assertEquals(1, p.size());
         assertEquals("BBB", p.getProperty("AAA"));
 
-        p = line("<!--@AAA-->").getProperties("ru");
+        p = line("<!--@AAA-->").readProperties("ru");
         assertEquals(1, p.size());
         assertEquals("", p.getProperty("AAA"));
 
-        p = line("<!--@AAA=BBB-->").getProperties("ru");
+        p = line("<!--@AAA=BBB-->").readProperties("ru");
         assertEquals(1, p.size());
         assertEquals("BBB", p.getProperty("AAA"));
 
-        p = line("<!--@AAA=BBB--><!--@AAA.BBB=CCC.DDD-->").getProperties("ru");
+        p = line("<!--@AAA=BBB--><!--@AAA.BBB=CCC.DDD-->").readProperties("ru");
         assertEquals(2, p.size());
         assertEquals("BBB", p.getProperty("AAA"));
         assertEquals("CCC.DDD", p.getProperty("AAA.BBB"));
 
-        p = line("<!-- @AAA = BBB --><!--@ AAA.BBB =  CCC.DDD  -->").getProperties("ru");
+        p = line("<!-- @AAA = BBB --><!--@ AAA.BBB =  CCC.DDD  -->").readProperties("ru");
         assertEquals(2, p.size());
         assertEquals("BBB", p.getProperty("AAA"));
         assertEquals("CCC.DDD", p.getProperty("AAA.BBB"));
 
-        p = line("<!--@AAA=${ru:'BBB', en:'CCC'}-->", "en", "ru").getProperties("ru");
+        p = line("<!--@AAA=${ru:'BBB', en:'CCC'}-->", "en", "ru").readProperties("ru");
         assertEquals(1, p.size());
         assertEquals("BBB", p.getProperty("AAA"));
     }
@@ -228,5 +228,10 @@ class TemplateLineTest extends DefaultNRGTest {
     public void testRenderManyPropertiesInOneLine() {
         assertEquals("BBBB", line("<!--@ AA=BB -->${AA}${AA}").generateLine("ru"));
         assertEquals("BBDD", line("<!--@ AA=BB --><!--@ CC=DD -->${AA}${CC}").generateLine("ru"));
+    }
+
+    @Test
+    public void testRenderCombinedProperty() {
+        assertEquals("BB", line("<!--@AA=BB --><!--@CC=${AA}-->${CC}").generateLine("ru"));
     }
 }

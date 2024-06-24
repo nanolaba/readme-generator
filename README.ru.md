@@ -24,13 +24,28 @@
 	2. [Использование в качестве java-библиотеки](#использование-в-качестве-java-библиотеки)
 2. [Синтаксис шаблона](#синтаксис-шаблона)
 	1. [Переменные](#переменные)
-	2. [Свойства](#свойства)
-	3. [Multilanguage support](#multilanguage-support)
-	4. [Language properties](#language-properties)
-	5. [Виджеты](#виджеты)
+	1. [Свойства](#свойства)
+	2. [Multilanguage support](#multilanguage-support)
+	3. [Language properties](#language-properties)
+	4. [Виджеты](#виджеты)
 		1. [Виджет 'languages'](#виджет-'languages')
-		1. [Table of contents](#table-of-contents)
-		2. [Виджет 'date'](#виджет-'date')
+		1. [Виджет 'tableOfContents'](#виджет-'tableofcontents')
+1. [Abstract](#abstract)
+1. [Part 1](#part-1)
+	1. [Chapter 1](#chapter-1)
+	2. [Chapter 2](#chapter-2)
+	3. [Chapter 3](#chapter-3)
+2. [Part 2](#part-2)
+3. [Part 3](#part-3)
+1. [Abstract](#abstract)
+2. [Table of contents](#table-of-contents)
+1. [Part 1](#part-1)
+	1. [Chapter 1](#chapter-1)
+	2. [Chapter 2](#chapter-2)
+	3. [Chapter 3](#chapter-3)
+2. [Part 2](#part-2)
+3. [Part 3](#part-3)
+   1. [Виджет 'date'](#виджет-'date')
 	1. [Feedback](#feedback)
 
 
@@ -50,7 +65,40 @@ TODO
 
 ### Переменные
 
-TODO
+Синтаксис шаблона поддерживает использование переменных.
+Определение переменных происходит при помощи конструкции:
+
+```markdown
+&lt;!--@variable_name=variable value-->
+```
+
+Вывод значения переменных происходит при помощи конструкции вида:
+
+```markdown
+&#36;{variable_name}
+```
+
+<table>
+<tr><th>Пример использования</th><th>Результат</th></tr>
+<tr><td>
+
+```markdown
+&lt;!--@app_name=My Application--&gt;
+&lt;!--@app_version=**1.0.1**--&gt;
+&lt;!--@app_descr=This is *&#36;{app_name}* version &#36;{app_version}--&gt;
+&#36;{app_name} version &#36;{app_version}
+&#36;{app_descr}
+```
+
+</td><td>
+
+```markdown
+My Application version **1.0.1**
+This is *My Application* version **1.0.1**
+```
+
+</td></tr>
+</table>
 
 ### Свойства
 
@@ -87,9 +135,75 @@ TODO
 </td></tr>
 </table>
 
-#### Table of contents
+#### Виджет 'tableOfContents'
 
-TODO
+Этот компонент позволяет сформировать оглавление для документа.
+Оглавление формируется из заголовков, сформированных при помощи знака решётки (**#**).
+Заголовки, которые расположены по тексту выше виджета, игнорируются.
+
+
+<table>
+<tr><th>Пример использования</th><th>Результат</th></tr>
+<tr><td>
+
+```markdown
+# Title of the document
+
+## Abstract
+
+&#36;{widget:tableOfContents(title = "&#36;{en:'Table of contents', ru:'Содержание'}", ordered = "true")}
+
+## Part 1
+
+### Chapter 1
+
+### Chapter 2
+
+### Chapter 3
+
+## Part 2
+
+## Part 3
+```
+
+</td><td>
+
+```markdown 
+# Title of the document
+
+## Abstract
+
+## Table of contents
+
+1. [Part 1](#part-1)
+    1. [Chapter 1](#chapter-1)
+    2. [Chapter 2](#chapter-2)
+    3. [Chapter 3](#chapter-3)
+2. [Part 2](#part-2)
+3. [Part 3](#part-3)
+
+## Part 1
+
+### Chapter 1
+
+### Chapter 2
+
+### Chapter 3
+
+## Part 2
+
+## Part 3
+```
+
+</td></tr> 
+</table>
+
+Свойства виджета:
+
+| Наименование | Описание                                       | Значение по умолчанию |
+|:------------:|------------------------------------------------|:---------------------:|
+|    title     | Заглавие оглавления                            |                       |
+|   ordered    | Должны ли быть пронумерованы пункты оглавления |         false         |
 
 #### Виджет 'date'
 
@@ -106,7 +220,7 @@ Last updated: &#36;{widget:date}
 </td><td>
 
 ```markdown
-Last updated: 09.06.2024 13:58:12
+Last updated: 24.06.2024 11:59:47
 ```
 
 </td></tr>
@@ -119,7 +233,7 @@ Last updated: 09.06.2024 13:58:12
 </td><td>
 
 ```markdown
-09.06.2024
+24.06.2024
 ```
 
 </td></tr>
@@ -128,14 +242,14 @@ Last updated: 09.06.2024 13:58:12
 Свойства виджета:
 
 | Наименование | Описание | Значение по умолчанию |
-|--------------|----------|-----------------------|
-| pattern      | 'Шаблон  | dd.MM.yyyy HH:mm:ss   |
+|:------------:|----------|:---------------------:|
+|   pattern    | 'Шаблон  |  dd.MM.yyyy HH:mm:ss  |
 
-Подробнее о синтаксисе шаблона даты можно прочитать в  
-[документации Java](https://docs.oracle.com/javase/8/docs/api/java/text/SimpleDateFormat.html).
+Подробнее о синтаксисе шаблона даты можно прочитать в
+[документации языка Java](https://docs.oracle.com/javase/8/docs/api/java/text/SimpleDateFormat.html).
 
 ### Feedback
 
 TODO
 
-*Дата последнего обновления: 09.06.2024*
+*Дата последнего обновления: 24.06.2024*
