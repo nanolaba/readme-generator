@@ -25,13 +25,28 @@ The latest stable version of the program is **1.0**.
 	2. [Use as a java-library](#use-as-a-java-library)
 2. [Template syntax](#template-syntax)
 	1. [Variables](#variables)
-	2. [Properties](#properties)
-	3. [Multilanguage support](#multilanguage-support)
-	4. [Language properties](#language-properties)
-	5. [Widgets](#widgets)
+	1. [Properties](#properties)
+	2. [Multilanguage support](#multilanguage-support)
+	3. [Language properties](#language-properties)
+	4. [Widgets](#widgets)
 		1. [Widget 'languages'](#widget-'languages')
-		1. [Table of contents](#table-of-contents)
-		2. [Widget 'date'](#widget-'date')
+		1. [Widget 'tableOfContents'](#widget-'tableofcontents')
+1. [Abstract](#abstract)
+1. [Part 1](#part-1)
+	1. [Chapter 1](#chapter-1)
+	2. [Chapter 2](#chapter-2)
+	3. [Chapter 3](#chapter-3)
+2. [Part 2](#part-2)
+3. [Part 3](#part-3)
+1. [Abstract](#abstract)
+2. [Table of contents](#table-of-contents)
+1. [Part 1](#part-1)
+	1. [Chapter 1](#chapter-1)
+	2. [Chapter 2](#chapter-2)
+	3. [Chapter 3](#chapter-3)
+2. [Part 2](#part-2)
+3. [Part 3](#part-3)
+   1. [Widget 'date'](#widget-'date')
 	1. [Feedback](#feedback)
 
 
@@ -51,7 +66,39 @@ TODO
 
 ### Variables
 
-TODO
+The template syntax supports the use of variables. Variables are defined using the following construct:
+
+```markdown
+&lt;!--@variable_name=variable value-->
+```
+
+The output of variable values is done using the following construct:
+
+```markdown
+&#36;{variable_name}
+```
+
+<table>
+<tr><th>Usage example</th><th>Result</th></tr>
+<tr><td>
+
+```markdown
+&lt;!--@app_name=My Application--&gt;
+&lt;!--@app_version=**1.0.1**--&gt;
+&lt;!--@app_descr=This is *&#36;{app_name}* version &#36;{app_version}--&gt;
+&#36;{app_name} version &#36;{app_version}
+&#36;{app_descr}
+```
+
+</td><td>
+
+```markdown
+My Application version **1.0.1**
+This is *My Application* version **1.0.1**
+```
+
+</td></tr>
+</table>
 
 ### Properties
 
@@ -88,9 +135,75 @@ This component allows you to generate links to other versions of a document (wri
 </td></tr>
 </table>
 
-#### Table of contents
+#### Widget 'tableOfContents'
 
-TODO
+This component allows you to generate a table of contents for a document.
+The table of contents is created from headers formed using the hashtag symbol (**#**).
+Headers located above the widget in the text are ignored.
+
+
+<table>
+<tr><th>Usage example</th><th>Result</th></tr>
+<tr><td>
+
+```markdown
+# Title of the document
+
+## Abstract
+
+&#36;{widget:tableOfContents(title = "&#36;{en:'Table of contents', ru:'Содержание'}", ordered = "true")}
+
+## Part 1
+
+### Chapter 1
+
+### Chapter 2
+
+### Chapter 3
+
+## Part 2
+
+## Part 3
+```
+
+</td><td>
+
+```markdown 
+# Title of the document
+
+## Abstract
+
+## Table of contents
+
+1. [Part 1](#part-1)
+	1. [Chapter 1](#chapter-1)
+	2. [Chapter 2](#chapter-2)
+	3. [Chapter 3](#chapter-3)
+2. [Part 2](#part-2)
+3. [Part 3](#part-3)
+
+## Part 1
+
+### Chapter 1
+
+### Chapter 2
+
+### Chapter 3
+
+## Part 2
+
+## Part 3
+```
+
+</td></tr> 
+</table>
+
+Widget parameters:
+
+|  Name   | Description                                           | Default value |
+|:-------:|-------------------------------------------------------|:-------------:|
+|  title  | Title of the table of contents                        |               |
+| ordered | Should the items in the table of contents be numbered |     false     |
 
 #### Widget 'date'
 
@@ -107,7 +220,7 @@ Last updated: &#36;{widget:date}
 </td><td>
 
 ```markdown
-Last updated: 09.06.2024 13:58:12
+Last updated: 24.06.2024 11:59:47
 ```
 
 </td></tr>
@@ -120,7 +233,7 @@ Last updated: 09.06.2024 13:58:12
 </td><td>
 
 ```markdown
-09.06.2024
+24.06.2024
 ```
 
 </td></tr>
@@ -128,8 +241,8 @@ Last updated: 09.06.2024 13:58:12
 
 Widget parameters:
 
-| Name    | Description                                           | Default value       |
-|---------|-------------------------------------------------------|---------------------|
+|  Name   | Description                                           |    Default value    |
+|:-------:|-------------------------------------------------------|:-------------------:|
 | pattern | Pattern according to which the date will be formatted | dd.MM.yyyy HH:mm:ss |
 
 You can read more about date pattern syntax in the
@@ -139,4 +252,4 @@ You can read more about date pattern syntax in the
 
 TODO
 
-*Last updated: 09.06.2024*
+*Last updated: 24.06.2024*

@@ -71,7 +71,7 @@ public class GeneratorConfig {
     }
 
     private void readPropertiesFromLine(TemplateLine line, String language) {
-        line.getProperties(language).forEach((key, value) -> NRGUtil.mergeProperty(key, value, properties));
+        line.readProperties(language).forEach((key, value) -> NRGUtil.mergeProperty(key, value, properties));
     }
 
     protected void initWidgets() {

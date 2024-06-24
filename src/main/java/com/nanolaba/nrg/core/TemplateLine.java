@@ -15,7 +15,6 @@ import static org.apache.commons.lang3.StringUtils.*;
 public class TemplateLine {
 
     public static final Pattern WIDGET_TAG_PATTERN = Pattern.compile("\\$\\{ *widget:(\\w*)(\\(([^}]*)\\))? *}");
-    public static final Properties EMPTY_PROPERTIES = new Properties(0);
 
     private final GeneratorConfig config;
     private final String line;
@@ -42,10 +41,9 @@ public class TemplateLine {
         return (!hasLanguageMark || hasCurrentLanguageMark) && !hasOnlyPropertyDefinition;
     }
 
-    public Properties getProperties(String language) {
+    public Properties readProperties(String language) {
         String[] strings = substringsBetween(line, "<!--", "-->");
         if (strings != null) {
-            Properties properties = new Properties();
             for (String comment : strings) {
                 String s = trimToEmpty(comment);
                 if (s.contains("@")) {
@@ -53,21 +51,21 @@ public class TemplateLine {
                     if (s.contains("=")) {
                         String key = trimToEmpty(substringBefore(s, "="));
                         String value = trimToEmpty(substringAfter(s, "="));
+                        value = renderProperties(value);
                         value = renderLanguageProperties(value, language);
-                        NRGUtil.mergeProperty(key, value, properties);
+                        NRGUtil.mergeProperty(key, value, config.getProperties());
                     } else {
                         String key = trimToEmpty(s);
-                        NRGUtil.mergeProperty(key, "", properties);
+                        NRGUtil.mergeProperty(key, "", config.getProperties());
                     }
                 }
             }
-            return properties;
         }
-        return EMPTY_PROPERTIES;
+        return config.getProperties();
     }
 
     public String getProperty(String property, String language) {
-        return getProperties(language).getProperty(property);
+        return readProperties(language).getProperty(property);
     }
 
     protected String renderWidgets(String line, String language) {
@@ -102,9 +100,10 @@ public class TemplateLine {
     }
 
     protected String renderProperties(String line) {
-        for (Object key : config.getProperties().keySet()) {
-            String keyString = key.toString();
-            line = line.replaceAll("\\$\\{ *" + Pattern.quote(keyString) + "[^}]*}", config.getProperties().getProperty(keyString));
+        for (Object property : config.getProperties().keySet()) {
+            String propertyName = property.toString();
+            String value = config.getProperties().getProperty(propertyName);
+            line = line.replaceAll("\\$\\{ *" + Pattern.quote(propertyName) + "[^}]*}", value);
         }
 
         return line;
