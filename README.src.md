@@ -31,6 +31,10 @@ The latest stable version of the program is **${stableVersion}**.<!--en-->
 
 ${widget:tableOfContents(title = "${en:'Table of contents', ru:'Содержание'}", ordered = "true")}
 
+## ${en:'5 minute guide', ru:'Введение за пять минут'}
+
+TODO
+
 ## ${en:'Usage', ru:'Способы запуска программы'}
 
 TODO
@@ -89,7 +93,35 @@ ${app_descr}
 
 ### ${en:'Properties', ru:'Свойства'}
 
-TODO
+Using the syntax for setting variable values in the template,<!--en-->
+you can specify application properties, for example:<!--en-->
+При помощи синтаксиса установки значений переменных в шаблоне можно указывать свойства приложения, например:<!--ru-->
+
+```markdown
+&lt;!--@nrg.languages=en,ru--&gt;
+&lt;!--@nrg.defaultLanguage=en--&gt;
+```
+
+**${en:'Available properties', ru:'Свойства приложения'}:**
+
+***nrg.languages***
+
+For each language, except the default language, a file will be generated with the name in the<!--en-->
+format *source.language.md*, where *source* is the name of the original file and *language* is the<!--en-->
+name of the language. The default value of this property is "en"<!--en-->
+Перечень языков, для которых будут сгенерированы файлы.<!--ru-->
+Для каждого языка, за исключением языка по-умолчанию, будет сгенерирован файл с<!--ru-->
+наименованием вида *source.language.md*, где source - наименование исходного файла, language - наименование<!--ru-->
+языка. Значение этого свойства по умолчанию - "en".<!--ru-->
+
+***nrg.defaultLanguage***
+
+The language in which the main documentation file will be generated. The language name should be<!--en-->
+included in the list defined by the property *nrg.languages*. The default value of this property is<!--en-->
+the first element in the *nrg.languages* list.<!--en-->
+Язык, на котором будет сгенерирован главный файл документации.<!--ru-->
+Название языка должно содержаться в перечне, определенным в свойстве *nrg.languages*.<!--ru-->
+Значение этого свойства по умолчанию - первый элемент списка из свойства *nrg.languages*.<!--ru-->
 
 ### Multilanguage support
 
