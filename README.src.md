@@ -125,11 +125,22 @@ the first element in the *nrg.languages* list.<!--en-->
 
 ### Multilanguage support
 
-TODO
+To write text in different languages, there are two methods available.<!--en-->
+The first one involves using comments at the end of the line, for example:<!--en-->
+Для написания текста на различных языках предусмотрено два способа.<!--ru-->
+Первый заключается в использовании комментариев в конце строки, например:<!--ru-->
 
-### Language properties
+```markdown
+Some text&lt;!--en--&gt;
+Некоторый текст&lt;!--ru--&gt;
+```
 
-TODO
+The second method involves using a special construct:<!--en-->
+Второй способ заключается в использовании особой конструкции:<!--ru-->
+
+```markdown
+&#36;{en:'Some text', ru:'Некоторый текст'} 
+```
 
 ### ${en:'Widgets', ru:'Виджеты'}
 
@@ -170,33 +181,33 @@ Headers located above the widget in the text are ignored.<!--en-->
 <tr><td>
 
 ```markdown
-# Title of the document
+&#35; Title of the document
 
-## Abstract
+&#35;&#35; Abstract
 
 &#36;{widget:tableOfContents(title = "&#36;{en:'Table of contents', ru:'Содержание'}", ordered = "true")}
 
-## Part 1
+&#35;&#35; Part 1
 
-### Chapter 1
+&#35;&#35;&#35; Chapter 1
 
-### Chapter 2
+&#35;&#35;&#35; Chapter 2
 
-### Chapter 3
+&#35;&#35;&#35; Chapter 3
 
-## Part 2
+&#35;&#35; Part 2
 
-## Part 3
+&#35;&#35; Part 3
 ```
 
 </td><td>
 
 ```markdown 
-# Title of the document
+&#35; Title of the document
 
-## Abstract
+&#35;&#35; Abstract
 
-## Table of contents
+&#35;&#35; Table of contents
 
 1. [Part 1](#part-1)
     1. [Chapter 1](#chapter-1)
@@ -205,17 +216,17 @@ Headers located above the widget in the text are ignored.<!--en-->
 2. [Part 2](#part-2)
 3. [Part 3](#part-3)
 
-## Part 1
+&#35;&#35; Part 1
 
-### Chapter 1
+&#35;&#35;&#35; Chapter 1
 
-### Chapter 2
+&#35;&#35;&#35; Chapter 2
 
-### Chapter 3
+&#35;&#35;&#35; Chapter 3
 
-## Part 2
+&#35;&#35; Part 2
 
-## Part 3
+&#35;&#35; Part 3
 ```
 
 </td></tr> 

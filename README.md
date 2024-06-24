@@ -20,7 +20,6 @@ The latest stable version of the program is **1.0**.
 
 
 ## Table of contents
-
 1. [5 minute guide](#5-minute-guide)
 2. [Usage](#usage)
 	1. [Using the Command Line Interface](#using-the-command-line-interface)
@@ -29,27 +28,12 @@ The latest stable version of the program is **1.0**.
 	1. [Variables](#variables)
 	1. [Properties](#properties)
 	2. [Multilanguage support](#multilanguage-support)
-	3. [Language properties](#language-properties)
-	4. [Widgets](#widgets)
+	1. [Widgets](#widgets)
 		1. [Widget 'languages'](#widget-'languages')
 		1. [Widget 'tableOfContents'](#widget-'tableofcontents')
-1. [Abstract](#abstract)
-1. [Part 1](#part-1)
-	1. [Chapter 1](#chapter-1)
-	2. [Chapter 2](#chapter-2)
-	3. [Chapter 3](#chapter-3)
-2. [Part 2](#part-2)
-3. [Part 3](#part-3)
-1. [Abstract](#abstract)
-2. [Table of contents](#table-of-contents)
-1. [Part 1](#part-1)
-	1. [Chapter 1](#chapter-1)
-	2. [Chapter 2](#chapter-2)
-	3. [Chapter 3](#chapter-3)
-2. [Part 2](#part-2)
-3. [Part 3](#part-3)
-   1. [Widget 'date'](#widget-'date')
+		1. [Widget 'date'](#widget-'date')
 	1. [Feedback](#feedback)
+
 
 ## 5 minute guide
 
@@ -115,15 +99,15 @@ you can specify application properties, for example:
 &lt;!--@nrg.defaultLanguage=en--&gt;
 ```
 
-Application properties:
+**Available properties:**
 
-**nrg.languages**
+***nrg.languages***
 
 For each language, except the default language, a file will be generated with the name in the
 format *source.language.md*, where *source* is the name of the original file and *language* is the
 name of the language. The default value of this property is "en"
 
-**nrg.defaultLanguage**
+***nrg.defaultLanguage***
 
 The language in which the main documentation file will be generated. The language name should be
 included in the list defined by the property *nrg.languages*. The default value of this property is
@@ -131,11 +115,19 @@ the first element in the *nrg.languages* list.
 
 ### Multilanguage support
 
-TODO
+To write text in different languages, there are two methods available.
+The first one involves using comments at the end of the line, for example:
 
-### Language properties
+```markdown
+Some text&lt;!--en--&gt;
+Некоторый текст&lt;!--ru--&gt;
+```
 
-TODO
+The second method involves using a special construct:
+
+```markdown
+&#36;{en:'Some text', ru:'Некоторый текст'} 
+```
 
 ### Widgets
 
@@ -172,33 +164,33 @@ Headers located above the widget in the text are ignored.
 <tr><td>
 
 ```markdown
-# Title of the document
+&#35; Title of the document
 
-## Abstract
+&#35;&#35; Abstract
 
 &#36;{widget:tableOfContents(title = "&#36;{en:'Table of contents', ru:'Содержание'}", ordered = "true")}
 
-## Part 1
+&#35;&#35; Part 1
 
-### Chapter 1
+&#35;&#35;&#35; Chapter 1
 
-### Chapter 2
+&#35;&#35;&#35; Chapter 2
 
-### Chapter 3
+&#35;&#35;&#35; Chapter 3
 
-## Part 2
+&#35;&#35; Part 2
 
-## Part 3
+&#35;&#35; Part 3
 ```
 
 </td><td>
 
 ```markdown 
-# Title of the document
+&#35; Title of the document
 
-## Abstract
+&#35;&#35; Abstract
 
-## Table of contents
+&#35;&#35; Table of contents
 
 1. [Part 1](#part-1)
 	1. [Chapter 1](#chapter-1)
@@ -207,17 +199,17 @@ Headers located above the widget in the text are ignored.
 2. [Part 2](#part-2)
 3. [Part 3](#part-3)
 
-## Part 1
+&#35;&#35; Part 1
 
-### Chapter 1
+&#35;&#35;&#35; Chapter 1
 
-### Chapter 2
+&#35;&#35;&#35; Chapter 2
 
-### Chapter 3
+&#35;&#35;&#35; Chapter 3
 
-## Part 2
+&#35;&#35; Part 2
 
-## Part 3
+&#35;&#35; Part 3
 ```
 
 </td></tr> 
@@ -245,7 +237,7 @@ Last updated: &#36;{widget:date}
 </td><td>
 
 ```markdown
-Last updated: 24.06.2024 12:38:41
+Last updated: 24.06.2024 14:31:02
 ```
 
 </td></tr>
