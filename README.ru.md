@@ -19,7 +19,6 @@
 Последняя стабильная версия - **1.0**.
 
 ## Содержание
-
 1. [Введение за пять минут](#введение-за-пять-минут)
 2. [Способы запуска программы](#способы-запуска-программы)
 	1. [Запуск из командной строки](#запуск-из-командной-строки)
@@ -28,27 +27,12 @@
 	1. [Переменные](#переменные)
 	1. [Свойства](#свойства)
 	2. [Multilanguage support](#multilanguage-support)
-	3. [Language properties](#language-properties)
-	4. [Виджеты](#виджеты)
+	1. [Виджеты](#виджеты)
 		1. [Виджет 'languages'](#виджет-'languages')
 		1. [Виджет 'tableOfContents'](#виджет-'tableofcontents')
-1. [Abstract](#abstract)
-1. [Part 1](#part-1)
-	1. [Chapter 1](#chapter-1)
-	2. [Chapter 2](#chapter-2)
-	3. [Chapter 3](#chapter-3)
-2. [Part 2](#part-2)
-3. [Part 3](#part-3)
-1. [Abstract](#abstract)
-2. [Table of contents](#table-of-contents)
-1. [Part 1](#part-1)
-	1. [Chapter 1](#chapter-1)
-	2. [Chapter 2](#chapter-2)
-	3. [Chapter 3](#chapter-3)
-2. [Part 2](#part-2)
-3. [Part 3](#part-3)
-   1. [Виджет 'date'](#виджет-'date')
+		1. [Виджет 'date'](#виджет-'date')
 	1. [Feedback](#feedback)
+
 
 ## Введение за пять минут
 
@@ -114,16 +98,16 @@ This is *My Application* version **1.0.1**
 &lt;!--@nrg.defaultLanguage=en--&gt;
 ```
 
-Свойства приложения:
+**Свойства приложения:**
 
-**nrg.languages**
+***nrg.languages***
 
 Перечень языков, для которых будут сгенерированы файлы.
 Для каждого языка, за исключением языка по-умолчанию, будет сгенерирован файл с
 наименованием вида *source.language.md*, где source - наименование исходного файла, language - наименование
 языка. Значение этого свойства по умолчанию - "en".
 
-**nrg.defaultLanguage**
+***nrg.defaultLanguage***
 
 Язык, на котором будет сгенерирован главный файл документации.
 Название языка должно содержаться в перечне, определенным в свойстве *nrg.languages*.
@@ -131,11 +115,19 @@ This is *My Application* version **1.0.1**
 
 ### Multilanguage support
 
-TODO
+Для написания текста на различных языках предусмотрено два способа.
+Первый заключается в использовании комментариев в конце строки, например:
 
-### Language properties
+```markdown
+Some text&lt;!--en--&gt;
+Некоторый текст&lt;!--ru--&gt;
+```
 
-TODO
+Второй способ заключается в использовании особой конструкции:
+
+```markdown
+&#36;{en:'Some text', ru:'Некоторый текст'} 
+```
 
 ### Виджеты
 
@@ -172,33 +164,33 @@ TODO
 <tr><td>
 
 ```markdown
-# Title of the document
+&#35; Title of the document
 
-## Abstract
+&#35;&#35; Abstract
 
 &#36;{widget:tableOfContents(title = "&#36;{en:'Table of contents', ru:'Содержание'}", ordered = "true")}
 
-## Part 1
+&#35;&#35; Part 1
 
-### Chapter 1
+&#35;&#35;&#35; Chapter 1
 
-### Chapter 2
+&#35;&#35;&#35; Chapter 2
 
-### Chapter 3
+&#35;&#35;&#35; Chapter 3
 
-## Part 2
+&#35;&#35; Part 2
 
-## Part 3
+&#35;&#35; Part 3
 ```
 
 </td><td>
 
 ```markdown 
-# Title of the document
+&#35; Title of the document
 
-## Abstract
+&#35;&#35; Abstract
 
-## Table of contents
+&#35;&#35; Table of contents
 
 1. [Part 1](#part-1)
     1. [Chapter 1](#chapter-1)
@@ -207,17 +199,17 @@ TODO
 2. [Part 2](#part-2)
 3. [Part 3](#part-3)
 
-## Part 1
+&#35;&#35; Part 1
 
-### Chapter 1
+&#35;&#35;&#35; Chapter 1
 
-### Chapter 2
+&#35;&#35;&#35; Chapter 2
 
-### Chapter 3
+&#35;&#35;&#35; Chapter 3
 
-## Part 2
+&#35;&#35; Part 2
 
-## Part 3
+&#35;&#35; Part 3
 ```
 
 </td></tr> 
@@ -245,7 +237,7 @@ Last updated: &#36;{widget:date}
 </td><td>
 
 ```markdown
-Last updated: 24.06.2024 12:38:41
+Last updated: 24.06.2024 14:31:02
 ```
 
 </td></tr>
