@@ -83,7 +83,7 @@ the variable's value, precede it with the '\\' character:
 ```markdown
 <!--@app_name=My Application-->
 <!--@app_version=**1.0.1**-->
-<!--@app_descr=This is *My Application* version **1.0.1**-->
+<!--@app_descr=This is *${app_name}* version ${app_version}-->
 ${app_name} version ${app_version}
 ${app_descr}
 ```
@@ -246,7 +246,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 26.06.2024 11:14:31
+Last updated: 26.06.2024 11:16:17
 ```
 
 </td></tr>
