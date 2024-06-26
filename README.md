@@ -66,6 +66,13 @@ The template syntax supports the use of variables. Variables are defined using t
 The output of variable values is done using the following construct:
 
 ```markdown
+${variable_name}
+```
+
+To display a construct like *${...}* without replacing it with
+the variable's value, precede it with the '' character:
+
+```markdown
 \${variable_name}
 ```
 
@@ -76,9 +83,9 @@ The output of variable values is done using the following construct:
 ```markdown
 &lt;!--@app_name=My Application--&gt;
 &lt;!--@app_version=**1.0.1**--&gt;
-&lt;!--@app_descr=This is *\${app_name}* version \${app_version}--&gt;
-\${app_name} version \${app_version}
-\${app_descr}
+&lt;!--@app_descr=This is *${app_name}* version ${app_version}--&gt;
+${app_name} version ${app_version}
+${app_descr}
 ```
 
 </td><td>
@@ -128,7 +135,7 @@ Some text&lt;!--en--&gt;
 The second method involves using a special construct:
 
 ```markdown
-\${en:'Some text', ru:'Некоторый текст'} 
+${en:'Some text', ru:'Некоторый текст'} 
 ```
 
 ### Widgets
@@ -142,7 +149,7 @@ This component allows you to generate links to other versions of a document (wri
 <tr><td>
 
 ```markdown
-\${widget:languages} 
+${widget:languages} 
 ```
 
 </td><td>
@@ -170,7 +177,7 @@ Headers located above the widget in the text are ignored.
 
 &#35;&#35; Abstract
 
-\${widget:tableOfContents(title = "\${en:'Table of contents', ru:'Содержание'}", ordered = "true")}
+${widget:tableOfContents(title = "${en:'Table of contents', ru:'Содержание'}", ordered = "true")}
 
 &#35;&#35; Part 1
 
@@ -233,20 +240,20 @@ This component allows you to insert the current date into a document.
 <tr><td>
 
 ```markdown
-Last updated: \${widget:date}
+Last updated: ${widget:date}
 ```
 
 </td><td>
 
 ```markdown
-Last updated: 26.06.2024 09:56:29
+Last updated: 26.06.2024 10:06:04
 ```
 
 </td></tr>
 <tr><td>
 
 ```markdown
-\${widget:date(pattern = 'dd.MM.yyyy')}
+${widget:date(pattern = 'dd.MM.yyyy')}
 ```
 
 </td><td>

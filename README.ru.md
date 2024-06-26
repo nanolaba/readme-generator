@@ -65,6 +65,13 @@ TODO
 Вывод значения переменных происходит при помощи конструкции вида:
 
 ```markdown
+${variable_name}
+```
+
+Чтобы вывести в файл конструкцию вида *${...}*, не заменяя ее значением
+переменной, предварите ее символом '\':
+
+```markdown
 \${variable_name}
 ```
 
@@ -75,9 +82,9 @@ TODO
 ```markdown
 &lt;!--@app_name=My Application--&gt;
 &lt;!--@app_version=**1.0.1**--&gt;
-&lt;!--@app_descr=This is *\${app_name}* version \${app_version}--&gt;
-\${app_name} version \${app_version}
-\${app_descr}
+&lt;!--@app_descr=This is *${app_name}* version ${app_version}--&gt;
+${app_name} version ${app_version}
+${app_descr}
 ```
 
 </td><td>
@@ -127,7 +134,7 @@ Some text&lt;!--en--&gt;
 Второй способ заключается в использовании особой конструкции:
 
 ```markdown
-\${en:'Some text', ru:'Некоторый текст'} 
+${en:'Some text', ru:'Некоторый текст'} 
 ```
 
 ### Виджеты
@@ -141,7 +148,7 @@ Some text&lt;!--en--&gt;
 <tr><td>
 
 ```markdown
-\${widget:languages} 
+${widget:languages} 
 ```
 
 </td><td>
@@ -169,7 +176,7 @@ Some text&lt;!--en--&gt;
 
 &#35;&#35; Abstract
 
-\${widget:tableOfContents(title = "\${en:'Table of contents', ru:'Содержание'}", ordered = "true")}
+${widget:tableOfContents(title = "${en:'Table of contents', ru:'Содержание'}", ordered = "true")}
 
 &#35;&#35; Part 1
 
@@ -232,20 +239,20 @@ Some text&lt;!--en--&gt;
 <tr><td>
 
 ```markdown
-Last updated: \${widget:date}
+Last updated: ${widget:date}
 ```
 
 </td><td>
 
 ```markdown
-Last updated: 26.06.2024 09:56:29
+Last updated: 26.06.2024 10:06:04
 ```
 
 </td></tr>
 <tr><td>
 
 ```markdown
-\${widget:date(pattern = 'dd.MM.yyyy')}
+${widget:date(pattern = 'dd.MM.yyyy')}
 ```
 
 </td><td>

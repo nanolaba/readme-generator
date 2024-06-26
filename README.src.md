@@ -66,6 +66,15 @@ The output of variable values is done using the following construct:<!--en-->
 Вывод значения переменных происходит при помощи конструкции вида:<!--ru-->
 
 ```markdown
+\${variable_name}
+```
+
+To display a construct like *\${...}* without replacing it with <!--en-->
+the variable's value, precede it with the '' character:<!--en-->
+Чтобы вывести в файл конструкцию вида *\${...}*, не заменяя ее значением<!--ru-->
+переменной, предварите ее символом '\':<!--ru-->
+
+```markdown
 \\${variable_name}
 ```
 
@@ -76,9 +85,9 @@ The output of variable values is done using the following construct:<!--en-->
 ```markdown
 &lt;!--@app_name=My Application--&gt;
 &lt;!--@app_version=**1.0.1**--&gt;
-&lt;!--@app_descr=This is *\\${app_name}* version \\${app_version}--&gt;
-\\${app_name} version \\${app_version}
-\\${app_descr}
+&lt;!--@app_descr=This is *\${app_name}* version \${app_version}--&gt;
+\${app_name} version \${app_version}
+\${app_descr}
 ```
 
 </td><td>
@@ -142,7 +151,7 @@ The second method involves using a special construct:<!--en-->
 Второй способ заключается в использовании особой конструкции:<!--ru-->
 
 ```markdown
-\\${en:'Some text', ru:'Некоторый текст'} 
+\${en:'Some text', ru:'Некоторый текст'} 
 ```
 
 ### ${en:'Widgets', ru:'Виджеты'}
@@ -157,7 +166,7 @@ This component allows you to generate links to other versions of a document (wri
 <tr><td>
 
 ```markdown
-\\${widget:languages} 
+\${widget:languages} 
 ```
 
 </td><td>
@@ -188,7 +197,7 @@ Headers located above the widget in the text are ignored.<!--en-->
 
 &#35;&#35; Abstract
 
-\\${widget:tableOfContents(title = "\\${en:'Table of contents', ru:'Содержание'}", ordered = "true")}
+\${widget:tableOfContents(title = "\${en:'Table of contents', ru:'Содержание'}", ordered = "true")}
 
 &#35;&#35; Part 1
 
@@ -252,7 +261,7 @@ This component allows you to insert the current date into a document.<!--en-->
 <tr><td>
 
 ```markdown
-Last updated: \\${widget:date}
+Last updated: \${widget:date}
 ```
 
 </td><td>
@@ -265,7 +274,7 @@ Last updated: ${widget:date}
 <tr><td>
 
 ```markdown
-\\${widget:date(pattern = 'dd.MM.yyyy')}
+\${widget:date(pattern = 'dd.MM.yyyy')}
 ```
 
 </td><td>
