@@ -70,7 +70,7 @@ ${variable_name}
 ```
 
 To display a construct like *${...}* without replacing it with
-the variable's value, precede it with the '' character:
+the variable's value, precede it with the '\' character:
 
 ```markdown
 \${variable_name}
@@ -202,9 +202,9 @@ ${widget:tableOfContents(title = "${en:'Table of contents', ru:'Содержан
 &#35;&#35; Table of contents
 
 1. [Part 1](#part-1)
-	1. [Chapter 1](#chapter-1)
-	2. [Chapter 2](#chapter-2)
-	3. [Chapter 3](#chapter-3)
+    1. [Chapter 1](#chapter-1)
+    2. [Chapter 2](#chapter-2)
+    3. [Chapter 3](#chapter-3)
 2. [Part 2](#part-2)
 3. [Part 3](#part-3)
 
@@ -246,7 +246,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 26.06.2024 10:06:04
+Last updated: 26.06.2024 10:45:09
 ```
 
 </td></tr>
