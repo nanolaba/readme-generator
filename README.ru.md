@@ -127,8 +127,8 @@ This is *My Application* version **1.0.1**
 Первый заключается в использовании комментариев в конце строки, например:
 
 ```markdown
-Some text&lt;!--en-->
-Некоторый текст&lt;!--ru-->
+Some text<\!--en-->
+Некоторый текст<\!--ru-->
 ```
 
 Второй способ заключается в использовании особой конструкции:
@@ -171,8 +171,8 @@ ${widget:languages}
 <tr><th>Пример использования</th><th>Результат</th></tr>
 <tr><td>
 
-```html
-&#35; Title of the document
+```markdown
+\# Title of the document
 
 &#35;&#35; Abstract
 
@@ -193,7 +193,7 @@ ${widget:tableOfContents(title = "${en:'Table of contents', ru:'Содержан
 
 </td><td>
 
-```html 
+```markdown 
 &#35; Title of the document
 
 &#35;&#35; Abstract
@@ -245,7 +245,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 26.06.2024 11:04:47
+Last updated: 26.06.2024 11:06:58
 ```
 
 </td></tr>
