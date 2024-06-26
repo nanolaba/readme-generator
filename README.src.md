@@ -70,9 +70,9 @@ The output of variable values is done using the following construct:<!--en-->
 ```
 
 To display a construct like *\${...}* without replacing it with <!--en-->
-the variable's value, precede it with the '\' character:<!--en-->
+the variable's value, precede it with the '\\' character:<!--en-->
 Чтобы вывести в файл конструкцию вида *\${...}*, не заменяя ее значением<!--ru-->
-переменной, предварите ее символом '\':<!--ru-->
+переменной, предварите ее символом '\\':<!--ru-->
 
 ```markdown
 \\${variable_name}

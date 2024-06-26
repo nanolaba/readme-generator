@@ -70,7 +70,7 @@ ${variable_name}
 ```
 
 To display a construct like *${...}* without replacing it with
-the variable's value, precede it with the '\' character:
+the variable's value, precede it with the '\\' character:
 
 ```markdown
 \${variable_name}
@@ -246,7 +246,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 26.06.2024 10:45:09
+Last updated: 26.06.2024 10:51:26
 ```
 
 </td></tr>
