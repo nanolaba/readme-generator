@@ -128,8 +128,8 @@ To write text in different languages, there are two methods available.
 The first one involves using comments at the end of the line, for example:
 
 ```markdown
-Some text&lt;!--en-->
-Некоторый текст&lt;!--ru-->
+Some text<\!--en-->
+Некоторый текст<\!--ru-->
 ```
 
 The second method involves using a special construct:
@@ -172,8 +172,8 @@ Headers located above the widget in the text are ignored.
 <tr><th>Usage example</th><th>Result</th></tr>
 <tr><td>
 
-```html
-&#35; Title of the document
+```markdown
+\# Title of the document
 
 &#35;&#35; Abstract
 
@@ -194,7 +194,7 @@ ${widget:tableOfContents(title = "${en:'Table of contents', ru:'Содержан
 
 </td><td>
 
-```html 
+```markdown 
 &#35; Title of the document
 
 &#35;&#35; Abstract
@@ -246,7 +246,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 26.06.2024 11:04:47
+Last updated: 26.06.2024 11:06:58
 ```
 
 </td></tr>

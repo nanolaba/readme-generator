@@ -143,8 +143,8 @@ The first one involves using comments at the end of the line, for example:<!--en
 Первый заключается в использовании комментариев в конце строки, например:<!--ru-->
 
 ```markdown
-Some text&lt;!--en-->
-Некоторый текст&lt;!--ru-->
+Some text<\!--en-->
+Некоторый текст<\!--ru-->
 ```
 
 The second method involves using a special construct:<!--en-->
@@ -192,8 +192,8 @@ Headers located above the widget in the text are ignored.<!--en-->
 <tr><th>${en:'Usage example', ru:'Пример использования'}</th><th>${en:'Result', ru:'Результат'}</th></tr>
 <tr><td>
 
-```html
-&#35; Title of the document
+```markdown
+\# Title of the document
 
 &#35;&#35; Abstract
 
@@ -214,7 +214,7 @@ Headers located above the widget in the text are ignored.<!--en-->
 
 </td><td>
 
-```html 
+```markdown 
 &#35; Title of the document
 
 &#35;&#35; Abstract
