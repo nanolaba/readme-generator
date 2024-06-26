@@ -257,4 +257,9 @@ class TemplateLineTest extends DefaultNRGTest {
         assertEquals("\\${AA}", line.getProperty("CC", "ru"));
         assertEquals("${AA}", line.generateLine("ru"));
     }
+
+    @Test
+    public void testEscapeCharacters3() {
+        assertEquals("<!--@A=B-->", line("<!--\\@A=B-->").generateLine("ru"));
+    }
 }

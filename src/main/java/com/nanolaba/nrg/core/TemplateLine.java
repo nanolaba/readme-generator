@@ -161,7 +161,7 @@ public class TemplateLine {
             String result = fillLineWithProperties(language);
             result = renderWidgets(result, language);
             result = removeNrgDataFromText(result);
-            result = replaceEscapedCharacter(result, "$");
+            result = replaceEscapedCharacters(result);
             return result;
         } else {
             return null;
@@ -180,7 +180,9 @@ public class TemplateLine {
         return lineNumber;
     }
 
-    private String replaceEscapedCharacter(String line, String c) {
-        return line.replace("\\" + c, c);
+    private String replaceEscapedCharacters(String line) {
+        return line
+                .replace("\\$", "$")
+                .replace("<!--\\@", "<!--@");
     }
 }

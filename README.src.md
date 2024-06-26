@@ -59,7 +59,7 @@ The template syntax supports the use of variables. Variables are defined using t
 Определение переменных происходит при помощи конструкции:<!--ru-->
 
 ```markdown
-&lt;!--@variable_name=variable value-->
+<!--\@variable_name=variable value-->
 ```
 
 The output of variable values is done using the following construct:<!--en-->
@@ -83,9 +83,9 @@ the variable's value, precede it with the '\\' character:<!--en-->
 <tr><td>
 
 ```markdown
-&lt;!--@app_name=My Application--&gt;
-&lt;!--@app_version=**1.0.1**--&gt;
-&lt;!--@app_descr=This is *\${app_name}* version \${app_version}--&gt;
+<!--\@app_name=My Application-->
+<!--\@app_version=**1.0.1**-->
+<!--\@app_descr=This is *${app_name}* version ${app_version}-->
 \${app_name} version \${app_version}
 \${app_descr}
 ```
@@ -110,8 +110,8 @@ you can specify application properties, for example:<!--en-->
 При помощи синтаксиса установки значений переменных в шаблоне можно указывать свойства приложения, например:<!--ru-->
 
 ```markdown
-&lt;!--@nrg.languages=en,ru--&gt;
-&lt;!--@nrg.defaultLanguage=en--&gt;
+<!--\@nrg.languages=en,ru-->
+<!--\@nrg.defaultLanguage=en-->
 ```
 
 **${en:'Available properties', ru:'Свойства приложения'}:**
@@ -143,8 +143,8 @@ The first one involves using comments at the end of the line, for example:<!--en
 Первый заключается в использовании комментариев в конце строки, например:<!--ru-->
 
 ```markdown
-Some text&lt;!--en--&gt;
-Некоторый текст&lt;!--ru--&gt;
+Some text&lt;!--en-->
+Некоторый текст&lt;!--ru-->
 ```
 
 The second method involves using a special construct:<!--en-->
@@ -192,7 +192,7 @@ Headers located above the widget in the text are ignored.<!--en-->
 <tr><th>${en:'Usage example', ru:'Пример использования'}</th><th>${en:'Result', ru:'Результат'}</th></tr>
 <tr><td>
 
-```markdown
+```html
 &#35; Title of the document
 
 &#35;&#35; Abstract
@@ -214,7 +214,7 @@ Headers located above the widget in the text are ignored.<!--en-->
 
 </td><td>
 
-```markdown 
+```html 
 &#35; Title of the document
 
 &#35;&#35; Abstract
