@@ -85,7 +85,7 @@ the variable's value, precede it with the '\\' character:<!--en-->
 ```markdown
 <!--\@app_name=My Application-->
 <!--\@app_version=**1.0.1**-->
-<!--\@app_descr=This is *${app_name}* version ${app_version}-->
+<!--\@app_descr=This is *\${app_name}* version \${app_version}-->
 \${app_name} version \${app_version}
 \${app_descr}
 ```
