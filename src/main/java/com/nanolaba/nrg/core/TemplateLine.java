@@ -93,7 +93,9 @@ public class TemplateLine {
         Matcher m = WIDGET_TAG_PATTERN.matcher(line);
 
         while (m.find()) {
-            res.add(new WidgetTag(this, m.group(1), m.group(3), m.start(), m.end()));
+            if (isNotEscaped(line, m)) {
+                res.add(new WidgetTag(this, m.group(1), m.group(3), m.start(), m.end()));
+            }
         }
 
         return res;
@@ -103,29 +105,41 @@ public class TemplateLine {
         for (Object property : config.getProperties().keySet()) {
             String propertyName = property.toString();
             String value = config.getProperties().getProperty(propertyName);
-            line = line.replaceAll("\\$\\{ *" + Pattern.quote(propertyName) + "[^}]*}", value);
+            Pattern pattern = Pattern.compile("\\$\\{\\s*" + Pattern.quote(propertyName) + "\\s*}");
+            Matcher m = pattern.matcher(line);
+            while (m.find()) {
+                if (isNotEscaped(line, m)) {
+                    line = m.replaceAll(value);
+                }
+            }
         }
 
         return line;
     }
 
+    private boolean isNotEscaped(String line, Matcher m) {
+        return m.start() == 0 || line.charAt(m.start() - 1) != '\\';
+    }
+
     protected String renderLanguageProperties(String line, String language) {
-        String pairs = config.getLanguages().stream().map(s -> "( *" + Pattern.quote(s) + ": *['\"][^}]*['\"][, ]*)").collect(Collectors.joining("|"));
-        String regex = "\\$\\{ *(" + pairs + ")}";
+        String pairs = config.getLanguages().stream().map(s -> "(\\s*" + Pattern.quote(s) + ": *['\"][^}]*['\"][,\\s]*)").collect(Collectors.joining("|"));
+        String regex = "\\$\\{\\s*(" + pairs + ")}";
 
         StringBuilder result = new StringBuilder(line);
         int shift = 0;
         Matcher matcher = Pattern.compile(regex).matcher(line);
         while (matcher.find()) {
-            String params = matcher.group(1);
-            Map<String, String> vals = Arrays.stream(params.split(","))
-                    .map(String::trim)
-                    .map(s -> StringUtils.split(s, ":", 2))
-                    .collect(Collectors.toMap(s -> s[0], s -> s.length > 1 ? NRGUtil.unwrapParameterValue(s[1]) : ""));
+            if (isNotEscaped(line, matcher)) {
+                String params = matcher.group(1);
+                Map<String, String> vals = Arrays.stream(params.split(","))
+                        .map(String::trim)
+                        .map(s -> StringUtils.split(s, ":", 2))
+                        .collect(Collectors.toMap(s -> s[0], s -> s.length > 1 ? NRGUtil.unwrapParameterValue(s[1]) : ""));
 
-            String body = StringUtils.trimToEmpty(vals.get(language));
-            result.replace(shift + matcher.start(), shift + matcher.end(), body);
-            shift += body.length() - (matcher.end() - matcher.start());
+                String body = StringUtils.trimToEmpty(vals.get(language));
+                result.replace(shift + matcher.start(), shift + matcher.end(), body);
+                shift += body.length() - (matcher.end() - matcher.start());
+            }
         }
         return result.toString();
     }
@@ -147,6 +161,7 @@ public class TemplateLine {
             String result = fillLineWithProperties(language);
             result = renderWidgets(result, language);
             result = removeNrgDataFromText(result);
+            result = replaceEscapedCharacter(result, "$");
             return result;
         } else {
             return null;
@@ -163,5 +178,9 @@ public class TemplateLine {
 
     public int getLineNumber() {
         return lineNumber;
+    }
+
+    private String replaceEscapedCharacter(String line, String c) {
+        return line.replace("\\" + c, c);
     }
 }

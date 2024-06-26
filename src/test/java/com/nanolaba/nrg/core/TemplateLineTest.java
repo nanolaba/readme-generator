@@ -124,6 +124,7 @@ class TemplateLineTest extends DefaultNRGTest {
             return l.generateLine(lang);
         };
 
+        assertEquals("${widget:test}", action.apply("\\${widget:test}", "ru"));
         assertEquals("test widget body null", action.apply("${widget:test}", "ru"));
         assertEquals("test widget body null", action.apply("${widget:test}", "ru"));
         assertEquals("test widget body ", action.apply("${ widget:test() }", "ru"));
@@ -155,34 +156,40 @@ class TemplateLineTest extends DefaultNRGTest {
 
     @Test
     public void testReadProperties() {
+
         Properties p = line("").readProperties("ru");
-        assertEquals(0, p.size());
+        assertPropertiesSize(0, p);
 
         p = line("<!--@AAA=BBB-->").readProperties("ru");
-        assertEquals(1, p.size());
+        assertPropertiesSize(1, p);
         assertEquals("BBB", p.getProperty("AAA"));
 
         p = line("<!--@AAA-->").readProperties("ru");
-        assertEquals(1, p.size());
+        assertPropertiesSize(1, p);
         assertEquals("", p.getProperty("AAA"));
 
         p = line("<!--@AAA=BBB-->").readProperties("ru");
-        assertEquals(1, p.size());
+        assertPropertiesSize(1, p);
         assertEquals("BBB", p.getProperty("AAA"));
 
         p = line("<!--@AAA=BBB--><!--@AAA.BBB=CCC.DDD-->").readProperties("ru");
-        assertEquals(2, p.size());
+        assertPropertiesSize(2, p);
         assertEquals("BBB", p.getProperty("AAA"));
         assertEquals("CCC.DDD", p.getProperty("AAA.BBB"));
 
         p = line("<!-- @AAA = BBB --><!--@ AAA.BBB =  CCC.DDD  -->").readProperties("ru");
-        assertEquals(2, p.size());
+        assertPropertiesSize(2, p);
         assertEquals("BBB", p.getProperty("AAA"));
         assertEquals("CCC.DDD", p.getProperty("AAA.BBB"));
 
         p = line("<!--@AAA=${ru:'BBB', en:'CCC'}-->", "en", "ru").readProperties("ru");
-        assertEquals(1, p.size());
+        assertPropertiesSize(1, p);
         assertEquals("BBB", p.getProperty("AAA"));
+    }
+
+    private void assertPropertiesSize(int expected, Properties p) {
+        int defaultPropertiesCount = 1;
+        assertEquals(defaultPropertiesCount + expected, p.size());
     }
 
     @Test
@@ -208,6 +215,7 @@ class TemplateLineTest extends DefaultNRGTest {
         assertEquals("Содержание", line("${en:'Table of contents', ru:'Содержание'}", "en", "ru").generateLine("ru"));
         assertEquals("Содержание", line("${en:'Table of contents', ru:\"Содержание\"}", "en", "ru").generateLine("ru"));
         assertEquals("Table of contents", line("${en:'Table of contents', ru:'Содержание'}", "en", "ru").generateLine("en"));
+        assertEquals("${en:'Table of contents', ru:'Содержание'}", line("\\${en:'Table of contents', ru:'Содержание'}", "en", "ru").generateLine("en"));
     }
 
     @Test
@@ -233,5 +241,20 @@ class TemplateLineTest extends DefaultNRGTest {
     @Test
     public void testRenderCombinedProperty() {
         assertEquals("BB", line("<!--@AA=BB --><!--@CC=${AA}-->${CC}").generateLine("ru"));
+        assertEquals("123", line("<!--@A=123 --><!--@B=${A}--><!--@C=${B}-->${C}").generateLine("ru"));
+    }
+
+    @Test
+    public void testEscapeCharacters() {
+        assertEquals("${A}", line("<!--@A=B-->\\${A}").generateLine("ru"));
+    }
+
+    @Test
+    public void testEscapeCharacters2() {
+        TemplateLine line = line("<!--@AA=BB--><!--@CC=\\${AA}-->${CC}");
+
+        assertEquals("BB", line.getProperty("AA", "ru"));
+        assertEquals("\\${AA}", line.getProperty("CC", "ru"));
+        assertEquals("${AA}", line.generateLine("ru"));
     }
 }

@@ -15,6 +15,7 @@
 [Markdown]( https://en.wikipedia.org/wiki/Markdown) на основе единого файла-шаблона.
 В шаблоне можно использовать переменные, а также специальные компоненты (виджеты).
 Данный документ является примером результата работы этой программы.
+Шаблон, из которого сгенерирован этот документ, доступен по ссылке - [README.src.md](README.src.md).
 
 Последняя стабильная версия - **1.0**.
 
@@ -25,11 +26,11 @@
 	2. [Использование в качестве java-библиотеки](#использование-в-качестве-java-библиотеки)
 3. [Синтаксис шаблона](#синтаксис-шаблона)
 	1. [Переменные](#переменные)
-	1. [Свойства](#свойства)
-	2. [Multilanguage support](#multilanguage-support)
-	1. [Виджеты](#виджеты)
+	2. [Свойства](#свойства)
+	3. [Multilanguage support](#multilanguage-support)
+	4. [Виджеты](#виджеты)
 		1. [Виджет 'languages'](#виджет-'languages')
-		1. [Виджет 'tableOfContents'](#виджет-'tableofcontents')
+		2. [Виджет 'tableOfContents'](#виджет-'tableofcontents')
 		1. [Виджет 'date'](#виджет-'date')
 	1. [Feedback](#feedback)
 
@@ -64,7 +65,7 @@ TODO
 Вывод значения переменных происходит при помощи конструкции вида:
 
 ```markdown
-&#36;{variable_name}
+\${variable_name}
 ```
 
 <table>
@@ -74,9 +75,9 @@ TODO
 ```markdown
 &lt;!--@app_name=My Application--&gt;
 &lt;!--@app_version=**1.0.1**--&gt;
-&lt;!--@app_descr=This is *&#36;{app_name}* version &#36;{app_version}--&gt;
-&#36;{app_name} version &#36;{app_version}
-&#36;{app_descr}
+&lt;!--@app_descr=This is *\${app_name}* version \${app_version}--&gt;
+\${app_name} version \${app_version}
+\${app_descr}
 ```
 
 </td><td>
@@ -126,7 +127,7 @@ Some text&lt;!--en--&gt;
 Второй способ заключается в использовании особой конструкции:
 
 ```markdown
-&#36;{en:'Some text', ru:'Некоторый текст'} 
+\${en:'Some text', ru:'Некоторый текст'} 
 ```
 
 ### Виджеты
@@ -140,7 +141,7 @@ Some text&lt;!--en--&gt;
 <tr><td>
 
 ```markdown
-&#36;{widget:languages} 
+\${widget:languages} 
 ```
 
 </td><td>
@@ -168,7 +169,7 @@ Some text&lt;!--en--&gt;
 
 &#35;&#35; Abstract
 
-&#36;{widget:tableOfContents(title = "&#36;{en:'Table of contents', ru:'Содержание'}", ordered = "true")}
+\${widget:tableOfContents(title = "\${en:'Table of contents', ru:'Содержание'}", ordered = "true")}
 
 &#35;&#35; Part 1
 
@@ -231,26 +232,26 @@ Some text&lt;!--en--&gt;
 <tr><td>
 
 ```markdown
-Last updated: &#36;{widget:date}
+Last updated: \${widget:date}
 ```
 
 </td><td>
 
 ```markdown
-Last updated: 24.06.2024 14:31:02
+Last updated: 26.06.2024 09:56:29
 ```
 
 </td></tr>
 <tr><td>
 
 ```markdown
-&#36;{widget:date(pattern = 'dd.MM.yyyy')}
+\${widget:date(pattern = 'dd.MM.yyyy')}
 ```
 
 </td><td>
 
 ```markdown
-24.06.2024
+26.06.2024
 ```
 
 </td></tr>
@@ -269,4 +270,5 @@ Last updated: 24.06.2024 14:31:02
 
 TODO
 
-*Дата последнего обновления: 24.06.2024*
+---
+*Дата последнего обновления: 26.06.2024*

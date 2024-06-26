@@ -15,6 +15,8 @@ Using the **Nanolaba Readme Generator (NRG)** program, you can generate separate
 in [Markdown format]( https://en.wikipedia.org/wiki/Markdown) based on a single template file.
 The template allows the use of variables and special components (widgets).
 This document is an example of the result of this program.
+The template from which this document was generated is available at the
+following link - [README.src.md](README.src.md).
 
 The latest stable version of the program is **1.0**.
 
@@ -26,11 +28,11 @@ The latest stable version of the program is **1.0**.
 	2. [Use as a java-library](#use-as-a-java-library)
 3. [Template syntax](#template-syntax)
 	1. [Variables](#variables)
-	1. [Properties](#properties)
-	2. [Multilanguage support](#multilanguage-support)
-	1. [Widgets](#widgets)
+	2. [Properties](#properties)
+	3. [Multilanguage support](#multilanguage-support)
+	4. [Widgets](#widgets)
 		1. [Widget 'languages'](#widget-'languages')
-		1. [Widget 'tableOfContents'](#widget-'tableofcontents')
+		2. [Widget 'tableOfContents'](#widget-'tableofcontents')
 		1. [Widget 'date'](#widget-'date')
 	1. [Feedback](#feedback)
 
@@ -64,7 +66,7 @@ The template syntax supports the use of variables. Variables are defined using t
 The output of variable values is done using the following construct:
 
 ```markdown
-&#36;{variable_name}
+\${variable_name}
 ```
 
 <table>
@@ -74,9 +76,9 @@ The output of variable values is done using the following construct:
 ```markdown
 &lt;!--@app_name=My Application--&gt;
 &lt;!--@app_version=**1.0.1**--&gt;
-&lt;!--@app_descr=This is *&#36;{app_name}* version &#36;{app_version}--&gt;
-&#36;{app_name} version &#36;{app_version}
-&#36;{app_descr}
+&lt;!--@app_descr=This is *\${app_name}* version \${app_version}--&gt;
+\${app_name} version \${app_version}
+\${app_descr}
 ```
 
 </td><td>
@@ -126,7 +128,7 @@ Some text&lt;!--en--&gt;
 The second method involves using a special construct:
 
 ```markdown
-&#36;{en:'Some text', ru:'Некоторый текст'} 
+\${en:'Some text', ru:'Некоторый текст'} 
 ```
 
 ### Widgets
@@ -140,7 +142,7 @@ This component allows you to generate links to other versions of a document (wri
 <tr><td>
 
 ```markdown
-&#36;{widget:languages} 
+\${widget:languages} 
 ```
 
 </td><td>
@@ -168,7 +170,7 @@ Headers located above the widget in the text are ignored.
 
 &#35;&#35; Abstract
 
-&#36;{widget:tableOfContents(title = "&#36;{en:'Table of contents', ru:'Содержание'}", ordered = "true")}
+\${widget:tableOfContents(title = "\${en:'Table of contents', ru:'Содержание'}", ordered = "true")}
 
 &#35;&#35; Part 1
 
@@ -231,26 +233,26 @@ This component allows you to insert the current date into a document.
 <tr><td>
 
 ```markdown
-Last updated: &#36;{widget:date}
+Last updated: \${widget:date}
 ```
 
 </td><td>
 
 ```markdown
-Last updated: 24.06.2024 14:31:02
+Last updated: 26.06.2024 09:56:29
 ```
 
 </td></tr>
 <tr><td>
 
 ```markdown
-&#36;{widget:date(pattern = 'dd.MM.yyyy')}
+\${widget:date(pattern = 'dd.MM.yyyy')}
 ```
 
 </td><td>
 
 ```markdown
-24.06.2024
+26.06.2024
 ```
 
 </td></tr>
@@ -269,4 +271,5 @@ You can read more about date pattern syntax in the
 
 TODO
 
-*Last updated: 24.06.2024*
+---
+*Last updated: 26.06.2024*
