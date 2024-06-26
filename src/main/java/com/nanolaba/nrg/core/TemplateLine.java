@@ -183,6 +183,7 @@ public class TemplateLine {
     private String replaceEscapedCharacters(String line) {
         return line
                 .replace("\\$", "$")
-                .replace("<!--\\@", "<!--@");
+                .replace("<!--\\@", "<!--@")
+                .replace("<\\!--", "<!--");
     }
 }

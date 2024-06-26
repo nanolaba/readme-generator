@@ -33,6 +33,7 @@ The latest stable version of the program is **1.0**.
 	4. [Widgets](#widgets)
 		1. [Widget 'languages'](#widget-'languages')
 		2. [Widget 'tableOfContents'](#widget-'tableofcontents')
+1. [Abstract](#abstract)
 		1. [Widget 'date'](#widget-'date')
 	1. [Feedback](#feedback)
 
@@ -128,8 +129,8 @@ To write text in different languages, there are two methods available.
 The first one involves using comments at the end of the line, for example:
 
 ```markdown
-Some text<\!--en-->
-Некоторый текст<\!--ru-->
+Some text<!--en-->
+Некоторый текст<!--ru-->
 ```
 
 The second method involves using a special construct:
@@ -173,9 +174,9 @@ Headers located above the widget in the text are ignored.
 <tr><td>
 
 ```markdown
-\# Title of the document
+ #Title of the document
 
-&#35;&#35; Abstract
+## Abstract
 
 ${widget:tableOfContents(title = "${en:'Table of contents', ru:'Содержание'}", ordered = "true")}
 
@@ -246,7 +247,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 26.06.2024 11:06:58
+Last updated: 26.06.2024 11:13:20
 ```
 
 </td></tr>
