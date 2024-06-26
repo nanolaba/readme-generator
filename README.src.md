@@ -19,6 +19,8 @@ Using the ${name} program, you can generate separate files for different languag
 in [Markdown format]( https://en.wikipedia.org/wiki/Markdown) based on a single template file.<!--en-->
 The template allows the use of variables and special components (widgets).<!--en-->
 This document is an example of the result of this program.<!--en-->
+The template from which this document was generated is available at the<!--en-->
+following link - [README.src.md](README.src.md).<!--en-->
 <!--en-->
 The latest stable version of the program is **${stableVersion}**.<!--en-->
 
@@ -26,6 +28,7 @@ The latest stable version of the program is **${stableVersion}**.<!--en-->
 [Markdown]( https://en.wikipedia.org/wiki/Markdown) на основе единого файла-шаблона.<!--ru-->
 В шаблоне можно использовать переменные, а также специальные компоненты (виджеты). <!--ru-->
 Данный документ является примером результата работы этой программы.<!--ru-->
+Шаблон, из которого сгенерирован этот документ, доступен по ссылке - [README.src.md](README.src.md).<!--ru-->
 <!--ru-->
 Последняя стабильная версия - **${stableVersion}**.<!--ru-->
 
@@ -63,7 +66,7 @@ The output of variable values is done using the following construct:<!--en-->
 Вывод значения переменных происходит при помощи конструкции вида:<!--ru-->
 
 ```markdown
-&#36;{variable_name}
+\\${variable_name}
 ```
 
 <table>
@@ -73,9 +76,9 @@ The output of variable values is done using the following construct:<!--en-->
 ```markdown
 &lt;!--@app_name=My Application--&gt;
 &lt;!--@app_version=**1.0.1**--&gt;
-&lt;!--@app_descr=This is *&#36;{app_name}* version &#36;{app_version}--&gt;
-&#36;{app_name} version &#36;{app_version}
-&#36;{app_descr}
+&lt;!--@app_descr=This is *\\${app_name}* version \\${app_version}--&gt;
+\\${app_name} version \\${app_version}
+\\${app_descr}
 ```
 
 </td><td>
@@ -139,7 +142,7 @@ The second method involves using a special construct:<!--en-->
 Второй способ заключается в использовании особой конструкции:<!--ru-->
 
 ```markdown
-&#36;{en:'Some text', ru:'Некоторый текст'} 
+\\${en:'Some text', ru:'Некоторый текст'} 
 ```
 
 ### ${en:'Widgets', ru:'Виджеты'}
@@ -154,7 +157,7 @@ This component allows you to generate links to other versions of a document (wri
 <tr><td>
 
 ```markdown
-&#36;{widget:languages} 
+\\${widget:languages} 
 ```
 
 </td><td>
@@ -185,7 +188,7 @@ Headers located above the widget in the text are ignored.<!--en-->
 
 &#35;&#35; Abstract
 
-&#36;{widget:tableOfContents(title = "&#36;{en:'Table of contents', ru:'Содержание'}", ordered = "true")}
+\\${widget:tableOfContents(title = "\\${en:'Table of contents', ru:'Содержание'}", ordered = "true")}
 
 &#35;&#35; Part 1
 
@@ -249,7 +252,7 @@ This component allows you to insert the current date into a document.<!--en-->
 <tr><td>
 
 ```markdown
-Last updated: &#36;{widget:date}
+Last updated: \\${widget:date}
 ```
 
 </td><td>
@@ -262,7 +265,7 @@ Last updated: ${widget:date}
 <tr><td>
 
 ```markdown
-&#36;{widget:date(pattern = 'dd.MM.yyyy')}
+\\${widget:date(pattern = 'dd.MM.yyyy')}
 ```
 
 </td><td>
@@ -289,4 +292,5 @@ You can read more about date pattern syntax in the<!--en-->
 
 TODO
 
+---
 *${en:'Last updated:', ru:'Дата последнего обновления:'} ${widget:date(pattern= 'dd.MM.yyyy')}*
