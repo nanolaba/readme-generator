@@ -193,9 +193,9 @@ Headers located above the widget in the text are ignored.<!--en-->
 <tr><td>
 
 ```markdown
-\# Title of the document
+ #Title of the document
 
-&#35;&#35; Abstract
+## Abstract
 
 \${widget:tableOfContents(title = "\${en:'Table of contents', ru:'Содержание'}", ordered = "true")}
 

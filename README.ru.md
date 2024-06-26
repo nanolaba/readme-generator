@@ -31,6 +31,7 @@
 	4. [Виджеты](#виджеты)
 		1. [Виджет 'languages'](#виджет-'languages')
 		2. [Виджет 'tableOfContents'](#виджет-'tableofcontents')
+1. [Abstract](#abstract)
 		1. [Виджет 'date'](#виджет-'date')
 	1. [Feedback](#feedback)
 
@@ -127,8 +128,8 @@ This is *My Application* version **1.0.1**
 Первый заключается в использовании комментариев в конце строки, например:
 
 ```markdown
-Some text<\!--en-->
-Некоторый текст<\!--ru-->
+Some text<!--en-->
+Некоторый текст<!--ru-->
 ```
 
 Второй способ заключается в использовании особой конструкции:
@@ -172,9 +173,8 @@ ${widget:languages}
 <tr><td>
 
 ```markdown
-\# Title of the document
-
-&#35;&#35; Abstract
+ #Title of the document
+ ## Abstract
 
 ${widget:tableOfContents(title = "${en:'Table of contents', ru:'Содержание'}", ordered = "true")}
 
@@ -245,7 +245,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 26.06.2024 11:06:58
+Last updated: 26.06.2024 11:13:20
 ```
 
 </td></tr>
