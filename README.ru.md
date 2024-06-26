@@ -59,7 +59,7 @@ TODO
 Определение переменных происходит при помощи конструкции:
 
 ```markdown
-&lt;!--@variable_name=variable value-->
+<!--@variable_name=variable value-->
 ```
 
 Вывод значения переменных происходит при помощи конструкции вида:
@@ -80,9 +80,9 @@ ${variable_name}
 <tr><td>
 
 ```markdown
-&lt;!--@app_name=My Application--&gt;
-&lt;!--@app_version=**1.0.1**--&gt;
-&lt;!--@app_descr=This is *${app_name}* version ${app_version}--&gt;
+<!--@app_name=My Application-->
+<!--@app_version=**1.0.1**-->
+<!--@app_descr=This is *My Application* version **1.0.1**-->
 ${app_name} version ${app_version}
 ${app_descr}
 ```
@@ -102,8 +102,8 @@ This is *My Application* version **1.0.1**
 При помощи синтаксиса установки значений переменных в шаблоне можно указывать свойства приложения, например:
 
 ```markdown
-&lt;!--@nrg.languages=en,ru--&gt;
-&lt;!--@nrg.defaultLanguage=en--&gt;
+<!--@nrg.languages=en,ru-->
+<!--@nrg.defaultLanguage=en-->
 ```
 
 **Свойства приложения:**
@@ -127,8 +127,8 @@ This is *My Application* version **1.0.1**
 Первый заключается в использовании комментариев в конце строки, например:
 
 ```markdown
-Some text&lt;!--en--&gt;
-Некоторый текст&lt;!--ru--&gt;
+Some text&lt;!--en-->
+Некоторый текст&lt;!--ru-->
 ```
 
 Второй способ заключается в использовании особой конструкции:
@@ -171,7 +171,7 @@ ${widget:languages}
 <tr><th>Пример использования</th><th>Результат</th></tr>
 <tr><td>
 
-```markdown
+```html
 &#35; Title of the document
 
 &#35;&#35; Abstract
@@ -193,7 +193,7 @@ ${widget:tableOfContents(title = "${en:'Table of contents', ru:'Содержан
 
 </td><td>
 
-```markdown 
+```html 
 &#35; Title of the document
 
 &#35;&#35; Abstract
@@ -245,7 +245,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 26.06.2024 10:51:26
+Last updated: 26.06.2024 11:04:47
 ```
 
 </td></tr>
