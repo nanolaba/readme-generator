@@ -178,9 +178,7 @@ ${widget:languages}
 Если вам необходимо исключить какой-либо заголовок из оглавления, то для этого
 его необходимо пометить комментарием `<!--toc.ignore-->`.
 
-<table>
-<tr><th>Пример использования</th><th>Результат</th></tr>
-<tr><td>
+**Пример использования**
 
 ```markdown
 # Title of the document
@@ -204,7 +202,7 @@ ${widget:tableOfContents(title = "${en:'Table of contents', ru:'Содержан
 ## Part 3
 ```
 
-</td><td>
+**Результат**
 
 ```markdown 
 # Title of the document
@@ -235,9 +233,6 @@ ${widget:tableOfContents(title = "${en:'Table of contents', ru:'Содержан
 ## Part 3
 ```
 
-</td></tr> 
-</table>
-
 Свойства виджета:
 
 | Наименование | Описание                                       | Значение по умолчанию |
@@ -260,7 +255,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 27.06.2024 08:13:19
+Last updated: 27.06.2024 08:21:19
 ```
 
 </td></tr>

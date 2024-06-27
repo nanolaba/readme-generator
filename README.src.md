@@ -164,7 +164,7 @@ How to do this is explained in the [Advanced Features](#advanced-features) secti
 Виджеты позволяют вставить в документ программно сгенерированный текст.<!--ru-->
 Если вы используете ${name} как java-библиотеку, то вы можете написать свой собственный виджет.<!--ru-->
 Как это сделать рассказано в разделе [Расширенные возможности](#расширенные-возможности).<!--ru-->
- 
+
 #### ${en:'Widget', ru:'Виджет'} 'languages'
 
 This component allows you to generate links to other versions of a document (written in other languages).<!--en-->
@@ -201,9 +201,7 @@ mark it with a comment `<\!--toc.ignore-->`.<!--en-->
 Если вам необходимо исключить какой-либо заголовок из оглавления, то для этого<!--ru-->
 его необходимо пометить комментарием `<\!--toc.ignore-->`.<!--ru-->
 
-<table>
-<tr><th>${en:'Usage example', ru:'Пример использования'}</th><th>${en:'Result', ru:'Результат'}</th></tr>
-<tr><td>
+**${en:'Usage example', ru:'Пример использования'}**
 
 ```markdown
 # Title of the document<!--toc.ignore-->
@@ -227,7 +225,7 @@ mark it with a comment `<\!--toc.ignore-->`.<!--en-->
 ## Part 3<!--toc.ignore-->
 ```
 
-</td><td>
+**${en:'Result', ru:'Результат'}**
 
 ```markdown 
 # Title of the document<!--toc.ignore-->
@@ -257,9 +255,6 @@ mark it with a comment `<\!--toc.ignore-->`.<!--en-->
 
 ## Part 3<!--toc.ignore-->
 ```
-
-</td></tr> 
-</table>
 
 ${en:'Widget parameters', ru:'Свойства виджета'}:
 
