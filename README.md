@@ -144,6 +144,10 @@ ${en:'Some text', ru:'Некоторый текст'}
 
 ### Widgets
 
+Widgets allow you to insert programmatically generated text into a document.
+If you are using **Nanolaba Readme Generator (NRG)** as a Java library, you can write your own widget.
+How to do this is explained in the [Advanced Features](#advanced-features) section.
+
 #### Widget 'languages'
 
 This component allows you to generate links to other versions of a document (written in other languages).
@@ -256,7 +260,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 27.06.2024 07:59:48
+Last updated: 27.06.2024 08:13:19
 ```
 
 </td></tr>
