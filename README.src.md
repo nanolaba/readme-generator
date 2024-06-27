@@ -88,6 +88,7 @@ the variable's value, precede it with the '\\' character:<!--en-->
 <!--\@app_descr=This is *\${app_name}* version \${app_version}-->
 \${app_name} version \${app_version}
 \${app_descr}
+\\${app_descr}
 ```
 
 </td><td>
@@ -98,6 +99,7 @@ the variable's value, precede it with the '\\' character:<!--en-->
 <!--@app_descr=This is *${app_name}* version ${app_version}-->
 ${app_name} version ${app_version}
 ${app_descr}
+\${app_descr}
 ```
 
 </td></tr>

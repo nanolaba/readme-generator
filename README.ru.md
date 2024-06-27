@@ -87,6 +87,7 @@ ${variable_name}
 <!--@app_descr=This is *${app_name}* version ${app_version}-->
 ${app_name} version ${app_version}
 ${app_descr}
+\${app_descr}
 ```
 
 </td><td>
@@ -94,6 +95,7 @@ ${app_descr}
 ```markdown
 My Application version **1.0.1**
 This is *My Application* version **1.0.1**
+${app_descr}
 ```
 
 </td></tr>
@@ -236,7 +238,7 @@ ${widget:tableOfContents(title = "${en:'Table of contents', ru:'Содержан
 | Наименование | Описание                                       | Значение по умолчанию |
 |:------------:|------------------------------------------------|:---------------------:|
 |    title     | Заглавие оглавления                            |                       |
-|   ordered    | Должны ли быть пронумерованы пункты оглавления |         false         |
+|   ordered    | Должны ли быть пронумерованы пункты оглавления |        `false`        |
 
 #### Виджет 'date'
 
@@ -253,7 +255,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 26.06.2024 21:59:21
+Last updated: 27.06.2024 07:59:48
 ```
 
 </td></tr>
@@ -266,7 +268,7 @@ ${widget:date(pattern = 'dd.MM.yyyy')}
 </td><td>
 
 ```markdown
-26.06.2024
+27.06.2024
 ```
 
 </td></tr>
@@ -276,7 +278,7 @@ ${widget:date(pattern = 'dd.MM.yyyy')}
 
 | Наименование | Описание | Значение по умолчанию |
 |:------------:|----------|:---------------------:|
-|   pattern    | 'Шаблон  |  dd.MM.yyyy HH:mm:ss  |
+|   pattern    | 'Шаблон  | `dd.MM.yyyy HH:mm:ss` |
 
 Подробнее о синтаксисе шаблона даты можно прочитать в
 [документации языка Java](https://docs.oracle.com/javase/8/docs/api/java/text/SimpleDateFormat.html).
@@ -292,4 +294,4 @@ TODO
 TODO
 
 ---
-*Дата последнего обновления: 26.06.2024*
+*Дата последнего обновления: 27.06.2024*

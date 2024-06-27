@@ -88,6 +88,7 @@ the variable's value, precede it with the '\\' character:
 <!--@app_descr=This is *${app_name}* version ${app_version}-->
 ${app_name} version ${app_version}
 ${app_descr}
+\${app_descr}
 ```
 
 </td><td>
@@ -95,6 +96,7 @@ ${app_descr}
 ```markdown
 My Application version **1.0.1**
 This is *My Application* version **1.0.1**
+${app_descr}
 ```
 
 </td></tr>
@@ -237,7 +239,7 @@ Widget parameters:
 |  Name   | Description                                           | Default value |
 |:-------:|-------------------------------------------------------|:-------------:|
 |  title  | Title of the table of contents                        |               |
-| ordered | Should the items in the table of contents be numbered |     false     |
+| ordered | Should the items in the table of contents be numbered |    `false`    |
 
 #### Widget 'date'
 
@@ -254,7 +256,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 26.06.2024 21:59:21
+Last updated: 27.06.2024 07:59:48
 ```
 
 </td></tr>
@@ -267,7 +269,7 @@ ${widget:date(pattern = 'dd.MM.yyyy')}
 </td><td>
 
 ```markdown
-26.06.2024
+27.06.2024
 ```
 
 </td></tr>
@@ -275,9 +277,9 @@ ${widget:date(pattern = 'dd.MM.yyyy')}
 
 Widget parameters:
 
-|  Name   | Description                                           |    Default value    |
-|:-------:|-------------------------------------------------------|:-------------------:|
-| pattern | Pattern according to which the date will be formatted | dd.MM.yyyy HH:mm:ss |
+|  Name   | Description                                           |     Default value     |
+|:-------:|-------------------------------------------------------|:---------------------:|
+| pattern | Pattern according to which the date will be formatted | `dd.MM.yyyy HH:mm:ss` |
 
 You can read more about date pattern syntax in the
 [Java documentation](https://docs.oracle.com/javase/8/docs/api/java/text/SimpleDateFormat.html).
@@ -293,4 +295,4 @@ TODO
 TODO
 
 ---
-*Last updated: 26.06.2024*
+*Last updated: 27.06.2024*
