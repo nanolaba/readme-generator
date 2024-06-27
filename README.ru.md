@@ -29,9 +29,9 @@
 	2. [Свойства](#свойства)
 	3. [Multilanguage support](#multilanguage-support)
 	4. [Виджеты](#виджеты)
-		1. [Виджет 'languages'](#виджет-'languages')
-		2. [Виджет 'tableOfContents'](#виджет-'tableofcontents')
-		1. [Виджет 'date'](#виджет-'date')
+		1. [Виджет 'languages'](#виджет-languages)
+		2. [Виджет 'tableOfContents'](#виджет-tableofcontents)
+		1. [Виджет 'date'](#виджет-date)
 1. [Расширенные возможности](#расширенные-возможности)
 	1. [Создание виджета](#создание-виджета)
 2. [Обратная связь](#обратная-связь)
@@ -255,7 +255,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 27.06.2024 08:21:19
+Last updated: 27.06.2024 08:26:23
 ```
 
 </td></tr>
