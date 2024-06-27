@@ -25,6 +25,7 @@ class TableOfContentsWidgetTest extends DefaultNRGTest {
                         ### aaa
                         ### ююю<!--ru-->
                         ### bbb
+                        ### ccc<!--toc.ignore-->
                         ## BBB
                         ### ccc
                         ### ddd
@@ -97,6 +98,7 @@ class TableOfContentsWidgetTest extends DefaultNRGTest {
                         someTextBeforeHeader
                         # MainHeader
                         ## AAA<!--en-->
+                        ## IGNORED<!--en--><!--toc.ignore-->
                         someText
                         someText1<!--en-->
                         someText2<!--ru-->
@@ -131,10 +133,11 @@ class TableOfContentsWidgetTest extends DefaultNRGTest {
                 "3. [CCC](#ccc)" + RN +
                 "	1. [ccc](#ccc)" + RN +
                 "		1. [cccc](#cccc)" + RN +
-                "" + RN +
+                RN +
                 "someTextBeforeHeader" + RN +
                 "# MainHeader" + RN +
                 "## AAA" + RN +
+                "## IGNORED" + RN +
                 "someText" + RN +
                 "someText1" + RN +
                 "### aaa" + RN +

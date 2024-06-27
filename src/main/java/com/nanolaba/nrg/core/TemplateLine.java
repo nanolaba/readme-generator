@@ -4,6 +4,7 @@ import com.nanolaba.logging.LOG;
 import com.nanolaba.nrg.widgets.NRGWidget;
 import com.nanolaba.nrg.widgets.WidgetTag;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.text.TextStringBuilder;
 
 import java.util.*;
 import java.util.regex.Matcher;
@@ -69,7 +70,10 @@ public class TemplateLine {
     }
 
     protected String renderWidgets(String line, String language) {
-        StringBuilder result = new StringBuilder(line);
+        TextStringBuilder result = new TextStringBuilder(line);
+
+        config.getWidgets().forEach(w -> w.beforeRenderLine(result));
+
         int shift = 0;
         for (WidgetTag tag : getWidgetTags(line)) {
             NRGWidget widget = config.getWidget(tag.getName());
@@ -85,6 +89,9 @@ public class TemplateLine {
                 LOG.warn("Unknown widget name: {}", tag.getName());
             }
         }
+
+        config.getWidgets().forEach(w -> w.afterRenderLine(result));
+
         return result.toString();
     }
 

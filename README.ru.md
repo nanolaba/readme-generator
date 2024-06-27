@@ -32,7 +32,9 @@
 		1. [Виджет 'languages'](#виджет-'languages')
 		2. [Виджет 'tableOfContents'](#виджет-'tableofcontents')
 		1. [Виджет 'date'](#виджет-'date')
-	1. [Feedback](#feedback)
+1. [Расширенные возможности](#расширенные-возможности)
+	1. [Создание виджета](#создание-виджета)
+2. [Обратная связь](#обратная-связь)
 
 
 ## Введение за пять минут
@@ -163,42 +165,46 @@ ${widget:languages}
 #### Виджет 'tableOfContents'
 
 Этот компонент позволяет сформировать оглавление для документа.
-Оглавление формируется из заголовков, сформированных при помощи знака решётки (**#**).
+Оглавление формируется из заголовков, сформированных при помощи знака решётки (`#`).
 Заголовки, которые расположены по тексту выше виджета, игнорируются.
 
+Если вам необходимо исключить какой-либо заголовок из оглавления, то для этого
+его необходимо пометить комментарием `<!--toc.ignore-->`.
 
 <table>
 <tr><th>Пример использования</th><th>Результат</th></tr>
 <tr><td>
 
 ```markdown
-&#35;Title of the document
+# Title of the document
 
-&#35;&#35; Abstract
+## Abstract
 
 ${widget:tableOfContents(title = "${en:'Table of contents', ru:'Содержание'}", ordered = "true")}
 
-&#35;&#35; Part 1
+## Part 1
 
-&#35;&#35;&#35; Chapter 1
+### Chapter 1
 
-&#35;&#35;&#35; Chapter 2
+### Chapter 2
 
-&#35;&#35;&#35; Chapter 3
+### Chapter 3
 
-&#35;&#35; Part 2
+### Ignored Chapter<!--toc.ignore-->
 
-&#35;&#35; Part 3
+## Part 2
+
+## Part 3
 ```
 
 </td><td>
 
 ```markdown 
-&#35; Title of the document
+# Title of the document
 
-&#35;&#35; Abstract
+## Abstract
 
-&#35;&#35; Table of contents
+## Table of contents
 
 1. [Part 1](#part-1)
     1. [Chapter 1](#chapter-1)
@@ -207,17 +213,19 @@ ${widget:tableOfContents(title = "${en:'Table of contents', ru:'Содержан
 2. [Part 2](#part-2)
 3. [Part 3](#part-3)
 
-&#35;&#35; Part 1
+## Part 1
 
-&#35;&#35;&#35; Chapter 1
+### Chapter 1
 
-&#35;&#35;&#35; Chapter 2
+### Chapter 2
 
-&#35;&#35;&#35; Chapter 3
+### Chapter 3
 
-&#35;&#35; Part 2
+### Ignored Chapter<!--toc.ignore-->
 
-&#35;&#35; Part 3
+## Part 2
+
+## Part 3
 ```
 
 </td></tr> 
@@ -245,7 +253,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 26.06.2024 11:16:17
+Last updated: 26.06.2024 21:59:21
 ```
 
 </td></tr>
@@ -273,7 +281,13 @@ ${widget:date(pattern = 'dd.MM.yyyy')}
 Подробнее о синтаксисе шаблона даты можно прочитать в
 [документации языка Java](https://docs.oracle.com/javase/8/docs/api/java/text/SimpleDateFormat.html).
 
-### Feedback
+## Расширенные возможности
+
+### Создание виджета
+
+TODO
+
+## Обратная связь
 
 TODO
 
