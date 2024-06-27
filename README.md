@@ -34,7 +34,9 @@ The latest stable version of the program is **1.0**.
 		1. [Widget 'languages'](#widget-'languages')
 		2. [Widget 'tableOfContents'](#widget-'tableofcontents')
 		1. [Widget 'date'](#widget-'date')
-	1. [Feedback](#feedback)
+1. [Advanced features](#advanced-features)
+	1. [Creating a widget](#creating-a-widget)
+2. [Feedback](#feedback)
 
 
 ## 5 minute guide
@@ -164,42 +166,46 @@ ${widget:languages}
 #### Widget 'tableOfContents'
 
 This component allows you to generate a table of contents for a document.
-The table of contents is created from headers formed using the hashtag symbol (**#**).
+The table of contents is created from headers formed using the hashtag symbol (`#`).
 Headers located above the widget in the text are ignored.
 
+If you need to exclude a header from the table of contents, you should
+mark it with a comment `<!--toc.ignore-->`.
 
 <table>
 <tr><th>Usage example</th><th>Result</th></tr>
 <tr><td>
 
 ```markdown
-&#35;Title of the document
+# Title of the document
 
-&#35;&#35; Abstract
+## Abstract
 
 ${widget:tableOfContents(title = "${en:'Table of contents', ru:'Содержание'}", ordered = "true")}
 
-&#35;&#35; Part 1
+## Part 1
 
-&#35;&#35;&#35; Chapter 1
+### Chapter 1
 
-&#35;&#35;&#35; Chapter 2
+### Chapter 2
 
-&#35;&#35;&#35; Chapter 3
+### Chapter 3
 
-&#35;&#35; Part 2
+### Ignored Chapter<!--toc.ignore-->
 
-&#35;&#35; Part 3
+## Part 2
+
+## Part 3
 ```
 
 </td><td>
 
 ```markdown 
-&#35; Title of the document
+# Title of the document
 
-&#35;&#35; Abstract
+## Abstract
 
-&#35;&#35; Table of contents
+## Table of contents
 
 1. [Part 1](#part-1)
     1. [Chapter 1](#chapter-1)
@@ -208,17 +214,19 @@ ${widget:tableOfContents(title = "${en:'Table of contents', ru:'Содержан
 2. [Part 2](#part-2)
 3. [Part 3](#part-3)
 
-&#35;&#35; Part 1
+## Part 1
 
-&#35;&#35;&#35; Chapter 1
+### Chapter 1
 
-&#35;&#35;&#35; Chapter 2
+### Chapter 2
 
-&#35;&#35;&#35; Chapter 3
+### Chapter 3
 
-&#35;&#35; Part 2
+### Ignored Chapter<!--toc.ignore-->
 
-&#35;&#35; Part 3
+## Part 2
+
+## Part 3
 ```
 
 </td></tr> 
@@ -246,7 +254,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 26.06.2024 11:16:17
+Last updated: 26.06.2024 21:59:21
 ```
 
 </td></tr>
@@ -274,7 +282,13 @@ Widget parameters:
 You can read more about date pattern syntax in the
 [Java documentation](https://docs.oracle.com/javase/8/docs/api/java/text/SimpleDateFormat.html).
 
-### Feedback
+## Advanced features
+
+### Creating a widget
+
+TODO
+
+## Feedback
 
 TODO
 

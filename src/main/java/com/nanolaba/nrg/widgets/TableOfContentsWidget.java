@@ -4,6 +4,7 @@ import com.nanolaba.nrg.core.GeneratorConfig;
 import com.nanolaba.nrg.core.NRGUtil;
 import com.nanolaba.nrg.core.TemplateLine;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.text.TextStringBuilder;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,6 +15,8 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class TableOfContentsWidget extends DefaultWidget {
+
+    public static final String IGNORE_ATTR = "<!--toc.ignore-->";
 
     @Override
     public String getName() {
@@ -30,12 +33,18 @@ public class TableOfContentsWidget extends DefaultWidget {
         return title + createTOC(widgetTag, config, language, tocConfig);
     }
 
+    @Override
+    public void afterRenderLine(TextStringBuilder line) {
+        line.replaceAll(IGNORE_ATTR, "");
+    }
+
     protected String createTOC(WidgetTag widgetTag, GeneratorConfig config, String language, Config tocConfig) {
 
         List<Header> allHeaders = new ArrayList<>();
 
         return config.getSourceFileBody().lines()
                 .skip(widgetTag.getLine().getLineNumber())
+                .filter(line -> !line.contains(IGNORE_ATTR))
                 .map(s -> new TemplateLine(config, s, 0).fillLineWithProperties(language))
                 .filter(Objects::nonNull)
                 .map(s -> new Header(s, tocConfig, allHeaders))

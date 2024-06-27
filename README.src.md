@@ -181,45 +181,51 @@ ${widget:languages}
 #### ${en:'Widget', ru:'Виджет'} 'tableOfContents'
 
 This component allows you to generate a table of contents for a document.<!--en-->
-The table of contents is created from headers formed using the hashtag symbol (**#**).<!--en-->
+The table of contents is created from headers formed using the hashtag symbol (`#`).<!--en-->
 Headers located above the widget in the text are ignored.<!--en-->
 Этот компонент позволяет сформировать оглавление для документа.<!--ru-->
-Оглавление формируется из заголовков, сформированных при помощи знака решётки (**#**).<!--ru-->
+Оглавление формируется из заголовков, сформированных при помощи знака решётки (`#`).<!--ru-->
 Заголовки, которые расположены по тексту выше виджета, игнорируются.<!--ru-->
 
+If you need to exclude a header from the table of contents, you should<!--en-->
+mark it with a comment `<\!--toc.ignore-->`.<!--en-->
+Если вам необходимо исключить какой-либо заголовок из оглавления, то для этого<!--ru-->
+его необходимо пометить комментарием `<\!--toc.ignore-->`.<!--ru-->
 
 <table>
 <tr><th>${en:'Usage example', ru:'Пример использования'}</th><th>${en:'Result', ru:'Результат'}</th></tr>
 <tr><td>
 
 ```markdown
-&#35;Title of the document
+# Title of the document<!--toc.ignore-->
 
-&#35;&#35; Abstract
+## Abstract<!--toc.ignore-->
 
 \${widget:tableOfContents(title = "\${en:'Table of contents', ru:'Содержание'}", ordered = "true")}
 
-&#35;&#35; Part 1
+## Part 1<!--toc.ignore-->
 
-&#35;&#35;&#35; Chapter 1
+### Chapter 1<!--toc.ignore-->
 
-&#35;&#35;&#35; Chapter 2
+### Chapter 2<!--toc.ignore-->
 
-&#35;&#35;&#35; Chapter 3
+### Chapter 3<!--toc.ignore-->
 
-&#35;&#35; Part 2
+### Ignored Chapter<\!--toc.ignore--><!--toc.ignore-->
 
-&#35;&#35; Part 3
+## Part 2<!--toc.ignore-->
+
+## Part 3<!--toc.ignore-->
 ```
 
 </td><td>
 
 ```markdown 
-&#35; Title of the document
+# Title of the document<!--toc.ignore-->
 
-&#35;&#35; Abstract
+## Abstract<!--toc.ignore-->
 
-&#35;&#35; Table of contents
+## Table of contents<!--toc.ignore-->
 
 1. [Part 1](#part-1)
     1. [Chapter 1](#chapter-1)
@@ -228,17 +234,19 @@ Headers located above the widget in the text are ignored.<!--en-->
 2. [Part 2](#part-2)
 3. [Part 3](#part-3)
 
-&#35;&#35; Part 1
+## Part 1<!--toc.ignore-->
 
-&#35;&#35;&#35; Chapter 1
+### Chapter 1<!--toc.ignore-->
 
-&#35;&#35;&#35; Chapter 2
+### Chapter 2<!--toc.ignore-->
 
-&#35;&#35;&#35; Chapter 3
+### Chapter 3<!--toc.ignore-->
 
-&#35;&#35; Part 2
+### Ignored Chapter<\!--toc.ignore--><!--toc.ignore-->
 
-&#35;&#35; Part 3
+## Part 2<!--toc.ignore-->
+
+## Part 3<!--toc.ignore-->
 ```
 
 </td></tr> 
@@ -249,7 +257,7 @@ ${en:'Widget parameters', ru:'Свойства виджета'}:
 | ${en:'Name', ru:'Наименование'} | ${en:'Description', ru:'Описание'}                                                                                 | ${en:'Default value', ru:'Значение по умолчанию'} |
 |:-------------------------------:|--------------------------------------------------------------------------------------------------------------------|:-------------------------------------------------:|
 |              title              | ${en:'Title of the table of contents', ru:'Заглавие оглавления'}                                                   |                                                   |
-|             ordered             | ${en:'Should the items in the table of contents be numbered', ru:'Должны ли быть пронумерованы пункты оглавления'} |                       false                       |
+|             ordered             | ${en:'Should the items in the table of contents be numbered', ru:'Должны ли быть пронумерованы пункты оглавления'} |                      `false`                      |
 
 #### ${en:'Widget', ru:'Виджет'} 'date'
 
@@ -290,14 +298,20 @@ ${en:'Widget parameters', ru:'Свойства виджета'}:
 
 | ${en:'Name', ru:'Наименование'} | ${en:'Description', ru:'Описание'}                                                                                              | ${en:'Default value', ru:'Значение по умолчанию'} |
 |:-------------------------------:|---------------------------------------------------------------------------------------------------------------------------------|:-------------------------------------------------:|
-|             pattern             | ${en:'Pattern according to which the date will be formatted', ru:'Шаблон, в соответствии с котором будет отформатирована дата'} |                dd.MM.yyyy HH:mm:ss                |
+|             pattern             | ${en:'Pattern according to which the date will be formatted', ru:'Шаблон, в соответствии с котором будет отформатирована дата'} |               `dd.MM.yyyy HH:mm:ss`               |
 
 You can read more about date pattern syntax in the<!--en-->
 [Java documentation](https://docs.oracle.com/javase/8/docs/api/java/text/SimpleDateFormat.html).<!--en-->
 Подробнее о синтаксисе шаблона даты можно прочитать в <!--ru-->
 [документации языка Java](https://docs.oracle.com/javase/8/docs/api/java/text/SimpleDateFormat.html).<!--ru-->
 
-### Feedback
+## ${en:'Advanced features', ru:'Расширенные возможности'}
+
+### ${en:'Creating a widget', ru:'Создание виджета'}
+
+TODO
+
+## ${en:'Feedback', ru:'Обратная связь'}
 
 TODO
 
