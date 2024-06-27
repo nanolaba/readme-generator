@@ -178,9 +178,7 @@ Headers located above the widget in the text are ignored.
 If you need to exclude a header from the table of contents, you should
 mark it with a comment `<!--toc.ignore-->`.
 
-<table>
-<tr><th>Usage example</th><th>Result</th></tr>
-<tr><td>
+**Usage example**
 
 ```markdown
 # Title of the document
@@ -204,7 +202,7 @@ ${widget:tableOfContents(title = "${en:'Table of contents', ru:'Содержан
 ## Part 3
 ```
 
-</td><td>
+**Result**
 
 ```markdown 
 # Title of the document
@@ -235,9 +233,6 @@ ${widget:tableOfContents(title = "${en:'Table of contents', ru:'Содержан
 ## Part 3
 ```
 
-</td></tr> 
-</table>
-
 Widget parameters:
 
 |  Name   | Description                                           | Default value |
@@ -260,7 +255,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 27.06.2024 08:13:19
+Last updated: 27.06.2024 08:21:19
 ```
 
 </td></tr>
