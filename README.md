@@ -31,9 +31,9 @@ The latest stable version of the program is **1.0**.
 	2. [Properties](#properties)
 	3. [Multilanguage support](#multilanguage-support)
 	4. [Widgets](#widgets)
-		1. [Widget 'languages'](#widget-'languages')
-		2. [Widget 'tableOfContents'](#widget-'tableofcontents')
-		1. [Widget 'date'](#widget-'date')
+		1. [Widget 'languages'](#widget-languages)
+		2. [Widget 'tableOfContents'](#widget-tableofcontents)
+		1. [Widget 'date'](#widget-date)
 1. [Advanced features](#advanced-features)
 	1. [Creating a widget](#creating-a-widget)
 2. [Feedback](#feedback)
@@ -255,7 +255,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 27.06.2024 08:21:19
+Last updated: 27.06.2024 08:26:22
 ```
 
 </td></tr>

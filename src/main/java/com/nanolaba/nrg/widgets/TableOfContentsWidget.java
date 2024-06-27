@@ -119,6 +119,7 @@ public class TableOfContentsWidget extends DefaultWidget {
                         .replace("https://", "")
                         .replace("http://", "")
                         .replace(".", "")
+                        .replace("'", "")
                         .replace(" ", "-");
 
                 Header prev = getPreviousHeader(level);
