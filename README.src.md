@@ -153,6 +153,7 @@ The second method involves using a special construct:<!--en-->
 Второй способ заключается в использовании особой конструкции:<!--ru-->
 
 ```markdown
+\${en:"Some text", ru:"Некоторый текст"}
 \${en:'Some text', ru:'Некоторый текст'} 
 ```
 

@@ -203,7 +203,9 @@ class TemplateLineTest extends DefaultNRGTest {
     @Test
     public void testRenderLanguageProperties() {
         assertEquals("${en:'Table of contents'}", line("${en:'Table of contents'}", "ru").generateLine("ru"));
+        assertEquals("${en:\"Table of contents\"}", line("${en:\"Table of contents\"}", "ru").generateLine("ru"));
         assertEquals("", line("${en:'Table of contents'}", "en", "ru").generateLine("ru"));
+        assertEquals("", line("${en:\"Table of contents\"}", "en", "ru").generateLine("ru"));
         assertEquals("", line("${en:'Table of contents', ru:''}", "en", "ru").generateLine("ru"));
         assertEquals("", line("${en:\"Table of contents\"}", "en", "ru").generateLine("ru"));
         assertEquals("Содержание", line("${ru:'Содержание'}", "en", "ru").generateLine("ru"));
@@ -215,6 +217,8 @@ class TemplateLineTest extends DefaultNRGTest {
         assertEquals("Содержание", line("${en:'Table of contents', ru:'Содержание'}", "en", "ru").generateLine("ru"));
         assertEquals("Содержание", line("${en:'Table of contents', ru:\"Содержание\"}", "en", "ru").generateLine("ru"));
         assertEquals("Table of contents", line("${en:'Table of contents', ru:'Содержание'}", "en", "ru").generateLine("en"));
+        assertEquals("Table of contents", line("${en:\"Table of contents\", ru:'Содержание'}", "en", "ru").generateLine("en"));
+        assertEquals("Table of contents", line("${en:\"Table of contents\", ru:\"Содержание\"}", "en", "ru").generateLine("en"));
         assertEquals("${en:'Table of contents', ru:'Содержание'}", line("\\${en:'Table of contents', ru:'Содержание'}", "en", "ru").generateLine("en"));
     }
 
