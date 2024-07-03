@@ -12,6 +12,14 @@
     <version>1.0-SNAPSHOT</version>
 
     <properties>
+
+        <!--        <maven.test.skip>true</maven.test.skip>-->
+        <!--        <pit.skip>true</pit.skip>-->
+        <pit.skip>false</pit.skip>
+
+        <pit.targetClasses>com.nanolaba.nrg.*</pit.targetClasses>
+        <pit.mutationThreshold>100</pit.mutationThreshold>
+
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>19</maven.compiler.source>
         <maven.compiler.target>19</maven.compiler.target>
@@ -154,8 +162,12 @@
                 <artifactId>pitest-maven</artifactId>
                 <version>${pitest-maven.version}</version>
                 <configuration>
+                    <skip>${pit.skip}</skip>
                     <verbose>true</verbose>
-                    <mutationThreshold>100</mutationThreshold>
+                    <mutationThreshold>${pit.mutationThreshold}</mutationThreshold>
+                    <targetClasses>
+                        <param>${pit.targetClasses}</param>
+                    </targetClasses>
                 </configuration>
                 <executions>
                     <execution>
@@ -173,13 +185,33 @@
                 <version>${maven-assembly-plugin.version}</version>
                 <executions>
                     <execution>
+                        <id>e1</id>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                        <phase>package</phase>
+                        <configuration>
+                            <archive>
+                                <manifest>
+                                    <mainClass>org.nanolaba.nrg.NRG</mainClass>
+                                </manifest>
+                            </archive>
+                            <descriptorRefs>
+                                <descriptorRef>jar-with-dependencies</descriptorRef>
+                            </descriptorRefs>
+                            <finalName>nrg</finalName>
+                            <appendAssemblyId>false</appendAssemblyId>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>e2</id>
                         <goals>
                             <goal>single</goal>
                         </goals>
                         <phase>package</phase>
                         <configuration>
                             <descriptors>
-                                <descriptor>src/main/assembly/assembly.xml</descriptor>
+                                <descriptor>src/main/assembly/release.xml</descriptor>
                             </descriptors>
                             <appendAssemblyId>false</appendAssemblyId>
                         </configuration>
