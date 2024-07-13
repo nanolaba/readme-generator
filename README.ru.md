@@ -40,19 +40,19 @@
 
 ## Введение за пять минут
 
-<div style="color:red; padding: 1em; border: 2px solid red;">Not done yet...</div>
+<pre>⌛ Not done yet...</pre>
 
 ## Способы запуска программы
 
-<div style="color:red; padding: 1em; border: 2px solid red;">Not done yet...</div>
+<pre>⌛ Not done yet...</pre>
 
 ### Запуск из командной строки
 
-<div style="color:red; padding: 1em; border: 2px solid red;">Not done yet...</div>
+<pre>⌛ Not done yet...</pre>
 
 ### Использование в качестве java-библиотеки
 
-<div style="color:red; padding: 1em; border: 2px solid red;">Not done yet...</div>
+<pre>⌛ Not done yet...</pre>
 
 ## Синтаксис шаблона
 
@@ -270,7 +270,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 13.07.2024 17:00:36
+Last updated: 13.07.2024 17:23:46
 ```
 
 </td></tr>
@@ -319,13 +319,13 @@ ${widget:todo(text="${en:'Example message', ru:'Пример сообщения'
 <tr><td>
 
 ```markdown
-<div style="color:red; padding: 1em; border: 2px solid red;">Пример сообщения</div>
+<pre>⌛ Пример сообщения</pre>
 ```
 
 </td></tr>
 <tr><th>Отображаемый результат</th></tr>
 <tr><td>
-<div style="color:red; padding: 1em; border: 2px solid red;">Пример сообщения</div>
+<pre>⌛ Пример сообщения</pre>
 </td></tr>
 </table>
 
@@ -341,11 +341,11 @@ ${widget:todo(text="${en:'Example message', ru:'Пример сообщения'
 
 ### Создание виджета
 
-<div style="color:red; padding: 1em; border: 2px solid red;">Not done yet...</div>
+<pre>⌛ Not done yet...</pre>
 
 ## Обратная связь
 
-<div style="color:red; padding: 1em; border: 2px solid red;">Not done yet...</div>
+<pre>⌛ Not done yet...</pre>
 
 ---
 *Дата последнего обновления: 13.07.2024*

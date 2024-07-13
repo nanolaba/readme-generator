@@ -42,19 +42,19 @@ The latest stable version of the program is **1.0**.
 
 ## 5 minute guide
 
-<div style="color:red; padding: 1em; border: 2px solid red;">Not done yet...</div>
+<pre>⌛ Not done yet...</pre>
 
 ## Usage
 
-<div style="color:red; padding: 1em; border: 2px solid red;">Not done yet...</div>
+<pre>⌛ Not done yet...</pre>
 
 ### Using the Command Line Interface
 
-<div style="color:red; padding: 1em; border: 2px solid red;">Not done yet...</div>
+<pre>⌛ Not done yet...</pre>
 
 ### Use as a java-library
 
-<div style="color:red; padding: 1em; border: 2px solid red;">Not done yet...</div>
+<pre>⌛ Not done yet...</pre>
 
 ## Template syntax
 
@@ -270,7 +270,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 13.07.2024 17:00:36
+Last updated: 13.07.2024 17:23:46
 ```
 
 </td></tr>
@@ -319,13 +319,13 @@ ${widget:todo(text="${en:'Example message', ru:'Пример сообщения'
 <tr><td>
 
 ```markdown
-<div style="color:red; padding: 1em; border: 2px solid red;">Example message</div>
+<pre>⌛ Example message</pre>
 ```
 
 </td></tr>
 <tr><th>Displayed result</th></tr>
 <tr><td>
-<div style="color:red; padding: 1em; border: 2px solid red;">Example message</div>
+<pre>⌛ Example message</pre>
 </td></tr>
 </table>
 
@@ -341,11 +341,11 @@ Widget parameters:
 
 ### Creating a widget
 
-<div style="color:red; padding: 1em; border: 2px solid red;">Not done yet...</div>
+<pre>⌛ Not done yet...</pre>
 
 ## Feedback
 
-<div style="color:red; padding: 1em; border: 2px solid red;">Not done yet...</div>
+<pre>⌛ Not done yet...</pre>
 
 ---
 *Last updated: 13.07.2024*

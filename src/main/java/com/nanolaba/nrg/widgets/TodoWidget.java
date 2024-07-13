@@ -7,6 +7,8 @@ import java.util.Map;
 
 public class TodoWidget extends DefaultWidget {
 
+    public static final String HOURGLASS = "⌛";
+
     @Override
     public String getName() {
         return "todo";
@@ -17,7 +19,7 @@ public class TodoWidget extends DefaultWidget {
 
         Config widgetConfig = getConfig(widgetTag.getParameters());
 
-        return "<div style=\"" + widgetConfig.getStyle() + "\">" + widgetConfig.getText() + "</div>";
+        return "<pre>" + HOURGLASS + " " + widgetConfig.getText() + "</pre>";
     }
 
     private Config getConfig(String parameters) {
@@ -26,9 +28,6 @@ public class TodoWidget extends DefaultWidget {
 
         if (map.containsKey("text")) {
             config.setText(map.get("text"));
-        }
-        if (map.containsKey("style")) {
-            config.setStyle(map.get("style"));
         }
 
         return config;
@@ -39,7 +38,6 @@ public class TodoWidget extends DefaultWidget {
     protected static class Config {
 
         private String text = "Not done yet...";
-        private String style = "color:red; padding: 1em; border: 2px solid red;";
 
         public String getText() {
             return text;
@@ -47,16 +45,6 @@ public class TodoWidget extends DefaultWidget {
 
         public Config setText(String text) {
             this.text = text;
-            return this;
-        }
-
-
-        public String getStyle() {
-            return style;
-        }
-
-        public Config setStyle(String style) {
-            this.style = style;
             return this;
         }
     }
