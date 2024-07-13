@@ -362,7 +362,6 @@ ${en:'Widget parameters', ru:'Свойства виджета'}:
 | ${en:'Name', ru:'Наименование'} | ${en:'Description', ru:'Описание'}                        | ${en:'Default value', ru:'Значение по умолчанию'} |
 |:-------------------------------:|-----------------------------------------------------------|:-------------------------------------------------:|
 |              text               | ${en:'Displayed text', ru:'Отображаемый текст'}           |                 `Not done yet...`                 |
-|              style              | ${en:'Element text style', ru:'Стиль элемента с текстом'} | `color:red; padding: 1em; border: 2px solid red;` |
 
 ## ${en:'Advanced features', ru:'Расширенные возможности'}
 
