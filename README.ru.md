@@ -40,19 +40,19 @@
 
 ## Введение за пять минут
 
-<pre>⌛ Not done yet...</pre>
+<pre>📌 ⌛ Not done yet...</pre>
 
 ## Способы запуска программы
 
-<pre>⌛ Not done yet...</pre>
+<pre>📌 ⌛ Not done yet...</pre>
 
 ### Запуск из командной строки
 
-<pre>⌛ Not done yet...</pre>
+<pre>📌 ⌛ Not done yet...</pre>
 
 ### Использование в качестве java-библиотеки
 
-<pre>⌛ Not done yet...</pre>
+<pre>📌 ⌛ Not done yet...</pre>
 
 ## Синтаксис шаблона
 
@@ -270,7 +270,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 13.07.2024 17:25:33
+Last updated: 13.07.2024 17:41:05
 ```
 
 </td></tr>
@@ -319,13 +319,13 @@ ${widget:todo(text="${en:'Example message', ru:'Пример сообщения'
 <tr><td>
 
 ```markdown
-<pre>⌛ Пример сообщения</pre>
+<pre>📌 ⌛ Пример сообщения</pre>
 ```
 
 </td></tr>
 <tr><th>Отображаемый результат</th></tr>
 <tr><td>
-<pre>⌛ Пример сообщения</pre>
+<pre>📌 ⌛ Пример сообщения</pre>
 </td></tr>
 </table>
 
@@ -340,11 +340,11 @@ ${widget:todo(text="${en:'Example message', ru:'Пример сообщения'
 
 ### Создание виджета
 
-<pre>⌛ Not done yet...</pre>
+<pre>📌 ⌛ Not done yet...</pre>
 
 ## Обратная связь
 
-<pre>⌛ Not done yet...</pre>
+<pre>📌 ⌛ Not done yet...</pre>
 
 ---
 *Дата последнего обновления: 13.07.2024*

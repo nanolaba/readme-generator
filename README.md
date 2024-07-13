@@ -42,19 +42,19 @@ The latest stable version of the program is **1.0**.
 
 ## 5 minute guide
 
-<pre>⌛ Not done yet...</pre>
+<pre>📌 ⌛ Not done yet...</pre>
 
 ## Usage
 
-<pre>⌛ Not done yet...</pre>
+<pre>📌 ⌛ Not done yet...</pre>
 
 ### Using the Command Line Interface
 
-<pre>⌛ Not done yet...</pre>
+<pre>📌 ⌛ Not done yet...</pre>
 
 ### Use as a java-library
 
-<pre>⌛ Not done yet...</pre>
+<pre>📌 ⌛ Not done yet...</pre>
 
 ## Template syntax
 
@@ -270,7 +270,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 13.07.2024 17:25:33
+Last updated: 13.07.2024 17:41:05
 ```
 
 </td></tr>
@@ -319,13 +319,13 @@ ${widget:todo(text="${en:'Example message', ru:'Пример сообщения'
 <tr><td>
 
 ```markdown
-<pre>⌛ Example message</pre>
+<pre>📌 ⌛ Example message</pre>
 ```
 
 </td></tr>
 <tr><th>Displayed result</th></tr>
 <tr><td>
-<pre>⌛ Example message</pre>
+<pre>📌 ⌛ Example message</pre>
 </td></tr>
 </table>
 
@@ -340,11 +340,11 @@ Widget parameters:
 
 ### Creating a widget
 
-<pre>⌛ Not done yet...</pre>
+<pre>📌 ⌛ Not done yet...</pre>
 
 ## Feedback
 
-<pre>⌛ Not done yet...</pre>
+<pre>📌 ⌛ Not done yet...</pre>
 
 ---
 *Last updated: 13.07.2024*
