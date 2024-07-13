@@ -155,7 +155,11 @@ How to do this is explained in the [Advanced Features](#advanced-features) secti
 This component allows you to generate links to other versions of a document (written in other languages).
 
 <table>
-<tr><th>Usage example</th><th>Result</th></tr>
+<tr>
+<th>Usage example</th>
+<th>Result</th>
+<th>Displayed result</th>
+</tr>
 <tr><td>
 
 ```markdown
@@ -168,7 +172,13 @@ ${widget:languages}
 [ **en** | [ru](README.ru.md) ]
 ```
 
-</td></tr>
+</td>
+<td>
+
+[ **en** | [ru](README.ru.md) ]
+
+</td>
+</tr>
 </table>
 
 ---
@@ -270,7 +280,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 13.07.2024 17:41:05
+Last updated: 13.07.2024 17:50:38
 ```
 
 </td></tr>
