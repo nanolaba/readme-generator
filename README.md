@@ -270,7 +270,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 13.07.2024 17:23:46
+Last updated: 13.07.2024 17:25:33
 ```
 
 </td></tr>
@@ -332,10 +332,9 @@ ${widget:todo(text="${en:'Example message', ru:'Пример сообщения'
 
 Widget parameters:
 
-| Name  | Description        |                   Default value                   |
-|:-----:|--------------------|:-------------------------------------------------:|
-| text  | Displayed text     |                 `Not done yet...`                 |
-| style | Element text style | `color:red; padding: 1em; border: 2px solid red;` |
+| Name | Description    |   Default value   |
+|:----:|----------------|:-----------------:|
+| text | Displayed text | `Not done yet...` |
 
 ## Advanced features
 
