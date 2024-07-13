@@ -20,18 +20,18 @@ class TodoWidgetTest {
         String body = generator.getResult("en").getContent().toString();
         LOG.info(body);
         assertFalse(body.contains("${widget:todo}"));
-        assertTrue(body.contains("<div style=\"color:red; padding: 1em; border: 2px solid red;\">Not done yet...</div>"));
+        assertTrue(body.contains("<pre>⌛ Not done yet...</pre>"), body);
     }
 
     @Test
     public void testWidgetWithParameters() {
         Generator generator = new Generator(new File("README.src.md"),
-                "${widget:todo(text='Some text', style='border: 10em;')}"
+                "${widget:todo(text='Some text')}"
         );
 
         String body = generator.getResult("en").getContent().toString();
         LOG.info(body);
         assertFalse(body.contains("${widget:todo}"));
-        assertTrue(body.contains("<div style=\"border: 10em;\">Some text</div>"), body);
+        assertTrue(body.contains("<pre>⌛ Some text</pre>"), body);
     }
 }
