@@ -34,6 +34,7 @@ The latest stable version of the program is **1.0**.
 		1. [Widget 'languages'](#widget-languages)
 		2. [Widget 'tableOfContents'](#widget-tableofcontents)
 		1. [Widget 'date'](#widget-date)
+		2. [Widget 'todo'](#widget-todo)
 1. [Advanced features](#advanced-features)
 	1. [Creating a widget](#creating-a-widget)
 2. [Feedback](#feedback)
@@ -41,19 +42,19 @@ The latest stable version of the program is **1.0**.
 
 ## 5 minute guide
 
-TODO
+<div style="color:red; padding: 1em; border: 2px solid red;">Not done yet...</div>
 
 ## Usage
 
-TODO
+<div style="color:red; padding: 1em; border: 2px solid red;">Not done yet...</div>
 
 ### Using the Command Line Interface
 
-TODO
+<div style="color:red; padding: 1em; border: 2px solid red;">Not done yet...</div>
 
 ### Use as a java-library
 
-TODO
+<div style="color:red; padding: 1em; border: 2px solid red;">Not done yet...</div>
 
 ## Template syntax
 
@@ -139,6 +140,7 @@ Some text<!--en-->
 The second method involves using a special construct:
 
 ```markdown
+${en:"Some text", ru:"Некоторый текст"}
 ${en:'Some text', ru:'Некоторый текст'} 
 ```
 
@@ -169,6 +171,8 @@ ${widget:languages}
 </td></tr>
 </table>
 
+---
+
 #### Widget 'tableOfContents'
 
 This component allows you to generate a table of contents for a document.
@@ -178,7 +182,9 @@ Headers located above the widget in the text are ignored.
 If you need to exclude a header from the table of contents, you should
 mark it with a comment `<!--toc.ignore-->`.
 
-**Usage example**
+<table>
+<tr><th>Usage example</th></tr>
+<tr><td>
 
 ```markdown
 # Title of the document
@@ -202,7 +208,9 @@ ${widget:tableOfContents(title = "${en:'Table of contents', ru:'Содержан
 ## Part 3
 ```
 
-**Result**
+</td></tr>
+<tr><th>Result</th></tr>
+<tr><td>
 
 ```markdown 
 # Title of the document
@@ -233,12 +241,19 @@ ${widget:tableOfContents(title = "${en:'Table of contents', ru:'Содержан
 ## Part 3
 ```
 
+</td></tr>
+</table>
+
+
+
 Widget parameters:
 
 |  Name   | Description                                           | Default value |
 |:-------:|-------------------------------------------------------|:-------------:|
 |  title  | Title of the table of contents                        |               |
 | ordered | Should the items in the table of contents be numbered |    `false`    |
+
+---
 
 #### Widget 'date'
 
@@ -255,7 +270,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 27.06.2024 08:26:22
+Last updated: 13.07.2024 17:00:36
 ```
 
 </td></tr>
@@ -268,7 +283,7 @@ ${widget:date(pattern = 'dd.MM.yyyy')}
 </td><td>
 
 ```markdown
-27.06.2024
+13.07.2024
 ```
 
 </td></tr>
@@ -283,15 +298,54 @@ Widget parameters:
 You can read more about date pattern syntax in the
 [Java documentation](https://docs.oracle.com/javase/8/docs/api/java/text/SimpleDateFormat.html).
 
+---
+
+#### Widget 'todo'
+
+This component allows you to insert prominently highlighted text into the document,
+indicating that work on this fragment has not yet been done.
+
+
+<table>
+<tr><th>Usage example</th></tr>
+<tr><td>
+
+```markdown
+${widget:todo(text="${en:'Example message', ru:'Пример сообщения'}")}
+```
+
+</td></tr>
+<tr><th>Result</th></tr>
+<tr><td>
+
+```markdown
+<div style="color:red; padding: 1em; border: 2px solid red;">Example message</div>
+```
+
+</td></tr>
+<tr><th>Displayed result</th></tr>
+<tr><td>
+<div style="color:red; padding: 1em; border: 2px solid red;">Example message</div>
+</td></tr>
+</table>
+
+
+Widget parameters:
+
+| Name  | Description        |                   Default value                   |
+|:-----:|--------------------|:-------------------------------------------------:|
+| text  | Displayed text     |                 `Not done yet...`                 |
+| style | Element text style | `color:red; padding: 1em; border: 2px solid red;` |
+
 ## Advanced features
 
 ### Creating a widget
 
-TODO
+<div style="color:red; padding: 1em; border: 2px solid red;">Not done yet...</div>
 
 ## Feedback
 
-TODO
+<div style="color:red; padding: 1em; border: 2px solid red;">Not done yet...</div>
 
 ---
-*Last updated: 27.06.2024*
+*Last updated: 13.07.2024*

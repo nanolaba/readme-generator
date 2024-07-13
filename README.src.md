@@ -36,19 +36,19 @@ ${widget:tableOfContents(title = "${en:'Table of contents', ru:'Содержан
 
 ## ${en:'5 minute guide', ru:'Введение за пять минут'}
 
-TODO
+${widget:todo}
 
 ## ${en:'Usage', ru:'Способы запуска программы'}
 
-TODO
+${widget:todo}
 
 ### ${en:'Using the Command Line Interface', ru:'Запуск из командной строки'}
 
-TODO
+${widget:todo}
 
 ### ${en:'Use as a java-library', ru:'Использование в качестве java-библиотеки'}
 
-TODO
+${widget:todo}
 
 ## ${en:'Template syntax', ru:'Синтаксис шаблона'}
 
@@ -188,6 +188,8 @@ ${widget:languages}
 </td></tr>
 </table>
 
+---
+
 #### ${en:'Widget', ru:'Виджет'} 'tableOfContents'
 
 This component allows you to generate a table of contents for a document.<!--en-->
@@ -202,7 +204,9 @@ mark it with a comment `<\!--toc.ignore-->`.<!--en-->
 Если вам необходимо исключить какой-либо заголовок из оглавления, то для этого<!--ru-->
 его необходимо пометить комментарием `<\!--toc.ignore-->`.<!--ru-->
 
-**${en:'Usage example', ru:'Пример использования'}**
+<table>
+<tr><th>${en:'Usage example', ru:'Пример использования'}</th></tr>
+<tr><td>
 
 ```markdown
 # Title of the document<!--toc.ignore-->
@@ -226,7 +230,9 @@ mark it with a comment `<\!--toc.ignore-->`.<!--en-->
 ## Part 3<!--toc.ignore-->
 ```
 
-**${en:'Result', ru:'Результат'}**
+</td></tr>
+<tr><th>${en:'Result', ru:'Результат'}</th></tr>
+<tr><td>
 
 ```markdown 
 # Title of the document<!--toc.ignore-->
@@ -257,12 +263,19 @@ mark it with a comment `<\!--toc.ignore-->`.<!--en-->
 ## Part 3<!--toc.ignore-->
 ```
 
+</td></tr>
+</table>
+
+
+
 ${en:'Widget parameters', ru:'Свойства виджета'}:
 
 | ${en:'Name', ru:'Наименование'} | ${en:'Description', ru:'Описание'}                                                                                 | ${en:'Default value', ru:'Значение по умолчанию'} |
 |:-------------------------------:|--------------------------------------------------------------------------------------------------------------------|:-------------------------------------------------:|
 |              title              | ${en:'Title of the table of contents', ru:'Заглавие оглавления'}                                                   |                                                   |
 |             ordered             | ${en:'Should the items in the table of contents be numbered', ru:'Должны ли быть пронумерованы пункты оглавления'} |                      `false`                      |
+
+---
 
 #### ${en:'Widget', ru:'Виджет'} 'date'
 
@@ -310,15 +323,56 @@ You can read more about date pattern syntax in the<!--en-->
 Подробнее о синтаксисе шаблона даты можно прочитать в <!--ru-->
 [документации языка Java](https://docs.oracle.com/javase/8/docs/api/java/text/SimpleDateFormat.html).<!--ru-->
 
+---
+
+#### ${en:'Widget', ru:'Виджет'} 'todo'
+
+This component allows you to insert prominently highlighted text into the document,<!--en-->
+indicating that work on this fragment has not yet been done.<!--en-->
+Этот компонент позволяет вставить в документ ярко выделенный текст, с пометкой<!--ru-->
+о том, что работа над данным фрагментом еще не проведена.<!--ru-->
+
+
+<table>
+<tr><th>${en:'Usage example', ru:'Пример использования'}</th></tr>
+<tr><td>
+
+```markdown
+\${widget:todo(text="\${en:'Example message', ru:'Пример сообщения'}")}
+```
+
+</td></tr>
+<tr><th>${en:'Result', ru:'Результат'}</th></tr>
+<tr><td>
+
+```markdown
+${widget:todo(text="${en:'Example message', ru:'Пример сообщения'}")}
+```
+
+</td></tr>
+<tr><th>${en:'Displayed result', ru:'Отображаемый результат'}</th></tr>
+<tr><td>
+${widget:todo(text="${en:'Example message', ru:'Пример сообщения'}")}
+</td></tr>
+</table>
+
+
+${en:'Widget parameters', ru:'Свойства виджета'}:
+
+| ${en:'Name', ru:'Наименование'} | ${en:'Description', ru:'Описание'}                        | ${en:'Default value', ru:'Значение по умолчанию'} |
+|:-------------------------------:|-----------------------------------------------------------|:-------------------------------------------------:|
+|              text               | ${en:'Displayed text', ru:'Отображаемый текст'}           |                 `Not done yet...`                 |
+|              style              | ${en:'Element text style', ru:'Стиль элемента с текстом'} | `color:red; padding: 1em; border: 2px solid red;` |
+
 ## ${en:'Advanced features', ru:'Расширенные возможности'}
 
 ### ${en:'Creating a widget', ru:'Создание виджета'}
 
-TODO
+${widget:todo}
 
 ## ${en:'Feedback', ru:'Обратная связь'}
 
-TODO
+${widget:todo}
 
 ---
 *${en:'Last updated:', ru:'Дата последнего обновления:'} ${widget:date(pattern= 'dd.MM.yyyy')}*

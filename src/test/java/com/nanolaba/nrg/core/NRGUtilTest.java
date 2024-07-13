@@ -44,7 +44,19 @@ class NRGUtilTest extends DefaultNRGTest {
         map = NRGUtil.parseParametersLine("  ");
         assertTrue(map.isEmpty());
 
+        map = NRGUtil.parseParametersLine("a=\"\"");
+        assertEquals(1, map.size());
+        assertEquals("", map.get("a"));
+
+        map = NRGUtil.parseParametersLine("a=''");
+        assertEquals(1, map.size());
+        assertEquals("", map.get("a"));
+
         map = NRGUtil.parseParametersLine("a=\"b\"");
+        assertEquals(1, map.size());
+        assertEquals("b", map.get("a"));
+
+        map = NRGUtil.parseParametersLine("a='b'");
         assertEquals(1, map.size());
         assertEquals("b", map.get("a"));
 
@@ -52,7 +64,15 @@ class NRGUtilTest extends DefaultNRGTest {
         assertEquals(1, map.size());
         assertEquals("b", map.get("a"));
 
+        map = NRGUtil.parseParametersLine(" a = 'b' ");
+        assertEquals(1, map.size());
+        assertEquals("b", map.get("a"));
+
         map = NRGUtil.parseParametersLine(" a = \"b b\" ");
+        assertEquals(1, map.size());
+        assertEquals("b b", map.get("a"));
+
+        map = NRGUtil.parseParametersLine(" a = 'b b' ");
         assertEquals(1, map.size());
         assertEquals("b b", map.get("a"));
 
@@ -60,6 +80,18 @@ class NRGUtilTest extends DefaultNRGTest {
         assertEquals(2, map.size());
         assertEquals("b b", map.get("a"));
         assertEquals("d", map.get("c"));
-    }
 
+        map = NRGUtil.parseParametersLine(" a = 'b b', c = 'd' ");
+        assertEquals(2, map.size());
+        assertEquals("b b", map.get("a"));
+        assertEquals("d", map.get("c"));
+
+        map = NRGUtil.parseParametersLine("a=\"'b'\"");
+        assertEquals(1, map.size());
+        assertEquals("'b'", map.get("a"));
+
+        map = NRGUtil.parseParametersLine("a='\"b\"'");
+        assertEquals(1, map.size());
+        assertEquals("\"b\"", map.get("a"));
+    }
 }
