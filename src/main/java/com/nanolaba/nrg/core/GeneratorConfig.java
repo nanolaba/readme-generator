@@ -1,10 +1,7 @@
 package com.nanolaba.nrg.core;
 
 import com.nanolaba.logging.LOG;
-import com.nanolaba.nrg.widgets.DateWidget;
-import com.nanolaba.nrg.widgets.LanguagesWidget;
-import com.nanolaba.nrg.widgets.NRGWidget;
-import com.nanolaba.nrg.widgets.TableOfContentsWidget;
+import com.nanolaba.nrg.widgets.*;
 import com.nanolaba.sugar.Code;
 
 import java.io.File;
@@ -49,7 +46,7 @@ public class GeneratorConfig {
 
         getSourceLinesStream().forEach(line -> readPropertiesFromLine(line, defaultLanguage));
 
-        initWidgets();
+        initWidgets(widgets);
         printConfiguration();
     }
 
@@ -74,10 +71,11 @@ public class GeneratorConfig {
         line.readProperties(language).forEach((key, value) -> NRGUtil.mergeProperty(key, value, properties));
     }
 
-    protected void initWidgets() {
+    protected void initWidgets(List<NRGWidget> widgets) {
         widgets.add(new LanguagesWidget());
         widgets.add(new TableOfContentsWidget());
         widgets.add(new DateWidget());
+        widgets.add(new TodoWidget());
     }
 
     private void printConfiguration() {

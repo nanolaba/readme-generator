@@ -32,6 +32,7 @@
 		1. [Виджет 'languages'](#виджет-languages)
 		2. [Виджет 'tableOfContents'](#виджет-tableofcontents)
 		1. [Виджет 'date'](#виджет-date)
+		2. [Виджет 'todo'](#виджет-todo)
 1. [Расширенные возможности](#расширенные-возможности)
 	1. [Создание виджета](#создание-виджета)
 2. [Обратная связь](#обратная-связь)
@@ -39,19 +40,19 @@
 
 ## Введение за пять минут
 
-TODO
+<div style="color:red; padding: 1em; border: 2px solid red;">Not done yet...</div>
 
 ## Способы запуска программы
 
-TODO
+<div style="color:red; padding: 1em; border: 2px solid red;">Not done yet...</div>
 
 ### Запуск из командной строки
 
-TODO
+<div style="color:red; padding: 1em; border: 2px solid red;">Not done yet...</div>
 
 ### Использование в качестве java-библиотеки
 
-TODO
+<div style="color:red; padding: 1em; border: 2px solid red;">Not done yet...</div>
 
 ## Синтаксис шаблона
 
@@ -138,6 +139,7 @@ Some text<!--en-->
 Второй способ заключается в использовании особой конструкции:
 
 ```markdown
+${en:"Some text", ru:"Некоторый текст"}
 ${en:'Some text', ru:'Некоторый текст'} 
 ```
 
@@ -169,6 +171,8 @@ ${widget:languages}
 </td></tr>
 </table>
 
+---
+
 #### Виджет 'tableOfContents'
 
 Этот компонент позволяет сформировать оглавление для документа.
@@ -178,7 +182,9 @@ ${widget:languages}
 Если вам необходимо исключить какой-либо заголовок из оглавления, то для этого
 его необходимо пометить комментарием `<!--toc.ignore-->`.
 
-**Пример использования**
+<table>
+<tr><th>Пример использования</th></tr>
+<tr><td>
 
 ```markdown
 # Title of the document
@@ -202,7 +208,9 @@ ${widget:tableOfContents(title = "${en:'Table of contents', ru:'Содержан
 ## Part 3
 ```
 
-**Результат**
+</td></tr>
+<tr><th>Результат</th></tr>
+<tr><td>
 
 ```markdown 
 # Title of the document
@@ -233,12 +241,19 @@ ${widget:tableOfContents(title = "${en:'Table of contents', ru:'Содержан
 ## Part 3
 ```
 
+</td></tr>
+</table>
+
+
+
 Свойства виджета:
 
 | Наименование | Описание                                       | Значение по умолчанию |
 |:------------:|------------------------------------------------|:---------------------:|
 |    title     | Заглавие оглавления                            |                       |
 |   ordered    | Должны ли быть пронумерованы пункты оглавления |        `false`        |
+
+---
 
 #### Виджет 'date'
 
@@ -255,7 +270,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 27.06.2024 08:26:23
+Last updated: 13.07.2024 17:00:36
 ```
 
 </td></tr>
@@ -268,7 +283,7 @@ ${widget:date(pattern = 'dd.MM.yyyy')}
 </td><td>
 
 ```markdown
-27.06.2024
+13.07.2024
 ```
 
 </td></tr>
@@ -283,15 +298,54 @@ ${widget:date(pattern = 'dd.MM.yyyy')}
 Подробнее о синтаксисе шаблона даты можно прочитать в
 [документации языка Java](https://docs.oracle.com/javase/8/docs/api/java/text/SimpleDateFormat.html).
 
+---
+
+#### Виджет 'todo'
+
+Этот компонент позволяет вставить в документ ярко выделенный текст, с пометкой
+о том, что работа над данным фрагментом еще не проведена.
+
+
+<table>
+<tr><th>Пример использования</th></tr>
+<tr><td>
+
+```markdown
+${widget:todo(text="${en:'Example message', ru:'Пример сообщения'}")}
+```
+
+</td></tr>
+<tr><th>Результат</th></tr>
+<tr><td>
+
+```markdown
+<div style="color:red; padding: 1em; border: 2px solid red;">Пример сообщения</div>
+```
+
+</td></tr>
+<tr><th>Отображаемый результат</th></tr>
+<tr><td>
+<div style="color:red; padding: 1em; border: 2px solid red;">Пример сообщения</div>
+</td></tr>
+</table>
+
+
+Свойства виджета:
+
+| Наименование | Описание                 |               Значение по умолчанию               |
+|:------------:|--------------------------|:-------------------------------------------------:|
+|     text     | Отображаемый текст       |                 `Not done yet...`                 |
+|    style     | Стиль элемента с текстом | `color:red; padding: 1em; border: 2px solid red;` |
+
 ## Расширенные возможности
 
 ### Создание виджета
 
-TODO
+<div style="color:red; padding: 1em; border: 2px solid red;">Not done yet...</div>
 
 ## Обратная связь
 
-TODO
+<div style="color:red; padding: 1em; border: 2px solid red;">Not done yet...</div>
 
 ---
-*Дата последнего обновления: 27.06.2024*
+*Дата последнего обновления: 13.07.2024*
