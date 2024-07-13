@@ -20,7 +20,7 @@ class TodoWidgetTest {
         String body = generator.getResult("en").getContent().toString();
         LOG.info(body);
         assertFalse(body.contains("${widget:todo}"));
-        assertTrue(body.contains("<pre>⌛ Not done yet...</pre>"), body);
+        assertTrue(body.contains("<pre>\uD83D\uDCCC ⌛ Not done yet...</pre>"), body);
     }
 
     @Test
@@ -32,6 +32,6 @@ class TodoWidgetTest {
         String body = generator.getResult("en").getContent().toString();
         LOG.info(body);
         assertFalse(body.contains("${widget:todo}"));
-        assertTrue(body.contains("<pre>⌛ Some text</pre>"), body);
+        assertTrue(body.contains("<pre>\uD83D\uDCCC ⌛ Some text</pre>"), body);
     }
 }

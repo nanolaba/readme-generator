@@ -7,7 +7,7 @@ import java.util.Map;
 
 public class TodoWidget extends DefaultWidget {
 
-    public static final String HOURGLASS = "⌛";
+    public static final String PREFIX = "\uD83D\uDCCC ⌛";
 
     @Override
     public String getName() {
@@ -19,7 +19,7 @@ public class TodoWidget extends DefaultWidget {
 
         Config widgetConfig = getConfig(widgetTag.getParameters());
 
-        return "<pre>" + HOURGLASS + " " + widgetConfig.getText() + "</pre>";
+        return "<pre>" + PREFIX + " " + widgetConfig.getText() + "</pre>";
     }
 
     private Config getConfig(String parameters) {
