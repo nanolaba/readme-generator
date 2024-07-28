@@ -6,6 +6,9 @@ import com.nanolaba.nrg.core.TemplateLine;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.TextStringBuilder;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -42,15 +45,19 @@ public class TableOfContentsWidget extends DefaultWidget {
 
         List<Header> allHeaders = new ArrayList<>();
 
-        return config.getSourceFileBody().lines()
-                .skip(widgetTag.getLine().getLineNumber())
-                .filter(line -> !line.contains(IGNORE_ATTR))
-                .map(s -> new TemplateLine(config, s, 0).fillLineWithProperties(language))
-                .filter(Objects::nonNull)
-                .map(s -> new Header(s, tocConfig, allHeaders))
-                .filter(h -> h.level > 0)
-                .map(Object::toString)
-                .collect(Collectors.joining());
+        try (BufferedReader reader = new BufferedReader(new StringReader(config.getSourceFileBody()))) {
+            return reader.lines()
+                    .skip(widgetTag.getLine().getLineNumber())
+                    .filter(line -> !line.contains(IGNORE_ATTR))
+                    .map(s -> new TemplateLine(config, s, 0).fillLineWithProperties(language))
+                    .filter(Objects::nonNull)
+                    .map(s -> new Header(s, tocConfig, allHeaders))
+                    .filter(h -> h.level > 0)
+                    .map(Object::toString)
+                    .collect(Collectors.joining());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private Config getConfig(String parameters) {
@@ -149,7 +156,9 @@ public class TableOfContentsWidget extends DefaultWidget {
         @Override
         public String toString() {
             StringBuilder res = new StringBuilder();
-            res.append("\t".repeat(Math.max(0, level - 1)));
+            for (int i = 0; i < Math.max(0, level - 1); i++) {
+                res.append("\t");
+            }
             if (config.isOrdered()) {
                 res.append(number).append(".");
             } else {

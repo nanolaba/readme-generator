@@ -15,7 +15,7 @@ public class LanguagesWidget extends DefaultWidget {
 
         StringBuilder builder = new StringBuilder();
         for (String lang : config.getLanguages()) {
-            if (!builder.isEmpty()) {
+            if (builder.length() != 0) {
                 builder.append(" | ");
             }
             if (lang.equals(language)) {

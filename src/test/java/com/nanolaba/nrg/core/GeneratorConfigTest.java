@@ -28,9 +28,7 @@ class GeneratorConfigTest extends DefaultNRGTest {
 
     @Test
     public void testPrintProperties() {
-        new GeneratorConfig(new File("README.src.md"), """
-                <!--@nrg.languages=en,ru-->
-                """);
+        new GeneratorConfig(new File("README.src.md"), "<!--@nrg.languages=en,ru-->");
         String output = getOutAndClear();
         assertTrue(output.contains("properties: {nrg.languages=en,ru}"));
     }
@@ -105,11 +103,7 @@ class GeneratorConfigTest extends DefaultNRGTest {
 
     @Test
     public void testParseConfigWithContent() {
-        GeneratorConfig config = new GeneratorConfig(new File("README.src.md"), """
-                <!--@nrg.languages=en,ru-->
-                <!--@nrg.defaultLanguage=en-->
-                # Nanolaba Readme Generator (NRG)
-                """);
+        GeneratorConfig config = new GeneratorConfig(new File("README.src.md"), "<!--@nrg.languages=en,ru-->\n<!--@nrg.defaultLanguage=en-->\n# Nanolaba Readme Generator (NRG)");
         List<String> langs = config.getLanguages();
         assertEquals(2, langs.size());
         assertEquals("en", langs.get(0));

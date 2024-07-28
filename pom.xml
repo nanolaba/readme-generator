@@ -21,8 +21,8 @@
         <pit.mutationThreshold>100</pit.mutationThreshold>
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.source>19</maven.compiler.source>
-        <maven.compiler.target>19</maven.compiler.target>
+        <maven.compiler.source>8</maven.compiler.source>
+        <maven.compiler.target>8</maven.compiler.target>
         <github.global.server>github</github.global.server>
 
         <!-- libs-->

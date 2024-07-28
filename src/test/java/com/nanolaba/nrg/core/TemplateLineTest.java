@@ -268,7 +268,6 @@ class TemplateLineTest extends DefaultNRGTest {
     }
 
     @Test
-
     public void testEscapeCharacters4() {
         assertEquals("AA<!--ru-->", line("AA<\\!--ru-->").generateLine("ru"));
     }
