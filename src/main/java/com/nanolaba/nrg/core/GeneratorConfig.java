@@ -4,14 +4,14 @@ import com.nanolaba.logging.LOG;
 import com.nanolaba.nrg.widgets.*;
 import com.nanolaba.sugar.Code;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.StringReader;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Properties;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.nanolaba.nrg.core.NRGConstants.PROPERTY_DEFAULT_LANGUAGE;
@@ -23,7 +23,7 @@ public class GeneratorConfig {
 
     private final File sourceFile;
     private final String sourceFileBody;
-    private List<String> languages = List.of("en");
+    private List<String> languages = Collections.singletonList("en");
     private String defaultLanguage;
     private final Properties properties = new Properties();
 
@@ -52,14 +52,17 @@ public class GeneratorConfig {
 
     public Stream<TemplateLine> getSourceLinesStream() {
         AtomicInteger counter = new AtomicInteger(0);
-        return sourceFileBody.lines().map(s -> new TemplateLine(this, s, counter.getAndIncrement()));
+        return new BufferedReader(new StringReader(sourceFileBody))
+                .lines()
+                .map(s -> new TemplateLine(this, s, counter.getAndIncrement()));
+
     }
 
     private void readLanguagesPropertiesFromLine(TemplateLine line) {
 
         String lang = line.getProperty(PROPERTY_LANGUAGES, null);
         if (lang != null && !lang.isEmpty()) {
-            languages = Arrays.stream(lang.split(",")).map(String::trim).toList();
+            languages = Arrays.stream(lang.split(",")).map(String::trim).collect(Collectors.toList());
         }
         String defaultLang = line.getProperty(PROPERTY_DEFAULT_LANGUAGE, null);
         if (defaultLang != null && !defaultLang.isEmpty()) {

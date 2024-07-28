@@ -16,21 +16,19 @@ class TableOfContentsWidgetTest extends DefaultNRGTest {
     @Test
     public void testTOCWidget() {
         Generator generator = new Generator(new File("README.src.md"),
-                """
-                        <!--@nrg.languages=en,ru,fr-->
-                        ${widget:tableOfContents}
-                        # MainHeader
-                        ## AAA<!--en-->
-                        ## ЯЯЯ<!--ru-->
-                        ### aaa
-                        ### ююю<!--ru-->
-                        ### bbb
-                        ### ccc<!--toc.ignore-->
-                        ## BBB
-                        ### ccc
-                        ### ddd
-                        ## CCC
-                        """
+                "<!--@nrg.languages=en,ru,fr-->\n" +
+                "${widget:tableOfContents}\n" +
+                "# MainHeader\n" +
+                "## AAA<!--en-->\n" +
+                "## ЯЯЯ<!--ru-->\n" +
+                "### aaa\n" +
+                "### ююю<!--ru-->\n" +
+                "### bbb\n" +
+                "### ccc<!--toc.ignore-->\n" +
+                "## BBB\n" +
+                "### ccc\n" +
+                "### ddd\n" +
+                "## CCC"
         );
 
         String bodyEn = generator.getResult("en").getContent().toString();
@@ -52,21 +50,19 @@ class TableOfContentsWidgetTest extends DefaultNRGTest {
     @Test
     public void testTOCWidget1() {
         Generator generator = new Generator(new File("README.src.md"),
-                """
-                        <!--@nrg.languages=en,ru,fr-->
-                        ## Header before TOC
-                        ${widget:tableOfContents(title = "TOC", ordered = "true")}
-                        # MainHeader
-                        ## AAA<!--en-->
-                        ## ЯЯЯ<!--ru-->
-                        ### aaa
-                        ### ююю<!--ru-->
-                        ### bbb
-                        ## BBB
-                        ### ccc
-                        ### ddd
-                        ## CCC
-                        """
+                "<!--@nrg.languages=en,ru,fr-->\n" +
+                "## Header before TOC\n" +
+                "${widget:tableOfContents(title = \"TOC\", ordered = \"true\")}\n" +
+                "# MainHeader\n" +
+                "## AAA<!--en-->\n" +
+                "## ЯЯЯ<!--ru-->\n" +
+                "### aaa\n" +
+                "### ююю<!--ru-->\n" +
+                "### bbb\n" +
+                "## BBB\n" +
+                "### ccc\n" +
+                "### ddd\n" +
+                "## CCC"
         );
 
         String bodyEn = generator.getResult("en").getContent().toString();
@@ -88,31 +84,29 @@ class TableOfContentsWidgetTest extends DefaultNRGTest {
     @Test
     public void testTOCWidget2() {
         Generator generator = new NoHeadCommentGenerator(new File("README.src.md"),
-                """
-                        <!--@nrg.languages=en,ru,fr-->
-                        someTextBeforeTOC
-                        #headerBeforeTOC
-                        ##headerBeforeTOC2
-                        ###headerBeforeTOC3
-                        ${widget:tableOfContents(title = "${en:'Table of contents', ru:'Содержание'}", ordered = "true")}
-                        someTextBeforeHeader
-                        # MainHeader
-                        ## AAA<!--en-->
-                        ## IGNORED<!--en--><!--toc.ignore-->
-                        someText
-                        someText1<!--en-->
-                        someText2<!--ru-->
-                        ## ЯЯЯ<!--ru-->
-                        ### aaa
-                        ### ююю<!--ru-->
-                        ### bbb
-                        ## BBB
-                        ### ccc
-                        ### ddd
-                        ## CCC
-                        ### ccc
-                        #### cccc
-                        """
+                "<!--@nrg.languages=en,ru,fr-->\n" +
+                "someTextBeforeTOC\n" +
+                "#headerBeforeTOC\n" +
+                "##headerBeforeTOC2\n" +
+                "###headerBeforeTOC3\n" +
+                "${widget:tableOfContents(title = \"${en:'Table of contents', ru:'Содержание'}\", ordered = \"true\")}\n" +
+                "someTextBeforeHeader\n" +
+                "# MainHeader\n" +
+                "## AAA<!--en-->\n" +
+                "## IGNORED<!--en--><!--toc.ignore-->\n" +
+                "someText\n" +
+                "someText1<!--en-->\n" +
+                "someText2<!--ru-->\n" +
+                "## ЯЯЯ<!--ru-->\n" +
+                "### aaa\n" +
+                "### ююю<!--ru-->\n" +
+                "### bbb\n" +
+                "## BBB\n" +
+                "### ccc\n" +
+                "### ddd\n" +
+                "## CCC\n" +
+                "### ccc\n" +
+                "#### cccc\n"
         );
 
         String bodyEn = generator.getResult("en").getContent().toString();
@@ -154,14 +148,12 @@ class TableOfContentsWidgetTest extends DefaultNRGTest {
     @Test
     public void testTOCWidget3() {
         Generator generator = new NoHeadCommentGenerator(new File("README.src.md"),
-                """
-                        <!--@nrg.languages=en,ru,fr-->
-                        ${widget:tableOfContents(title = "${en:'Table of contents', ru:'Содержание'}", ordered = "true")}
-                        ## A<!--en-->
-                        ## B<!--en-->
-                        ## Б<!--ru-->
-                        ## ${en:'ENG', ru:'РУС'}
-                        """
+                "<!--@nrg.languages=en,ru,fr-->\n" +
+                "${widget:tableOfContents(title = \"${en:'Table of contents', ru:'Содержание'}\", ordered = \"true\")}\n" +
+                "## A<!--en-->\n" +
+                "## B<!--en-->\n" +
+                "## Б<!--ru-->\n" +
+                "## ${en:'ENG', ru:'РУС'}\n"
         );
 
         String bodyEn = generator.getResult("en").getContent().toString();
