@@ -280,7 +280,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 13.07.2024 17:50:38
+Last updated: 28.07.2024 14:37:49
 ```
 
 </td></tr>
@@ -293,7 +293,7 @@ ${widget:date(pattern = 'dd.MM.yyyy')}
 </td><td>
 
 ```markdown
-13.07.2024
+28.07.2024
 ```
 
 </td></tr>
@@ -357,4 +357,4 @@ Widget parameters:
 <pre>📌 ⌛ Not done yet...</pre>
 
 ---
-*Last updated: 13.07.2024*
+*Last updated: 28.07.2024*
