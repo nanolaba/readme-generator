@@ -43,9 +43,8 @@ public class TodoWidget extends DefaultWidget {
             return text;
         }
 
-        public Config setText(String text) {
+        public void setText(String text) {
             this.text = text;
-            return this;
         }
     }
 }

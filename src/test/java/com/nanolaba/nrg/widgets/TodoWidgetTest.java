@@ -6,8 +6,7 @@ import org.junit.jupiter.api.Test;
 
 import java.io.File;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 class TodoWidgetTest {
 
@@ -16,6 +15,9 @@ class TodoWidgetTest {
         Generator generator = new Generator(new File("README.src.md"),
                 "${widget:todo}"
         );
+
+        assertNotNull(generator.getConfig().getWidget("todo"));
+        assertEquals("todo", generator.getConfig().getWidget("todo").toString());
 
         String body = generator.getResult("en").getContent().toString();
         LOG.info(body);
