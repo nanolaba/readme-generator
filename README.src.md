@@ -34,7 +34,7 @@ The latest stable version of the program is **${stableVersion}**.<!--en-->
 
 ${widget:tableOfContents(title = "${en:'Table of contents', ru:'Содержание'}", ordered = "true")}
 
-## ${en:'5 minute guide', ru:'Введение за пять минут'}
+## ${en:'Quick start', ru:'Быстрый старт'}
 
 ${widget:todo}
 
