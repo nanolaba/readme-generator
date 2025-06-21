@@ -2,7 +2,7 @@
 <!--@nrg.defaultLanguage=en-->
 
 <!--@name=**Nanolaba Readme Generator (NRG)**-->
-<!--@stableVersion=1.0-->
+<!--@stableVersion=0.1-->
 
 ${widget:languages}
 
@@ -47,6 +47,10 @@ ${widget:todo}
 ${widget:todo}
 
 ### ${en:'Use as a java-library', ru:'Использование в качестве java-библиотеки'}
+
+${widget:todo}
+
+### ${en:'Use as wicket plugin', ru:'Использование как плагина для wicket'}
 
 ${widget:todo}
 

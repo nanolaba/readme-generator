@@ -9,13 +9,13 @@
     <name>readme-generator</name>
     <url>https://github.com/nanolaba/sugar</url>
 
-    <version>1.0-SNAPSHOT</version>
+    <version>0.1-SNAPSHOT</version>
 
     <properties>
 
         <!--        <maven.test.skip>true</maven.test.skip>-->
-        <!--        <pit.skip>true</pit.skip>-->
-        <pit.skip>false</pit.skip>
+        <pit.skip>true</pit.skip>
+        <!--        <pit.skip>false</pit.skip>-->
 
         <pit.targetClasses>com.nanolaba.nrg.*</pit.targetClasses>
         <pit.mutationThreshold>100</pit.mutationThreshold>
