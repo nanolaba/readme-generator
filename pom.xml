@@ -4,16 +4,15 @@
     <groupId>com.nanolaba</groupId>
     <artifactId>readme-generator-parent</artifactId>
     <name>NRG-parent</name>
-    <version>${revision}</version>
+    <version>0.1-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <modules>
         <module>nrg</module>
+        <module>nrg-maven-plugin</module>
     </modules>
 
     <properties>
-
-        <revision>0.1-SNAPSHOT</revision>
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <github.global.server>github</github.global.server>
@@ -50,6 +49,9 @@
         <maven-site-plugin.version>3.12.1</maven-site-plugin.version>
         <maven-project-info-reports-plugin.version>3.5.0</maven-project-info-reports-plugin.version>
         <maven-assembly-plugin.version>3.6.0</maven-assembly-plugin.version>
+        <maven-plugin-api.version>3.9.9</maven-plugin-api.version>
+        <maven-plugin-tools.version>3.15.1</maven-plugin-tools.version>
+        <maven-project.version>2.2.1</maven-project.version>
 
         <pitest-maven.version>1.15.8</pitest-maven.version>
         <pitest-junit5-plugin.version>1.2.1</pitest-junit5-plugin.version>
