@@ -16,13 +16,12 @@ in [Markdown format]( https://en.wikipedia.org/wiki/Markdown) based on a single 
 The template allows the use of variables and special components (widgets).
 This document is an example of the result of this program.
 The template from which this document was generated is available at the
-following link - [README.src.md](README.src.md).
+following link - [README.src.md](https://github.com/nanolaba/readme-generator/blob/main/README.src.md?plain=1).
 
-The latest stable version of the program is **0.1**.
+The latest stable version of the program is **0.1-SNAPSHOT**.
 
 
 ## Table of contents
-
 1. [Quick start](#quick-start)
 2. [Usage](#usage)
 	1. [Using the Command Line Interface](#using-the-command-line-interface)
@@ -40,6 +39,7 @@ The latest stable version of the program is **0.1**.
 1. [Advanced features](#advanced-features)
 	1. [Creating a widget](#creating-a-widget)
 2. [Feedback](#feedback)
+
 
 ## Quick start
 
@@ -285,7 +285,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 21.06.2025 20:19:24
+Last updated: 23.06.2025 00:12:20
 ```
 
 </td></tr>
@@ -298,7 +298,7 @@ ${widget:date(pattern = 'dd.MM.yyyy')}
 </td><td>
 
 ```markdown
-21.06.2025
+23.06.2025
 ```
 
 </td></tr>
@@ -362,4 +362,4 @@ Widget parameters:
 <pre>📌 ⌛ Not done yet...</pre>
 
 ---
-*Last updated: 21.06.2025*
+*Last updated: 23.06.2025*
