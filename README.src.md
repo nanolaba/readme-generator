@@ -2,7 +2,7 @@
 <!--@nrg.defaultLanguage=en-->
 
 <!--@name=**Nanolaba Readme Generator (NRG)**-->
-<!--@stableVersion=0.1-->
+<!--@stableVersion=0.1-SNAPSHOT-->
 
 ${widget:languages}
 
@@ -20,7 +20,7 @@ in [Markdown format]( https://en.wikipedia.org/wiki/Markdown) based on a single 
 The template allows the use of variables and special components (widgets).<!--en-->
 This document is an example of the result of this program.<!--en-->
 The template from which this document was generated is available at the<!--en-->
-following link - [README.src.md](README.src.md).<!--en-->
+following link - [README.src.md](https://github.com/nanolaba/readme-generator/blob/main/README.src.md?plain=1).<!--en-->
 <!--en-->
 The latest stable version of the program is **${stableVersion}**.<!--en-->
 
@@ -28,7 +28,8 @@ The latest stable version of the program is **${stableVersion}**.<!--en-->
 [Markdown]( https://en.wikipedia.org/wiki/Markdown) на основе единого файла-шаблона.<!--ru-->
 В шаблоне можно использовать переменные, а также специальные компоненты (виджеты). <!--ru-->
 Данный документ является примером результата работы этой программы.<!--ru-->
-Шаблон, из которого сгенерирован этот документ, доступен по ссылке - [README.src.md](README.src.md).<!--ru-->
+Шаблон, из которого сгенерирован этот документ, доступен по ссылке - <!--ru-->
+[README.src.md](https://github.com/nanolaba/readme-generator/blob/main/README.src.md?plain=1).<!--ru-->
 <!--ru-->
 Последняя стабильная версия - **${stableVersion}**.<!--ru-->
 
@@ -373,9 +374,9 @@ ${widget:todo(text="${en:'Example message', ru:'Пример сообщения'
 
 ${en:'Widget parameters', ru:'Свойства виджета'}:
 
-| ${en:'Name', ru:'Наименование'} | ${en:'Description', ru:'Описание'}                        | ${en:'Default value', ru:'Значение по умолчанию'} |
-|:-------------------------------:|-----------------------------------------------------------|:-------------------------------------------------:|
-|              text               | ${en:'Displayed text', ru:'Отображаемый текст'}           |                 `Not done yet...`                 |
+| ${en:'Name', ru:'Наименование'} | ${en:'Description', ru:'Описание'}              | ${en:'Default value', ru:'Значение по умолчанию'} |
+|:-------------------------------:|-------------------------------------------------|:-------------------------------------------------:|
+|              text               | ${en:'Displayed text', ru:'Отображаемый текст'} |                 `Not done yet...`                 |
 
 ## ${en:'Advanced features', ru:'Расширенные возможности'}
 
