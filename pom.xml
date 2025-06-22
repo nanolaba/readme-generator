@@ -1,17 +1,25 @@
-<?xml version="1.0" encoding="UTF-8"?>
-
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-
     <groupId>com.nanolaba</groupId>
-    <artifactId>readme-generator</artifactId>
-    <name>readme-generator</name>
-    <url>https://github.com/nanolaba/sugar</url>
+    <artifactId>readme-generator-parent</artifactId>
+    <name>NRG-parent</name>
+    <version>${revision}</version>
+    <packaging>pom</packaging>
 
-    <version>0.1-SNAPSHOT</version>
+    <modules>
+        <module>nrg</module>
+    </modules>
 
     <properties>
+
+        <revision>0.1-SNAPSHOT</revision>
+
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <github.global.server>github</github.global.server>
+        <maven.compiler.target>8</maven.compiler.target>
+        <maven.compiler.source>8</maven.compiler.source>
+        <github.global.server>github</github.global.server>
 
         <!--        <maven.test.skip>true</maven.test.skip>-->
         <pit.skip>true</pit.skip>
@@ -20,10 +28,6 @@
         <pit.targetClasses>com.nanolaba.nrg.*</pit.targetClasses>
         <pit.mutationThreshold>100</pit.mutationThreshold>
 
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.source>8</maven.compiler.source>
-        <maven.compiler.target>8</maven.compiler.target>
-        <github.global.server>github</github.global.server>
 
         <!-- libs-->
         <nanolaba-sugar.version>1.0</nanolaba-sugar.version>
@@ -66,36 +70,6 @@
     </developers>
 
     <dependencies>
-        <dependency>
-            <groupId>com.nanolaba</groupId>
-            <artifactId>sugar</artifactId>
-            <version>${nanolaba-sugar.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.nanolaba</groupId>
-            <artifactId>nanolog</artifactId>
-            <version>${nanolaba-nanolog.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>commons-cli</groupId>
-            <artifactId>commons-cli</artifactId>
-            <version>${commons-cli.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-text</artifactId>
-            <version>${commons-text.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-lang3</artifactId>
-            <version>${commons-lang3.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>commons-io</groupId>
-            <artifactId>commons-io</artifactId>
-            <version>${commons-io.version}</version>
-        </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
@@ -179,51 +153,6 @@
                     </execution>
                 </executions>
             </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-assembly-plugin</artifactId>
-                <version>${maven-assembly-plugin.version}</version>
-                <executions>
-                    <execution>
-                        <id>e1</id>
-                        <goals>
-                            <goal>single</goal>
-                        </goals>
-                        <phase>package</phase>
-                        <configuration>
-                            <archive>
-                                <manifest>
-                                    <mainClass>org.nanolaba.nrg.NRG</mainClass>
-                                </manifest>
-                            </archive>
-                            <descriptorRefs>
-                                <descriptorRef>jar-with-dependencies</descriptorRef>
-                            </descriptorRefs>
-                            <finalName>nrg</finalName>
-                            <appendAssemblyId>false</appendAssemblyId>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>e2</id>
-                        <goals>
-                            <goal>single</goal>
-                        </goals>
-                        <phase>package</phase>
-                        <configuration>
-                            <descriptors>
-                                <descriptor>src/main/assembly/release.xml</descriptor>
-                            </descriptors>
-                            <appendAssemblyId>false</appendAssemblyId>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
         </plugins>
-        <resources>
-            <resource>
-                <directory>src/main/resources</directory>
-                <filtering>true</filtering>
-            </resource>
-        </resources>
     </build>
 </project>
