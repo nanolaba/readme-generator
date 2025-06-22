@@ -26,8 +26,8 @@
         <github.global.server>github</github.global.server>
 
         <!-- libs-->
-        <nanolaba-sugar.version>1.0-SNAPSHOT</nanolaba-sugar.version>
-        <nanolaba-nanolog.version>1.0-SNAPSHOT</nanolaba-nanolog.version>
+        <nanolaba-sugar.version>1.0</nanolaba-sugar.version>
+        <nanolaba-nanolog.version>1.0</nanolaba-nanolog.version>
 
         <junit5.version>5.11.3</junit5.version>
         <commons-cli.version>1.9.0</commons-cli.version>
