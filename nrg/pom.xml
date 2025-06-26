@@ -9,6 +9,7 @@
     <url>https://github.com/nanolaba/readme-generator</url>
     <packaging>jar</packaging>
     <version>0.1-SNAPSHOT</version>
+    <description>Nanolaba readme generator (NRG) project</description>
 
     <parent>
         <groupId>com.nanolaba</groupId>
@@ -16,6 +17,25 @@
         <version>0.1-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
+
+    <developers>
+        <developer>
+            <email>alexander@andriishin.com</email>
+            <name>Alexander Andriishin</name>
+        </developer>
+    </developers>
+
+    <licenses>
+        <license>
+            <name>Apache 2.0</name>
+            <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+        </license>
+    </licenses>
+
+    <scm>
+        <url>https://github.com/nanolaba/readme-generator</url>
+        <connection>scm:git:git://github.com/nanolaba/readme-generator.git</connection>
+    </scm>
 
     <dependencies>
         <dependency>
