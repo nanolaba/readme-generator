@@ -6,7 +6,9 @@ import com.nanolaba.nrg.widgets.WidgetTag;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.TextStringBuilder;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -117,8 +119,8 @@ public class TemplateLine {
                 if (config.getProperties().containsKey(propertyName)) {
                     String value = config.getProperties().getProperty(propertyName);
                     line = (m.start() > 0 ? line.substring(0, m.start()) : "") +
-                           value +
-                           (m.end() < line.length() ? line.substring(m.end()) : "");
+                            value +
+                            (m.end() < line.length() ? line.substring(m.end()) : "");
                     m = pattern.matcher(line);
                 }
             }
@@ -132,21 +134,29 @@ public class TemplateLine {
     }
 
     protected String renderLanguageProperties(String line, String language) {
-        String pairs = config.getLanguages().stream().map(s -> "(\\s*" + Pattern.quote(s) + ": *['\"][^}]*['\"][,\\s]*)").collect(Collectors.joining("|"));
-        String regex = "\\$\\{\\s*(" + pairs + ")}";
+
+        if (language == null) {
+            return line;
+        }
+
+        String langs = config.getLanguages().stream().map(s -> "(\\s*" + Pattern.quote(s) + ")").collect(Collectors.joining("|"));
+        String regex = "\\$\\{\\s*((" + langs + "):[^}]*)}";
 
         StringBuilder result = new StringBuilder(line);
         int shift = 0;
         Matcher matcher = Pattern.compile(regex).matcher(line);
         while (matcher.find()) {
             if (isNotEscaped(line, matcher.start())) {
-                String params = matcher.group(1);
-                Map<String, String> vals = Arrays.stream(params.split(","))
-                        .map(String::trim)
-                        .map(s -> StringUtils.split(s, ":", 2))
-                        .collect(Collectors.toMap(s -> s[0], s -> s.length > 1 ? NRGUtil.unwrapParameterValue(s[1]) : ""));
+                String body = "";
 
-                String body = StringUtils.trimToEmpty(vals.get(language));
+                String content = matcher.group(1);
+                String ENTRY_PATTERN = "(\\s*LANG: *(?<quote>['\"])(?<body>.*?)\\k<quote>[,\\s]*)"
+                        .replace("LANG", Pattern.quote(language));
+                Matcher entryMatcher = Pattern.compile(ENTRY_PATTERN).matcher(content);
+                while (entryMatcher.find()) {
+                    body = StringUtils.trimToEmpty(entryMatcher.group("body"));
+                }
+
                 result.replace(shift + matcher.start(), shift + matcher.end(), body);
                 shift += body.length() - (matcher.end() - matcher.start());
             }

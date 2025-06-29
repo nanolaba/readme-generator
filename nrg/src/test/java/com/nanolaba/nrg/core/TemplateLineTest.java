@@ -138,15 +138,15 @@ class TemplateLineTest extends DefaultNRGTest {
         assertEquals("test widget body '123'", action.apply("${ widget:test(${ru:\"'123'\"}) }", "ru"));
         assertEquals("test widget body 123\"", action.apply("${ widget:test(${ru:'123\"'}) }", "ru"));
         assertEquals("test widget body \"123\"", action.apply("${ widget:test(${ru:'\"123\"'}) }", "ru"));
-        assertEquals("test widget body \"'123'\"", action.apply("${ widget:test(${ru:'\"'123'\"'}) }", "ru"));
-        assertEquals("test widget body \"'123'\"", action.apply("${ widget:test(${ru:'\"'123'\"', en:'aa'}) }", "ru"));
-        assertEquals("test widget body \"'123'\"", action.apply("${ widget:test(${ru:'\"'123'\"', en:\"aa\"}) }", "ru"));
-        assertEquals("test widget body \"'123'\"", action.apply("${ widget:test(${ru:'\"'123'\"', en:\"'aa\"}) }", "ru"));
+        assertEquals("test widget body \"123\"", action.apply("${ widget:test(${ru:'\"123\"'}) }", "ru"));
+        assertEquals("test widget body \"123\"", action.apply("${ widget:test(${ru:'\"123\"', en:'aa'}) }", "ru"));
+        assertEquals("test widget body \"123\"", action.apply("${ widget:test(${ru:'\"123\"', en:\"aa\"}) }", "ru"));
+        assertEquals("test widget body \"123\"", action.apply("${ widget:test(${ru:'\"123\"', en:\"'aa\"}) }", "ru"));
 
-        assertEquals("test widget body \"'123:'\"", action.apply("${ widget:test(${ru:'\"'123:'\"', en:\"'aa\"}) }", "ru"));
-        assertEquals("test widget body \"'123:'\"", action.apply("${ widget:test(${ru:'\"'123:'\"', en:\"'aa\"}) }<!--ru-->", "ru"));
+        assertEquals("test widget body \"123:\"", action.apply("${ widget:test(${ru:'\"123:\"', en:\"'aa\"}) }", "ru"));
+        assertEquals("test widget body \"123:\"", action.apply("${ widget:test(${ru:'\"123:\"', en:\"'aa\"}) }<!--ru-->", "ru"));
 
-        assertNull(action.apply("${ widget:test(${ru:'\"'123:'\"', en:\"'aa\"}) }<!--en-->", "ru"));
+        assertNull(action.apply("${ widget:test(${ru:'\"123:\"', en:\"'aa\"}) }<!--en-->", "ru"));
 
 
         assertEquals("${widget:unknownWidget}", action.apply("${widget:unknownWidget}", "ru"));
@@ -203,17 +203,18 @@ class TemplateLineTest extends DefaultNRGTest {
     @Test
     public void testRenderLanguageProperties() {
         assertEquals("${en:'Table of contents'}", line("${en:'Table of contents'}", "ru").generateLine("ru"));
+        assertEquals("${en:'Table, of contents'}", line("${en:'Table, of contents'}", "ru").generateLine("ru"));
         assertEquals("${en:\"Table of contents\"}", line("${en:\"Table of contents\"}", "ru").generateLine("ru"));
         assertEquals("", line("${en:'Table of contents'}", "en", "ru").generateLine("ru"));
         assertEquals("", line("${en:\"Table of contents\"}", "en", "ru").generateLine("ru"));
         assertEquals("", line("${en:'Table of contents', ru:''}", "en", "ru").generateLine("ru"));
         assertEquals("", line("${en:\"Table of contents\"}", "en", "ru").generateLine("ru"));
         assertEquals("Содержание", line("${ru:'Содержание'}", "en", "ru").generateLine("ru"));
+        assertEquals("Со,держание", line("${ru:'Со,держание'}", "en", "ru").generateLine("ru"));
         assertEquals("Сод:ержание", line("${ru:'Сод:ержание'}", "en", "ru").generateLine("ru"));
         assertEquals("Содержание", line("${ru:\"Содержание\"}", "en", "ru").generateLine("ru"));
         assertEquals("'Содержание", line("${ru:\"'Содержание\"}", "en", "ru").generateLine("ru"));
         assertEquals("'Содержание'", line("${ru:\"'Содержание'\"}", "en", "ru").generateLine("ru"));
-        assertEquals("\"Содержание\"", line("${ru:\"\"Содержание\"\"}", "en", "ru").generateLine("ru"));
         assertEquals("Содержание", line("${en:'Table of contents', ru:'Содержание'}", "en", "ru").generateLine("ru"));
         assertEquals("Содержание", line("${en:'Table of contents', ru:\"Содержание\"}", "en", "ru").generateLine("ru"));
         assertEquals("Table of contents", line("${en:'Table of contents', ru:'Содержание'}", "en", "ru").generateLine("en"));
