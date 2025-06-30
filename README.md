@@ -151,8 +151,8 @@ ${en:'Some text', ru:'Некоторый текст'}
 
 To escape quotes, use character doubling, for example:
 
-- `It's working` → `It's working`
-- `Text with "quotes"` → `Text with "quotes"`
+- `${en:'It''s working'}` → `It's working`
+- `${en:"Text with ""quotes"""}` → `Text with "quotes"`
 
 ### Widgets
 
@@ -290,7 +290,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 30.06.2025 19:07:08
+Last updated: 30.06.2025 19:09:36
 ```
 
 </td></tr>
