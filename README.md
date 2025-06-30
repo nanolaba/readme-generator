@@ -149,6 +149,11 @@ ${en:"Some text", ru:"Некоторый текст"}
 ${en:'Some text', ru:'Некоторый текст'} 
 ```
 
+To escape quotes, use character doubling, for example:
+
+- `It's working` → `It's working`
+- `Text with "quotes"` → `Text with "quotes"`
+
 ### Widgets
 
 Widgets allow you to insert programmatically generated text into a document.
@@ -285,7 +290,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 29.06.2025 07:46:55
+Last updated: 30.06.2025 19:07:08
 ```
 
 </td></tr>
@@ -298,7 +303,7 @@ ${widget:date(pattern = 'dd.MM.yyyy')}
 </td><td>
 
 ```markdown
-29.06.2025
+30.06.2025
 ```
 
 </td></tr>
@@ -362,4 +367,4 @@ Widget parameters:
 <pre>📌 ⌛ Not done yet...</pre>
 
 ---
-*Last updated: 29.06.2025*
+*Last updated: 30.06.2025*
