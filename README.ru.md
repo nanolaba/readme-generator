@@ -20,6 +20,14 @@
 
 Последняя стабильная версия - **0.1-SNAPSHOT**.
 
+**Nanolaba Readme Generator (NRG)** написан на Java и требует для запуска версии **Java 8** и выше.
+
+Программа может быть запущена как:
+
+* Консольное приложение,
+* Плагин для maven,
+* Добавлена к проекту в качестве сторонней библиотеки.
+
 ## Содержание
 1. [Быстрый старт](#быстрый-старт)
 2. [Способы запуска программы](#способы-запуска-программы)
@@ -57,6 +65,7 @@
 Добавьте следующий код в ваш **pom.xml**:
 
 ```xml
+
 <plugins>
     <plugin>
         <groupId>com.nanolaba</groupId>
@@ -83,19 +92,20 @@
 Для использования SNAPSHOT-версий также необходимо добавить в **pom.xml** следующий код:
 
 ```xml
-    <pluginRepositories>
-        <pluginRepository>
-            <id>central.sonatype.com-snapshot</id>
-            <url>https://central.sonatype.com/repository/maven-snapshots</url>
-            <releases>
-                <enabled>false</enabled>
-            </releases>
-            <snapshots>
-                <enabled>true</enabled>
-                <updatePolicy>always</updatePolicy>
-            </snapshots>
-        </pluginRepository>
-    </pluginRepositories>
+
+<pluginRepositories>
+    <pluginRepository>
+        <id>central.sonatype.com-snapshot</id>
+        <url>https://central.sonatype.com/repository/maven-snapshots</url>
+        <releases>
+            <enabled>false</enabled>
+        </releases>
+        <snapshots>
+            <enabled>true</enabled>
+            <updatePolicy>always</updatePolicy>
+        </snapshots>
+    </pluginRepository>
+</pluginRepositories>
 ```
 
 ### Использование в качестве java-библиотеки
@@ -333,7 +343,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 30.06.2025 23:52:52
+Last updated: 01.07.2025 00:10:35
 ```
 
 </td></tr>
@@ -346,7 +356,7 @@ ${widget:date(pattern = 'dd.MM.yyyy')}
 </td><td>
 
 ```markdown
-30.06.2025
+01.07.2025
 ```
 
 </td></tr>
@@ -410,4 +420,4 @@ ${widget:todo(text="${en:'Example message', ru:'Пример сообщения'
 <pre>📌 ⌛ Not done yet...</pre>
 
 ---
-*Дата последнего обновления: 30.06.2025*
+*Дата последнего обновления: 01.07.2025*
