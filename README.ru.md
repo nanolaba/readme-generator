@@ -151,8 +151,8 @@ ${en:'Some text', ru:'Некоторый текст'}
 
 Для экранирования кавычек используйте задвоение символа, например:
 
-- `` → `It's working`
-- `` → `Text with "quotes"`
+- `${en:'It''s working'}` → ``
+- `${en:"Text with ""quotes"""}` → ``
 
 ### Виджеты
 
@@ -291,7 +291,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 30.06.2025 19:07:08
+Last updated: 30.06.2025 19:09:36
 ```
 
 </td></tr>

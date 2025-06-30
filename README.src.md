@@ -165,8 +165,8 @@ The second method involves using a special construct:<!--en-->
 Для экранирования кавычек используйте задвоение символа, например:<!--ru-->
 To escape quotes, use character doubling, for example:<!--en-->
 
-- `${en:'It''s working'}` → `It's working`
-- `${en:"Text with ""quotes"""}` → `Text with "quotes"`
+- `\${en:'It''s working'}` → `${en:'It''s working'}`
+- `\${en:"Text with ""quotes"""}` → `${en:"Text with ""quotes"""}`
 
 ### ${en:'Widgets', ru:'Виджеты'}
 
