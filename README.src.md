@@ -47,11 +47,57 @@ ${widget:todo}
 
 ${widget:todo}
 
+### ${en:'Use as maven plugin', ru:'Использование как плагина для maven'}
+
+Добавьте следующий код в ваш **pom.xml**:<!--ru-->
+Add the following code to your **pom.xml**:<!--en-->
+
+```xml
+
+<plugins>
+    <plugin>
+        <groupId>com.nanolaba</groupId>
+        <artifactId>nrg-maven-plugin</artifactId>
+        <version>${stableVersion}</version>
+        <configuration>
+            <file>
+                <item>README.src.md</item>
+                <item>another-file.src.md</item>
+            </file>
+        </configuration>
+        <executions>
+            <execution>
+                <phase>compile</phase>
+                <goals>
+                    <goal>create-files</goal>
+                </goals>
+            </execution>
+        </executions>
+    </plugin>
+</plugins>
+```
+
+Для использования SNAPSHOT-версий также необходимо добавить в **pom.xml** следующий код:<!--ru-->
+To use SNAPSHOT versions, you also need to add the following code to your **pom.xml**:<!--en-->
+
+```xml
+
+<pluginRepositories>
+    <pluginRepository>
+        <id>central.sonatype.com-snapshot</id>
+        <url>https://central.sonatype.com/repository/maven-snapshots</url>
+        <releases>
+            <enabled>false</enabled>
+        </releases>
+        <snapshots>
+            <enabled>true</enabled>
+            <updatePolicy>always</updatePolicy>
+        </snapshots>
+    </pluginRepository>
+</pluginRepositories>
+```
+
 ### ${en:'Use as a java-library', ru:'Использование в качестве java-библиотеки'}
-
-${widget:todo}
-
-### ${en:'Use as wicket plugin', ru:'Использование как плагина для wicket'}
 
 ${widget:todo}
 
