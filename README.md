@@ -25,8 +25,8 @@ The latest stable version of the program is **0.1-SNAPSHOT**.
 1. [Quick start](#quick-start)
 2. [Usage](#usage)
 	1. [Using the Command Line Interface](#using-the-command-line-interface)
-	2. [Use as a java-library](#use-as-a-java-library)
-	3. [Use as wicket plugin](#use-as-wicket-plugin)
+	2. [Use as maven plugin](#use-as-maven-plugin)
+	3. [Use as a java-library](#use-as-a-java-library)
 3. [Template syntax](#template-syntax)
 	1. [Variables](#variables)
 	2. [Properties](#properties)
@@ -53,11 +53,55 @@ The latest stable version of the program is **0.1-SNAPSHOT**.
 
 <pre>📌 ⌛ Not done yet...</pre>
 
+### Use as maven plugin
+
+Add the following code to your **pom.xml**:
+
+```xml
+
+<plugins>
+	<plugin>
+		<groupId>com.nanolaba</groupId>
+		<artifactId>nrg-maven-plugin</artifactId>
+		<version>0.1-SNAPSHOT</version>
+		<configuration>
+			<file>
+				<item>README.src.md</item>
+				<item>another-file.src.md</item>
+			</file>
+		</configuration>
+		<executions>
+			<execution>
+				<phase>compile</phase>
+				<goals>
+					<goal>create-files</goal>
+				</goals>
+			</execution>
+		</executions>
+	</plugin>
+</plugins>
+```
+
+To use SNAPSHOT versions, you also need to add the following code to your **pom.xml**:
+
+```xml
+
+<pluginRepositories>
+	<pluginRepository>
+		<id>central.sonatype.com-snapshot</id>
+		<url>https://central.sonatype.com/repository/maven-snapshots</url>
+		<releases>
+			<enabled>false</enabled>
+		</releases>
+		<snapshots>
+			<enabled>true</enabled>
+			<updatePolicy>always</updatePolicy>
+		</snapshots>
+	</pluginRepository>
+</pluginRepositories>
+```
+
 ### Use as a java-library
-
-<pre>📌 ⌛ Not done yet...</pre>
-
-### Use as wicket plugin
 
 <pre>📌 ⌛ Not done yet...</pre>
 
@@ -290,7 +334,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 30.06.2025 19:09:36
+Last updated: 30.06.2025 23:52:52
 ```
 
 </td></tr>

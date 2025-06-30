@@ -24,8 +24,8 @@
 1. [Быстрый старт](#быстрый-старт)
 2. [Способы запуска программы](#способы-запуска-программы)
 	1. [Запуск из командной строки](#запуск-из-командной-строки)
-	2. [Использование в качестве java-библиотеки](#использование-в-качестве-java-библиотеки)
-	3. [Использование как плагина для wicket](#использование-как-плагина-для-wicket)
+	2. [Использование как плагина для maven](#использование-как-плагина-для-maven)
+	3. [Использование в качестве java-библиотеки](#использование-в-качестве-java-библиотеки)
 3. [Синтаксис шаблона](#синтаксис-шаблона)
 	1. [Переменные](#переменные)
 	2. [Свойства](#свойства)
@@ -52,11 +52,53 @@
 
 <pre>📌 ⌛ Not done yet...</pre>
 
+### Использование как плагина для maven
+
+Добавьте следующий код в ваш **pom.xml**:
+
+```xml
+<plugins>
+    <plugin>
+        <groupId>com.nanolaba</groupId>
+        <artifactId>nrg-maven-plugin</artifactId>
+        <version>0.1-SNAPSHOT</version>
+        <configuration>
+            <file>
+                <item>README.src.md</item>
+                <item>another-file.src.md</item>
+            </file>
+        </configuration>
+        <executions>
+            <execution>
+                <phase>compile</phase>
+                <goals>
+                    <goal>create-files</goal>
+                </goals>
+            </execution>
+        </executions>
+    </plugin>
+</plugins>
+```
+
+Для использования SNAPSHOT-версий также необходимо добавить в **pom.xml** следующий код:
+
+```xml
+    <pluginRepositories>
+        <pluginRepository>
+            <id>central.sonatype.com-snapshot</id>
+            <url>https://central.sonatype.com/repository/maven-snapshots</url>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+                <updatePolicy>always</updatePolicy>
+            </snapshots>
+        </pluginRepository>
+    </pluginRepositories>
+```
+
 ### Использование в качестве java-библиотеки
-
-<pre>📌 ⌛ Not done yet...</pre>
-
-### Использование как плагина для wicket
 
 <pre>📌 ⌛ Not done yet...</pre>
 
@@ -291,7 +333,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 30.06.2025 19:09:36
+Last updated: 30.06.2025 23:52:52
 ```
 
 </td></tr>
