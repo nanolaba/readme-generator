@@ -150,11 +150,13 @@ public class TemplateLine {
                 String body = "";
 
                 String content = matcher.group(1);
-                String ENTRY_PATTERN = "(\\s*LANG: *(?<quote>['\"])(?<body>.*?)\\k<quote>[,\\s]*)"
+                String ENTRY_PATTERN = "(\\s*LANG: *(?<quote>['\"])(?<text>(?:(?!\\k<quote>).|\\k<quote>\\k<quote>)*)\\k<quote>[,\\s]*)"
                         .replace("LANG", Pattern.quote(language));
                 Matcher entryMatcher = Pattern.compile(ENTRY_PATTERN).matcher(content);
                 while (entryMatcher.find()) {
-                    body = StringUtils.trimToEmpty(entryMatcher.group("body"));
+                    String quote = entryMatcher.group("quote");
+                    body = StringUtils.trimToEmpty(entryMatcher.group("text"))
+                            .replace(quote + quote, quote);
                 }
 
                 result.replace(shift + matcher.start(), shift + matcher.end(), body);

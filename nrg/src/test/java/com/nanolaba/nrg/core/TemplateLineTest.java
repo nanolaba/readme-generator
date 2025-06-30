@@ -148,6 +148,10 @@ class TemplateLineTest extends DefaultNRGTest {
 
         assertNull(action.apply("${ widget:test(${ru:'\"123:\"', en:\"'aa\"}) }<!--en-->", "ru"));
 
+        assertEquals("test widget body \"", action.apply("${ widget:test(${ru:'\"'}) }", "ru"));
+        assertEquals("test widget body '", action.apply("${ widget:test(${ru:''''}) }", "ru"));
+        assertEquals("test widget body '", action.apply("${ widget:test(${ru:\"'\"}) }", "ru"));
+        assertEquals("test widget body \"", action.apply("${ widget:test(${ru:\"\"\"\"}) }", "ru"));
 
         assertEquals("${widget:unknownWidget}", action.apply("${widget:unknownWidget}", "ru"));
 
