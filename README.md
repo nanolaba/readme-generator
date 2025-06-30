@@ -20,6 +20,13 @@ following link - [README.src.md](https://github.com/nanolaba/readme-generator/bl
 
 The latest stable version of the program is **0.1-SNAPSHOT**.
 
+**Nanolaba Readme Generator (NRG)** is written in Java and requires **Java 8** or higher to run.
+
+The program can be run as:
+
+* A standalone console application,
+* A Maven plugin,
+* Or integrated into a project as a third-party library.
 
 ## Table of contents
 1. [Quick start](#quick-start)
@@ -334,7 +341,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 30.06.2025 23:52:52
+Last updated: 01.07.2025 00:10:35
 ```
 
 </td></tr>
@@ -347,7 +354,7 @@ ${widget:date(pattern = 'dd.MM.yyyy')}
 </td><td>
 
 ```markdown
-30.06.2025
+01.07.2025
 ```
 
 </td></tr>
@@ -411,4 +418,4 @@ Widget parameters:
 <pre>📌 ⌛ Not done yet...</pre>
 
 ---
-*Last updated: 30.06.2025*
+*Last updated: 01.07.2025*
