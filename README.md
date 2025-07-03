@@ -18,7 +18,9 @@ This document is an example of the result of this program.
 The template from which this document was generated is available at the
 following link - [README.src.md](https://github.com/nanolaba/readme-generator/blob/main/README.src.md?plain=1).
 
-The latest stable version of the program is **0.1-SNAPSHOT**.
+The latest stable version of the program is **not-released-yet**.
+
+The latest development version is **0.1-SNAPSHOT**.
 
 **Nanolaba Readme Generator (NRG)** is written in Java and requires **Java 8** or higher to run.
 
@@ -54,15 +56,13 @@ The program can be run as:
 
 ## Usage
 
-<pre>📌 ⌛ Not done yet...</pre>
-
 ### Using the Command Line Interface
 
 <pre>📌 ⌛ Not done yet...</pre>
 
 ### Use as maven plugin
 
-Add the following code to your **pom.xml**:
+Add the following code to your `pom.xml`:
 
 ```xml
 
@@ -70,7 +70,7 @@ Add the following code to your **pom.xml**:
 	<plugin>
 		<groupId>com.nanolaba</groupId>
 		<artifactId>nrg-maven-plugin</artifactId>
-		<version>0.1-SNAPSHOT</version>
+		<version>not-released-yet</version>
 		<configuration>
 			<file>
 				<item>README.src.md</item>
@@ -89,7 +89,7 @@ Add the following code to your **pom.xml**:
 </plugins>
 ```
 
-To use SNAPSHOT versions, you also need to add the following code to your **pom.xml**:
+To use SNAPSHOT versions, you also need to add the following code to your `pom.xml`:
 
 ```xml
 
@@ -110,7 +110,65 @@ To use SNAPSHOT versions, you also need to add the following code to your **pom.
 
 ### Use as a java-library
 
-<pre>📌 ⌛ Not done yet...</pre>
+**Maven (pom.xml)**
+
+```xml
+
+<dependency>
+	<groupId>com.nanolaba</groupId>
+	<artifactId>readme-generator</artifactId>
+	<version>not-released-yet</version>
+</dependency>  
+```
+
+**Gradle (build.gradle)**
+
+```groovy
+implementation 'com.nanolaba:readme-generator:not-released-yet'
+```
+
+**Manual download**
+Get the JAR from [Maven Central](https://repo1.maven.org/maven2/com/nanolaba/readme-generator/not-released-yet).
+Add it to your project's classpath
+
+After this, you can call the file generation function in your project by passing
+the same parameters as in the console application, for example:
+
+```java
+NRG.main("-f","path-to-file","--charset","UTF-8");
+```
+
+An alternative approach — and a more flexible one for configuring program
+behavior — is to use the `Generator` class, for example:
+
+```java
+package com.nanolaba.nrg.examples;
+
+import com.nanolaba.nrg.core.*;
+import org.apache.commons.io.FileUtils;
+
+import java.io.*;
+import java.nio.charset.StandardCharsets;
+
+public class GeneratorExample {
+
+	public static void main(String[] args) throws IOException {
+
+		Generator generator = new Generator(new File("template.md"), StandardCharsets.UTF_8);
+
+		for (String language : generator.getConfig().getLanguages()) {
+
+			GenerationResult generationResult = generator.getResult(language);
+
+			FileUtils.write(
+					new File("result." + language + ".md"),
+					generationResult.getContent(),
+					StandardCharsets.UTF_8);
+		}
+	}
+}
+
+```
 
 ## Template syntax
 
@@ -341,7 +399,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 01.07.2025 00:10:35
+Last updated: 03.07.2025 05:04:50
 ```
 
 </td></tr>
@@ -354,7 +412,7 @@ ${widget:date(pattern = 'dd.MM.yyyy')}
 </td><td>
 
 ```markdown
-01.07.2025
+03.07.2025
 ```
 
 </td></tr>
@@ -418,4 +476,4 @@ Widget parameters:
 <pre>📌 ⌛ Not done yet...</pre>
 
 ---
-*Last updated: 01.07.2025*
+*Last updated: 03.07.2025*
