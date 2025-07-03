@@ -64,30 +64,24 @@ public class NRG {
 
     private static void generate(File sourceFile, Charset charset) {
         if (sourceFile.exists()) {
-            try {
-                String sourceBody = FileUtils.readFileToString(sourceFile, charset);
-                Generator generator = new Generator(sourceFile, sourceBody);
-                createFiles(generator);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
+            Code.run(() -> createFiles(new Generator(sourceFile, charset)));
         } else {
             LOG.error("Source file does not exist: {}", sourceFile.getAbsolutePath());
         }
     }
 
-    private static void createFiles(Generator generator) {
+    private static void createFiles(Generator generator) throws IOException {
         for (String language : generator.getConfig().getLanguages()) {
             File readmeFile = getReadmeFile(language, generator.getConfig());
             LOG.debug("Generating file for language \"{}\" - {}", language, readmeFile.getAbsolutePath());
-            Code.run(() -> FileUtils.write(readmeFile, generator.getResult(language).getContent(), StandardCharsets.UTF_8));
+            FileUtils.write(readmeFile, generator.getResult(language).getContent(), StandardCharsets.UTF_8);
             LOG.info("File \"{}\" created, total size {}", readmeFile.getName(), FileUtils.byteCountToDisplaySize(readmeFile.length()));
         }
     }
 
     public static File getReadmeFile(String language, GeneratorConfig config) {
         String path = StringUtils.substringBeforeLast(config.getSourceFile().getAbsolutePath(), "." + NRGConstants.DEFAULT_SOURCE_EXTENSION) +
-                      (language.equals(config.getDefaultLanguage()) ? ".md" : "." + language + ".md");
+                (language.equals(config.getDefaultLanguage()) ? ".md" : "." + language + ".md");
 
         return new File(path);
     }
