@@ -2,7 +2,8 @@
 <!--@nrg.defaultLanguage=en-->
 
 <!--@name=**Nanolaba Readme Generator (NRG)**-->
-<!--@stableVersion=0.1-SNAPSHOT-->
+<!--@stableVersion=not-released-yet-->
+<!--@devVersion=0.1-SNAPSHOT-->
 
 ${widget:languages}
 
@@ -31,6 +32,9 @@ following link - [README.src.md](https://github.com/nanolaba/readme-generator/bl
 The latest stable version of the program is **${stableVersion}**.<!--en-->
 Последняя стабильная версия - **${stableVersion}**.<!--ru-->
 
+The latest development version is **${devVersion}**.<!--en-->
+Последняя версия разработки - **${devVersion}**.<!--ru-->
+
 ${name} is written in Java and requires **Java 8** or higher to run.<!--en-->
 ${name} написан на Java и требует для запуска версии **Java 8** и выше.<!--ru-->
 
@@ -52,16 +56,14 @@ ${widget:todo}
 
 ## ${en:'Usage', ru:'Способы запуска программы'}
 
-${widget:todo}
-
 ### ${en:'Using the Command Line Interface', ru:'Запуск из командной строки'}
 
 ${widget:todo}
 
 ### ${en:'Use as maven plugin', ru:'Использование как плагина для maven'}
 
-Добавьте следующий код в ваш **pom.xml**:<!--ru-->
-Add the following code to your **pom.xml**:<!--en-->
+Добавьте следующий код в ваш `pom.xml`:<!--ru-->
+Add the following code to your `pom.xml`:<!--en-->
 
 ```xml
 
@@ -88,8 +90,8 @@ Add the following code to your **pom.xml**:<!--en-->
 </plugins>
 ```
 
-Для использования SNAPSHOT-версий также необходимо добавить в **pom.xml** следующий код:<!--ru-->
-To use SNAPSHOT versions, you also need to add the following code to your **pom.xml**:<!--en-->
+Для использования SNAPSHOT-версий также необходимо добавить в `pom.xml` следующий код:<!--ru-->
+To use SNAPSHOT versions, you also need to add the following code to your `pom.xml`:<!--en-->
 
 ```xml
 
@@ -110,7 +112,71 @@ To use SNAPSHOT versions, you also need to add the following code to your **pom.
 
 ### ${en:'Use as a java-library', ru:'Использование в качестве java-библиотеки'}
 
-${widget:todo}
+**Maven (pom.xml)**
+
+```xml
+<dependency>
+    <groupId>com.nanolaba</groupId>
+    <artifactId>readme-generator</artifactId>
+    <version>${stableVersion}</version>
+</dependency>  
+```
+
+**Gradle (build.gradle)**
+
+```groovy
+implementation 'com.nanolaba:readme-generator:${stableVersion}'
+```
+
+**${en:'Manual download', ru:'Скачивание вручную'}**
+<!--@mavenCentral=https://repo1.maven.org/maven2/com/nanolaba/readme-generator/${stableVersion}-->
+Get the JAR from [Maven Central](${mavenCentral}).<!--en-->
+Add it to your project's classpath<!--en-->
+Скачайте JAR из [Maven Central](${mavenCentral})<!--ru-->
+и добавьте его в classpath проекта.<!--ru-->
+
+After this, you can call the file generation function in your project by passing <!--en-->
+the same parameters as in the console application, for example:<!--en-->
+После этого вы можете в своем проекте вызывать функцию создания файлов, <!--ru-->
+передав те же параметры, что и в консольном приложении, например:<!--ru-->
+
+```java
+NRG.main("-f","path-to-file", "--charset","UTF-8");
+```
+
+An alternative approach — and a more flexible one for configuring program <!--en-->
+behavior — is to use the `Generator` class, for example:<!--en-->
+Альтернативным вариантом, а также более гибким в плане настройки поведения <!--ru-->
+программы, является использование класса `Generator`, например:<!--ru-->
+
+```java
+package com.nanolaba.nrg.examples;
+
+import com.nanolaba.nrg.core.*;
+import org.apache.commons.io.FileUtils;
+
+import java.io.*;
+import java.nio.charset.StandardCharsets;
+
+public class GeneratorExample {
+
+    public static void main(String[] args) throws IOException {
+
+        Generator generator = new Generator(new File("template.md"), StandardCharsets.UTF_8);
+
+        for (String language : generator.getConfig().getLanguages()) {
+
+            GenerationResult generationResult = generator.getResult(language);
+
+            FileUtils.write(
+                    new File("result." + language + ".md"),
+                    generationResult.getContent(),
+                    StandardCharsets.UTF_8);
+        }
+    }
+}
+
+```
 
 ## ${en:'Template syntax', ru:'Синтаксис шаблона'}
 

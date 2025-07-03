@@ -18,7 +18,9 @@
 Шаблон, из которого сгенерирован этот документ, доступен по ссылке -
 [README.src.md](https://github.com/nanolaba/readme-generator/blob/main/README.src.md?plain=1).
 
-Последняя стабильная версия - **0.1-SNAPSHOT**.
+Последняя стабильная версия - **not-released-yet**.
+
+Последняя версия разработки - **0.1-SNAPSHOT**.
 
 **Nanolaba Readme Generator (NRG)** написан на Java и требует для запуска версии **Java 8** и выше.
 
@@ -54,15 +56,13 @@
 
 ## Способы запуска программы
 
-<pre>📌 ⌛ Not done yet...</pre>
-
 ### Запуск из командной строки
 
 <pre>📌 ⌛ Not done yet...</pre>
 
 ### Использование как плагина для maven
 
-Добавьте следующий код в ваш **pom.xml**:
+Добавьте следующий код в ваш `pom.xml`:
 
 ```xml
 
@@ -70,7 +70,7 @@
     <plugin>
         <groupId>com.nanolaba</groupId>
         <artifactId>nrg-maven-plugin</artifactId>
-        <version>0.1-SNAPSHOT</version>
+		<version>not-released-yet</version>
         <configuration>
             <file>
                 <item>README.src.md</item>
@@ -89,7 +89,7 @@
 </plugins>
 ```
 
-Для использования SNAPSHOT-версий также необходимо добавить в **pom.xml** следующий код:
+Для использования SNAPSHOT-версий также необходимо добавить в `pom.xml` следующий код:
 
 ```xml
 
@@ -110,7 +110,65 @@
 
 ### Использование в качестве java-библиотеки
 
-<pre>📌 ⌛ Not done yet...</pre>
+**Maven (pom.xml)**
+
+```xml
+
+<dependency>
+	<groupId>com.nanolaba</groupId>
+	<artifactId>readme-generator</artifactId>
+	<version>not-released-yet</version>
+</dependency>  
+```
+
+**Gradle (build.gradle)**
+
+```groovy
+implementation 'com.nanolaba:readme-generator:not-released-yet'
+```
+
+**Скачивание вручную**
+Скачайте JAR из [Maven Central](https://repo1.maven.org/maven2/com/nanolaba/readme-generator/not-released-yet)
+и добавьте его в classpath проекта.
+
+После этого вы можете в своем проекте вызывать функцию создания файлов,
+передав те же параметры, что и в консольном приложении, например:
+
+```java
+NRG.main("-f","path-to-file","--charset","UTF-8");
+```
+
+Альтернативным вариантом, а также более гибким в плане настройки поведения
+программы, является использование класса `Generator`, например:
+
+```java
+package com.nanolaba.nrg.examples;
+
+import com.nanolaba.nrg.core.*;
+import org.apache.commons.io.FileUtils;
+
+import java.io.*;
+import java.nio.charset.StandardCharsets;
+
+public class GeneratorExample {
+
+	public static void main(String[] args) throws IOException {
+
+		Generator generator = new Generator(new File("template.md"), StandardCharsets.UTF_8);
+
+		for (String language : generator.getConfig().getLanguages()) {
+
+			GenerationResult generationResult = generator.getResult(language);
+
+			FileUtils.write(
+					new File("result." + language + ".md"),
+					generationResult.getContent(),
+					StandardCharsets.UTF_8);
+		}
+	}
+}
+
+```
 
 ## Синтаксис шаблона
 
@@ -343,7 +401,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 01.07.2025 00:10:35
+Last updated: 03.07.2025 05:04:50
 ```
 
 </td></tr>
@@ -356,7 +414,7 @@ ${widget:date(pattern = 'dd.MM.yyyy')}
 </td><td>
 
 ```markdown
-01.07.2025
+03.07.2025
 ```
 
 </td></tr>
@@ -420,4 +478,4 @@ ${widget:todo(text="${en:'Example message', ru:'Пример сообщения'
 <pre>📌 ⌛ Not done yet...</pre>
 
 ---
-*Дата последнего обновления: 01.07.2025*
+*Дата последнего обновления: 03.07.2025*
