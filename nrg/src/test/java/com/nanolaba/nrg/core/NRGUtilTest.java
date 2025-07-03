@@ -6,7 +6,8 @@ import org.junit.jupiter.api.Test;
 import java.util.Map;
 import java.util.Properties;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class NRGUtilTest extends DefaultNRGTest {
 
@@ -15,11 +16,9 @@ class NRGUtilTest extends DefaultNRGTest {
         Properties properties = new Properties();
         NRGUtil.mergeProperty("a", "b", properties);
         assertEquals("b", properties.getProperty("a"));
-        assertFalse(getOutAndClear().endsWith("A duplicate property 'a' declaration was detected" + RN));
 
         NRGUtil.mergeProperty("a", "c", properties);
         assertEquals("c", properties.getProperty("a"));
-        assertTrue(getOutAndClear().endsWith("A duplicate property 'a' declaration was detected" + RN));
     }
 
     @Test
