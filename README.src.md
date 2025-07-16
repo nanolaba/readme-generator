@@ -52,7 +52,61 @@ ${widget:tableOfContents(title = "${en:'Table of contents', ru:'Содержан
 
 ## ${en:'Quick start', ru:'Быстрый старт'}
 
-${widget:todo}
+**${en:'Step 1: Create a template', ru:'Шаг 1: Создайте шаблон'} (README.src.md)**
+
+```markdown
+<!--\@nrg.languages=en,ru-->
+<!--\@nrg.defaultLanguage=en-->
+
+<!--\@title=**\${en:'Hello, World!', ru:'Привет, Мир!'}**-->
+
+\${widget:languages}
+
+# \${title}<!--toc.ignore-->
+
+\${widget:tableOfContents(title = "\${en:'Table of contents', ru:'Содержание'}", ordered = "true")}
+
+## Part 1<!--toc.ignore-->
+
+### Chapter 1<!--toc.ignore-->
+
+English text<\!--en-->
+Русский текст<\!--ru-->
+
+```
+
+**${en:'Step 2: Build the files', ru:'Шаг 2: Сгенерируйте файлы'}**
+
+Вариант 1: [Скачайте](#запуск-из-командной-строки) программу и запустите в консоли команду:<!--ru-->
+Option 1: [Download](#using-the-command-line-interface) the program and run the command in the console:<!--en-->
+
+```bash
+nrg -f /path/to/README.src.md
+```
+
+Вариант 2: [Подключите](#использование-как-плагина-для-maven) к проекту плагин для maven.<!--ru-->
+Option 2: [Add](#use-as-maven-plugin) the Maven plugin to your project.<!--en-->
+
+**${en:'Step 3: Result (README.md)', ru:'Шаг 3: Результат (README.md)'}**
+
+```markdown
+${widget:languages}
+
+# Hello, World!<!--toc.ignore-->
+
+## Table of contents<!--toc.ignore-->
+
+1. [Part 1](#part-1)
+    1. [Chapter 1](#chapter-1)
+
+## Part 1<!--toc.ignore-->
+
+### Chapter 1<!--toc.ignore-->
+
+English text<!--en-->
+Русский текст<!--ru-->
+
+```
 
 ## ${en:'Usage', ru:'Способы запуска программы'}
 
@@ -129,6 +183,7 @@ implementation 'com.nanolaba:readme-generator:${stableVersion}'
 ```
 
 **${en:'Manual download', ru:'Скачивание вручную'}**
+
 <!--@mavenCentral=https://repo1.maven.org/maven2/com/nanolaba/readme-generator/${stableVersion}-->
 Get the JAR from [Maven Central](${mavenCentral}).<!--en-->
 Add it to your project's classpath<!--en-->

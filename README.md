@@ -32,11 +32,11 @@ The program can be run as:
 
 ## Table of contents
 1. [Quick start](#quick-start)
-2. [Usage](#usage)
+1. [Usage](#usage)
 	1. [Using the Command Line Interface](#using-the-command-line-interface)
 	2. [Use as maven plugin](#use-as-maven-plugin)
 	3. [Use as a java-library](#use-as-a-java-library)
-3. [Template syntax](#template-syntax)
+2. [Template syntax](#template-syntax)
 	1. [Variables](#variables)
 	2. [Properties](#properties)
 	3. [Multilanguage support](#multilanguage-support)
@@ -52,7 +52,58 @@ The program can be run as:
 
 ## Quick start
 
-<pre>📌 ⌛ Not done yet...</pre>
+**Step 1: Create a template (README.src.md)**
+
+```markdown
+<!--@nrg.languages=en,ru-->
+<!--@nrg.defaultLanguage=en-->
+
+<!--@title=**${en:'Hello, World!', ru:'Привет, Мир!'}**-->
+
+${widget:languages}
+
+# ${title}
+
+${widget:tableOfContents(title = "${en:'Table of contents', ru:'Содержание'}", ordered = "true")}
+
+## Part 1
+
+### Chapter 1
+
+English text<!--en-->
+Русский текст<!--ru-->
+
+```
+
+**Step 2: Build the files**
+
+Option 1: [Download](#using-the-command-line-interface) the program and run the command in the console:
+
+```bash
+nrg -f /path/to/README.src.md
+```
+
+Option 2: [Add](#use-as-maven-plugin) the Maven plugin to your project.
+
+**Step 3: Result (README.md)**
+
+```markdown
+[ **en** | [ru](README.ru.md) ]
+
+# Hello, World!
+
+## Table of contents
+
+1. [Part 1](#part-1)
+	1. [Chapter 1](#chapter-1)
+
+## Part 1
+
+### Chapter 1
+
+English text
+
+```
 
 ## Usage
 
@@ -113,7 +164,6 @@ To use SNAPSHOT versions, you also need to add the following code to your `pom.x
 **Maven (pom.xml)**
 
 ```xml
-
 <dependency>
 	<groupId>com.nanolaba</groupId>
 	<artifactId>readme-generator</artifactId>
@@ -128,6 +178,7 @@ implementation 'com.nanolaba:readme-generator:not-released-yet'
 ```
 
 **Manual download**
+
 Get the JAR from [Maven Central](https://repo1.maven.org/maven2/com/nanolaba/readme-generator/not-released-yet).
 Add it to your project's classpath
 
@@ -399,7 +450,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 03.07.2025 05:04:50
+Last updated: 16.07.2025 16:45:27
 ```
 
 </td></tr>
@@ -412,7 +463,7 @@ ${widget:date(pattern = 'dd.MM.yyyy')}
 </td><td>
 
 ```markdown
-03.07.2025
+16.07.2025
 ```
 
 </td></tr>
@@ -476,4 +527,4 @@ Widget parameters:
 <pre>📌 ⌛ Not done yet...</pre>
 
 ---
-*Last updated: 03.07.2025*
+*Last updated: 16.07.2025*
