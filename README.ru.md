@@ -496,7 +496,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 16.07.2025 18:06:13
+Last updated: 16.07.2025 18:30:50
 ```
 
 </td></tr>
@@ -570,7 +570,8 @@ ${widget:todo(text="${en:'Example message', ru:'Пример сообщения'
 
 ## Обратная связь
 
-<pre>📌 ⌛ Not done yet...</pre>
+Все пожелания и предложения отправляйте на почту: **nrg@nanolaba.com**.<!-ru-->
+For all feedback and suggestions, please email: **nrg@nanolaba.com**.<!-en-->
 
 ---
 *Дата последнего обновления: 16.07.2025*

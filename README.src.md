@@ -620,7 +620,8 @@ ${widget:todo}
 
 ## ${en:'Feedback', ru:'Обратная связь'}
 
-${widget:todo}
+Все пожелания и предложения отправляйте на почту: **nrg@nanolaba.com**.<!-ru-->
+For all feedback and suggestions, please email: **nrg@nanolaba.com**.<!-en-->
 
 ---
 *${en:'Last updated:', ru:'Дата последнего обновления:'} ${widget:date(pattern= 'dd.MM.yyyy')}*
