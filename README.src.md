@@ -89,7 +89,9 @@ nrg -f /path/to/README.src.md
 
 **${en:'Result', ru:'Результат'}**
 
-**README.md**
+<table>
+<tr><th>**README.md**</th><th>**README.ru.md**</th></tr>
+<tr><td>
 
 ```markdown
 [ **en** | [ru](README.ru.md) ]
@@ -108,7 +110,7 @@ nrg -f /path/to/README.src.md
 English text
 ```
 
-**README.ru.md**
+</td><td>
 
 ```markdown
 [ [en](README.md) | **ru** ]
@@ -127,6 +129,7 @@ English text
 Русский текст
 ```
 
+</td></tr></table>
 ## ${en:'Usage', ru:'Способы запуска программы'}
 
 ### ${en:'Using the Command Line Interface', ru:'Запуск из командной строки'}
@@ -141,7 +144,7 @@ ${name} is written in Java and requires **Java 8** or higher to run.<!--en-->
 [Download](https://github.com/nanolaba/readme-generator/releases/tag/v${stableVersion}) the latest<!--en-->
 stable version of the application.<!--en-->
 
-Разархивируйте скачанный архив, если вы используете Unix-like системы, то назначьте файлу `nrg.sh` права <!--ru-->
+Разархивируйте скачанный архив. Если вы используете Unix-like системы, то назначьте файлу `nrg.sh` права <!--ru-->
 на исполнение:<!--ru-->
 Unzip the downloaded archive. If you're using a Unix-like system, make the `nrg.sh` file executable:<!--en-->
 
@@ -236,7 +239,7 @@ implementation 'com.nanolaba:readme-generator:${stableVersion}'
 
 <!--@mavenCentral=https://repo1.maven.org/maven2/com/nanolaba/readme-generator/${stableVersion}-->
 Get the JAR from [Maven Central](${mavenCentral}).<!--en-->
-Add it to your project's classpath<!--en-->
+Add it to your project's classpath.<!--en-->
 Скачайте JAR из [Maven Central](${mavenCentral})<!--ru-->
 и добавьте его в classpath проекта.<!--ru-->
 
@@ -250,9 +253,9 @@ NRG.main("-f","path-to-file","--charset","UTF-8");
 ```
 
 An alternative approach — and a more flexible one for configuring program <!--en-->
-behavior — is to use the `Generator` class, for example:<!--en-->
+behavior — is to use the `Generator` class:<!--en-->
 Альтернативным вариантом, а также более гибким в плане настройки поведения <!--ru-->
-программы, является использование класса `Generator`, например:<!--ru-->
+программы, является использование класса `Generator`:<!--ru-->
 
 ```java
 package com.nanolaba.nrg.examples;

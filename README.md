@@ -87,7 +87,9 @@ nrg -f /path/to/README.src.md
 
 **Result**
 
-**README.md**
+<table>
+<tr><th>**README.md**</th><th>**README.ru.md**</th></tr>
+<tr><td>
 
 ```markdown
 [ **en** | [ru](README.ru.md) ]
@@ -106,7 +108,7 @@ nrg -f /path/to/README.src.md
 English text
 ```
 
-**README.ru.md**
+</td><td>
 
 ```markdown
 [ [en](README.md) | **ru** ]
@@ -125,6 +127,7 @@ English text
 Русский текст
 ```
 
+</td></tr></table>
 ## Usage
 
 ### Using the Command Line Interface
@@ -223,7 +226,7 @@ implementation 'com.nanolaba:readme-generator:0.1'
 **Manual download**
 
 Get the JAR from [Maven Central](https://repo1.maven.org/maven2/com/nanolaba/readme-generator/0.1).
-Add it to your project's classpath
+Add it to your project's classpath.
 
 After this, you can call the file generation function in your project by passing
 the same parameters as in the console application, for example:
@@ -233,7 +236,7 @@ NRG.main("-f","path-to-file","--charset","UTF-8");
 ```
 
 An alternative approach — and a more flexible one for configuring program
-behavior — is to use the `Generator` class, for example:
+behavior — is to use the `Generator` class:
 
 ```java
 package com.nanolaba.nrg.examples;
@@ -493,7 +496,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 17.07.2025 01:18:50
+Last updated: 17.07.2025 01:34:32
 ```
 
 </td></tr>
