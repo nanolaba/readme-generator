@@ -3,7 +3,7 @@
 
 <!--@name=**Nanolaba Readme Generator (NRG)**-->
 <!--@stableVersion=0.1-->
-<!--@devVersion=0.1-SNAPSHOT-->
+<!--@devVersion=0.2-SNAPSHOT-->
 
 ${widget:languages}
 
