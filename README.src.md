@@ -2,7 +2,7 @@
 <!--@nrg.defaultLanguage=en-->
 
 <!--@name=**Nanolaba Readme Generator (NRG)**-->
-<!--@stableVersion=not-released-yet-->
+<!--@stableVersion=0.1-->
 <!--@devVersion=0.1-SNAPSHOT-->
 
 ${widget:languages}
@@ -77,15 +77,15 @@ English text<\!--en-->
 
 **${en:'Step 2: Build the files', ru:'Шаг 2: Сгенерируйте файлы'}**
 
-Вариант 1: [Скачайте](#запуск-из-командной-строки) программу и запустите в консоли команду:<!--ru-->
-Option 1: [Download](#using-the-command-line-interface) the program and run the command in the console:<!--en-->
+*Вариант 1:* [Скачайте](#запуск-из-командной-строки) программу и запустите в консоли команду:<!--ru-->
+*Option 1:* [Download](#using-the-command-line-interface) the program and run the command in the console:<!--en-->
 
 ```bash
 nrg -f /path/to/README.src.md
 ```
 
-Вариант 2: [Подключите](#использование-как-плагина-для-maven) к проекту плагин для maven.<!--ru-->
-Option 2: [Add](#use-as-maven-plugin) the Maven plugin to your project.<!--en-->
+*Вариант 2:* [Подключите](#использование-как-плагина-для-maven) к проекту плагин для maven.<!--ru-->
+*Option 2:* [Add](#use-as-maven-plugin) the Maven plugin to your project.<!--en-->
 
 **${en:'Step 3: Result (README.md)', ru:'Шаг 3: Результат (README.md)'}**
 
