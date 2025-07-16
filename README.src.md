@@ -87,10 +87,12 @@ nrg -f /path/to/README.src.md
 *Вариант 2:* [Подключите](#использование-как-плагина-для-maven) к проекту плагин для maven.<!--ru-->
 *Option 2:* [Add](#use-as-maven-plugin) the Maven plugin to your project.<!--en-->
 
-**${en:'Step 3: Result (README.md)', ru:'Шаг 3: Результат (README.md)'}**
+**${en:'Result', ru:'Результат'}**
+
+**README.md**
 
 ```markdown
-${widget:languages}
+[ **en** | [ru](README.ru.md) ]
 
 # Hello, World!<!--toc.ignore-->
 
@@ -103,9 +105,26 @@ ${widget:languages}
 
 ### Chapter 1<!--toc.ignore-->
 
-English text<!--en-->
-Русский текст<!--ru-->
+English text
+```
 
+**README.ru.md**
+
+```markdown
+[ [en](README.md) | **ru** ]
+
+# Привет, Мир!<!--toc.ignore-->
+
+## Содержание<!--toc.ignore-->
+
+1. [Part 1](#part-1)
+    1. [Chapter 1](#chapter-1)
+
+## Part 1<!--toc.ignore-->
+
+### Chapter 1<!--toc.ignore-->
+
+Русский текст
 ```
 
 ## ${en:'Usage', ru:'Способы запуска программы'}
