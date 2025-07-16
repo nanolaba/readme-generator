@@ -88,7 +88,7 @@ nrg -f /path/to/README.src.md
 **Результат**
 
 <table>
-<tr><th>**README.md**</th><th>**README.ru.md**</th></tr>
+<tr><th><b>README.md</b></th><th><b>README.ru.md</b></th></tr>
 <tr><td>
 
 ```markdown
@@ -128,6 +128,7 @@ English text
 ```
 
 </td></tr></table>
+
 ## Способы запуска программы
 
 ### Запуск из командной строки
@@ -499,7 +500,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 17.07.2025 01:34:32
+Last updated: 17.07.2025 01:36:32
 ```
 
 </td></tr>
