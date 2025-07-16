@@ -28,7 +28,7 @@ public class GeneratorConfig {
     private final Properties properties = new Properties();
 
 
-    public GeneratorConfig(File sourceFile, String templateText) {
+    public GeneratorConfig(File sourceFile, String templateText, List<NRGWidget> widgets) {
         this.sourceFile = sourceFile;
         this.sourceFileBody = templateText;
 
@@ -40,13 +40,16 @@ public class GeneratorConfig {
 
         if (defaultLanguage != null && !languages.contains(defaultLanguage)) {
             throw new IllegalStateException("The default language \"" + defaultLanguage +
-                                            "\" is not defined within the \"" + PROPERTY_LANGUAGES +
-                                            "\" property: " + languages);
+                    "\" is not defined within the \"" + PROPERTY_LANGUAGES +
+                    "\" property: " + languages);
         }
 
         getSourceLinesStream().forEach(line -> readPropertiesFromLine(line, defaultLanguage));
 
-        initWidgets(widgets);
+        initDefaultWidgets(this.widgets);
+        if (widgets != null) {
+            this.widgets.addAll(widgets);
+        }
         printConfiguration();
     }
 
@@ -74,7 +77,7 @@ public class GeneratorConfig {
         line.readProperties(language).forEach((key, value) -> NRGUtil.mergeProperty(key, value, properties));
     }
 
-    protected void initWidgets(List<NRGWidget> widgets) {
+    protected void initDefaultWidgets(List<NRGWidget> widgets) {
         widgets.add(new LanguagesWidget());
         widgets.add(new TableOfContentsWidget());
         widgets.add(new DateWidget());

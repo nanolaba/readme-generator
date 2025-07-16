@@ -4,6 +4,7 @@ import com.nanolaba.logging.LOG;
 import com.nanolaba.nrg.core.Generator;
 import com.nanolaba.nrg.core.GeneratorConfig;
 import com.nanolaba.nrg.core.NRGConstants;
+import com.nanolaba.nrg.widgets.NRGWidget;
 import com.nanolaba.sugar.Code;
 import org.apache.commons.cli.*;
 import org.apache.commons.io.FileUtils;
@@ -16,10 +17,15 @@ import java.io.InputStream;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 
 import static com.nanolaba.nrg.core.NRGConstants.DEFAULT_CHARSET;
 
 public class NRG {
+
+    private static List<NRGWidget> additionalWidgets = new ArrayList<>();
 
     public static void main(String... args) {
         try {
@@ -64,7 +70,7 @@ public class NRG {
 
     private static void generate(File sourceFile, Charset charset) {
         if (sourceFile.exists()) {
-            Code.run(() -> createFiles(new Generator(sourceFile, charset)));
+            Code.run(() -> createFiles(new Generator(sourceFile, charset, additionalWidgets)));
         } else {
             LOG.error("Source file does not exist: {}", sourceFile.getAbsolutePath());
         }
@@ -105,5 +111,10 @@ public class NRG {
                         return IOUtils.toString(stream, StandardCharsets.UTF_8);
                     }
                 });
+    }
+
+    public static void addWidget(NRGWidget widget) {
+        Objects.requireNonNull(widget);
+        additionalWidgets.add(widget);
     }
 }

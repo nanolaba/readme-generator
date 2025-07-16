@@ -24,7 +24,7 @@ class TemplateLineTest extends DefaultNRGTest {
 
     private TemplateLine line(String line, String... languages) {
         String configBody = "<!--@" + PROPERTY_LANGUAGES + "=" + String.join(", ", languages) + "-->" + line;
-        return new TemplateLine(new GeneratorConfig(new File("README.src.md"), configBody), line, 0);
+        return new TemplateLine(new GeneratorConfig(new File("README.src.md"), configBody, null), line, 0);
     }
 
     @Test

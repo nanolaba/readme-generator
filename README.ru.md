@@ -496,7 +496,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 16.07.2025 18:30:50
+Last updated: 17.07.2025 01:11:56
 ```
 
 </td></tr>
@@ -509,7 +509,7 @@ ${widget:date(pattern = 'dd.MM.yyyy')}
 </td><td>
 
 ```markdown
-16.07.2025
+17.07.2025
 ```
 
 </td></tr>
@@ -566,7 +566,56 @@ ${widget:todo(text="${en:'Example message', ru:'Пример сообщения'
 
 ### Создание виджета
 
-<pre>📌 ⌛ Not done yet...</pre>
+Для создания виджета вам нужно реализовать интерфейс `NRGWidget`, или создать
+наследника существующего виджета, например `DefaultWidget`:
+
+```java
+package com.nanolaba.nrg.examples;
+
+import com.nanolaba.nrg.core.GeneratorConfig;
+import com.nanolaba.nrg.widgets.*;
+
+public class ExampleWidget extends DefaultWidget {
+
+    @Override
+    public String getName() {
+        return "exampleWidget";
+    }
+
+    @Override
+    public String getBody(WidgetTag widgetTag, GeneratorConfig config, String language) {
+        String parameters = widgetTag.getParameters();
+        Map<String, String> map = NRGUtil.parseParametersLine(parameters);
+
+        return "Hello, " + map.get("name") + "!";
+    }
+}
+```
+
+Теперь вы можете использовать виджет в шаблоне:
+
+```markdown
+${widget:exampleWidget(name='World')}
+```
+
+Теперь необходимо запустить программу и заставить ее использовать новый шаблон. Для этого есть два варианта:
+
+**Вариант 1:** Использование статического метода класса NRG:
+
+```java
+NRG.addWidget(new ExampleWidget());
+NRG.main("--charset", "UTF-8", "-f", "/path/to/your/file.src.md");
+```
+
+**Вариант 2:** Использование класса `Generator` и передача списка виджетов в конструктор:
+
+```java
+Generator generator = new Generator(new File("README.src.md"),
+        "${widget:exampleWidget(name='World')}",
+        Collections.singletonList(new ExampleWidget()));
+
+Collection<GenerationResult> results = generator.getResults();
+```
 
 ## Обратная связь
 
@@ -574,4 +623,4 @@ ${widget:todo(text="${en:'Example message', ru:'Пример сообщения'
 For all feedback and suggestions, please email: **nrg@nanolaba.com**.<!-en-->
 
 ---
-*Дата последнего обновления: 16.07.2025*
+*Дата последнего обновления: 17.07.2025*

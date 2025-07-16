@@ -97,7 +97,7 @@ nrg -f /path/to/README.src.md
 ## Table of contents
 
 1. [Part 1](#part-1)
-	1. [Chapter 1](#chapter-1)
+    1. [Chapter 1](#chapter-1)
 
 ## Part 1
 
@@ -116,7 +116,7 @@ English text
 ## Содержание
 
 1. [Part 1](#part-1)
-	1. [Chapter 1](#chapter-1)
+    1. [Chapter 1](#chapter-1)
 
 ## Part 1
 
@@ -160,25 +160,25 @@ Add the following code to your `pom.xml`:
 ```xml
 
 <plugins>
-	<plugin>
-		<groupId>com.nanolaba</groupId>
-		<artifactId>nrg-maven-plugin</artifactId>
-		<version>0.1</version>
-		<configuration>
-			<file>
-				<item>README.src.md</item>
-				<item>another-file.src.md</item>
-			</file>
-		</configuration>
-		<executions>
-			<execution>
-				<phase>compile</phase>
-				<goals>
-					<goal>create-files</goal>
-				</goals>
-			</execution>
-		</executions>
-	</plugin>
+    <plugin>
+        <groupId>com.nanolaba</groupId>
+        <artifactId>nrg-maven-plugin</artifactId>
+        <version>0.1</version>
+        <configuration>
+            <file>
+                <item>README.src.md</item>
+                <item>another-file.src.md</item>
+            </file>
+        </configuration>
+        <executions>
+            <execution>
+                <phase>compile</phase>
+                <goals>
+                    <goal>create-files</goal>
+                </goals>
+            </execution>
+        </executions>
+    </plugin>
 </plugins>
 ```
 
@@ -187,17 +187,17 @@ To use SNAPSHOT versions, you also need to add the following code to your `pom.x
 ```xml
 
 <pluginRepositories>
-	<pluginRepository>
-		<id>central.sonatype.com-snapshot</id>
-		<url>https://central.sonatype.com/repository/maven-snapshots</url>
-		<releases>
-			<enabled>false</enabled>
-		</releases>
-		<snapshots>
-			<enabled>true</enabled>
-			<updatePolicy>always</updatePolicy>
-		</snapshots>
-	</pluginRepository>
+    <pluginRepository>
+        <id>central.sonatype.com-snapshot</id>
+        <url>https://central.sonatype.com/repository/maven-snapshots</url>
+        <releases>
+            <enabled>false</enabled>
+        </releases>
+        <snapshots>
+            <enabled>true</enabled>
+            <updatePolicy>always</updatePolicy>
+        </snapshots>
+    </pluginRepository>
 </pluginRepositories>
 ```
 
@@ -208,9 +208,9 @@ To use SNAPSHOT versions, you also need to add the following code to your `pom.x
 ```xml
 
 <dependency>
-	<groupId>com.nanolaba</groupId>
-	<artifactId>readme-generator</artifactId>
-	<version>0.1</version>
+    <groupId>com.nanolaba</groupId>
+    <artifactId>readme-generator</artifactId>
+    <version>0.1</version>
 </dependency>  
 ```
 
@@ -246,20 +246,20 @@ import java.nio.charset.StandardCharsets;
 
 public class GeneratorExample {
 
-	public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException {
 
-		Generator generator = new Generator(new File("template.md"), StandardCharsets.UTF_8);
+        Generator generator = new Generator(new File("template.md"), StandardCharsets.UTF_8);
 
-		for (String language : generator.getConfig().getLanguages()) {
+        for (String language : generator.getConfig().getLanguages()) {
 
-			GenerationResult generationResult = generator.getResult(language);
+            GenerationResult generationResult = generator.getResult(language);
 
-			FileUtils.write(
-					new File("result." + language + ".md"),
-					generationResult.getContent(),
-					StandardCharsets.UTF_8);
-		}
-	}
+            FileUtils.write(
+                    new File("result." + language + ".md"),
+                    generationResult.getContent(),
+                    StandardCharsets.UTF_8);
+        }
+    }
 }
 
 ```
@@ -493,7 +493,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 16.07.2025 18:30:50
+Last updated: 17.07.2025 01:11:56
 ```
 
 </td></tr>
@@ -506,7 +506,7 @@ ${widget:date(pattern = 'dd.MM.yyyy')}
 </td><td>
 
 ```markdown
-16.07.2025
+17.07.2025
 ```
 
 </td></tr>
@@ -563,7 +563,56 @@ Widget parameters:
 
 ### Creating a widget
 
-<pre>📌 ⌛ Not done yet...</pre>
+To create a widget, you need to implement the `NRGWidget` interface or
+extend an existing widget (e.g., `DefaultWidget`):
+
+```java
+package com.nanolaba.nrg.examples;
+
+import com.nanolaba.nrg.core.GeneratorConfig;
+import com.nanolaba.nrg.widgets.*;
+
+public class ExampleWidget extends DefaultWidget {
+
+    @Override
+    public String getName() {
+        return "exampleWidget";
+    }
+
+    @Override
+    public String getBody(WidgetTag widgetTag, GeneratorConfig config, String language) {
+        String parameters = widgetTag.getParameters();
+        Map<String, String> map = NRGUtil.parseParametersLine(parameters);
+
+        return "Hello, " + map.get("name") + "!";
+    }
+}
+```
+
+Now you can use the widget in your template:
+
+```markdown
+${widget:exampleWidget(name='World')}
+```
+
+Now you need to launch the program and make it use the new template. There are two ways to do this:
+
+**Option 1:** Using the NRG class static method:
+
+```java
+NRG.addWidget(new ExampleWidget());
+NRG.main("--charset", "UTF-8", "-f", "/path/to/your/file.src.md");
+```
+
+**Option 2:** Use the Generator class and pass the widget list to its constructor:
+
+```java
+Generator generator = new Generator(new File("README.src.md"),
+        "${widget:exampleWidget(name='World')}",
+        Collections.singletonList(new ExampleWidget()));
+
+Collection<GenerationResult> results = generator.getResults();
+```
 
 ## Feedback
 
@@ -571,4 +620,4 @@ Widget parameters:
 For all feedback and suggestions, please email: **nrg@nanolaba.com**.<!-en-->
 
 ---
-*Last updated: 16.07.2025*
+*Last updated: 17.07.2025*
