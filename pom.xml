@@ -5,7 +5,7 @@
     <artifactId>readme-generator-parent</artifactId>
     <name>NRG-parent</name>
     <url>https://github.com/nanolaba/readme-generator</url>
-    <version>0.1</version>
+    <version>0.2-SNAPSHOT</version>
     <packaging>pom</packaging>
     <description>Nanolaba readme generator (NRG) parent project</description>
 
