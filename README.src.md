@@ -112,7 +112,37 @@ English text<!--en-->
 
 ### ${en:'Using the Command Line Interface', ru:'Запуск из командной строки'}
 
-${widget:todo}
+${name} написан на Java и требует для запуска версии **Java 8** и выше.<!--ru-->
+[Установите](https://www.java.com/en/download/) Java, если она отсутствует у вас в системе.<!--ru-->
+${name} is written in Java and requires **Java 8** or higher to run.<!--en-->
+[Install](https://www.java.com/en/download/) Java if it’s not already present on your system.<!--en-->
+
+[Скачайте](https://github.com/nanolaba/readme-generator/releases/tag/v${stableVersion}) последнюю <!--ru-->
+стабильную версию приложения.<!--ru-->
+[Download](https://github.com/nanolaba/readme-generator/releases/tag/v${stableVersion}) the latest<!--en-->
+stable version of the application.<!--en-->
+
+Разархивируйте скачанный архив, если вы используете Unix-like системы, то назначьте файлу `nrg.sh` права <!--ru-->
+на исполнение:<!--ru-->
+Unzip the downloaded archive. If you're using a Unix-like system, make the `nrg.sh` file executable:<!--en-->
+
+```bash
+chmod +x nrg.sh  
+```
+
+Теперь вы можете запустить программу для генерации файлов:<!--ru-->
+Now you can run the program to generate the files:<!--en-->
+
+```bash
+nrg -f /path/to/README.src.md
+```
+
+Чтобы посмотреть список доступных опций консольного приложения наберите:<!--ru-->
+To see the list of available options for the console application, type:<!--en-->
+
+```bash
+nrg --help
+```
 
 ### ${en:'Use as maven plugin', ru:'Использование как плагина для maven'}
 
@@ -169,6 +199,7 @@ To use SNAPSHOT versions, you also need to add the following code to your `pom.x
 **Maven (pom.xml)**
 
 ```xml
+
 <dependency>
     <groupId>com.nanolaba</groupId>
     <artifactId>readme-generator</artifactId>
@@ -196,7 +227,7 @@ the same parameters as in the console application, for example:<!--en-->
 передав те же параметры, что и в консольном приложении, например:<!--ru-->
 
 ```java
-NRG.main("-f","path-to-file", "--charset","UTF-8");
+NRG.main("-f","path-to-file","--charset","UTF-8");
 ```
 
 An alternative approach — and a more flexible one for configuring program <!--en-->
