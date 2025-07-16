@@ -85,7 +85,9 @@ nrg -f /path/to/README.src.md
 
 *Option 2:* [Add](#use-as-maven-plugin) the Maven plugin to your project.
 
-**Step 3: Result (README.md)**
+**Result**
+
+**README.md**
 
 ```markdown
 [ **en** | [ru](README.ru.md) ]
@@ -102,7 +104,25 @@ nrg -f /path/to/README.src.md
 ### Chapter 1
 
 English text
+```
 
+**README.ru.md**
+
+```markdown
+[ [en](README.md) | **ru** ]
+
+# Привет, Мир!
+
+## Содержание
+
+1. [Part 1](#part-1)
+	1. [Chapter 1](#chapter-1)
+
+## Part 1
+
+### Chapter 1
+
+Русский текст
 ```
 
 ## Usage
@@ -473,7 +493,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 16.07.2025 18:00:08
+Last updated: 16.07.2025 18:06:13
 ```
 
 </td></tr>

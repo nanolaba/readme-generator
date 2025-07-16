@@ -85,10 +85,12 @@ nrg -f /path/to/README.src.md
 
 *Вариант 2:* [Подключите](#использование-как-плагина-для-maven) к проекту плагин для maven.
 
-**Шаг 3: Результат (README.md)**
+**Результат**
+
+**README.md**
 
 ```markdown
-[ [en](README.md) | **ru** ]
+[ **en** | [ru](README.ru.md) ]
 
 # Hello, World!
 
@@ -101,8 +103,26 @@ nrg -f /path/to/README.src.md
 
 ### Chapter 1
 
-Русский текст
+English text
+```
 
+**README.ru.md**
+
+```markdown
+[ [en](README.md) | **ru** ]
+
+# Привет, Мир!
+
+## Содержание
+
+1. [Part 1](#part-1)
+    1. [Chapter 1](#chapter-1)
+
+## Part 1
+
+### Chapter 1
+
+Русский текст
 ```
 
 ## Способы запуска программы
@@ -476,7 +496,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 16.07.2025 18:00:08
+Last updated: 16.07.2025 18:06:13
 ```
 
 </td></tr>
