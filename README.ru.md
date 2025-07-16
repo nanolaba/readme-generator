@@ -87,7 +87,9 @@ nrg -f /path/to/README.src.md
 
 **Результат**
 
-**README.md**
+<table>
+<tr><th>**README.md**</th><th>**README.ru.md**</th></tr>
+<tr><td>
 
 ```markdown
 [ **en** | [ru](README.ru.md) ]
@@ -106,7 +108,7 @@ nrg -f /path/to/README.src.md
 English text
 ```
 
-**README.ru.md**
+</td><td>
 
 ```markdown
 [ [en](README.md) | **ru** ]
@@ -125,6 +127,7 @@ English text
 Русский текст
 ```
 
+</td></tr></table>
 ## Способы запуска программы
 
 ### Запуск из командной строки
@@ -135,7 +138,7 @@ English text
 [Скачайте](https://github.com/nanolaba/readme-generator/releases/tag/v0.1) последнюю
 стабильную версию приложения.
 
-Разархивируйте скачанный архив, если вы используете Unix-like системы, то назначьте файлу `nrg.sh` права
+Разархивируйте скачанный архив. Если вы используете Unix-like системы, то назначьте файлу `nrg.sh` права
 на исполнение:
 
 ```bash
@@ -234,7 +237,7 @@ NRG.main("-f","path-to-file","--charset","UTF-8");
 ```
 
 Альтернативным вариантом, а также более гибким в плане настройки поведения
-программы, является использование класса `Generator`, например:
+программы, является использование класса `Generator`:
 
 ```java
 package com.nanolaba.nrg.examples;
@@ -496,7 +499,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 17.07.2025 01:18:50
+Last updated: 17.07.2025 01:34:32
 ```
 
 </td></tr>
