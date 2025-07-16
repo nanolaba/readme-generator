@@ -648,7 +648,7 @@ public class ExampleWidget extends DefaultWidget {
 Now you can use the widget in your template:<!--en-->
 
 ```markdown
-${widget:exampleWidget(name='World')}
+\${widget:exampleWidget(name='World')}
 ```
 
 Теперь необходимо запустить программу и заставить ее использовать новый шаблон. Для этого есть два варианта: <!--ru-->
@@ -657,11 +657,9 @@ Now you need to launch the program and make it use the new template. There are t
 **Вариант 1:** Использование статического метода класса NRG:<!--ru-->
 **Option 1:** Using the NRG class static method:<!--en-->
 
-```java
+```javascript
 NRG.addWidget(new ExampleWidget());
-        NRG.
-
-main("--charset","UTF-8","-f","/path/to/your/file.src.md");
+NRG.main("--charset", "UTF-8", "-f", "/path/to/your/file.src.md");
 ```
 
 **Вариант 2:** Использование класса `Generator` и передача списка виджетов в конструктор:<!--ru-->
@@ -677,8 +675,8 @@ Collection<GenerationResult> results = generator.getResults();
 
 ## ${en:'Feedback', ru:'Обратная связь'}
 
-Все пожелания и предложения отправляйте на почту: **nrg@nanolaba.com**.<!-ru-->
-For all feedback and suggestions, please email: **nrg@nanolaba.com**.<!-en-->
+Все пожелания и предложения отправляйте на почту: **nrg@nanolaba.com**.<!--ru-->
+For all feedback and suggestions, please email: **nrg@nanolaba.com**.<!--en-->
 
 ---
 *${en:'Last updated:', ru:'Дата последнего обновления:'} ${widget:date(pattern= 'dd.MM.yyyy')}*
