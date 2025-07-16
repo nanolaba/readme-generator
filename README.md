@@ -493,7 +493,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 17.07.2025 01:11:56
+Last updated: 17.07.2025 01:18:50
 ```
 
 </td></tr>
@@ -599,7 +599,7 @@ Now you need to launch the program and make it use the new template. There are t
 
 **Option 1:** Using the NRG class static method:
 
-```java
+```javascript
 NRG.addWidget(new ExampleWidget());
 NRG.main("--charset", "UTF-8", "-f", "/path/to/your/file.src.md");
 ```
@@ -616,8 +616,7 @@ Collection<GenerationResult> results = generator.getResults();
 
 ## Feedback
 
-Все пожелания и предложения отправляйте на почту: **nrg@nanolaba.com**.<!-ru-->
-For all feedback and suggestions, please email: **nrg@nanolaba.com**.<!-en-->
+For all feedback and suggestions, please email: **nrg@nanolaba.com**.
 
 ---
 *Last updated: 17.07.2025*
