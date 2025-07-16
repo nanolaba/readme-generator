@@ -109,7 +109,29 @@ English text
 
 ### Using the Command Line Interface
 
-<pre>📌 ⌛ Not done yet...</pre>
+**Nanolaba Readme Generator (NRG)** is written in Java and requires **Java 8** or higher to run.
+[Install](https://www.java.com/en/download/) Java if it’s not already present on your system.
+
+[Download](https://github.com/nanolaba/readme-generator/releases/tag/v0.1) the latest
+stable version of the application.
+
+Unzip the downloaded archive. If you're using a Unix-like system, make the `nrg.sh` file executable:
+
+```bash
+chmod +x nrg.sh  
+```
+
+Now you can run the program to generate the files:
+
+```bash
+nrg -f /path/to/README.src.md
+```
+
+To see the list of available options for the console application, type:
+
+```bash
+nrg --help
+```
 
 ### Use as maven plugin
 
@@ -164,6 +186,7 @@ To use SNAPSHOT versions, you also need to add the following code to your `pom.x
 **Maven (pom.xml)**
 
 ```xml
+
 <dependency>
 	<groupId>com.nanolaba</groupId>
 	<artifactId>readme-generator</artifactId>
@@ -450,7 +473,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 16.07.2025 17:00:32
+Last updated: 16.07.2025 17:51:06
 ```
 
 </td></tr>
