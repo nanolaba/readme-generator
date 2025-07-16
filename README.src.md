@@ -90,7 +90,7 @@ nrg -f /path/to/README.src.md
 **${en:'Result', ru:'Результат'}**
 
 <table>
-<tr><th>**README.md**</th><th>**README.ru.md**</th></tr>
+<tr><th><b>README.md</b></th><th><b>README.ru.md</b></th></tr>
 <tr><td>
 
 ```markdown
@@ -130,6 +130,7 @@ English text
 ```
 
 </td></tr></table>
+
 ## ${en:'Usage', ru:'Способы запуска программы'}
 
 ### ${en:'Using the Command Line Interface', ru:'Запуск из командной строки'}
