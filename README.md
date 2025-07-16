@@ -242,10 +242,12 @@ behavior — is to use the `Generator` class:
 ```java
 package com.nanolaba.nrg.examples;
 
-import com.nanolaba.nrg.core.*;
+import com.nanolaba.nrg.core.GenerationResult;
+import com.nanolaba.nrg.core.Generator;
 import org.apache.commons.io.FileUtils;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
 public class GeneratorExample {
@@ -254,12 +256,10 @@ public class GeneratorExample {
 
         Generator generator = new Generator(new File("template.md"), StandardCharsets.UTF_8);
 
-        for (String language : generator.getConfig().getLanguages()) {
-
-            GenerationResult generationResult = generator.getResult(language);
+        for (GenerationResult generationResult : generator.getResults()) {
 
             FileUtils.write(
-                    new File("result." + language + ".md"),
+                    new File("result." + generationResult.getLanguage() + ".md"),
                     generationResult.getContent(),
                     StandardCharsets.UTF_8);
         }
@@ -497,7 +497,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 17.07.2025 01:36:32
+Last updated: 17.07.2025 01:40:19
 ```
 
 </td></tr>

@@ -14,12 +14,10 @@ public class GeneratorExample {
 
         Generator generator = new Generator(new File("template.md"), StandardCharsets.UTF_8);
 
-        for (String language : generator.getConfig().getLanguages()) {
-
-            GenerationResult generationResult = generator.getResult(language);
+        for (GenerationResult generationResult : generator.getResults()) {
 
             FileUtils.write(
-                    new File("result." + language + ".md"),
+                    new File("result." + generationResult.getLanguage() + ".md"),
                     generationResult.getContent(),
                     StandardCharsets.UTF_8);
         }
