@@ -18,9 +18,9 @@ This document is an example of the result of this program.
 The template from which this document was generated is available at the
 following link - [README.src.md](https://github.com/nanolaba/readme-generator/blob/main/README.src.md?plain=1).
 
-The latest stable version of the program is **0.1**.
+The latest stable version of the program is **0.2**.
 
-The latest development version is **0.2-SNAPSHOT**.
+The latest development version is **0.3-SNAPSHOT**.
 
 **Nanolaba Readme Generator (NRG)** is written in Java and requires **Java 8** or higher to run.
 
@@ -137,7 +137,7 @@ English text
 **Nanolaba Readme Generator (NRG)** is written in Java and requires **Java 8** or higher to run.
 [Install](https://www.java.com/en/download/) Java if it’s not already present on your system.
 
-[Download](https://github.com/nanolaba/readme-generator/releases/tag/v0.1) the latest
+[Download](https://github.com/nanolaba/readme-generator/releases/tag/v0.2) the latest
 stable version of the application.
 
 Unzip the downloaded archive. If you're using a Unix-like system, make the `nrg.sh` file executable:
@@ -168,7 +168,7 @@ Add the following code to your `pom.xml`:
     <plugin>
         <groupId>com.nanolaba</groupId>
         <artifactId>nrg-maven-plugin</artifactId>
-        <version>0.1</version>
+        <version>0.2</version>
         <configuration>
             <file>
                 <item>README.src.md</item>
@@ -215,19 +215,19 @@ To use SNAPSHOT versions, you also need to add the following code to your `pom.x
 <dependency>
     <groupId>com.nanolaba</groupId>
     <artifactId>readme-generator</artifactId>
-    <version>0.1</version>
+    <version>0.2</version>
 </dependency>  
 ```
 
 **Gradle (build.gradle)**
 
 ```groovy
-implementation 'com.nanolaba:readme-generator:0.1'
+implementation 'com.nanolaba:readme-generator:0.2'
 ```
 
 **Manual download**
 
-Get the JAR from [Maven Central](https://repo1.maven.org/maven2/com/nanolaba/readme-generator/0.1).
+Get the JAR from [Maven Central](https://repo1.maven.org/maven2/com/nanolaba/readme-generator/0.2).
 Add it to your project's classpath.
 
 After this, you can call the file generation function in your project by passing
@@ -531,7 +531,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 10.08.2025 00:11:11
+Last updated: 10.08.2025 01:13:52
 ```
 
 </td></tr>

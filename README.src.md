@@ -2,8 +2,8 @@
 <!--@nrg.defaultLanguage=en-->
 
 <!--@name=**Nanolaba Readme Generator (NRG)**-->
-<!--@stableVersion=0.1-->
-<!--@devVersion=0.2-SNAPSHOT-->
+<!--@stableVersion=0.2-->
+<!--@devVersion=0.3-SNAPSHOT-->
 
 ${widget:languages}
 

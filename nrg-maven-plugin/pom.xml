@@ -8,13 +8,13 @@
     <name>NRG-maven-plugin</name>
     <url>https://github.com/nanolaba/readme-generator</url>
     <packaging>maven-plugin</packaging>
-    <version>0.2-SNAPSHOT</version>
+    <version>0.2</version>
     <description>Nanolaba readme generator (NRG) maven plugin</description>
 
     <parent>
         <groupId>com.nanolaba</groupId>
         <artifactId>readme-generator-parent</artifactId>
-        <version>0.2-SNAPSHOT</version>
+        <version>0.2</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -22,7 +22,7 @@
         <dependency>
             <groupId>com.nanolaba</groupId>
             <artifactId>readme-generator</artifactId>
-            <version>0.2-SNAPSHOT</version>
+            <version>0.2</version>
         </dependency>
         <dependency>
             <groupId>org.apache.maven</groupId>
