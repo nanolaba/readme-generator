@@ -494,7 +494,7 @@ ${widget:tableOfContents(title = "${en:'Table of contents', ru:'Содержан
 
 ### Chapter 3
 
-### Ignored Chapter<!--toc.ignore-->
+### Ignored Chapter
 
 ## Part 2
 
@@ -531,7 +531,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 10.08.2025 00:08:50
+Last updated: 10.08.2025 00:10:05
 ```
 
 </td></tr>

@@ -64,7 +64,7 @@ mark it with a comment `<\!--toc.ignore-->`.<!--en-->
 
 ### Chapter 3<!--toc.ignore-->
 
-### Ignored Chapter<\!--toc.ignore--><!--toc.ignore-->
+### Ignored Chapter<!--toc.ignore-->
 
 ## Part 2<!--toc.ignore-->
 
