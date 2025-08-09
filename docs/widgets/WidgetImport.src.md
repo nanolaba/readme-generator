@@ -15,7 +15,6 @@ This component enables text import from another document or template.<!--en-->
 ```
 
 </td></tr>
-<tr></tr>
 </table>
 
 ${en:'Widget parameters', ru:'Свойства виджета'}:
