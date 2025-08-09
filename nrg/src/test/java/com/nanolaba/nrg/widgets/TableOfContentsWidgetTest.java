@@ -131,7 +131,7 @@ class TableOfContentsWidgetTest extends DefaultNRGTest {
                 "someTextBeforeHeader" + RN +
                 "# MainHeader" + RN +
                 "## AAA" + RN +
-                "## IGNORED" + RN +
+                        "## IGNORED<!--toc.ignore-->" + RN +
                 "someText" + RN +
                 "someText1" + RN +
                 "### aaa" + RN +
