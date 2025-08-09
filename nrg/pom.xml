@@ -8,13 +8,13 @@
     <name>NRG</name>
     <url>https://github.com/nanolaba/readme-generator</url>
     <packaging>jar</packaging>
-    <version>0.2</version>
+    <version>0.3-SNAPSHOT</version>
     <description>Nanolaba readme generator (NRG) project</description>
 
     <parent>
         <groupId>com.nanolaba</groupId>
         <artifactId>readme-generator-parent</artifactId>
-        <version>0.2</version>
+        <version>0.3-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
