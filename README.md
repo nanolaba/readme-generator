@@ -9,6 +9,7 @@
 **Nanolaba Readme Generator (NRG)** — is a program for automatically
 generating [Markdown files]( https://en.wikipedia.org/wiki/Markdown) based on a prototype file.
 
+
 ## Overview
 
 Using the **Nanolaba Readme Generator (NRG)** program, you can generate separate files for different languages
@@ -30,6 +31,7 @@ The program can be run as:
 * A Maven plugin,
 * Or integrated into a project as a third-party library.
 
+
 ## Table of contents
 1. [Quick start](#quick-start)
 1. [Usage](#usage)
@@ -42,12 +44,11 @@ The program can be run as:
 	3. [Multilanguage support](#multilanguage-support)
 	4. [Widgets](#widgets)
 		1. [Widget 'languages'](#widget-languages)
-		2. [Widget 'tableOfContents'](#widget-tableofcontents)
+        2. [Widget 'import'](#widget-import)
+        3. [Widget 'tableOfContents'](#widget-tableofcontents)
 		1. [Widget 'date'](#widget-date)
 		2. [Widget 'todo'](#widget-todo)
-1. [Advanced features](#advanced-features)
-	1. [Creating a widget](#creating-a-widget)
-2. [Feedback](#feedback)
+1. [Feedback](#feedback)
 
 
 ## Quick start
@@ -73,6 +74,7 @@ ${widget:tableOfContents(title = "${en:'Table of contents', ru:'Содержан
 English text<!--en-->
 Русский текст<!--ru-->
 
+${widget:import(path='path/to/your/file/another-info.src.md')}
 ```
 
 **Step 2: Build the files**
@@ -361,11 +363,13 @@ To escape quotes, use character doubling, for example:
 - `${en:'It''s working'}` → `It's working`
 - `${en:"Text with ""quotes"""}` → `Text with "quotes"`
 
+
 ### Widgets
 
 Widgets allow you to insert programmatically generated text into a document.
 If you are using **Nanolaba Readme Generator (NRG)** as a Java library, you can write your own widget.
 How to do this is explained in the [Advanced Features](#advanced-features) section.
+
 
 #### Widget 'languages'
 
@@ -386,18 +390,49 @@ ${widget:languages}
 </td><td>
 
 ```markdown
-[ **en** | [ru](README.ru.md) ]
+[ **en** | [ru](WidgetLanguages.ru.md) ]
 ```
 
 </td>
 <td>
 
-[ **en** | [ru](README.ru.md) ]
+[ **en** | [ru](WidgetLanguages.ru.md) ]
 
 </td>
 </tr>
 </table>
 
+---
+
+#### Widget 'import'
+
+This component enables text import from another document or template.
+
+<table>
+<tr><th>Usage example</th></tr>
+<tr><td>
+
+```markdown
+${widget:import(path='path/to/your/file/document.txt')}
+${widget:import(path='path/to/your/file/document.txt', charset='windows-1251')}
+${widget:import(path='path/to/your/file/template.src.md')}
+${widget:import(path='path/to/your/file/template.src.md', run-generator='false')}
+```
+
+</td></tr>
+<tr></tr>
+</table>
+
+Widget parameters:
+
+|     Name      | Description                                                             | Default value |
+|:-------------:|-------------------------------------------------------------------------|:-------------:|
+|     path      | Path to the imported file                                               |               |
+|    charset    | File encoding                                                           |    `UTF-8`    |
+| run-generator | Should the system perform text generation when importing template files |    `true`     |
+
+"When importing a template file, generation is performed using variables declared in the parent file.
+This allows defining global variables in the root file and reusing them across all imported templates.
 ---
 
 #### Widget 'tableOfContents'
@@ -497,7 +532,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 17.07.2025 01:40:19
+Last updated: 10.08.2025 00:01:38
 ```
 
 </td></tr>
@@ -510,7 +545,7 @@ ${widget:date(pattern = 'dd.MM.yyyy')}
 </td><td>
 
 ```markdown
-17.07.2025
+10.08.2025
 ```
 
 </td></tr>
@@ -563,64 +598,12 @@ Widget parameters:
 |:----:|----------------|:-----------------:|
 | text | Displayed text | `Not done yet...` |
 
-## Advanced features
 
-### Creating a widget
-
-To create a widget, you need to implement the `NRGWidget` interface or
-extend an existing widget (e.g., `DefaultWidget`):
-
-```java
-package com.nanolaba.nrg.examples;
-
-import com.nanolaba.nrg.core.GeneratorConfig;
-import com.nanolaba.nrg.widgets.*;
-
-public class ExampleWidget extends DefaultWidget {
-
-    @Override
-    public String getName() {
-        return "exampleWidget";
-    }
-
-    @Override
-    public String getBody(WidgetTag widgetTag, GeneratorConfig config, String language) {
-        String parameters = widgetTag.getParameters();
-        Map<String, String> map = NRGUtil.parseParametersLine(parameters);
-
-        return "Hello, " + map.get("name") + "!";
-    }
-}
-```
-
-Now you can use the widget in your template:
-
-```markdown
-${widget:exampleWidget(name='World')}
-```
-
-Now you need to launch the program and make it use the new template. There are two ways to do this:
-
-**Option 1:** Using the NRG class static method:
-
-```javascript
-NRG.addWidget(new ExampleWidget());
-NRG.main("--charset", "UTF-8", "-f", "/path/to/your/file.src.md");
-```
-
-**Option 2:** Use the Generator class and pass the widget list to its constructor:
-
-```java
-Generator generator = new Generator(new File("README.src.md"),
-        "${widget:exampleWidget(name='World')}",
-        Collections.singletonList(new ExampleWidget()));
-
-Collection<GenerationResult> results = generator.getResults();
-```
 
 ## Feedback
 
 For all feedback and suggestions, please email: **nrg@nanolaba.com**.
 
+
 ---
-*Last updated: 17.07.2025*
+*Last updated: 10.08.2025*
