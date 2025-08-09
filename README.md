@@ -443,7 +443,7 @@ If you need to exclude a header from the table of contents, you should
 mark it with a comment `<!--toc.ignore-->`.
 
 <table>
-<tr><th>Usage example</th></tr>
+<tr><th>Usage example (README.src.md)</th></tr>
 <tr><td>
 
 ```markdown
@@ -469,7 +469,7 @@ ${widget:tableOfContents(title = "${en:'Table of contents', ru:'Содержан
 ```
 
 </td></tr>
-<tr><th>Result</th></tr>
+<tr><th>Result (README.md)</th></tr>
 <tr><td>
 
 ```markdown 
@@ -531,7 +531,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 10.08.2025 00:10:05
+Last updated: 10.08.2025 00:11:11
 ```
 
 </td></tr>

@@ -13,7 +13,7 @@ mark it with a comment `<\!--toc.ignore-->`.<!--en-->
 его необходимо пометить комментарием `<\!--toc.ignore-->`.<!--ru-->
 
 <table>
-<tr><th>${en:'Usage example', ru:'Пример использования'}</th></tr>
+<tr><th>${en:'Usage example', ru:'Пример использования'} (README.src.md)</th></tr>
 <tr><td>
 
 ```markdown
@@ -39,7 +39,7 @@ mark it with a comment `<\!--toc.ignore-->`.<!--en-->
 ```
 
 </td></tr>
-<tr><th>${en:'Result', ru:'Результат'}</th></tr>
+<tr><th>${en:'Result', ru:'Результат'} (README.md)</th></tr>
 <tr><td>
 
 ```markdown 
