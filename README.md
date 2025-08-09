@@ -430,6 +430,7 @@ Widget parameters:
 
 When importing a template file, generation is performed using variables declared in the parent file.
 This allows defining global variables in the root file and reusing them across all imported templates.
+
 ---
 
 
@@ -531,7 +532,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 10.08.2025 00:05:34
+Last updated: 10.08.2025 00:07:29
 ```
 
 </td></tr>

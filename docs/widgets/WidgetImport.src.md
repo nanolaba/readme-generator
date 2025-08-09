@@ -31,5 +31,6 @@ ${en:'Widget parameters', ru:'Свойства виджета'}:
 использовать их во всех импортированных шаблонах.<!--ru-->
 When importing a template file, generation is performed using variables declared in the parent file.<!--en-->
 This allows defining global variables in the root file and reusing them across all imported templates.<!--en-->
+
 ---
 
