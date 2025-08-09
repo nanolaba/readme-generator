@@ -447,7 +447,7 @@ ${widget:import(path='path/to/your/file/template.src.md', run-generator='false')
 его необходимо пометить комментарием `<!--toc.ignore-->`.
 
 <table>
-<tr><th>Пример использования</th></tr>
+<tr><th>Пример использования (README.src.md)</th></tr>
 <tr><td>
 
 ```markdown
@@ -473,7 +473,7 @@ ${widget:tableOfContents(title = "${en:'Table of contents', ru:'Содержан
 ```
 
 </td></tr>
-<tr><th>Результат</th></tr>
+<tr><th>Результат (README.md)</th></tr>
 <tr><td>
 
 ```markdown 
@@ -535,7 +535,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 10.08.2025 00:10:05
+Last updated: 10.08.2025 00:11:12
 ```
 
 </td></tr>
