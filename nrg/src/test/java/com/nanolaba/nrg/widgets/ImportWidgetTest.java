@@ -14,6 +14,20 @@ import static org.junit.jupiter.api.Assertions.*;
 class ImportWidgetTest {
 
     @Test
+    public void testImportForDifferentLanguages() throws IOException {
+        File sourceFile = new File(getClass().getClassLoader().getResource("ImportWidgetTest/testImportForDifferentLanguages/test.src.md").getFile());
+        Generator generator = new Generator(sourceFile, StandardCharsets.UTF_8);
+
+        String bodyEn = generator.getResult("en").getContent().toString();
+        LOG.info(bodyEn);
+        assertTrue(bodyEn.contains("Test"));
+
+        String bodyRu = generator.getResult("ru").getContent().toString();
+        LOG.info(bodyRu);
+        assertTrue(bodyRu.contains("Тест"));
+    }
+
+    @Test
     public void testLanguagesWidget() throws IOException {
         File sourceFile = new File(getClass().getClassLoader().getResource("ImportWidgetTest/README.src.md").getFile());
         Generator generator = new Generator(sourceFile, StandardCharsets.UTF_8);

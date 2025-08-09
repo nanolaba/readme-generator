@@ -116,8 +116,16 @@ public class GeneratorConfig {
         return languages;
     }
 
+    public void setLanguages(List<String> languages) {
+        this.languages = languages;
+    }
+
     public String getDefaultLanguage() {
         return defaultLanguage;
+    }
+
+    public void setDefaultLanguage(String defaultLanguage) {
+        this.defaultLanguage = defaultLanguage;
     }
 
     public List<NRGWidget> getWidgets() {
