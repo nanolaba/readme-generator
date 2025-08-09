@@ -1,6 +1,7 @@
 <!--@nrg.languages=en,ru,fr-->
 <!--@globalParameter=This parameter is visible in all imported files-->
 <!--testComment1-->
+<!--\@testEscapedParam1=1-->
 ${widget:import(path='test.txt')}
 ${widget:import(path='folder/test.txt')}
 ${widget:import(path='folder/testWin1251.txt', charset='windows-1251')}

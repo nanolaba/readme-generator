@@ -23,9 +23,11 @@ public class GeneratorConfig {
 
     private final File sourceFile;
     private final String sourceFileBody;
+    private final Properties properties = new Properties();
+
     private List<String> languages = Collections.singletonList("en");
     private String defaultLanguage;
-    private final Properties properties = new Properties();
+    private boolean rootGenerator = true;
 
 
     public GeneratorConfig(File sourceFile, String templateText, List<NRGWidget> widgets) {
@@ -134,5 +136,13 @@ public class GeneratorConfig {
 
     public Properties getProperties() {
         return properties;
+    }
+
+    public boolean isRootGenerator() {
+        return rootGenerator;
+    }
+
+    public void setRootGenerator(boolean rootGenerator) {
+        this.rootGenerator = rootGenerator;
     }
 }
