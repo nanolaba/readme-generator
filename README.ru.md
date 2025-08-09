@@ -420,7 +420,6 @@ ${widget:import(path='path/to/your/file/template.src.md', run-generator='false')
 ```
 
 </td></tr>
-<tr></tr>
 </table>
 
 Свойства виджета:
@@ -536,7 +535,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 10.08.2025 00:07:29
+Last updated: 10.08.2025 00:08:50
 ```
 
 </td></tr>
@@ -565,6 +564,7 @@ ${widget:date(pattern = 'dd.MM.yyyy')}
 [документации языка Java](https://docs.oracle.com/javase/8/docs/api/java/text/SimpleDateFormat.html).
 
 ---
+
 
 #### Виджет 'todo'
 

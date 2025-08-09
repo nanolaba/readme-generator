@@ -417,7 +417,6 @@ ${widget:import(path='path/to/your/file/template.src.md', run-generator='false')
 ```
 
 </td></tr>
-<tr></tr>
 </table>
 
 Widget parameters:
@@ -532,7 +531,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 10.08.2025 00:07:29
+Last updated: 10.08.2025 00:08:50
 ```
 
 </td></tr>
@@ -561,6 +560,7 @@ You can read more about date pattern syntax in the
 [Java documentation](https://docs.oracle.com/javase/8/docs/api/java/text/SimpleDateFormat.html).
 
 ---
+
 
 #### Widget 'todo'
 
