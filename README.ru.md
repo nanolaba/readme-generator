@@ -9,6 +9,7 @@
 **Nanolaba Readme Generator (NRG)** — это программа для автоматической генерации файлов в формате
 [Markdown]( https://en.wikipedia.org/wiki/Markdown) на основе файла-прототипа.
 
+
 ## Краткое описание
 
 С помощью программы **Nanolaba Readme Generator (NRG)** можно генерировать отдельные файлы для разных языков в формате
@@ -30,6 +31,7 @@
 * Плагин для maven,
 * Добавлена к проекту в качестве сторонней библиотеки.
 
+
 ## Содержание
 1. [Быстрый старт](#быстрый-старт)
 1. [Способы запуска программы](#способы-запуска-программы)
@@ -42,12 +44,11 @@
 	3. [Multilanguage support](#multilanguage-support)
 	4. [Виджеты](#виджеты)
 		1. [Виджет 'languages'](#виджет-languages)
-		2. [Виджет 'tableOfContents'](#виджет-tableofcontents)
+        2. [Виджет 'import'](#виджет-import)
+        3. [Виджет 'tableOfContents'](#виджет-tableofcontents)
 		1. [Виджет 'date'](#виджет-date)
 		2. [Виджет 'todo'](#виджет-todo)
-1. [Расширенные возможности](#расширенные-возможности)
-	1. [Создание виджета](#создание-виджета)
-2. [Обратная связь](#обратная-связь)
+1. [Обратная связь](#обратная-связь)
 
 
 ## Быстрый старт
@@ -73,6 +74,7 @@ ${widget:tableOfContents(title = "${en:'Table of contents', ru:'Содержан
 English text<!--en-->
 Русский текст<!--ru-->
 
+${widget:import(path='path/to/your/file/another-info.src.md')}
 ```
 
 **Шаг 2: Сгенерируйте файлы**
@@ -363,12 +365,14 @@ ${en:'Some text', ru:'Некоторый текст'}
 - `${en:'It''s working'}` → ``
 - `${en:"Text with ""quotes"""}` → ``
 
+
 ### Виджеты
 
 Виджеты позволяют вставить в документ программно сгенерированный текст.
 Если вы используете **Nanolaba Readme Generator (NRG)** как java-библиотеку, то вы можете написать свой собственный
 виджет.
 Как это сделать рассказано в разделе [Расширенные возможности](#расширенные-возможности).
+
 
 #### Виджет 'languages'
 
@@ -389,18 +393,50 @@ ${widget:languages}
 </td><td>
 
 ```markdown
-[ [en](README.md) | **ru** ]
+[ [en](WidgetLanguages.md) | **ru** ]
 ```
 
 </td>
 <td>
 
-[ [en](README.md) | **ru** ]
+[ [en](WidgetLanguages.md) | **ru** ]
 
 </td>
 </tr>
 </table>
 
+---
+
+#### Виджет 'import'
+
+Этот компонент позволяет импортировать текст из другого документа или шаблона.
+
+<table>
+<tr><th>Пример использования</th></tr>
+<tr><td>
+
+```markdown
+${widget:import(path='path/to/your/file/document.txt')}
+${widget:import(path='path/to/your/file/document.txt', charset='windows-1251')}
+${widget:import(path='path/to/your/file/template.src.md')}
+${widget:import(path='path/to/your/file/template.src.md', run-generator='false')}
+```
+
+</td></tr>
+<tr></tr>
+</table>
+
+Свойства виджета:
+
+| Наименование  | Описание                                                       | Значение по умолчанию |
+|:-------------:|----------------------------------------------------------------|:---------------------:|
+|     path      | Путь к импортируемому файлу                                    |                       |
+|    charset    | Кодировка, в которой написан файл                              |        `UTF-8`        |
+| run-generator | Нужно ли при импорте файла-шаблона произвести генерацию текста |        `true`         |
+
+При импорте файла шаблона генерация выполняется с использованием переменных, объявленных в родительском файле.
+Это позволяет определять глобальные переменные в корневом файле и повторно
+использовать их во всех импортированных шаблонах.
 ---
 
 #### Виджет 'tableOfContents'
@@ -500,7 +536,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 17.07.2025 01:40:19
+Last updated: 10.08.2025 00:01:38
 ```
 
 </td></tr>
@@ -513,7 +549,7 @@ ${widget:date(pattern = 'dd.MM.yyyy')}
 </td><td>
 
 ```markdown
-17.07.2025
+10.08.2025
 ```
 
 </td></tr>
@@ -566,64 +602,12 @@ ${widget:todo(text="${en:'Example message', ru:'Пример сообщения'
 |:------------:|--------------------|:---------------------:|
 |     text     | Отображаемый текст |   `Not done yet...`   |
 
-## Расширенные возможности
 
-### Создание виджета
-
-Для создания виджета вам нужно реализовать интерфейс `NRGWidget`, или создать
-наследника существующего виджета, например `DefaultWidget`:
-
-```java
-package com.nanolaba.nrg.examples;
-
-import com.nanolaba.nrg.core.GeneratorConfig;
-import com.nanolaba.nrg.widgets.*;
-
-public class ExampleWidget extends DefaultWidget {
-
-    @Override
-    public String getName() {
-        return "exampleWidget";
-    }
-
-    @Override
-    public String getBody(WidgetTag widgetTag, GeneratorConfig config, String language) {
-        String parameters = widgetTag.getParameters();
-        Map<String, String> map = NRGUtil.parseParametersLine(parameters);
-
-        return "Hello, " + map.get("name") + "!";
-    }
-}
-```
-
-Теперь вы можете использовать виджет в шаблоне:
-
-```markdown
-${widget:exampleWidget(name='World')}
-```
-
-Теперь необходимо запустить программу и заставить ее использовать новый шаблон. Для этого есть два варианта:
-
-**Вариант 1:** Использование статического метода класса NRG:
-
-```javascript
-NRG.addWidget(new ExampleWidget());
-NRG.main("--charset", "UTF-8", "-f", "/path/to/your/file.src.md");
-```
-
-**Вариант 2:** Использование класса `Generator` и передача списка виджетов в конструктор:
-
-```java
-Generator generator = new Generator(new File("README.src.md"),
-        "${widget:exampleWidget(name='World')}",
-        Collections.singletonList(new ExampleWidget()));
-
-Collection<GenerationResult> results = generator.getResults();
-```
 
 ## Обратная связь
 
 Все пожелания и предложения отправляйте на почту: **nrg@nanolaba.com**.
 
+
 ---
-*Дата последнего обновления: 17.07.2025*
+*Дата последнего обновления: 10.08.2025*
