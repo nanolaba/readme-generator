@@ -9,8 +9,8 @@ ${widget:languages}
 
 # Nanolaba Readme Generator (NRG)
 
-${name} — инструмент автоматической генерации Markdown, работающий с шаблонами-прототипами и поддерживающий <!--ru-->
-многоязычность, импорт файлов, переменные и кастомные виджеты для динамического наполнения.<!--ru-->
+${name} — инструмент автоматической генерации markdown-файлов, работающий с шаблонами-прототипами <!--ru-->
+и поддерживающий многоязычность, импорт файлов, переменные и кастомные виджеты для динамического наполнения.<!--ru-->
 ${name} — is an automated Markdown generation tool that processes prototype templates with <!--en-->
 multilingual support, file imports, variables, and custom widgets for dynamic content.<!--en-->
 
