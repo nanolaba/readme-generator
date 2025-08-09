@@ -93,4 +93,22 @@ class NRGUtilTest extends DefaultNRGTest {
         assertEquals(1, map.size());
         assertEquals("\"b\"", map.get("a"));
     }
+
+    @Test
+    void testFindFirstUnescapedOccurrenceLine() {
+        String text1 = "Line 1\nLine 2\n${widget:tableOfContents\nLine 4";
+        assertEquals(2, NRGUtil.findFirstUnescapedOccurrenceLine(text1, "${widget:tableOfContents"));
+
+        String text2 = "Line 1\n\\${widget:tableOfContents\n${widget:tableOfContents";
+        assertEquals(2, NRGUtil.findFirstUnescapedOccurrenceLine(text2, "${widget:tableOfContents"));
+
+        String text3 = "Line 1\nLine 2";
+        assertEquals(-1, NRGUtil.findFirstUnescapedOccurrenceLine(text3, "${widget:tableOfContents"));
+
+        String text4 = "\\${widget:tableOfContents\n\\${widget:tableOfContents";
+        assertEquals(-1, NRGUtil.findFirstUnescapedOccurrenceLine(text4, "${widget:tableOfContents"));
+
+        String text5 = "${widget:tableOfContents\nLine 2";
+        assertEquals(0, NRGUtil.findFirstUnescapedOccurrenceLine(text5, "${widget:tableOfContents"));
+    }
 }

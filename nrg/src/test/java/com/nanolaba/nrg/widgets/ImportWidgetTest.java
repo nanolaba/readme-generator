@@ -14,6 +14,20 @@ import static org.junit.jupiter.api.Assertions.*;
 class ImportWidgetTest {
 
     @Test
+    public void testImportAndTOC() throws IOException {
+        File sourceFile = new File(getClass().getClassLoader().getResource("ImportWidgetTest/testTOC/test.src.md").getFile());
+        Generator generator = new Generator(sourceFile, StandardCharsets.UTF_8);
+
+        String bodyEn = generator.getResult("en").getContent().toString();
+        LOG.info(bodyEn);
+        assertTrue(bodyEn.contains("## HEADER1"));
+        assertTrue(bodyEn.contains("## HEADER2"));
+        assertTrue(bodyEn.contains("1. [HEADER1](#header1)"));
+        assertTrue(bodyEn.contains("2. [HEADER2](#header2)"));
+
+    }
+
+    @Test
     public void testImportForDifferentLanguages() throws IOException {
         File sourceFile = new File(getClass().getClassLoader().getResource("ImportWidgetTest/testImportForDifferentLanguages/test.src.md").getFile());
         Generator generator = new Generator(sourceFile, StandardCharsets.UTF_8);
