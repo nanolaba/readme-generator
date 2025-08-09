@@ -32,4 +32,19 @@ public class NRGUtil {
         wrapped = StringUtils.trimToEmpty(wrapped);
         return !wrapped.isEmpty() ? StringUtils.unwrap(wrapped, wrapped.charAt(0)) : "";
     }
+
+    public static int findFirstUnescapedOccurrenceLine(String text, String searchString) {
+        String[] lines = text.split("\n");
+
+        for (int i = 0; i < lines.length; i++) {
+            Pattern pattern = Pattern.compile("(?<!\\\\)" + Pattern.quote(searchString));
+            Matcher matcher = pattern.matcher(lines[i]);
+
+            if (matcher.find()) {
+                return i;
+            }
+        }
+
+        return -1;
+    }
 }

@@ -1,5 +1,6 @@
 package com.nanolaba.nrg.widgets;
 
+import com.nanolaba.nrg.core.Generator;
 import com.nanolaba.nrg.core.GeneratorConfig;
 import com.nanolaba.nrg.core.NRGUtil;
 import com.nanolaba.nrg.core.TemplateLine;
@@ -45,14 +46,21 @@ public class TableOfContentsWidget extends DefaultWidget {
 
         List<Header> allHeaders = new ArrayList<>();
 
-        try (BufferedReader reader = new BufferedReader(new StringReader(config.getSourceFileBody()))) {
-            return reader.lines()
-                    .skip(widgetTag.getLine().getLineNumber())
+        Generator generator = new Generator(config.getSourceFile(), config.getSourceFileBody());
+        generator.getConfig().getWidgets().removeIf(widget -> widget instanceof TableOfContentsWidget);
+        String sourceFileBody = generator.getResult(language).getContent().toString();
+
+        try (BufferedReader reader = new BufferedReader(new StringReader(sourceFileBody))) {
+
+            int indexOfTOC = NRGUtil.findFirstUnescapedOccurrenceLine(sourceFileBody, "${widget:tableOfContents");
+
+            return indexOfTOC < 0 ? "" : reader.lines()
+                    .skip(indexOfTOC)
                     .filter(line -> !line.contains(IGNORE_ATTR))
                     .map(s -> new TemplateLine(config, s, 0).fillLineWithProperties(language))
                     .filter(Objects::nonNull)
-                    .map(s -> new Header(s, tocConfig, allHeaders))
-                    .filter(h -> h.level > 0)
+                    .map(line -> new Header(line, tocConfig, allHeaders))
+                    .filter(header -> header.level > 0)
                     .map(Object::toString)
                     .collect(Collectors.joining());
         } catch (IOException e) {
@@ -74,7 +82,7 @@ public class TableOfContentsWidget extends DefaultWidget {
         return config;
     }
 
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /// /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     protected static class Config {
         private String title;
@@ -97,7 +105,7 @@ public class TableOfContentsWidget extends DefaultWidget {
         }
     }
 
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /// /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     protected static class Header {
 
