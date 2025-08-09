@@ -31,19 +31,7 @@ public class ImportWidget extends DefaultWidget {
         File sourceFile = new File(config.getSourceFile().getParentFile(), widgetConfig.getPath());
 
         if (widgetConfig.isRunGenerator()) {
-            Generator generator = new Generator(sourceFile, Charset.forName(widgetConfig.getCharset())) {
-                @Override
-                protected String generateHeadComment(String language) {
-                    return "";
-                }
-            };
-
-            generator.getConfig().setLanguages(config.getLanguages());
-            config.getProperties().forEach((key, value) -> {
-                if (!generator.getConfig().getProperties().containsKey(key)) {
-                    generator.getConfig().getProperties().setProperty(key.toString(), String.valueOf(value));
-                }
-            });
+            Generator generator = new ImportedFileGenerator(sourceFile, widgetConfig, config);
 
             GenerationResult generatorResult = generator.getResult(language);
             return generatorResult == null ? "" : generatorResult.getContent().toString();
@@ -69,7 +57,7 @@ public class ImportWidget extends DefaultWidget {
         return config;
     }
 
-    /// /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /// ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     protected static class Config {
 
@@ -99,6 +87,26 @@ public class ImportWidget extends DefaultWidget {
 
         public void setRunGenerator(boolean runGenerator) {
             this.runGenerator = runGenerator;
+        }
+    }
+
+    /// ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    private static class ImportedFileGenerator extends Generator {
+        public ImportedFileGenerator(File sourceFile, Config widgetConfig, GeneratorConfig parentConfig) throws IOException {
+            super(sourceFile, Charset.forName(widgetConfig.getCharset()));
+
+            getConfig().setLanguages(parentConfig.getLanguages());
+            parentConfig.getProperties().forEach((key, value) -> {
+                if (!getConfig().getProperties().containsKey(key)) {
+                    getConfig().getProperties().setProperty(key.toString(), String.valueOf(value));
+                }
+            });
+        }
+
+        @Override
+        protected String generateHeadComment(String language) {
+            return "";
         }
     }
 }
