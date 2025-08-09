@@ -18,9 +18,9 @@
 Шаблон, из которого сгенерирован этот документ, доступен по ссылке -
 [README.src.md](https://github.com/nanolaba/readme-generator/blob/main/README.src.md?plain=1).
 
-Последняя стабильная версия - **0.1**.
+Последняя стабильная версия - **0.2**.
 
-Последняя версия разработки - **0.2-SNAPSHOT**.
+Последняя версия разработки - **0.3-SNAPSHOT**.
 
 **Nanolaba Readme Generator (NRG)** написан на Java и требует для запуска версии **Java 8** и выше.
 
@@ -137,7 +137,7 @@ English text
 **Nanolaba Readme Generator (NRG)** написан на Java и требует для запуска версии **Java 8** и выше.
 [Установите](https://www.java.com/en/download/) Java, если она отсутствует у вас в системе.
 
-[Скачайте](https://github.com/nanolaba/readme-generator/releases/tag/v0.1) последнюю
+[Скачайте](https://github.com/nanolaba/readme-generator/releases/tag/v0.2) последнюю
 стабильную версию приложения.
 
 Разархивируйте скачанный архив. Если вы используете Unix-like системы, то назначьте файлу `nrg.sh` права
@@ -169,7 +169,7 @@ nrg --help
     <plugin>
         <groupId>com.nanolaba</groupId>
         <artifactId>nrg-maven-plugin</artifactId>
-        <version>0.1</version>
+        <version>0.2</version>
         <configuration>
             <file>
                 <item>README.src.md</item>
@@ -216,19 +216,19 @@ nrg --help
 <dependency>
     <groupId>com.nanolaba</groupId>
     <artifactId>readme-generator</artifactId>
-    <version>0.1</version>
+    <version>0.2</version>
 </dependency>  
 ```
 
 **Gradle (build.gradle)**
 
 ```groovy
-implementation 'com.nanolaba:readme-generator:0.1'
+implementation 'com.nanolaba:readme-generator:0.2'
 ```
 
 **Скачивание вручную**
 
-Скачайте JAR из [Maven Central](https://repo1.maven.org/maven2/com/nanolaba/readme-generator/0.1)
+Скачайте JAR из [Maven Central](https://repo1.maven.org/maven2/com/nanolaba/readme-generator/0.2)
 и добавьте его в classpath проекта.
 
 После этого вы можете в своем проекте вызывать функцию создания файлов,
@@ -535,7 +535,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 10.08.2025 00:11:12
+Last updated: 10.08.2025 01:13:52
 ```
 
 </td></tr>
