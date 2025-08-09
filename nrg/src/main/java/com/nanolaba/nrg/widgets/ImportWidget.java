@@ -38,6 +38,7 @@ public class ImportWidget extends DefaultWidget {
                 }
             };
 
+            generator.getConfig().setLanguages(config.getLanguages());
             config.getProperties().forEach((key, value) -> {
                 if (!generator.getConfig().getProperties().containsKey(key)) {
                     generator.getConfig().getProperties().setProperty(key.toString(), String.valueOf(value));
