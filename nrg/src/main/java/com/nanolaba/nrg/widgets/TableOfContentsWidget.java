@@ -39,7 +39,7 @@ public class TableOfContentsWidget extends DefaultWidget {
 
     @Override
     public void afterRenderLine(TextStringBuilder line) {
-        line.replaceAll(IGNORE_ATTR, "");
+        //  line.replaceAll(IGNORE_ATTR, "");
     }
 
     protected String createTOC(WidgetTag widgetTag, GeneratorConfig config, String language, Config tocConfig) {
