@@ -78,6 +78,7 @@ public class GeneratorConfig {
     }
 
     protected void initDefaultWidgets(List<NRGWidget> widgets) {
+        widgets.add(new ImportWidget());
         widgets.add(new LanguagesWidget());
         widgets.add(new TableOfContentsWidget());
         widgets.add(new DateWidget());
