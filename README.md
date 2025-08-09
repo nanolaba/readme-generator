@@ -9,7 +9,6 @@
 **Nanolaba Readme Generator (NRG)** — is a program for automatically
 generating [Markdown files]( https://en.wikipedia.org/wiki/Markdown) based on a prototype file.
 
-
 ## Overview
 
 Using the **Nanolaba Readme Generator (NRG)** program, you can generate separate files for different languages
@@ -363,13 +362,11 @@ To escape quotes, use character doubling, for example:
 - `${en:'It''s working'}` → `It's working`
 - `${en:"Text with ""quotes"""}` → `Text with "quotes"`
 
-
 ### Widgets
 
 Widgets allow you to insert programmatically generated text into a document.
 If you are using **Nanolaba Readme Generator (NRG)** as a Java library, you can write your own widget.
 How to do this is explained in the [Advanced Features](#advanced-features) section.
-
 
 #### Widget 'languages'
 
@@ -431,9 +428,10 @@ Widget parameters:
 |    charset    | File encoding                                                           |    `UTF-8`    |
 | run-generator | Should the system perform text generation when importing template files |    `true`     |
 
-"When importing a template file, generation is performed using variables declared in the parent file.
+When importing a template file, generation is performed using variables declared in the parent file.
 This allows defining global variables in the root file and reusing them across all imported templates.
 ---
+
 
 #### Widget 'tableOfContents'
 
@@ -517,6 +515,7 @@ Widget parameters:
 
 ---
 
+
 #### Widget 'date'
 
 This component allows you to insert the current date into a document.
@@ -532,7 +531,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 10.08.2025 00:01:38
+Last updated: 10.08.2025 00:05:34
 ```
 
 </td></tr>
