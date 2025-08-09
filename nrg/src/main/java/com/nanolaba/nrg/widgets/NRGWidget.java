@@ -12,6 +12,6 @@ public interface NRGWidget {
     default void beforeRenderLine(TextStringBuilder line) {
     }
 
-    default void afterRenderLine(TextStringBuilder line) {
+    default void afterRenderLine(TextStringBuilder line, GeneratorConfig config) {
     }
 }

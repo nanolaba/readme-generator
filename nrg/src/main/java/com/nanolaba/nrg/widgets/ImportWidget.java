@@ -96,6 +96,7 @@ public class ImportWidget extends DefaultWidget {
         public ImportedFileGenerator(File sourceFile, Config widgetConfig, GeneratorConfig parentConfig) throws IOException {
             super(sourceFile, Charset.forName(widgetConfig.getCharset()));
 
+            getConfig().setRootGenerator(false);
             getConfig().setLanguages(parentConfig.getLanguages());
             parentConfig.getProperties().forEach((key, value) -> {
                 if (!getConfig().getProperties().containsKey(key)) {

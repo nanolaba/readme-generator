@@ -92,7 +92,7 @@ public class TemplateLine {
             }
         }
 
-        config.getWidgets().forEach(w -> w.afterRenderLine(result));
+        config.getWidgets().forEach(w -> w.afterRenderLine(result, config));
 
         return result.toString();
     }
@@ -182,8 +182,10 @@ public class TemplateLine {
         if (isLineVisible(language)) {
             String result = fillLineWithProperties(language);
             result = renderWidgets(result, language);
-            result = removeNrgDataFromText(result);
-            result = replaceEscapedCharacters(result);
+            if (config.isRootGenerator()) {
+                result = removeNrgDataFromText(result);
+                result = replaceEscapedCharacters(result);
+            }
             return result;
         } else {
             return null;
