@@ -14,9 +14,8 @@ import java.util.Map;
 
 public class Generator {
 
-
     private final GeneratorConfig config;
-    private final Map<String, GenerationResult> results = new HashMap<>();
+    private Map<String, GenerationResult> results;
 
     public Generator(File sourceFile, Charset charset) throws IOException {
         this(sourceFile, charset, null);
@@ -32,12 +31,18 @@ public class Generator {
 
     public Generator(File sourceFile, String sourceBody, List<NRGWidget> widgets) {
         config = new GeneratorConfig(sourceFile, sourceBody, widgets);
-        generateContents();
     }
 
-    private void generateContents() {
+    protected void generateContents() {
         for (String language : config.getLanguages()) {
             results.put(language, generateContent(language));
+        }
+    }
+
+    protected void generateContentIfNecessary() {
+        if (results == null) {
+            results = new HashMap<>();
+            generateContents();
         }
     }
 
@@ -59,10 +64,12 @@ public class Generator {
     }
 
     public GenerationResult getResult(String language) {
+        generateContentIfNecessary();
         return results.get(language);
     }
 
     public Collection<GenerationResult> getResults() {
+        generateContentIfNecessary();
         return results.values();
     }
 
