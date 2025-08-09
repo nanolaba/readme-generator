@@ -23,9 +23,11 @@ class ImportWidgetTest {
         assertTrue(bodyEn.contains("## HEADER1"));
         assertTrue(bodyEn.contains("## HEADER2"));
         assertTrue(bodyEn.contains("## HEADER3"));
+        assertTrue(bodyEn.contains("## HEADER4"));
         assertTrue(bodyEn.contains("1. [HEADER1](#header1)"));
         assertTrue(bodyEn.contains("2. [HEADER2](#header2)"));
         assertTrue(bodyEn.contains("3. [HEADER3](#header3)"));
+        assertTrue(bodyEn.contains("4. [HEADER4](#header4)"));
 
     }
 
