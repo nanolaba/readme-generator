@@ -536,7 +536,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 10.08.2025 01:33:14
+Last updated: 10.08.2025 18:39:29
 ```
 
 </td></tr>
@@ -607,7 +607,17 @@ ${widget:todo(text="${en:'Example message', ru:'Пример сообщения'
 
 ## Обратная связь
 
-Все пожелания и предложения отправляйте на почту: **nrg@nanolaba.com**.
+Мы ценим ваше мнение! Связаться с нами можно следующими способами:
+
+- **Обсуждения на GitHub**  
+  Есть вопросы, идеи или хотите поделиться своими проектами с NRG? Присоединяйтесь
+  к обсуждению в нашем [разделе Discussions](https://github.com/nanolaba/readme-generator/discussions).
+
+- **Сообщения об ошибках**  
+  Нашли проблему? Создайте [Issue на GitHub](https://github.com/nanolaba/readme-generator/issues).
+
+- **Электронная почта**  
+  Также по всем вопросам можно писать на: **nrg@nanolaba.com**.
 
 
 ---
