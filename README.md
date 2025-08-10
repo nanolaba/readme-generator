@@ -19,7 +19,7 @@ Using **Nanolaba Readme Generator (NRG)**, you can:
 - Create maintainable Markdown with variables and widgets
 - Streamline GitHub project documentation
 
-> 💡 **Example**: This document was generated from [this template](README.src.md).
+> ![💡 **Example**:] This document was generated from [this template](README.src.md).
 > Try our **[Quick Start Guide](#quick-start)** to begin!
 
 ## ✨ Key Features
@@ -540,7 +540,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 10.08.2025 23:19:30
+Last updated: 10.08.2025 23:27:40
 ```
 
 </td></tr>
