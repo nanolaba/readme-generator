@@ -1,18 +1,34 @@
-## ${en:'Feedback', ru:'Обратная связь'}
+## ${en:'Feedback & Support', ru:'Обратная связь и поддержка'}
 
-We welcome your input! Here’s how to connect with us:<!--en-->
-Мы ценим ваше мнение! Связаться с нами можно следующими способами:<!--ru-->
+We value your input! Here are the best ways to connect with us:<!--en-->
+Мы ценим ваше мнение! Вот лучшие способы связаться с нами:<!--ru-->
 
-- **${en:'GitHub Discussions', ru:'Обсуждения на GitHub'}**  
-  Have questions, ideas, or want to share your NRG projects? Join the conversation <!--en-->
-  in our [Discussions](https://github.com/nanolaba/readme-generator/discussions) section.<!--en-->
-  Есть вопросы, идеи или хотите поделиться своими проектами с NRG? Присоединяйтесь <!--ru-->
-  к обсуждению в нашем [разделе Discussions](https://github.com/nanolaba/readme-generator/discussions).<!--ru-->
+### **${en:'Community Support', ru:'Поддержка сообщества'}**
 
-- **${en:'Bug Reports', ru:'Сообщения об ошибках'}**  
-  Found an issue? Please open a [GitHub Issue](https://github.com/nanolaba/readme-generator/issues).<!--en-->
-  Нашли проблему? Создайте [Issue на GitHub](https://github.com/nanolaba/readme-generator/issues).<!--ru-->
+- [GitHub Discussions](https://github.com/nanolaba/readme-generator/discussions) -
+  Ask questions, share ideas, and discuss best practices<!--en-->
+  Задавайте вопросы, делитесь идеями и обсуждайте лучшие практики<!--ru-->
+- [GitHub Issues](https://github.com/nanolaba/readme-generator/issues) -
+  For bug reports and feature requests<!--en-->
+  Для сообщений об ошибках и запросов новых функций<!--ru-->
 
-- **${en:'Email', ru:'Электронная почта'}**  
-  For support or inquiries, please email: **nrg@nanolaba.com**.<!--en-->
-  Также по всем вопросам можно писать на: **nrg@nanolaba.com**.<!--ru-->
+### **${en:'Direct Communication', ru:'Прямая связь'}**
+
+- **Email**: nrg@nanolaba.com (for sensitive matters or private discussions)<!--en-->
+- **Email**: nrg@nanolaba.com (для конфиденциальных вопросов)<!--ru-->
+- **Security Issues**: Please use email and prefix subject with "[SECURITY]"<!--en-->
+- **Проблемы безопасности**: Пожалуйста, используйте email с пометкой "[SECURITY]" в теме<!--ru-->
+
+### **${en:'Contribution Guide', ru:'Рекомендации'}**
+
+Before submitting feedback:<!--en-->
+Перед тем как оставить обратную связь:<!--ru-->
+
+1. Check [existing issues](https://github.com/nanolaba/readme-generator/issues) to avoid duplicates<!--en-->
+1. Проверьте [существующие issues](https://github.com/nanolaba/readme-generator/issues), <!--ru-->
+   чтобы избежать дублирования<!--ru-->
+2. Use clear, descriptive titles for your requests <!--en-->
+2. Используйте понятные, описательные заголовки <!--ru-->
+
+We welcome all constructive feedback to make NRG better! <!--en-->
+Мы приветствуем любую конструктивную обратную связь!<!--ru-->

@@ -47,7 +47,10 @@ The program can be run as:
         3. [Widget 'tableOfContents'](#widget-tableofcontents)
 		1. [Widget 'date'](#widget-date)
 		2. [Widget 'todo'](#widget-todo)
-1. [Feedback](#feedback)
+1. [Feedback & Support](#feedback-&-support)
+    1. [**Community Support**](#**community-support**)
+    2. [**Direct Communication**](#**direct-communication**)
+    3. [**Contribution Guide**](#**contribution-guide**)
 
 
 ## Quick start
@@ -531,7 +534,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 10.08.2025 18:39:29
+Last updated: 10.08.2025 19:07:50
 ```
 
 </td></tr>
@@ -598,21 +601,30 @@ Widget parameters:
 |:----:|----------------|:-----------------:|
 | text | Displayed text | `Not done yet...` |
 
+## Feedback & Support
 
+We value your input! Here are the best ways to connect with us:
 
-## Feedback
+### **Community Support**
 
-We welcome your input! Here’s how to connect with us:
+- [GitHub Discussions](https://github.com/nanolaba/readme-generator/discussions) -
+  Ask questions, share ideas, and discuss best practices
+- [GitHub Issues](https://github.com/nanolaba/readme-generator/issues) -
+  For bug reports and feature requests
 
-- **GitHub Discussions**  
-  Have questions, ideas, or want to share your NRG projects? Join the conversation
-  in our [Discussions](https://github.com/nanolaba/readme-generator/discussions) section.
+### **Direct Communication**
 
-- **Bug Reports**  
-  Found an issue? Please open a [GitHub Issue](https://github.com/nanolaba/readme-generator/issues).
+- **Email**: nrg@nanolaba.com (for sensitive matters or private discussions)
+- **Security Issues**: Please use email and prefix subject with "[SECURITY]"
 
-- **Email**  
-  For support or inquiries, please email: **nrg@nanolaba.com**.
+### **Contribution Guide**
+
+Before submitting feedback:
+
+1. Check [existing issues](https://github.com/nanolaba/readme-generator/issues) to avoid duplicates
+2. Use clear, descriptive titles for your requests
+
+We welcome all constructive feedback to make NRG better!
 
 
 ---
