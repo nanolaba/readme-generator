@@ -26,7 +26,7 @@ Using **Nanolaba Readme Generator (NRG)**, you can:
 
 - **Multi-language READMEs** - Support for EN/ZN/RU and any other languages
 - **Smart Variables** - Reusable content blocks
-- **Prebuilt Widgets** - Table of contents, file's import, TODOs and others
+- **Prebuilt Widgets** - Table of contents, file import, TODOs and others
 - **Flexible Integration** - CLI, Maven plugin, or Java library
 - **Extensibility** - Supports the ability to create custom widgets for content generation
 
@@ -540,7 +540,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 10.08.2025 20:54:07
+Last updated: 10.08.2025 23:19:30
 ```
 
 </td></tr>
