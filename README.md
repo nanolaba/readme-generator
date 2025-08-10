@@ -531,7 +531,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 10.08.2025 01:33:14
+Last updated: 10.08.2025 18:39:29
 ```
 
 </td></tr>
@@ -602,7 +602,17 @@ Widget parameters:
 
 ## Feedback
 
-For all feedback and suggestions, please email: **nrg@nanolaba.com**.
+We welcome your input! Here’s how to connect with us:
+
+- **GitHub Discussions**  
+  Have questions, ideas, or want to share your NRG projects? Join the conversation
+  in our [Discussions](https://github.com/nanolaba/readme-generator/discussions) section.
+
+- **Bug Reports**  
+  Found an issue? Please open a [GitHub Issue](https://github.com/nanolaba/readme-generator/issues).
+
+- **Email**  
+  For support or inquiries, please email: **nrg@nanolaba.com**.
 
 
 ---
