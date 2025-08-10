@@ -21,7 +21,7 @@ Using ${name}, you can: <!--en-->
 
 - **Multi-language READMEs** - Support for EN/ZN/RU and any other languages<!--en-->
 - **Smart Variables** - Reusable content blocks<!--en-->
-- **Prebuilt Widgets** - Table of contents, file's import, TODOs and others<!--en-->
+- **Prebuilt Widgets** - Table of contents, file import, TODOs and others<!--en-->
 - **Flexible Integration** - CLI, Maven plugin, or Java library <!--en-->
 - **Extensibility** - Supports the ability to create custom widgets for content generation <!--en-->
 
