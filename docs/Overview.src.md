@@ -1,33 +1,43 @@
 ## ${en:'Overview', ru:'Краткое описание'}
 
-Using the ${name} program, you can generate separate files for different languages<!--en-->
-in [Markdown format]( https://en.wikipedia.org/wiki/Markdown) based on a single template file.<!--en-->
-The template allows the use of variables and special components (widgets).<!--en-->
-This document is an example of the result of this program.<!--en-->
-The template from which this document was generated is available at the<!--en-->
-following link - [README.src.md](https://github.com/nanolaba/readme-generator/blob/main/README.src.md?plain=1).<!--en-->
-С помощью программы ${name} можно генерировать отдельные файлы для разных языков в формате <!--ru-->
-[Markdown]( https://en.wikipedia.org/wiki/Markdown) на основе единого файла-шаблона.<!--ru-->
-В шаблоне можно использовать переменные, а также специальные компоненты (виджеты). <!--ru-->
-Данный документ является примером результата работы этой программы.<!--ru-->
-Шаблон, из которого сгенерирован этот документ, доступен по ссылке - <!--ru-->
-[README.src.md](https://github.com/nanolaba/readme-generator/blob/main/README.src.md?plain=1).<!--ru-->
+Using ${name}, you can: <!--en-->
+С помощью ${name} вы можете: <!--ru-->
+
+- Generate professional README files in multiple languages <!--en-->
+- Генерировать README-файлы на нескольких языках <!--ru-->
+- Automate documentation with dynamic templates <!--en-->
+- Автоматизировать создание документации с помощью динамических шаблонов <!--ru-->
+- Create maintainable Markdown with variables and widgets <!--en-->
+- Создавать удобную в поддержке Markdown-документацию с переменными и виджетами <!--ru-->
+- Streamline GitHub project documentation <!--en-->
+- Упрощать создание документации GitHub-проектов <!--ru-->
+
+> 💡 **Example**: This document was generated from [this template](README.src.md). <!--en-->
+> Try our **[Quick Start Guide](#quick-start)** to begin!<!--en-->
+> 💡 **Пример**: Этот документ был сгенерирован из [этого шаблона](README.src.md). <!--ru-->
+> Попробуйте наше **[Руководство по быстрому старту](#quick-start)**, чтобы начать! <!--ru-->
+
+## ✨ Key Features <!--en-->
+
+- **Multi-language READMEs** - Support for EN/ZN/RU and any other languages<!--en-->
+- **Smart Variables** - Reusable content blocks<!--en-->
+- **Prebuilt Widgets** - Table of contents, file's import, TODOs and others<!--en-->
+- **Flexible Integration** - CLI, Maven plugin, or Java library <!--en-->
+- **Extensibility** - Supports the ability to create custom widgets for content generation <!--en-->
+
+## ✨ Ключевые возможности <!--ru-->
+
+- **README на нескольких языках** - Поддержка EN/ZN/RU и любых других языков<!--ru-->
+- **Переменные** - Повторно используемые блоки контента<!--ru-->
+- **Готовые виджеты** - Оглавление, импорт файлов, TODO-списки и другие<!--ru-->
+- **Гибкая интеграция** - CLI, Maven-плагин или Java-библиотека <!--ru-->
+- **Расширяемость** - Возможность писать собственные виджеты для генерации контента <!--ru-->
+
+> 💡 ${name} is written in Java and requires **Java 8** or higher to run.<!--en-->
+> 💡 ${name} написан на Java и требует для запуска версии **Java 8** и выше.<!--ru-->
 
 The latest stable version of the program is **${stableVersion}**.<!--en-->
-Последняя стабильная версия - **${stableVersion}**.<!--ru-->
-
 The latest development version is **${devVersion}**.<!--en-->
+Последняя стабильная версия - **${stableVersion}**.<!--ru-->
 Последняя версия разработки - **${devVersion}**.<!--ru-->
 
-${name} is written in Java and requires **Java 8** or higher to run.<!--en-->
-${name} написан на Java и требует для запуска версии **Java 8** и выше.<!--ru-->
-
-The program can be run as:<!--en-->
-Программа может быть запущена как:<!--ru-->
-
-* A standalone console application,<!--en-->
-* Консольное приложение,<!--ru-->
-* A Maven plugin,<!--en-->
-* Плагин для maven,<!--ru-->
-* Or integrated into a project as a third-party library.<!--en-->
-* Добавлена к проекту в качестве сторонней библиотеки.<!--ru-->

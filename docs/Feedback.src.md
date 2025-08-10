@@ -3,7 +3,7 @@
 We value your input! Here are the best ways to connect with us:<!--en-->
 Мы ценим ваше мнение! Вот лучшие способы связаться с нами:<!--ru-->
 
-### **${en:'Community Support', ru:'Поддержка сообщества'}**
+### ${en:'Community Support', ru:'Поддержка сообщества'}
 
 - [GitHub Discussions](https://github.com/nanolaba/readme-generator/discussions) -
   Ask questions, share ideas, and discuss best practices<!--en-->
@@ -12,14 +12,14 @@ We value your input! Here are the best ways to connect with us:<!--en-->
   For bug reports and feature requests<!--en-->
   Для сообщений об ошибках и запросов новых функций<!--ru-->
 
-### **${en:'Direct Communication', ru:'Прямая связь'}**
+### ${en:'Direct Communication', ru:'Прямая связь'}
 
 - **Email**: nrg@nanolaba.com (for sensitive matters or private discussions)<!--en-->
 - **Email**: nrg@nanolaba.com (для конфиденциальных вопросов)<!--ru-->
 - **Security Issues**: Please use email and prefix subject with "[SECURITY]"<!--en-->
 - **Проблемы безопасности**: Пожалуйста, используйте email с пометкой "[SECURITY]" в теме<!--ru-->
 
-### **${en:'Contribution Guide', ru:'Рекомендации'}**
+### ${en:'Contribution Guide', ru:'Рекомендации'}
 
 Before submitting feedback:<!--en-->
 Перед тем как оставить обратную связь:<!--ru-->
