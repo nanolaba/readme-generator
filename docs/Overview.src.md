@@ -12,9 +12,9 @@ Using ${name}, you can: <!--en-->
 - Streamline GitHub project documentation <!--en-->
 - Упрощать создание документации GitHub-проектов <!--ru-->
 
-> ![💡 **Example**:] This document was generated from [this template](README.src.md). <!--en-->
+> [!💡 **Example**:] This document was generated from [this template](README.src.md). <!--en-->
 > Try our **[Quick Start Guide](#quick-start)** to begin!<!--en-->
-> ![💡 **Пример**:] Этот документ был сгенерирован из [этого шаблона](README.src.md). <!--ru-->
+> [!💡 **Пример**:] Этот документ был сгенерирован из [этого шаблона](README.src.md). <!--ru-->
 > Попробуйте наше **[Руководство по быстрому старту](#quick-start)**, чтобы начать! <!--ru-->
 
 ## ✨ Key Features <!--en-->
