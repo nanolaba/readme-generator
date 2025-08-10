@@ -4,31 +4,37 @@
 
 [ **en** | [ru](README.ru.md) ]
 
-# Nanolaba Readme Generator (NRG)
+# Nanolaba Readme Generator (NRG)- Automated Markdown Documentation Tool
 
-**Nanolaba Readme Generator (NRG)** — is an automated Markdown generation tool that processes prototype templates with
-multilingual support, file imports, variables, and custom widgets for dynamic content.
+**Nanolaba Readme Generator (NRG)** — is an open-source Java tool for automating Markdown documentation with
+multi-language
+support, dynamic variables, and custom widgets.
 
 ## Overview
 
-Using the **Nanolaba Readme Generator (NRG)** program, you can generate separate files for different languages
-in [Markdown format]( https://en.wikipedia.org/wiki/Markdown) based on a single template file.
-The template allows the use of variables and special components (widgets).
-This document is an example of the result of this program.
-The template from which this document was generated is available at the
-following link - [README.src.md](https://github.com/nanolaba/readme-generator/blob/main/README.src.md?plain=1).
+Using **Nanolaba Readme Generator (NRG)**, you can:
+
+- Generate professional README files in multiple languages
+- Automate documentation with dynamic templates
+- Create maintainable Markdown with variables and widgets
+- Streamline GitHub project documentation
+
+> 💡 **Example**: This document was generated from [this template](README.src.md).
+> Try our **[Quick Start Guide](#quick-start)** to begin!
+
+## ✨ Key Features
+
+- **Multi-language READMEs** - Support for EN/ZN/RU and any other languages
+- **Smart Variables** - Reusable content blocks
+- **Prebuilt Widgets** - Table of contents, file's import, TODOs and others
+- **Flexible Integration** - CLI, Maven plugin, or Java library
+- **Extensibility** - Supports the ability to create custom widgets for content generation
+
+> 💡 **Nanolaba Readme Generator (NRG)** is written in Java and requires **Java 8** or higher to run.
 
 The latest stable version of the program is **0.2**.
-
 The latest development version is **0.3-SNAPSHOT**.
 
-**Nanolaba Readme Generator (NRG)** is written in Java and requires **Java 8** or higher to run.
-
-The program can be run as:
-
-* A standalone console application,
-* A Maven plugin,
-* Or integrated into a project as a third-party library.
 
 
 ## Table of contents
@@ -48,9 +54,9 @@ The program can be run as:
 		1. [Widget 'date'](#widget-date)
 		2. [Widget 'todo'](#widget-todo)
 1. [Feedback & Support](#feedback-&-support)
-    1. [**Community Support**](#**community-support**)
-    2. [**Direct Communication**](#**direct-communication**)
-    3. [**Contribution Guide**](#**contribution-guide**)
+    1. [Community Support](#community-support)
+    2. [Direct Communication](#direct-communication)
+    3. [Contribution Guide](#contribution-guide)
 
 
 ## Quick start
@@ -534,7 +540,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 10.08.2025 19:07:50
+Last updated: 10.08.2025 20:54:07
 ```
 
 </td></tr>
@@ -605,19 +611,19 @@ Widget parameters:
 
 We value your input! Here are the best ways to connect with us:
 
-### **Community Support**
+### Community Support
 
 - [GitHub Discussions](https://github.com/nanolaba/readme-generator/discussions) -
   Ask questions, share ideas, and discuss best practices
 - [GitHub Issues](https://github.com/nanolaba/readme-generator/issues) -
   For bug reports and feature requests
 
-### **Direct Communication**
+### Direct Communication
 
 - **Email**: nrg@nanolaba.com (for sensitive matters or private discussions)
 - **Security Issues**: Please use email and prefix subject with "[SECURITY]"
 
-### **Contribution Guide**
+### Contribution Guide
 
 Before submitting feedback:
 

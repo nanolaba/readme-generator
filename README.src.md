@@ -7,12 +7,12 @@
 
 ${widget:languages}
 
-# Nanolaba Readme Generator (NRG)
+# Nanolaba Readme Generator (NRG)${en:' - Automated Markdown Documentation Tool', ru:''}
 
-${name} — инструмент автоматической генерации markdown-файлов, работающий с шаблонами-прототипами <!--ru-->
-и поддерживающий многоязычность, импорт файлов, переменные и кастомные виджеты для динамического наполнения.<!--ru-->
-${name} — is an automated Markdown generation tool that processes prototype templates with <!--en-->
-multilingual support, file imports, variables, and custom widgets for dynamic content.<!--en-->
+${name} — это инструмент с открытым исходным кодом на Java для автоматизации создания Markdown-документации <!--ru-->
+с поддержкой нескольких языков, динамическими переменными и пользовательскими виджетами.<!--ru-->
+${name} — is an open-source Java tool for automating Markdown documentation with multi-language <!--en-->
+support, dynamic variables, and custom widgets.<!--en-->
 
 ${widget:import(path='docs/Overview.src.md')}
 
