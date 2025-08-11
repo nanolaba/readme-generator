@@ -33,7 +33,7 @@ Using **Nanolaba Readme Generator (NRG)**, you can:
 > 💡 **Nanolaba Readme Generator (NRG)** is written in Java and requires **Java 8** or higher to run.
 
 The latest stable version of the program is **0.2**.
-The latest development version is **0.3-SNAPSHOT**.
+The current development version is **0.3-SNAPSHOT**.
 
 
 
@@ -540,7 +540,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 10.08.2025 23:32:02
+Last updated: 11.08.2025 13:26:22
 ```
 
 </td></tr>
@@ -553,7 +553,7 @@ ${widget:date(pattern = 'dd.MM.yyyy')}
 </td><td>
 
 ```markdown
-10.08.2025
+11.08.2025
 ```
 
 </td></tr>
@@ -634,4 +634,4 @@ We welcome all constructive feedback to make NRG better!
 
 
 ---
-*Last updated: 10.08.2025*
+*Last updated: 11.08.2025*
