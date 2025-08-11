@@ -37,7 +37,7 @@ Using ${name}, you can: <!--en-->
 > 💡 ${name} написан на Java и требует для запуска версии **Java 8** и выше.<!--ru-->
 
 The latest stable version of the program is **${stableVersion}**.<!--en-->
-The latest development version is **${devVersion}**.<!--en-->
+The current development version is **${devVersion}**.<!--en-->
 Последняя стабильная версия - **${stableVersion}**.<!--ru-->
-Последняя версия разработки - **${devVersion}**.<!--ru-->
+Текущая версия разработки - **${devVersion}**.<!--ru-->
 
