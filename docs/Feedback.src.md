@@ -30,5 +30,5 @@ Before submitting feedback:<!--en-->
 2. Use clear, descriptive titles for your requests <!--en-->
 2. Используйте понятные, описательные заголовки <!--ru-->
 
-We welcome all constructive feedback to make NRG better! <!--en-->
+We welcome all constructive feedback to make **NRG** better! <!--en-->
 Мы приветствуем любую конструктивную обратную связь!<!--ru-->
