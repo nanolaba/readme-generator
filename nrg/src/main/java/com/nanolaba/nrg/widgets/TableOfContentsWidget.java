@@ -137,6 +137,7 @@ public class TableOfContentsWidget extends DefaultWidget {
                         .replace("http://", "")
                         .replace(".", "")
                         .replace(":", "")
+                        .replace(",", "")
                         .replace("'", "")
                         .replace(" ", "-");
 
