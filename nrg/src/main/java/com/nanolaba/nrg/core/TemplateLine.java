@@ -74,25 +74,31 @@ public class TemplateLine {
     protected String renderWidgets(String line, String language) {
         TextStringBuilder result = new TextStringBuilder(line);
 
-        config.getWidgets().forEach(w -> w.beforeRenderLine(result));
+        config.getWidgets()
+                .stream().filter(NRGWidget::isEnabled)
+                .forEach(w -> w.beforeRenderLine(result));
 
         int shift = 0;
         for (WidgetTag tag : getWidgetTags(line)) {
             NRGWidget widget = config.getWidget(tag.getName());
             if (widget != null) {
-                try {
-                    String body = widget.getBody(tag, config, language);
-                    result.replace(shift + tag.getStart(), shift + tag.getEnd(), body);
-                    shift += body.length() - (tag.getEnd() - tag.getStart());
-                } catch (Throwable e) {
-                    LOG.error(e, "Can't render widget '" + tag.getName() + "' at the line #" + lineNumber + " (" + this.line + ")");
+                if (widget.isEnabled()) {
+                    try {
+                        String body = widget.getBody(tag, config, language);
+                        result.replace(shift + tag.getStart(), shift + tag.getEnd(), body);
+                        shift += body.length() - (tag.getEnd() - tag.getStart());
+                    } catch (Throwable e) {
+                        LOG.error(e, "Can't render widget '" + tag.getName() + "' at the line #" + lineNumber + " (" + this.line + ")");
+                    }
                 }
             } else {
                 LOG.warn("Unknown widget name: {}", tag.getName());
             }
         }
 
-        config.getWidgets().forEach(w -> w.afterRenderLine(result, config));
+        config.getWidgets()
+                .stream().filter(NRGWidget::isEnabled)
+                .forEach(w -> w.afterRenderLine(result, config));
 
         return result.toString();
     }
