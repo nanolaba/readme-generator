@@ -17,7 +17,7 @@ Using ${name}, you can: <!--en-->
 > 💡 **Пример**: Этот документ был сгенерирован из [этого шаблона](README.src.md). <!--ru-->
 > Попробуйте наше **[Руководство по быстрому старту](#quick-start)**, чтобы начать! <!--ru-->
 
-## ✨ Key Features <!--en-->
+## Key Features <!--en-->
 
 - **Multi-language READMEs** - Support for EN/ZN/RU and any other languages<!--en-->
 - **Smart Variables** - Reusable content blocks<!--en-->
@@ -25,7 +25,7 @@ Using ${name}, you can: <!--en-->
 - **Flexible Integration** - CLI, Maven plugin, or Java library <!--en-->
 - **Extensibility** - Supports the ability to create custom widgets for content generation <!--en-->
 
-## ✨ Ключевые возможности <!--ru-->
+## Ключевые возможности <!--ru-->
 
 - **README на нескольких языках** - Поддержка EN/ZN/RU и любых других языков<!--ru-->
 - **Переменные** - Повторно используемые блоки контента<!--ru-->

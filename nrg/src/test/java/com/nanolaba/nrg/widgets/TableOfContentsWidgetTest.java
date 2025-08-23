@@ -4,9 +4,11 @@ import com.nanolaba.logging.LOG;
 import com.nanolaba.nrg.DefaultNRGTest;
 import com.nanolaba.nrg.core.Generator;
 import com.nanolaba.nrg.core.NoHeadCommentGenerator;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -169,5 +171,52 @@ class TableOfContentsWidgetTest extends DefaultNRGTest {
                         "## B" + RN +
                         "## ENG" + RN
         );
+    }
+
+    @Test
+    @DisplayName("No message 'Unknown widget name: tableOfContents' in the console")
+    public void testTOCWidget4() {
+        AtomicBoolean logged = new AtomicBoolean(false);
+        AtomicBoolean failed = new AtomicBoolean(false);
+
+        LOG.init(entry -> {
+            logged.set(true);
+            String msg = entry.getFormattedMessage();
+            System.out.println(msg);
+            if (msg.contains("Unknown widget name: tableOfContents")) {
+                failed.set(true);
+            }
+        });
+
+        Generator generator = new NoHeadCommentGenerator(new File("README.src.md"),
+                "<!--@nrg.languages=en,ru,fr-->\n" +
+                        "${widget:tableOfContents(title = \"${en:'Table of contents', ru:'Содержание'}\", ordered = \"true\")}\n" +
+                        "## A<!--en-->\n" +
+                        "## B<!--en-->\n" +
+                        "## Б<!--ru-->\n" +
+                        "## ${en:'ENG', ru:'РУС'}\n"
+        );
+
+        String bodyEn = generator.getResult("en").getContent().toString();
+        LOG.info(bodyEn);
+
+        assertEquals(bodyEn,
+                "## Table of contents" + RN +
+                        "1. [A](#a)" + RN +
+                        "2. [B](#b)" + RN +
+                        "3. [ENG](#eng)" + RN +
+                        "" + RN +
+                        "## A" + RN +
+                        "## B" + RN +
+                        "## ENG" + RN
+        );
+
+        if (!logged.get()) {
+            fail("Logger is turned off");
+        }
+
+        if (failed.get()) {
+            fail("The message has been found");
+        }
     }
 }

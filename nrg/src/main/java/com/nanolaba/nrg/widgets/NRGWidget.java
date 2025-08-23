@@ -14,4 +14,9 @@ public interface NRGWidget {
 
     default void afterRenderLine(TextStringBuilder line, GeneratorConfig config) {
     }
+
+    boolean isEnabled();
+
+    void setEnabled(boolean enabled);
+
 }

@@ -1,7 +1,7 @@
 package com.nanolaba.nrg.core;
 
 import com.nanolaba.nrg.DefaultNRGTest;
-import com.nanolaba.nrg.widgets.NRGWidget;
+import com.nanolaba.nrg.widgets.DefaultWidget;
 import com.nanolaba.nrg.widgets.WidgetTag;
 import org.junit.jupiter.api.Test;
 
@@ -110,7 +110,7 @@ class TemplateLineTest extends DefaultNRGTest {
     public void testRenderWidget() {
         BiFunction<String, String, String> action = (s, lang) -> {
             TemplateLine l = line(s, "ru", "en");
-            l.getConfig().getWidgets().add(new NRGWidget() {
+            l.getConfig().getWidgets().add(new DefaultWidget() {
                 @Override
                 public String getName() {
                     return "test";
