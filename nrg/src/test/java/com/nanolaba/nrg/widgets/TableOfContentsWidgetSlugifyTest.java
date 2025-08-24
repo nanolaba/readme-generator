@@ -27,42 +27,42 @@ class TableOfContentsWidgetSlugifyTest extends DefaultNRGTest {
     @DisplayName("Простой заголовок без специальных символов")
     void testSimpleTitle() {
         TableOfContentsWidget.Header header = new TableOfContentsWidget.Header("# Simple Title", config, headers);
-        assertEquals("simple-title", getAnchorFromHeader(header));
+        assertEquals("simple-title", header.getAnchor());
     }
 
     @Test
     @DisplayName("Заголовок с жирным текстом")
     void testBoldText() {
         TableOfContentsWidget.Header header = new TableOfContentsWidget.Header("## My **Bold** Title", config, headers);
-        assertEquals("my-bold-title", getAnchorFromHeader(header));
+        assertEquals("my-bold-title", header.getAnchor());
     }
 
     @Test
     @DisplayName("Заголовок с курсивом")
     void testItalicText() {
         TableOfContentsWidget.Header header = new TableOfContentsWidget.Header("### Title with *italic* text", config, headers);
-        assertEquals("title-with-italic-text", getAnchorFromHeader(header));
+        assertEquals("title-with-italic-text", header.getAnchor());
     }
 
     @Test
     @DisplayName("Заголовок с кодом")
     void testCodeText() {
         TableOfContentsWidget.Header header = new TableOfContentsWidget.Header("#### Using `code` in title", config, headers);
-        assertEquals("using-code-in-title", getAnchorFromHeader(header));
+        assertEquals("using-code-in-title", header.getAnchor());
     }
 
     @Test
     @DisplayName("Заголовок со ссылкой")
     void testLinkInTitle() {
         TableOfContentsWidget.Header header = new TableOfContentsWidget.Header("# Check [Documentation](https://example.com)", config, headers);
-        assertEquals("check-documentation", getAnchorFromHeader(header));
+        assertEquals("check-documentation", header.getAnchor());
     }
 
     @Test
     @DisplayName("Заголовок с HTML тегами")
     void testHtmlTags() {
         TableOfContentsWidget.Header header = new TableOfContentsWidget.Header("## Title with <strong>HTML</strong>", config, headers);
-        assertEquals("title-with-html", getAnchorFromHeader(header));
+        assertEquals("title-with-html", header.getAnchor());
     }
 
     @ParameterizedTest
@@ -76,63 +76,63 @@ class TableOfContentsWidgetSlugifyTest extends DefaultNRGTest {
     })
     void testPunctuationMarks(String input, String expected) {
         TableOfContentsWidget.Header header = new TableOfContentsWidget.Header(input, config, headers);
-        assertEquals(expected, getAnchorFromHeader(header));
+        assertEquals(expected, header.getAnchor());
     }
 
     @Test
     @DisplayName("Заголовок с множественными пробелами")
     void testMultipleSpaces() {
         TableOfContentsWidget.Header header = new TableOfContentsWidget.Header("# Multiple    Spaces   Here", config, headers);
-        assertEquals("multiple-spaces-here", getAnchorFromHeader(header));
+        assertEquals("multiple-spaces-here", header.getAnchor());
     }
 
     @Test
     @DisplayName("Заголовок с URL")
     void testUrlInTitle() {
         TableOfContentsWidget.Header header = new TableOfContentsWidget.Header("## Visit https://example.com for details", config, headers);
-        assertEquals("visit-for-details", getAnchorFromHeader(header));
+        assertEquals("visit-for-details", header.getAnchor());
     }
 
     @Test
     @DisplayName("Заголовок с зачеркнутым текстом")
     void testStrikethroughText() {
         TableOfContentsWidget.Header header = new TableOfContentsWidget.Header("# Old ~~deprecated~~ method", config, headers);
-        assertEquals("old-deprecated-method", getAnchorFromHeader(header));
+        assertEquals("old-deprecated-method", header.getAnchor());
     }
 
     @Test
     @DisplayName("Заголовок с подчеркиваниями")
     void testUnderscores() {
         TableOfContentsWidget.Header header = new TableOfContentsWidget.Header("## Method_name_with_underscores", config, headers);
-        assertEquals("method-name-with-underscores", getAnchorFromHeader(header));
+        assertEquals("method-name-with-underscores", header.getAnchor());
     }
 
     @Test
     @DisplayName("Заголовок только из специальных символов")
     void testSpecialCharactersOnly() {
         TableOfContentsWidget.Header header = new TableOfContentsWidget.Header("# !!!@@@###", config, headers);
-        assertEquals("", getAnchorFromHeader(header));
+        assertEquals("", header.getAnchor());
     }
 
     @Test
     @DisplayName("Пустой заголовок")
     void testEmptyTitle() {
         TableOfContentsWidget.Header header = new TableOfContentsWidget.Header("#   ", config, headers);
-        assertEquals("", getAnchorFromHeader(header));
+        assertEquals("", header.getAnchor());
     }
 
     @Test
     @DisplayName("Заголовок с дефисами")
     void testDashesInTitle() {
         TableOfContentsWidget.Header header = new TableOfContentsWidget.Header("# Pre-formatted--title---here", config, headers);
-        assertEquals("pre-formatted-title-here", getAnchorFromHeader(header));
+        assertEquals("pre-formatted-title-here", header.getAnchor());
     }
 
     @Test
     @DisplayName("Заголовок с цифрами")
     void testNumbersInTitle() {
         TableOfContentsWidget.Header header = new TableOfContentsWidget.Header("## Chapter 123 Section 4.5.6", config, headers);
-        assertEquals("chapter-123-section-456", getAnchorFromHeader(header));
+        assertEquals("chapter-123-section-456", header.getAnchor());
     }
 
     @Test
@@ -140,34 +140,36 @@ class TableOfContentsWidgetSlugifyTest extends DefaultNRGTest {
     void testComplexTitle() {
         String complexTitle = "### **Step 2**: Configure [API Keys](https://docs.example.com) & `Environment` Variables!";
         TableOfContentsWidget.Header header = new TableOfContentsWidget.Header(complexTitle, config, headers);
-        assertEquals("step-2-configure-api-keys-environment-variables", getAnchorFromHeader(header));
+        assertEquals("step-2-configure-api-keys-environment-variables", header.getAnchor());
+    }
+
+
+    @Test
+    @DisplayName("Заголовок начинающийся и заканчивающийся дефисами")
+    void testLeadingTrailingDashes() {
+        TableOfContentsWidget.Header header = new TableOfContentsWidget.Header("# -start and end-", config, headers);
+        assertEquals("start-and-end", header.getAnchor());
+    }
+    // TableOfContentsWidgetSlugifyTest.java
+
+    @Test
+    @DisplayName("Русские заголовки")
+    void testRussianTitle() {
+        TableOfContentsWidget.Header header = new TableOfContentsWidget.Header("# Заголовок на русском", config, headers);
+        assertEquals("заголовок-на-русском", header.getAnchor());
+    }
+
+    @Test
+    @DisplayName("Китайские заголовки")
+    void testChineseTitle() {
+        TableOfContentsWidget.Header header = new TableOfContentsWidget.Header("# 中文标题", config, headers);
+        assertEquals("中文标题", header.getAnchor());
     }
 
     @Test
     @DisplayName("Заголовок с Unicode символами")
     void testUnicodeCharacters() {
         TableOfContentsWidget.Header header = new TableOfContentsWidget.Header("# Título con acentós and émojis 🎉", config, headers);
-        assertEquals("titulo-con-acentos-and-emojis", getAnchorFromHeader(header));
-    }
-
-    @Test
-    @DisplayName("Заголовок начинающийся и заканчивающийся дефисами")
-    void testLeadingTrailingDashes() {
-        TableOfContentsWidget.Header header = new TableOfContentsWidget.Header("# -start and end-", config, headers);
-        assertEquals("start-and-end", getAnchorFromHeader(header));
-    }
-
-    /**
-     * Вспомогательный метод для извлечения якоря из Header объекта
-     * Использует рефлексию для доступа к приватному полю anchor
-     */
-    private String getAnchorFromHeader(TableOfContentsWidget.Header header) {
-        try {
-            java.lang.reflect.Field anchorField = TableOfContentsWidget.Header.class.getDeclaredField("anchor");
-            anchorField.setAccessible(true);
-            return (String) anchorField.get(header);
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to access anchor field", e);
-        }
+        assertEquals("título-con-acentós-and-émojis", header.getAnchor());
     }
 }

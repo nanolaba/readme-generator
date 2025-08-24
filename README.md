@@ -22,7 +22,7 @@ Using **Nanolaba Readme Generator (NRG)**, you can:
 > 💡 **Example**: This document was generated from [this template](README.src.md).
 > Try our **[Quick Start Guide](#quick-start)** to begin!
 
-## ✨ Key Features
+## Key Features
 
 - **Multi-language READMEs** - Support for EN/ZN/RU and any other languages
 - **Smart Variables** - Reusable content blocks
@@ -53,7 +53,7 @@ The current development version is **0.3-SNAPSHOT**.
         3. [Widget 'tableOfContents'](#widget-tableofcontents)
 		1. [Widget 'date'](#widget-date)
 		2. [Widget 'todo'](#widget-todo)
-1. [Feedback & Support](#feedback-&-support)
+1. [Feedback & Support](#feedback-support)
     1. [Community Support](#community-support)
     2. [Direct Communication](#direct-communication)
     3. [Contribution Guide](#contribution-guide)
@@ -540,7 +540,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 11.08.2025 13:26:22
+Last updated: 24.08.2025 12:20:29
 ```
 
 </td></tr>
@@ -553,7 +553,7 @@ ${widget:date(pattern = 'dd.MM.yyyy')}
 </td><td>
 
 ```markdown
-11.08.2025
+24.08.2025
 ```
 
 </td></tr>
@@ -630,8 +630,8 @@ Before submitting feedback:
 1. Check [existing issues](https://github.com/nanolaba/readme-generator/issues) to avoid duplicates
 2. Use clear, descriptive titles for your requests
 
-We welcome all constructive feedback to make NRG better!
+We welcome all constructive feedback to make **NRG** better!
 
 
 ---
-*Last updated: 11.08.2025*
+*Last updated: 24.08.2025*
