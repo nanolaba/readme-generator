@@ -10,7 +10,6 @@ import org.apache.commons.text.TextStringBuilder;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.StringReader;
-import java.text.Normalizer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -116,7 +115,6 @@ public class TableOfContentsWidget extends DefaultWidget {
 
         public static final Pattern HEADER_PATTERN = Pattern.compile("(#+)(.*)");
         private String title;
-        private String anchor;
         private int level;
         private int number;
         private final List<Header> headers;
@@ -131,7 +129,6 @@ public class TableOfContentsWidget extends DefaultWidget {
             if (m.find()) {
                 level = m.group(1).length() - 1;
                 title = StringUtils.trimToEmpty(m.group(2));
-                anchor = generateAnchorFromTitle();
 
                 Header prev = getPreviousHeader(level);
                 if (prev != null) {
@@ -144,46 +141,29 @@ public class TableOfContentsWidget extends DefaultWidget {
             }
         }
 
-        private String generateAnchorFromTitle() {
+        public String getAnchor() {
             if (title == null || title.trim().isEmpty()) {
                 return "";
             }
 
-            return Normalizer.normalize(title, Normalizer.Form.NFD)
-                    // Удаляем markdown-разметку
+            // Удаляем markdown-разметку
+            String cleaned = title
                     .replaceAll("\\[([^\\]]+)\\]\\([^)]+\\)", "$1") // ссылки [text](url) -> text
                     .replaceAll("\\*\\*([^*]+)\\*\\*", "$1") // жирный текст **text** -> text
                     .replaceAll("\\*([^*]+)\\*", "$1") // курсив *text* -> text
                     .replaceAll("`([^`]+)`", "$1") // код `text` -> text
                     .replaceAll("~~([^~]+)~~", "$1") // зачеркнутый текст ~~text~~ -> text
+                    .replaceAll("<[^>]+>", "") // Удаляем HTML-теги
+                    .replaceAll("https?://\\S+", "") // Удаляем URL
+                    .replaceAll("www\\.\\S+", ""); // Удаляем URL
 
-                    // Удаляем HTML-теги
-                    .replaceAll("<[^>]+>", "")
-
-                    // Удаляем URL полностью
-                    .replaceAll("https?://\\S+", "")
-                    .replaceAll("www\\.\\S+", "")
-
-                    // Убираем диакритические знаки и non-ASCII символы
-                    .replaceAll("[^\\p{ASCII}]", "")
-
-                    // Разрешаем буквы, цифры, пробелы, дефисы и подчеркивания
-                    .replaceAll("[^a-zA-Z0-9\\s_-]", "")
-
-                    // Заменяем пробелы на дефисы
-                    .replaceAll("\\s+", "-")
-
-                    // Заменяем подчеркивания на дефисы
-                    .replaceAll("_", "-")
-
-                    // Удаляем дефисы в начале и конце
-                    .replaceAll("^-+|-+$", "")
-
-                    // Удаляем множественные дефисы
-                    .replaceAll("-{2,}", "-")
-
-                    .trim()
-                    .toLowerCase();
+            // GitHub-style anchor generation - сохраняем Unicode символы
+            return cleaned.toLowerCase()
+                    .replaceAll("[^\\p{L}\\p{N}\\p{M}\\s_-]", "") // Оставляем буквы, цифры, модификаторы, пробелы, дефисы и подчеркивания
+                    .replaceAll("\\s+", "-") // Заменяем пробелы на дефисы
+                    .replaceAll("_", "-") // Заменяем подчеркивания на дефисы
+                    .replaceAll("-{2,}", "-") // Удаляем множественные дефисы
+                    .replaceAll("^-+|-+$", ""); // Удаляем дефисы в начале и конце
         }
 
         private Header getPreviousHeader(int level) {
@@ -210,7 +190,7 @@ public class TableOfContentsWidget extends DefaultWidget {
             } else {
                 res.append("-");
             }
-            res.append(" [").append(title).append("](#").append(anchor).append(")");
+            res.append(" [").append(title).append("](#").append(getAnchor()).append(")");
             res.append(System.lineSeparator());
             return res.toString();
         }
