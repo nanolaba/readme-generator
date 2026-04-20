@@ -103,14 +103,14 @@ public class ImportWidget extends DefaultWidget {
             Generator subGenerator = new InMemoryImportedFileGenerator(sourceFile, content, widgetConfig, config);
             GenerationResult subResult = subGenerator.getResult(language);
             content = subResult == null ? "" : subResult.getContent().toString();
-            // Sub-generator may add a trailing newline; normalize for the wrap step
-            if (content.endsWith(System.lineSeparator())) {
-                content = content.substring(0, content.length() - System.lineSeparator().length());
-            }
         }
 
         // 6. Wrap in fence (if enabled)
         if ("true".equals(widgetConfig.getWrap())) {
+            // Strip any trailing newline so the closing fence hugs the content
+            if (content.endsWith(System.lineSeparator())) {
+                content = content.substring(0, content.length() - System.lineSeparator().length());
+            }
             String lang = "auto".equals(widgetConfig.getLang())
                     ? ImportLanguageDetector.detectFromFilename(sourceFile.getName())
                     : widgetConfig.getLang();

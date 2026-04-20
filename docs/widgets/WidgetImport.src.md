@@ -72,11 +72,12 @@ The matching is language-agnostic — the widget recognizes the markers regardle
 <tr><td>
 
 ```markdown
-    // nrg:begin:example          (Java, JavaScript, Kotlin, Go, Rust, C, C++, C#)
-    # nrg:begin:example           (Python, Ruby, Bash, YAML, TOML)
-    <!-- nrg:begin:example -->    (HTML, XML, Markdown)
-    /* nrg:begin:example */       (CSS, C-style block comments)
-    -- nrg:begin:example          (SQL, Lua, Haskell)
+// nrg:begin:example          (Java, JavaScript, Kotlin, Go, Rust, C, C++, C#)
+<!-- nrg:begin:example -->    (HTML, XML, Markdown)
+/* nrg:begin:example */       (CSS, C-style block comments)
+-- nrg:begin:example          (SQL, Lua, Haskell)
+
+# nrg:begin:example           (Python, Ruby, Bash, YAML, TOML)
 ```
 
 </td></tr>
