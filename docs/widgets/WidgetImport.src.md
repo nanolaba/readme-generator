@@ -9,8 +9,11 @@ Optionally selects a fragment by line range or named region, and wraps the resul
 <tr><th>${en:'Basic usage example', ru:'Базовый пример использования'}</th></tr>
 <tr><td>
 
-```markdown
-\${widget:import(path='path/to/your/file/document.txt')} \${widget:import(path='path/to/your/file/document.txt', charset='windows-1251')} \${widget:import(path='path/to/your/file/template.src.md')} \${widget:import(path='path/to/your/file/template.src.md', run-generator='false')}
+``` 
+\${widget:import(path='path/to/your/file/document.txt')} 
+\${widget:import(path='path/to/your/file/document.txt', charset='windows-1251')} 
+\${widget:import(path='path/to/your/file/template.src.md')} 
+\${widget:import(path='path/to/your/file/template.src.md', run-generator='false')}
 ```
 
 </td></tr>
@@ -20,8 +23,12 @@ Optionally selects a fragment by line range or named region, and wraps the resul
 <tr><th>${en:'Code import example', ru:'Пример импорта кода'}</th></tr>
 <tr><td>
 
-```markdown
-\${widget:import(path='Foo.java', region='example', wrap='true')} \${widget:import(path='Foo.java', lines='10-20', wrap='true')} \${widget:import(path='Foo.java', lines='10-20,30-35', wrap='true')} \${widget:import(path='Foo.java', lang='go', wrap='true')} \${widget:import(path='Foo.java', region='example', wrap='true', dedent='false')}
+``` 
+\${widget:import(path='Foo.java', region='example', wrap='true')} 
+\${widget:import(path='Foo.java', lines='10-20', wrap='true')} 
+\${widget:import(path='Foo.java', lines='10-20,30-35', wrap='true')} 
+\${widget:import(path='Foo.java', lang='go', wrap='true')} 
+\${widget:import(path='Foo.java', region='example', wrap='true', dedent='false')}
 ```
 
 </td></tr>
