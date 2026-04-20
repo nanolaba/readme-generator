@@ -406,10 +406,7 @@ ${widget:languages}
 <tr><td>
 
 ```markdown
-${widget:import(path='path/to/your/file/document.txt')}
-${widget:import(path='path/to/your/file/document.txt', charset='windows-1251')}
-${widget:import(path='path/to/your/file/template.src.md')}
-${widget:import(path='path/to/your/file/template.src.md', run-generator='false')}
+${widget:import(path='path/to/your/file/document.txt')} ${widget:import(path='path/to/your/file/document.txt', charset='windows-1251')} ${widget:import(path='path/to/your/file/template.src.md')} ${widget:import(path='path/to/your/file/template.src.md', run-generator='false')}
 ```
 
 </td></tr>
@@ -420,11 +417,7 @@ ${widget:import(path='path/to/your/file/template.src.md', run-generator='false')
 <tr><td>
 
 ```markdown
-${widget:import(path='Foo.java', region='example', wrap='true')}
-${widget:import(path='Foo.java', lines='10-20', wrap='true')}
-${widget:import(path='Foo.java', lines='10-20,30-35', wrap='true')}
-${widget:import(path='Foo.java', lang='go', wrap='true')}
-${widget:import(path='Foo.java', region='example', wrap='true', dedent='false')}
+${widget:import(path='Foo.java', region='example', wrap='true')} ${widget:import(path='Foo.java', lines='10-20', wrap='true')} ${widget:import(path='Foo.java', lines='10-20,30-35', wrap='true')} ${widget:import(path='Foo.java', lang='go', wrap='true')} ${widget:import(path='Foo.java', region='example', wrap='true', dedent='false')}
 ```
 
 </td></tr>
@@ -462,13 +455,11 @@ ${widget:import(path='Foo.java', region='example', wrap='true', dedent='false')}
 <tr><td>
 
 ```markdown
-// nrg:begin:example          (Java, JavaScript, Kotlin, Go, Rust, C, C++, C#)
-
-# nrg:begin:example           (Python, Ruby, Bash, YAML, TOML)
-
-<!-- nrg:begin:example -->    (HTML, XML, Markdown)
-/* nrg:begin:example */       (CSS, C-style block comments)
--- nrg:begin:example          (SQL, Lua, Haskell)
+    // nrg:begin:example          (Java, JavaScript, Kotlin, Go, Rust, C, C++, C#)
+    # nrg:begin:example           (Python, Ruby, Bash, YAML, TOML)
+    <!-- nrg:begin:example -->    (HTML, XML, Markdown)
+    /* nrg:begin:example */       (CSS, C-style block comments)
+    -- nrg:begin:example          (SQL, Lua, Haskell)
 ```
 
 </td></tr>
@@ -573,7 +564,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 20.04.2026 20:40:41
+Last updated: 20.04.2026 21:13:58
 ```
 
 </td></tr>
