@@ -133,6 +133,7 @@ English text
 ```
 
 </td></tr></table>
+
 ## Способы запуска программы
 
 ### Запуск из командной строки
@@ -266,7 +267,9 @@ public class GeneratorExample {
         }
     }
 }
+
 ```
+
 ## Синтаксис шаблона
 
 ### Переменные
@@ -360,6 +363,7 @@ ${en:'Some text', ru:'Некоторый текст'}
 
 - `${en:'It''s working'}` → ``
 - `${en:"Text with ""quotes"""}` → ``
+
 ### Виджеты
 
 Виджеты позволяют вставить в документ программно сгенерированный текст. Если вы используете **Nanolaba Readme Generator (NRG)** как java-библиотеку, то вы можете написать свой собственный виджет.
@@ -397,6 +401,7 @@ ${widget:languages}
 </table>
 
 ---
+
 #### Виджет 'import'
 
 Этот компонент позволяет импортировать текст из другого документа, файла кода или шаблона. Опционально выбирает фрагмент по диапазону строк или именованному региону и оборачивает результат в кодовый блок.
@@ -455,11 +460,11 @@ ${widget:import(path='Foo.java', region='example', wrap='true')} ${widget:import
 <tr><td>
 
 ```markdown
-    // nrg:begin:example          (Java, JavaScript, Kotlin, Go, Rust, C, C++, C#)
-    # nrg:begin:example           (Python, Ruby, Bash, YAML, TOML)
-    <!-- nrg:begin:example -->    (HTML, XML, Markdown)
-    /* nrg:begin:example */       (CSS, C-style block comments)
-    -- nrg:begin:example          (SQL, Lua, Haskell)
+// nrg:begin:example          (Java, JavaScript, Kotlin, Go, Rust, C, C++, C#)
+<!-- nrg:begin:example -->    (HTML, XML, Markdown)
+/* nrg:begin:example */       (CSS, C-style block comments)
+-- nrg:begin:example          (SQL, Lua, Haskell)
+# nrg:begin:example           (Python, Ruby, Bash, YAML, TOML)
 ```
 
 </td></tr>
@@ -468,6 +473,7 @@ ${widget:import(path='Foo.java', region='example', wrap='true')} ${widget:import
 Имена регионов соответствуют шаблону `[A-Za-z0-9_-]+`. Строки-маркеры регионов исключаются из вывода. Вложенные регионы поддерживаются — при извлечении внешнего региона маркеры внутренних регионов также удаляются из вывода.
 
 ---
+
 #### Виджет 'tableOfContents'
 
 Этот компонент позволяет сформировать оглавление для документа.
@@ -549,6 +555,7 @@ ${widget:tableOfContents(title = "${en:'Table of contents', ru:'Содержан
 |   ordered    | Должны ли быть пронумерованы пункты оглавления |        `false`        |
 
 ---
+
 #### Виджет 'date'
 
 Этот компонент позволяет вставить в документ текущую дату.
@@ -564,7 +571,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 20.04.2026 21:13:58
+Last updated: 20.04.2026 21:28:28
 ```
 
 </td></tr>
@@ -593,6 +600,7 @@ ${widget:date(pattern = 'dd.MM.yyyy')}
 [документации языка Java](https://docs.oracle.com/javase/8/docs/api/java/text/SimpleDateFormat.html).
 
 ---
+
 #### Виджет 'todo'
 
 Этот компонент позволяет вставить в документ ярко выделенный текст, с пометкой
@@ -628,6 +636,7 @@ ${widget:todo(text="${en:'Example message', ru:'Пример сообщения'
 | Наименование | Описание           | Значение по умолчанию |
 |:------------:|--------------------|:---------------------:|
 |     text     | Отображаемый текст |   `Not done yet...`   |
+
 ## Обратная связь и поддержка
 
 Мы ценим ваше мнение! Вот лучшие способы связаться с нами:
@@ -652,6 +661,7 @@ ${widget:todo(text="${en:'Example message', ru:'Пример сообщения'
 2. Используйте понятные, описательные заголовки
 
 Мы приветствуем любую конструктивную обратную связь!
+
 
 ---
 *Дата последнего обновления: 20.04.2026*

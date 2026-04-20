@@ -133,6 +133,7 @@ English text
 ```
 
 </td></tr></table>
+
 ## Usage
 
 ### Using the Command Line Interface
@@ -267,7 +268,9 @@ public class GeneratorExample {
         }
     }
 }
+
 ```
+
 ## Template syntax
 
 ### Variables
@@ -359,6 +362,7 @@ To escape quotes, use character doubling, for example:
 
 - `${en:'It''s working'}` → `It's working`
 - `${en:"Text with ""quotes"""}` → `Text with "quotes"`
+
 ### Widgets
 
 Widgets allow you to insert programmatically generated text into a document.
@@ -397,6 +401,7 @@ ${widget:languages}
 </table>
 
 ---
+
 #### Widget 'import'
 
 This component enables text import from another document, code file, or template. Optionally selects a fragment by line range or named region, and wraps the result in a fenced code block.
@@ -456,11 +461,11 @@ Mark a region in the source file using `nrg:begin:NAME` and `nrg:end:NAME` token
 <tr><td>
 
 ```markdown
-    // nrg:begin:example          (Java, JavaScript, Kotlin, Go, Rust, C, C++, C#)
-    # nrg:begin:example           (Python, Ruby, Bash, YAML, TOML)
-    <!-- nrg:begin:example -->    (HTML, XML, Markdown)
-    /* nrg:begin:example */       (CSS, C-style block comments)
-    -- nrg:begin:example          (SQL, Lua, Haskell)
+// nrg:begin:example          (Java, JavaScript, Kotlin, Go, Rust, C, C++, C#)
+<!-- nrg:begin:example -->    (HTML, XML, Markdown)
+/* nrg:begin:example */       (CSS, C-style block comments)
+-- nrg:begin:example          (SQL, Lua, Haskell)
+# nrg:begin:example           (Python, Ruby, Bash, YAML, TOML)
 ```
 
 </td></tr>
@@ -469,6 +474,7 @@ Mark a region in the source file using `nrg:begin:NAME` and `nrg:end:NAME` token
 Region names match the pattern `[A-Za-z0-9_-]+`. Region markers are stripped from the output. Nested regions are supported — when extracting an outer region, inner region markers are also stripped from the output.
 
 ---
+
 #### Widget 'tableOfContents'
 
 This component allows you to generate a table of contents for a document.
@@ -550,6 +556,7 @@ Widget parameters:
 | ordered | Should the items in the table of contents be numbered |    `false`    |
 
 ---
+
 #### Widget 'date'
 
 This component allows you to insert the current date into a document.
@@ -565,7 +572,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 20.04.2026 21:13:58
+Last updated: 20.04.2026 21:28:27
 ```
 
 </td></tr>
@@ -594,6 +601,7 @@ You can read more about date pattern syntax in the
 [Java documentation](https://docs.oracle.com/javase/8/docs/api/java/text/SimpleDateFormat.html).
 
 ---
+
 #### Widget 'todo'
 
 This component allows you to insert prominently highlighted text into the document,
@@ -629,6 +637,7 @@ Widget parameters:
 | Name | Description    |   Default value   |
 |:----:|----------------|:-----------------:|
 | text | Displayed text | `Not done yet...` |
+
 ## Feedback & Support
 
 We value your input! Here are the best ways to connect with us:
@@ -653,6 +662,7 @@ Before submitting feedback:
 2. Use clear, descriptive titles for your requests
 
 We welcome all constructive feedback to make **NRG** better!
+
 
 ---
 *Last updated: 20.04.2026*
