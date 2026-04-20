@@ -410,8 +410,11 @@ ${widget:languages}
 <tr><th>Базовый пример использования</th></tr>
 <tr><td>
 
-```markdown
-${widget:import(path='path/to/your/file/document.txt')} ${widget:import(path='path/to/your/file/document.txt', charset='windows-1251')} ${widget:import(path='path/to/your/file/template.src.md')} ${widget:import(path='path/to/your/file/template.src.md', run-generator='false')}
+``` 
+${widget:import(path='path/to/your/file/document.txt')} 
+${widget:import(path='path/to/your/file/document.txt', charset='windows-1251')} 
+${widget:import(path='path/to/your/file/template.src.md')} 
+${widget:import(path='path/to/your/file/template.src.md', run-generator='false')}
 ```
 
 </td></tr>
@@ -421,8 +424,12 @@ ${widget:import(path='path/to/your/file/document.txt')} ${widget:import(path='pa
 <tr><th>Пример импорта кода</th></tr>
 <tr><td>
 
-```markdown
-${widget:import(path='Foo.java', region='example', wrap='true')} ${widget:import(path='Foo.java', lines='10-20', wrap='true')} ${widget:import(path='Foo.java', lines='10-20,30-35', wrap='true')} ${widget:import(path='Foo.java', lang='go', wrap='true')} ${widget:import(path='Foo.java', region='example', wrap='true', dedent='false')}
+``` 
+${widget:import(path='Foo.java', region='example', wrap='true')} 
+${widget:import(path='Foo.java', lines='10-20', wrap='true')} 
+${widget:import(path='Foo.java', lines='10-20,30-35', wrap='true')} 
+${widget:import(path='Foo.java', lang='go', wrap='true')} 
+${widget:import(path='Foo.java', region='example', wrap='true', dedent='false')}
 ```
 
 </td></tr>
@@ -571,7 +578,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 20.04.2026 21:30:00
+Last updated: 20.04.2026 21:31:33
 ```
 
 </td></tr>
