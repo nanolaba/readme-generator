@@ -86,8 +86,12 @@ public class NRG {
     }
 
     public static File getReadmeFile(String language, GeneratorConfig config) {
-        String path = StringUtils.substringBeforeLast(config.getSourceFile().getAbsolutePath(), "." + NRGConstants.DEFAULT_SOURCE_EXTENSION) +
-                (language.equals(config.getDefaultLanguage()) ? ".md" : "." + language + ".md");
+        return getReadmeFile(language, config.getSourceFile(), config.getDefaultLanguage());
+    }
+
+    public static File getReadmeFile(String language, File sourceFile, String defaultLanguage) {
+        String path = StringUtils.substringBeforeLast(sourceFile.getAbsolutePath(), "." + NRGConstants.DEFAULT_SOURCE_EXTENSION) +
+                (language.equals(defaultLanguage) ? ".md" : "." + language + ".md");
 
         return new File(path);
     }

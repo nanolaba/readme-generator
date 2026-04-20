@@ -25,6 +25,7 @@ public class GeneratorConfig {
     private final String sourceFileBody;
     private final Properties properties = new Properties();
 
+    private File rootSourceFile;
     private List<String> languages = Collections.singletonList("en");
     private String defaultLanguage;
     private boolean rootGenerator = true;
@@ -33,6 +34,7 @@ public class GeneratorConfig {
     public GeneratorConfig(File sourceFile, String templateText, List<NRGWidget> widgets) {
         this.sourceFile = sourceFile;
         this.sourceFileBody = templateText;
+        this.rootSourceFile = sourceFile;
 
         getSourceLinesStream().forEach(this::readLanguagesPropertiesFromLine);
 
@@ -108,6 +110,14 @@ public class GeneratorConfig {
 
     public File getSourceFile() {
         return sourceFile;
+    }
+
+    public File getRootSourceFile() {
+        return rootSourceFile;
+    }
+
+    public void setRootSourceFile(File rootSourceFile) {
+        this.rootSourceFile = rootSourceFile;
     }
 
     public String getSourceFileBody() {

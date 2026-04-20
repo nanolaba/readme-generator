@@ -388,13 +388,13 @@ ${widget:languages}
 </td><td>
 
 ```markdown
-[ **en** | [ru](WidgetLanguages.ru.md) ]
+[ **en** | [ru](README.ru.md) ]
 ```
 
 </td>
 <td>
 
-[ **en** | [ru](WidgetLanguages.ru.md) ]
+[ **en** | [ru](README.ru.md) ]
 
 </td>
 </tr>
@@ -579,7 +579,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 20.04.2026 21:31:33
+Last updated: 20.04.2026 21:48:20
 ```
 
 </td></tr>

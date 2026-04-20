@@ -21,7 +21,9 @@ public class LanguagesWidget extends DefaultWidget {
             if (lang.equals(language)) {
                 builder.append("**").append(lang).append("**");
             } else {
-                builder.append("[").append(lang).append("](").append(NRG.getReadmeFile(lang, config).getName()).append(")");
+                builder.append("[").append(lang).append("](")
+                        .append(NRG.getReadmeFile(lang, config.getRootSourceFile(), config.getDefaultLanguage()).getName())
+                        .append(")");
             }
         }
         return "[ " + builder + " ]";

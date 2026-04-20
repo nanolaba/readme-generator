@@ -254,6 +254,8 @@ public class ImportWidget extends DefaultWidget {
             super(sourceFile, body);
             getConfig().setRootGenerator(false);
             getConfig().setLanguages(parentConfig.getLanguages());
+            getConfig().setDefaultLanguage(parentConfig.getDefaultLanguage());
+            getConfig().setRootSourceFile(parentConfig.getRootSourceFile());
             parentConfig.getProperties().forEach((key, value) -> {
                 if (!getConfig().getProperties().containsKey(key)) {
                     getConfig().getProperties().setProperty(key.toString(), String.valueOf(value));
