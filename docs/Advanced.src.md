@@ -7,9 +7,7 @@
 To create a widget, you need to implement the `NRGWidget` interface or <!--en-->
 extend an existing widget (e.g., `DefaultWidget`):<!--en-->
 
-```java
-${widget:import(path='../nrg/src/test/java/com/nanolaba/nrg/examples/ExampleWidget.java')}
-```
+${widget:import(path='../nrg/src/test/java/com/nanolaba/nrg/examples/ExampleWidget.java', region='example', wrap='true')}
 
 Теперь вы можете использовать виджет в шаблоне:<!--ru-->
 Now you can use the widget in your template:<!--en-->

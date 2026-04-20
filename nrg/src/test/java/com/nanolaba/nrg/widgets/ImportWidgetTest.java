@@ -85,4 +85,89 @@ class ImportWidgetTest {
         assertTrue(bodyEn.contains("foo${unprocessedParameter}"));
         assertTrue(bodyEn.contains("<!--testComment3-->"));
     }
+
+    private String render(String fixturePath) throws IOException {
+        File sourceFile = new File(getClass().getClassLoader().getResource(fixturePath).getFile());
+        Generator generator = new Generator(sourceFile, StandardCharsets.UTF_8);
+        return generator.getResult("en").getContent().toString();
+    }
+
+    @Test
+    public void wrapTrueWithRegionWrapsInJavaFence() throws IOException {
+        String body = render("ImportWidgetTest/extension/README-wrap-true-region.src.md");
+        assertTrue(body.contains("```java"), body);
+        assertTrue(body.contains("public void greet() {"), body);
+        assertTrue(body.contains("System.out.println(\"hello\");"), body);
+        // Markers stripped
+        assertFalse(body.contains("nrg:begin:greet"));
+        assertFalse(body.contains("nrg:end:greet"));
+        // Closing fence
+        String sep = System.lineSeparator();
+        assertTrue(body.contains("```" + sep) || body.endsWith("```"), body);
+    }
+
+    @Test
+    public void wrapTrueWithLinesWrapsInJavaFence() throws IOException {
+        String body = render("ImportWidgetTest/extension/README-wrap-true-lines.src.md");
+        assertTrue(body.contains("```java"), body);
+        assertTrue(body.contains("public class Sample {"), body);
+    }
+
+    @Test
+    public void wrapTrueWithLangWrapsFullFile() throws IOException {
+        String body = render("ImportWidgetTest/extension/README-wrap-true-lang.src.md");
+        assertTrue(body.contains("```text"), body);
+        assertTrue(body.contains("plain text line 1"), body);
+        assertTrue(body.contains("plain text line 3"), body);
+    }
+
+    @Test
+    public void wrapDefaultsToFalse() throws IOException {
+        // No wrap attribute — defaults to false; region content is emitted without a fence.
+        String body = render("ImportWidgetTest/extension/README-wrap-default-region.src.md");
+        assertFalse(body.contains("```java"), body);
+        assertTrue(body.contains("public void greet() {"), body);
+    }
+
+    @Test
+    public void wrapFalseDisablesFenceEvenWithRegion() throws IOException {
+        String body = render("ImportWidgetTest/extension/README-wrap-false-region.src.md");
+        assertFalse(body.contains("```java"), body);
+        assertTrue(body.contains("public void greet() {"), body);
+    }
+
+    @Test
+    public void wrapTrueWithoutSelectionWrapsFullFile() throws IOException {
+        String body = render("ImportWidgetTest/extension/README-wrap-true-fullfile.src.md");
+        assertTrue(body.contains("```java"), body);
+        assertTrue(body.contains("package example;"), body);
+    }
+
+    @Test
+    public void dedentFalsePreservesIndentation() throws IOException {
+        String body = render("ImportWidgetTest/extension/README-dedent-false.src.md");
+        // Original indentation (4 spaces from class body) is preserved
+        assertTrue(body.contains("    public void greet() {"), body);
+    }
+
+    @Test
+    public void langOverrideUsesGivenLanguage() throws IOException {
+        String body = render("ImportWidgetTest/extension/README-lang-override.src.md");
+        assertTrue(body.contains("```go"), body);
+        assertFalse(body.contains("```java"), body);
+    }
+
+    @Test
+    public void conflictingLinesAndRegionLogsErrorAndProducesEmpty() throws IOException {
+        String body = render("ImportWidgetTest/extension/README-conflict-lines-region.src.md");
+        // Widget output is empty; surrounding shell should not contain class content
+        assertFalse(body.contains("public void greet()"));
+        assertFalse(body.contains("public class WithRegion"));
+    }
+
+    @Test
+    public void regionNotFoundLogsErrorAndProducesEmpty() throws IOException {
+        String body = render("ImportWidgetTest/extension/README-region-not-found.src.md");
+        assertFalse(body.contains("public void greet()"));
+    }
 }
