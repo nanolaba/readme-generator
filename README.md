@@ -6,9 +6,7 @@
 
 # Nanolaba Readme Generator (NRG)- Automated Markdown Documentation Tool
 
-**Nanolaba Readme Generator (NRG)** — is an open-source Java tool for automating Markdown documentation with
-multi-language
-support, dynamic variables, and custom widgets.
+**Nanolaba Readme Generator (NRG)** — is an open-source Java tool for automating Markdown documentation with multi-language support, dynamic variables, and custom widgets.
 
 ## Overview
 
@@ -32,8 +30,7 @@ Using **Nanolaba Readme Generator (NRG)**, you can:
 
 > 💡 **Nanolaba Readme Generator (NRG)** is written in Java and requires **Java 8** or higher to run.
 
-The latest stable version of the program is **0.2**.
-The current development version is **0.3-SNAPSHOT**.
+The latest stable version of the program is **0.3**. The current development version is **0.4-SNAPSHOT**.
 
 
 
@@ -49,14 +46,14 @@ The current development version is **0.3-SNAPSHOT**.
 	3. [Multilanguage support](#multilanguage-support)
 	4. [Widgets](#widgets)
 		1. [Widget 'languages'](#widget-languages)
-        2. [Widget 'import'](#widget-import)
-        3. [Widget 'tableOfContents'](#widget-tableofcontents)
+		2. [Widget 'import'](#widget-import)
+		3. [Widget 'tableOfContents'](#widget-tableofcontents)
 		1. [Widget 'date'](#widget-date)
 		2. [Widget 'todo'](#widget-todo)
 1. [Feedback & Support](#feedback-support)
-    1. [Community Support](#community-support)
-    2. [Direct Communication](#direct-communication)
-    3. [Contribution Guide](#contribution-guide)
+	1. [Community Support](#community-support)
+	2. [Direct Communication](#direct-communication)
+	3. [Contribution Guide](#contribution-guide)
 
 
 ## Quick start
@@ -146,7 +143,7 @@ English text
 **Nanolaba Readme Generator (NRG)** is written in Java and requires **Java 8** or higher to run.
 [Install](https://www.java.com/en/download/) Java if it’s not already present on your system.
 
-[Download](https://github.com/nanolaba/readme-generator/releases/tag/v0.2) the latest
+[Download](https://github.com/nanolaba/readme-generator/releases/tag/v0.3) the latest
 stable version of the application.
 
 Unzip the downloaded archive. If you're using a Unix-like system, make the `nrg.sh` file executable:
@@ -177,7 +174,7 @@ Add the following code to your `pom.xml`:
     <plugin>
         <groupId>com.nanolaba</groupId>
         <artifactId>nrg-maven-plugin</artifactId>
-        <version>0.2</version>
+        <version>0.3</version>
         <configuration>
             <file>
                 <item>README.src.md</item>
@@ -224,30 +221,28 @@ To use SNAPSHOT versions, you also need to add the following code to your `pom.x
 <dependency>
     <groupId>com.nanolaba</groupId>
     <artifactId>readme-generator</artifactId>
-    <version>0.2</version>
+    <version>0.3</version>
 </dependency>  
 ```
 
 **Gradle (build.gradle)**
 
 ```groovy
-implementation 'com.nanolaba:readme-generator:0.2'
+implementation 'com.nanolaba:readme-generator:0.3'
 ```
 
 **Manual download**
 
-Get the JAR from [Maven Central](https://repo1.maven.org/maven2/com/nanolaba/readme-generator/0.2).
+Get the JAR from [Maven Central](https://repo1.maven.org/maven2/com/nanolaba/readme-generator/0.3).
 Add it to your project's classpath.
 
-After this, you can call the file generation function in your project by passing
-the same parameters as in the console application, for example:
+After this, you can call the file generation function in your project by passing the same parameters as in the console application, for example:
 
 ```java
 NRG.main("-f","path-to-file","--charset","UTF-8");
 ```
 
-An alternative approach — and a more flexible one for configuring program
-behavior — is to use the `Generator` class:
+An alternative approach — and a more flexible one for configuring program behavior — is to use the `Generator` class:
 
 ```java
 package com.nanolaba.nrg.examples;
@@ -294,8 +289,7 @@ The output of variable values is done using the following construct:
 ${variable_name}
 ```
 
-To display a construct like *${...}* without replacing it with
-the variable's value, precede it with the '\\' character:
+To display a construct like *${...}* without replacing it with the variable's value, precede it with the '\\' character:
 
 ```markdown
 \${variable_name}
@@ -540,7 +534,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 24.08.2025 12:20:29
+Last updated: 20.04.2026 11:03:13
 ```
 
 </td></tr>
@@ -553,7 +547,7 @@ ${widget:date(pattern = 'dd.MM.yyyy')}
 </td><td>
 
 ```markdown
-24.08.2025
+20.04.2026
 ```
 
 </td></tr>
@@ -634,4 +628,4 @@ We welcome all constructive feedback to make **NRG** better!
 
 
 ---
-*Last updated: 24.08.2025*
+*Last updated: 20.04.2026*
