@@ -10,10 +10,7 @@ Optionally selects a fragment by line range or named region, and wraps the resul
 <tr><td>
 
 ```markdown
-\${widget:import(path='path/to/your/file/document.txt')}
-\${widget:import(path='path/to/your/file/document.txt', charset='windows-1251')}
-\${widget:import(path='path/to/your/file/template.src.md')}
-\${widget:import(path='path/to/your/file/template.src.md', run-generator='false')}
+\${widget:import(path='path/to/your/file/document.txt')} \${widget:import(path='path/to/your/file/document.txt', charset='windows-1251')} \${widget:import(path='path/to/your/file/template.src.md')} \${widget:import(path='path/to/your/file/template.src.md', run-generator='false')}
 ```
 
 </td></tr>
@@ -75,13 +72,11 @@ The matching is language-agnostic — the widget recognizes the markers regardle
 <tr><td>
 
 ```markdown
-// nrg:begin:example          (Java, JavaScript, Kotlin, Go, Rust, C, C++, C#)
-
-# nrg:begin:example           (Python, Ruby, Bash, YAML, TOML)
-
-<!-- nrg:begin:example -->    (HTML, XML, Markdown)
-/* nrg:begin:example */       (CSS, C-style block comments)
--- nrg:begin:example          (SQL, Lua, Haskell)
+    // nrg:begin:example          (Java, JavaScript, Kotlin, Go, Rust, C, C++, C#)
+    # nrg:begin:example           (Python, Ruby, Bash, YAML, TOML)
+    <!-- nrg:begin:example -->    (HTML, XML, Markdown)
+    /* nrg:begin:example */       (CSS, C-style block comments)
+    -- nrg:begin:example          (SQL, Lua, Haskell)
 ```
 
 </td></tr>
