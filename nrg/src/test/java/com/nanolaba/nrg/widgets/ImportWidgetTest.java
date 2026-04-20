@@ -170,4 +170,16 @@ class ImportWidgetTest {
         String body = render("ImportWidgetTest/extension/README-region-not-found.src.md");
         assertFalse(body.contains("public void greet()"));
     }
+
+    @Test
+    public void consecutiveImportsPreserveBlankLineSeparator() throws IOException {
+        // Regression: the widget's default path (run-generator=true, wrap=false) must
+        // preserve the trailing newline of imported content. Otherwise two consecutive
+        // ${widget:import} calls collapse into adjacent lines with no blank line
+        // between them, which breaks GitHub's markdown rendering when one fragment
+        // ends in an HTML block and the next begins with a heading.
+        String body = render("ImportWidgetTest/extension/README-two-imports.src.md");
+        String sep = System.lineSeparator();
+        assertTrue(body.contains("FIRST" + sep + sep + "SECOND"), body);
+    }
 }
