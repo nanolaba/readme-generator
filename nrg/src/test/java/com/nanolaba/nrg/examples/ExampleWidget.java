@@ -7,6 +7,7 @@ import com.nanolaba.nrg.widgets.WidgetTag;
 
 import java.util.Map;
 
+// nrg:begin:example
 public class ExampleWidget extends DefaultWidget {
 
     @Override
@@ -22,3 +23,4 @@ public class ExampleWidget extends DefaultWidget {
         return "Hello, " + map.get("name") + "!";
     }
 }
+// nrg:end:example
