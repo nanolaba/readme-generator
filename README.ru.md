@@ -459,7 +459,7 @@ ${widget:import(path='Foo.java', region='example', wrap='true')} ${widget:import
 <tr><th>Примеры стилей комментариев</th></tr>
 <tr><td>
 
-```markdown
+```
 // nrg:begin:example          (Java, JavaScript, Kotlin, Go, Rust, C, C++, C#)
 <!-- nrg:begin:example -->    (HTML, XML, Markdown)
 /* nrg:begin:example */       (CSS, C-style block comments)
@@ -571,7 +571,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 20.04.2026 21:28:28
+Last updated: 20.04.2026 21:30:00
 ```
 
 </td></tr>
@@ -636,6 +636,7 @@ ${widget:todo(text="${en:'Example message', ru:'Пример сообщения'
 | Наименование | Описание           | Значение по умолчанию |
 |:------------:|--------------------|:---------------------:|
 |     text     | Отображаемый текст |   `Not done yet...`   |
+
 
 ## Обратная связь и поддержка
 
