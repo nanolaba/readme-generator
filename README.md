@@ -460,7 +460,7 @@ Mark a region in the source file using `nrg:begin:NAME` and `nrg:end:NAME` token
 <tr><th>Comment style examples</th></tr>
 <tr><td>
 
-```markdown
+```
 // nrg:begin:example          (Java, JavaScript, Kotlin, Go, Rust, C, C++, C#)
 <!-- nrg:begin:example -->    (HTML, XML, Markdown)
 /* nrg:begin:example */       (CSS, C-style block comments)
@@ -572,7 +572,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 20.04.2026 21:28:27
+Last updated: 20.04.2026 21:29:59
 ```
 
 </td></tr>
@@ -637,6 +637,7 @@ Widget parameters:
 | Name | Description    |   Default value   |
 |:----:|----------------|:-----------------:|
 | text | Displayed text | `Not done yet...` |
+
 
 ## Feedback & Support
 
