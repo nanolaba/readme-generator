@@ -3,14 +3,14 @@
 This section summarises the main user-visible changes in each release. For full details, see the git history.<!--en-->
 В разделе перечислены основные пользовательские изменения в каждой версии. Подробности — в истории коммитов.<!--ru-->
 
-### ${en:'Unreleased', ru:'В разработке'} (${devVersion})
+### ${en:'Unreleased', ru:'В разработке'} (${devVersion})<!--toc.ignore-->
 
 - **`import` widget**: added the `lines`, `region`, `wrap`, `lang`, and `dedent` parameters for fine-grained inclusion of source files.<!--en-->
 - Fixed: the `languages` widget now produces correct link targets when rendered inside an imported fragment.<!--en-->
 - **Виджет `import`**: добавлены параметры `lines`, `region`, `wrap`, `lang` и `dedent` для точного включения фрагментов файлов.<!--ru-->
 - Исправлено: виджет `languages` теперь правильно формирует ссылки при использовании внутри импортированного фрагмента.<!--ru-->
 
-### 0.3
+### 0.3<!--toc.ignore-->
 
 - Published under an open-source license.<!--en-->
 - **Table of contents**: overhauled heading-to-anchor generation to match GitHub's rules, with Unicode-aware slugification.<!--en-->
@@ -21,14 +21,14 @@ This section summarises the main user-visible changes in each release. For full 
 - Исправлено: ломались ссылки в оглавлении для заголовков с двоеточиями и запятыми.<!--ru-->
 - Убран лишний вывод в консоль из виджета `tableOfContents`.<!--ru-->
 
-### 0.2
+### 0.2<!--toc.ignore-->
 
 - Added the **`import`** widget for including external `*.src.md` files into a template.<!--en-->
 - Added `ExampleWidget` to the test sources as a reference implementation for custom widgets.<!--en-->
 - Добавлен виджет **`import`** для подключения внешних `*.src.md`-файлов в шаблон.<!--ru-->
 - Добавлен `ExampleWidget` в тестовые исходники — как пример реализации пользовательского виджета.<!--ru-->
 
-### 0.1
+### 0.1<!--toc.ignore-->
 
 ${en:'First public release.', ru:'Первый публичный выпуск.'}
 

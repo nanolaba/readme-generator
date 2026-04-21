@@ -50,10 +50,6 @@ The latest stable version of the program is **0.3**. The current development ver
 		2. [Widget 'todo'](#widget-todo)
 1. [Related projects](#related-projects)
 2. [Changelog](#changelog)
-	1. [Unreleased (0.4-SNAPSHOT)](#unreleased-04-snapshot)
-	2. [0.3](#03)
-	3. [0.2](#02)
-	4. [0.1](#01)
 3. [Feedback & Support](#feedback-support)
 	1. [Community Support](#community-support)
 	2. [Direct Communication](#direct-communication)
@@ -585,7 +581,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 21.04.2026 22:43:05
+Last updated: 21.04.2026 22:45:53
 ```
 
 </td></tr>
