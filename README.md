@@ -49,7 +49,12 @@ The latest stable version of the program is **0.3**. The current development ver
 		1. [Widget 'date'](#widget-date)
 		2. [Widget 'todo'](#widget-todo)
 1. [Related projects](#related-projects)
-2. [Feedback & Support](#feedback-support)
+2. [Changelog](#changelog)
+	1. [Unreleased (0.4-SNAPSHOT)](#unreleased-04-snapshot)
+	2. [0.3](#03)
+	3. [0.2](#02)
+	4. [0.1](#01)
+3. [Feedback & Support](#feedback-support)
 	1. [Community Support](#community-support)
 	2. [Direct Communication](#direct-communication)
 	3. [Contribution Guide](#contribution-guide)
@@ -580,7 +585,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 21.04.2026 16:40:24
+Last updated: 21.04.2026 22:43:05
 ```
 
 </td></tr>
@@ -646,6 +651,7 @@ Widget parameters:
 |:----:|----------------|:-----------------:|
 | text | Displayed text | `Not done yet...` |
 
+
 ## Related projects
 
 Other tools in the same space — useful if **Nanolaba Readme Generator (NRG)** does not fit your stack or workflow:
@@ -656,6 +662,40 @@ Other tools in the same space — useful if **Nanolaba Readme Generator (NRG)** 
 - **[doctoc](https://github.com/thlorenz/doctoc)** (Node.js) — auto-generates and updates the table of contents in an existing markdown file; a focused alternative to NRG's `tableOfContents` widget.
 - **[remark](https://github.com/remarkjs/remark)** (Node.js) — pluggable markdown processor; with plugins such as `remark-toc` and `remark-include`
   it can be composed into a pipeline that covers several NRG features separately.
+
+## Changelog
+
+This section summarises the main user-visible changes in each release. For full details, see the git history.
+
+### Unreleased (0.4-SNAPSHOT)
+
+- **`import` widget**: added the `lines`, `region`, `wrap`, `lang`, and `dedent` parameters for fine-grained inclusion of source files.
+- Fixed: the `languages` widget now produces correct link targets when rendered inside an imported fragment.
+
+### 0.3
+
+- Published under an open-source license.
+- **Table of contents**: overhauled heading-to-anchor generation to match GitHub's rules, with Unicode-aware slugification.
+- Fixed: TOC links were malformed for headings containing colons or commas.
+- Removed stray console output from the `tableOfContents` widget.
+
+### 0.2
+
+- Added the **`import`** widget for including external `*.src.md` files into a template.
+- Added `ExampleWidget` to the test sources as a reference implementation for custom widgets.
+
+### 0.1
+
+First public release.
+
+- Core template engine with property declarations (`<!--@key=value-->`) and `${var}` substitution.
+- Multi-language output via `${en:'…', ru:'…'}` constructs and language-tagged lines (`<!--en-->`, `<!--ru-->`).
+- Built-in widgets: `languages`, `tableOfContents`, `date`, `todo`.
+- `<!--toc.ignore-->` marker for excluding headings from the table of contents.
+- Escape-character support in variables and widget parameters, including doubled-quote escaping.
+- CLI with `-f`, `--charset`, `--version`, and `-h` flags; launcher scripts `nrg.sh` / `nrg.bat`; jar-with-dependencies assembly.
+- Maven plugin (`nrg-maven-plugin`) with the `create-files` goal.
+- Java 8 compatibility and publication to Maven Central.
 
 ## Feedback & Support
 
