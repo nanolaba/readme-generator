@@ -48,7 +48,8 @@ The latest stable version of the program is **0.3**. The current development ver
 		1. [Widget 'tableOfContents'](#widget-tableofcontents)
 		1. [Widget 'date'](#widget-date)
 		2. [Widget 'todo'](#widget-todo)
-1. [Feedback & Support](#feedback-support)
+1. [Related projects](#related-projects)
+2. [Feedback & Support](#feedback-support)
 	1. [Community Support](#community-support)
 	2. [Direct Communication](#direct-communication)
 	3. [Contribution Guide](#contribution-guide)
@@ -579,7 +580,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 20.04.2026 21:48:20
+Last updated: 21.04.2026 16:40:24
 ```
 
 </td></tr>
@@ -592,7 +593,7 @@ ${widget:date(pattern = 'dd.MM.yyyy')}
 </td><td>
 
 ```markdown
-20.04.2026
+21.04.2026
 ```
 
 </td></tr>
@@ -645,6 +646,16 @@ Widget parameters:
 |:----:|----------------|:-----------------:|
 | text | Displayed text | `Not done yet...` |
 
+## Related projects
+
+Other tools in the same space — useful if **Nanolaba Readme Generator (NRG)** does not fit your stack or workflow:
+
+- **[multilingual-markdown](https://github.com/ryul1206/multilingual-markdown)** (Python) — generates per-language markdown files from a single base document, similar to NRG's multi-language flow but without widgets or template imports.
+- **[embedme](https://github.com/zakhenry/embedme)** (Node.js) — embeds external code snippets into markdown via fenced-block annotations; overlaps with NRG's `import` widget (region / lines extraction).
+- **[cog](https://github.com/nedbat/cog)** (Python) — runs embedded Python snippets inside source files to generate text; a different philosophy (code execution instead of declarative widgets) for the same goal of keeping generated documentation in sync with its source of truth.
+- **[doctoc](https://github.com/thlorenz/doctoc)** (Node.js) — auto-generates and updates the table of contents in an existing markdown file; a focused alternative to NRG's `tableOfContents` widget.
+- **[remark](https://github.com/remarkjs/remark)** (Node.js) — pluggable markdown processor; with plugins such as `remark-toc` and `remark-include`
+  it can be composed into a pipeline that covers several NRG features separately.
 
 ## Feedback & Support
 
@@ -673,4 +684,4 @@ We welcome all constructive feedback to make **NRG** better!
 
 
 ---
-*Last updated: 20.04.2026*
+*Last updated: 21.04.2026*

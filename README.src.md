@@ -22,6 +22,7 @@ ${widget:import(path='docs/QuickStart.src.md')}
 ${widget:import(path='docs/Launching.src.md')}
 ${widget:import(path='docs/TemplateSyntax.src.md')}
 ${widget:import(path='docs/Widgets.src.md')}
+${widget:import(path='docs/RelatedProjects.src.md')}
 ${widget:import(path='docs/Feedback.src.md')}
 
 ---
