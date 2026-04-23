@@ -4,7 +4,12 @@
 
 [ **en** | [ru](README.ru.md) ]
 
-# Nanolaba Readme Generator (NRG)- Automated Markdown Documentation Tool
+# Nanolaba Readme Generator (NRG) - Automated Markdown Documentation Tool
+
+[![CI](https://github.com/nanolaba/readme-generator/actions/workflows/ci.yml/badge.svg)](https://github.com/nanolaba/readme-generator/actions/workflows/ci.yml)
+[![Maven Central](https://img.shields.io/maven-central/v/com.nanolaba/readme-generator?label=Maven%20Central)](https://central.sonatype.com/artifact/com.nanolaba/readme-generator)
+[![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
+![Java](https://img.shields.io/badge/Java-8%2B-orange)
 
 **Nanolaba Readme Generator (NRG)** — is an open-source Java tool for automating Markdown documentation with multi-language support, dynamic variables, and custom widgets.
 
@@ -602,7 +607,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 23.04.2026 08:14:10
+Last updated: 23.04.2026 10:34:18
 ```
 
 </td></tr>
