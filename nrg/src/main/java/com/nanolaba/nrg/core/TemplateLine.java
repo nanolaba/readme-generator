@@ -3,7 +3,6 @@ package com.nanolaba.nrg.core;
 import com.nanolaba.logging.LOG;
 import com.nanolaba.nrg.widgets.NRGWidget;
 import com.nanolaba.nrg.widgets.WidgetTag;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.TextStringBuilder;
 
 import java.util.ArrayList;
@@ -161,8 +160,7 @@ public class TemplateLine {
                 Matcher entryMatcher = Pattern.compile(ENTRY_PATTERN).matcher(content);
                 while (entryMatcher.find()) {
                     String quote = entryMatcher.group("quote");
-                    body = StringUtils.trimToEmpty(entryMatcher.group("text"))
-                            .replace(quote + quote, quote);
+                    body = entryMatcher.group("text").replace(quote + quote, quote);
                 }
 
                 result.replace(shift + matcher.start(), shift + matcher.end(), body);
