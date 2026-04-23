@@ -58,7 +58,80 @@ The latest stable version of the program is **0.3**. The current development ver
 
 ## Quick start
 
-**Step 1: Create a template (README.src.md)**
+**Prerequisites:** Java 8 or higher ([download](https://www.java.com/en/download/)).
+
+**Step 1: Create a minimal template (`README.src.md`)**
+
+```markdown
+<!--@nrg.languages=en,ru-->
+
+# Hello<!--en-->
+# Привет<!--ru-->
+
+English text<!--en-->
+Русский текст<!--ru-->
+```
+
+Lines tagged `<!--en-->` go to `README.md`; lines tagged `<!--ru-->` go to `README.ru.md`.
+
+**Step 2: Generate the files**
+
+**Option A — CLI.** [Download](https://github.com/nanolaba/readme-generator/releases/tag/v0.3) the standalone jar, unzip it, then run:
+
+```bash
+nrg -f /path/to/README.src.md
+```
+
+**Option B — Maven plugin.** Add this to your `pom.xml` (full configuration in the [Maven plugin](#use-as-maven-plugin) section below):
+
+```xml
+<plugin>
+    <groupId>com.nanolaba</groupId>
+    <artifactId>nrg-maven-plugin</artifactId>
+    <version>0.3</version>
+    <configuration>
+        <file><item>README.src.md</item></file>
+    </configuration>
+    <executions>
+        <execution>
+            <phase>compile</phase>
+            <goals><goal>create-files</goal></goals>
+        </execution>
+    </executions>
+</plugin>
+```
+
+**Step 3: Check the result**
+
+Two files appear next to the template — `README.md` and `README.ru.md`:
+
+<table>
+<tr><th><b>README.md</b></th><th><b>README.ru.md</b></th></tr>
+<tr><td>
+
+```markdown
+# Hello
+
+English text
+```
+
+</td><td>
+
+```markdown
+# Привет
+
+Русский текст
+```
+
+</td></tr></table>
+
+**What comes next**
+
+- Variables, language constructs, and escapes — see [Template syntax](#template-syntax).
+- Built-in widgets (table of contents, import, languages, date, todo) — see [Widgets](#widgets).
+
+<details>
+<summary><b>Full template example (all widgets)</b></summary>
 
 ```markdown
 <!--@nrg.languages=en,ru-->
@@ -68,13 +141,13 @@ The latest stable version of the program is **0.3**. The current development ver
 
 ${widget:languages}
 
-# ${title}
+# ${title}<!--toc.ignore-->
 
 ${widget:tableOfContents(title = "${en:'Table of contents', ru:'Содержание'}", ordered = "true")}
 
-## Part 1
+## Part 1<!--toc.ignore-->
 
-### Chapter 1
+### Chapter 1<!--toc.ignore-->
 
 English text<!--en-->
 Русский текст<!--ru-->
@@ -82,59 +155,7 @@ English text<!--en-->
 ${widget:import(path='path/to/your/file/another-info.src.md')}
 ```
 
-**Step 2: Build the files**
-
-*Option 1:* [Download](#using-the-command-line-interface) the program and run the command in the console:
-
-```bash
-nrg -f /path/to/README.src.md
-```
-
-*Option 2:* [Add](#use-as-maven-plugin) the Maven plugin to your project.
-
-**Result**
-
-<table>
-<tr><th><b>README.md</b></th><th><b>README.ru.md</b></th></tr>
-<tr><td>
-
-```markdown
-[ **en** | [ru](README.ru.md) ]
-
-# Hello, World!
-
-## Table of contents
-
-1. [Part 1](#part-1)
-    1. [Chapter 1](#chapter-1)
-
-## Part 1
-
-### Chapter 1
-
-English text
-```
-
-</td><td>
-
-```markdown
-[ [en](README.md) | **ru** ]
-
-# Привет, Мир!
-
-## Содержание
-
-1. [Part 1](#part-1)
-    1. [Chapter 1](#chapter-1)
-
-## Part 1
-
-### Chapter 1
-
-Русский текст
-```
-
-</td></tr></table>
+</details>
 
 ## Usage
 
@@ -581,7 +602,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 21.04.2026 22:45:53
+Last updated: 23.04.2026 08:14:10
 ```
 
 </td></tr>
@@ -594,7 +615,7 @@ ${widget:date(pattern = 'dd.MM.yyyy')}
 </td><td>
 
 ```markdown
-21.04.2026
+23.04.2026
 ```
 
 </td></tr>
@@ -720,4 +741,4 @@ We welcome all constructive feedback to make **NRG** better!
 
 
 ---
-*Last updated: 21.04.2026*
+*Last updated: 23.04.2026*
