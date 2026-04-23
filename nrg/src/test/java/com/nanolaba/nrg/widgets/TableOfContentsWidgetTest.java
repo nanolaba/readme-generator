@@ -4,6 +4,7 @@ import com.nanolaba.logging.LOG;
 import com.nanolaba.nrg.DefaultNRGTest;
 import com.nanolaba.nrg.core.Generator;
 import com.nanolaba.nrg.core.NoHeadCommentGenerator;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -14,6 +15,10 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class TableOfContentsWidgetTest extends DefaultNRGTest {
 
+    @AfterEach
+    public void restoreDefaultLogger() {
+        LOG.init();
+    }
 
     @Test
     public void testTOCWidget() {

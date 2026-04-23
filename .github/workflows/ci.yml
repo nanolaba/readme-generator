@@ -35,27 +35,6 @@ jobs:
       - name: Build & test
         run: mvn --batch-mode --no-transfer-progress verify -Dgpg.skip=true -Dmaven.javadoc.skip=true
 
-      - name: Print surefire details on failure
-        if: failure()
-        run: |
-          echo "::group::Environment"
-          java -XshowSettings:properties -version 2>&1 | grep -E 'file.encoding|native.encoding|sun.jnu.encoding|user.language|user.country'
-          echo "LANG=$LANG  LC_ALL=$LC_ALL  LC_CTYPE=$LC_CTYPE"
-          locale 2>&1 | head -20 || true
-          echo "::endgroup::"
-          for f in $(find . -name 'TEST-*.xml' -path '*/surefire-reports/*'); do
-            if grep -qE '<(failure|error)' "$f"; then
-              echo "::group::$f"
-              cat "$f"
-              echo "::endgroup::"
-            fi
-          done
-          for f in $(find . -path '*/surefire-reports/*-output.txt'); do
-            echo "::group::$f"
-            cat "$f"
-            echo "::endgroup::"
-          done
-
       - name: Upload surefire reports on failure
         if: failure()
         uses: actions/upload-artifact@v4
