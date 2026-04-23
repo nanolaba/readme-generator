@@ -58,7 +58,80 @@
 
 ## Быстрый старт
 
-**Шаг 1: Создайте шаблон (README.src.md)**
+**Что нужно:** Java 8 или выше ([скачать](https://www.java.com/en/download/)).
+
+**Шаг 1: Создайте минимальный шаблон (`README.src.md`)**
+
+```markdown
+<!--@nrg.languages=en,ru-->
+
+# Hello<!--en-->
+# Привет<!--ru-->
+
+English text<!--en-->
+Русский текст<!--ru-->
+```
+
+Строки, помеченные `<!--en-->`, попадут в `README.md`; строки с `<!--ru-->` — в `README.ru.md`.
+
+**Шаг 2: Сгенерируйте файлы**
+
+**Вариант A — CLI.** [Скачайте](https://github.com/nanolaba/readme-generator/releases/tag/v0.3) автономный jar, распакуйте архив и запустите:
+
+```bash
+nrg -f /path/to/README.src.md
+```
+
+**Вариант B — Maven-плагин.** Добавьте в `pom.xml` (полная конфигурация ниже, в разделе [«Использование как плагина для maven»](#использование-как-плагина-для-maven)):
+
+```xml
+<plugin>
+    <groupId>com.nanolaba</groupId>
+    <artifactId>nrg-maven-plugin</artifactId>
+    <version>0.3</version>
+    <configuration>
+        <file><item>README.src.md</item></file>
+    </configuration>
+    <executions>
+        <execution>
+            <phase>compile</phase>
+            <goals><goal>create-files</goal></goals>
+        </execution>
+    </executions>
+</plugin>
+```
+
+**Шаг 3: Проверьте результат**
+
+Рядом с шаблоном появятся два файла — `README.md` и `README.ru.md`:
+
+<table>
+<tr><th><b>README.md</b></th><th><b>README.ru.md</b></th></tr>
+<tr><td>
+
+```markdown
+# Hello
+
+English text
+```
+
+</td><td>
+
+```markdown
+# Привет
+
+Русский текст
+```
+
+</td></tr></table>
+
+**Что дальше**
+
+- Переменные, многоязычный синтаксис и экранирование — см. [«Синтаксис шаблона»](#синтаксис-шаблона).
+- Готовые виджеты (оглавление, импорт, языки, дата, todo) — см. [«Виджеты»](#виджеты).
+
+<details>
+<summary><b>Полный пример шаблона (все виджеты)</b></summary>
 
 ```markdown
 <!--@nrg.languages=en,ru-->
@@ -68,13 +141,13 @@
 
 ${widget:languages}
 
-# ${title}
+# ${title}<!--toc.ignore-->
 
 ${widget:tableOfContents(title = "${en:'Table of contents', ru:'Содержание'}", ordered = "true")}
 
-## Part 1
+## Part 1<!--toc.ignore-->
 
-### Chapter 1
+### Chapter 1<!--toc.ignore-->
 
 English text<!--en-->
 Русский текст<!--ru-->
@@ -82,59 +155,7 @@ English text<!--en-->
 ${widget:import(path='path/to/your/file/another-info.src.md')}
 ```
 
-**Шаг 2: Сгенерируйте файлы**
-
-*Вариант 1:* [Скачайте](#запуск-из-командной-строки) программу и запустите в консоли команду:
-
-```bash
-nrg -f /path/to/README.src.md
-```
-
-*Вариант 2:* [Подключите](#использование-как-плагина-для-maven) к проекту плагин для maven.
-
-**Результат**
-
-<table>
-<tr><th><b>README.md</b></th><th><b>README.ru.md</b></th></tr>
-<tr><td>
-
-```markdown
-[ **en** | [ru](README.ru.md) ]
-
-# Hello, World!
-
-## Table of contents
-
-1. [Part 1](#part-1)
-    1. [Chapter 1](#chapter-1)
-
-## Part 1
-
-### Chapter 1
-
-English text
-```
-
-</td><td>
-
-```markdown
-[ [en](README.md) | **ru** ]
-
-# Привет, Мир!
-
-## Содержание
-
-1. [Part 1](#part-1)
-    1. [Chapter 1](#chapter-1)
-
-## Part 1
-
-### Chapter 1
-
-Русский текст
-```
-
-</td></tr></table>
+</details>
 
 ## Способы запуска программы
 
@@ -580,7 +601,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 21.04.2026 22:45:53
+Last updated: 23.04.2026 08:14:10
 ```
 
 </td></tr>
@@ -593,7 +614,7 @@ ${widget:date(pattern = 'dd.MM.yyyy')}
 </td><td>
 
 ```markdown
-21.04.2026
+23.04.2026
 ```
 
 </td></tr>
@@ -719,4 +740,4 @@ ${widget:todo(text="${en:'Example message', ru:'Пример сообщения'
 
 
 ---
-*Дата последнего обновления: 21.04.2026*
+*Дата последнего обновления: 23.04.2026*
