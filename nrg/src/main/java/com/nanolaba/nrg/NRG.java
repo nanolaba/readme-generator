@@ -1,5 +1,6 @@
 package com.nanolaba.nrg;
 
+import com.nanolaba.logging.ConsoleLogger;
 import com.nanolaba.logging.LOG;
 import com.nanolaba.nrg.core.Generator;
 import com.nanolaba.nrg.core.GeneratorConfig;
@@ -24,6 +25,23 @@ import java.util.Objects;
 import static com.nanolaba.nrg.core.NRGConstants.DEFAULT_CHARSET;
 
 public class NRG {
+
+    public static final String ENV_LOG_LEVEL = "NRG_LOG_LEVEL";
+
+    public enum LogLevel {
+        TRACE, DEBUG, INFO, WARN, ERROR;
+
+        public static LogLevel parse(String raw) {
+            if (raw == null) {
+                return null;
+            }
+            try {
+                return LogLevel.valueOf(raw.trim().toUpperCase());
+            } catch (IllegalArgumentException e) {
+                return null;
+            }
+        }
+    }
 
     private static List<NRGWidget> additionalWidgets = new ArrayList<>();
 
@@ -51,9 +69,15 @@ public class NRG {
         charset.setArgName("charset");
         charset.setConverter(Charset::forName);
         options.addOption(charset);
+        Option logLevel = new Option(null, "log-level", true,
+                "log verbosity: trace|debug|info|warn|error (default: info, overrides $" + ENV_LOG_LEVEL + ")");
+        logLevel.setArgName("level");
+        options.addOption(logLevel);
 
         CommandLineParser parser = new DefaultParser();
         CommandLine cmd = parser.parse(options, args);
+
+        applyLogLevel(resolveLogLevel(cmd.getOptionValue(logLevel)));
 
         if (cmd.hasOption(version)) {
             printVersion();
@@ -66,6 +90,32 @@ public class NRG {
                 generate(cmd.getParsedOptionValue(file), sourceCharset);
             }
         }
+    }
+
+    private static LogLevel resolveLogLevel(String cliValue) throws ParseException {
+        String raw = cliValue;
+        if (raw == null || raw.isEmpty()) {
+            raw = System.getenv(ENV_LOG_LEVEL);
+        }
+        if (raw == null || raw.isEmpty()) {
+            return LogLevel.INFO;
+        }
+        LogLevel parsed = LogLevel.parse(raw);
+        if (parsed == null) {
+            throw new ParseException("Invalid log level: '" + raw + "' (expected trace|debug|info|warn|error)");
+        }
+        return parsed;
+    }
+
+    public static void applyLogLevel(LogLevel level) {
+        int threshold = level.ordinal();
+        ConsoleLogger logger = new ConsoleLogger();
+        logger.setTraceEnabled(LogLevel.TRACE.ordinal() >= threshold);
+        logger.setDebugEnabled(LogLevel.DEBUG.ordinal() >= threshold);
+        logger.setInfoEnabled(LogLevel.INFO.ordinal() >= threshold);
+        logger.setWarnEnabled(LogLevel.WARN.ordinal() >= threshold);
+        logger.setErrorEnabled(true);
+        LOG.init(logger);
     }
 
     private static void generate(File sourceFile, Charset charset) {

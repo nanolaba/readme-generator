@@ -16,6 +16,9 @@ public class NRGMojo extends AbstractMojo {
     @Parameter(property = "charset")
     private String charset = "UTF-8";
 
+    @Parameter(property = "logLevel")
+    private String logLevel;
+
     @Parameter(property = "file")
     public void setFile(String[] files) {
         this.files = files;
@@ -27,7 +30,11 @@ public class NRGMojo extends AbstractMojo {
             getLog().warn("No template files specified");
         } else {
             for (String file : files) {
-                NRG.main("-f", file, "--charset", charset);
+                if (logLevel != null && !logLevel.isEmpty()) {
+                    NRG.main("-f", file, "--charset", charset, "--log-level", logLevel);
+                } else {
+                    NRG.main("-f", file, "--charset", charset);
+                }
             }
         }
     }
