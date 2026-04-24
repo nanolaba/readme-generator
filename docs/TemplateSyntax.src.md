@@ -110,3 +110,47 @@ To escape quotes, use character doubling, for example:<!--en-->
 
 - `\${en:'It''s working'}` → `${en:'It''s working'}`
 - `\${en:"Text with ""quotes"""}` → `${en:"Text with ""quotes"""}`
+
+### ${en:'Ignoring content', ru:'Игнорирование фрагментов'}
+
+To mark a fragment as an author note that must not appear in any generated file,<!--en-->
+use the `nrg.ignore` markers. They work in the root template and inside imported files.<!--en-->
+Чтобы пометить фрагмент как авторскую заметку, которая не должна попасть ни в один<!--ru-->
+сгенерированный файл, используйте маркеры `nrg.ignore`. Они работают как в основном<!--ru-->
+шаблоне, так и внутри импортированных файлов.<!--ru-->
+
+- `<\!--nrg.ignore-->` — ${en:'drops the entire line containing the marker.', ru:'удаляет всю строку, в которой встретился маркер.'}
+- `<\!--nrg.ignore.begin-->` ... `<\!--nrg.ignore.end-->` — ${en:'drops all lines of the block, including the markers themselves.', ru:'удаляет все строки блока, включая сами маркеры.'}
+
+If an `<\!--nrg.ignore.begin-->` has no matching `<\!--nrg.ignore.end-->`, an error is<!--en-->
+logged and everything from the opening marker to the end of the file is dropped. A lone<!--en-->
+`<\!--nrg.ignore.end-->` without a preceding begin is also logged as an error and<!--en-->
+removed from the output.<!--en-->
+Если у `<\!--nrg.ignore.begin-->` нет парного `<\!--nrg.ignore.end-->`, выводится ошибка<!--ru-->
+в лог, а все строки от открывающего маркера до конца файла отбрасываются. Одиночный<!--ru-->
+`<\!--nrg.ignore.end-->` без открывающего тоже логируется как ошибка и удаляется<!--ru-->
+из вывода.<!--ru-->
+
+<table>
+<tr><th>${en:'Usage example', ru:'Пример использования'}</th><th>${en:'Result', ru:'Результат'}</th></tr>
+<tr><td>
+
+```markdown
+Visible line.
+This is a TODO<\!--nrg.ignore-->
+<\!--nrg.ignore.begin-->
+Author notes that should not leak
+into the generated README.
+<\!--nrg.ignore.end-->
+Another visible line.
+```
+
+</td><td>
+
+```markdown
+Visible line.
+Another visible line.
+```
+
+</td></tr>
+</table>
