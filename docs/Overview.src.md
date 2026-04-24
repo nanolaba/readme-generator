@@ -21,7 +21,8 @@ Using ${name}, you can: <!--en-->
 
 - **Multi-language READMEs** - Support for EN/ZN/RU and any other languages<!--en-->
 - **Smart Variables** - Reusable content blocks<!--en-->
-- **Prebuilt Widgets** - Table of contents, file import, TODOs and others<!--en-->
+- **Prebuilt Widgets** - Table of contents, file import, TODOs, alerts, badges, and more<!--en-->
+- **LaTeX math** - Reliable formula rendering via `$…$` / `$$…$$` or an SVG fallback for places where GitHub's native MathJax breaks<!--en-->
 - **Flexible Integration** - CLI, Maven plugin, or Java library <!--en-->
 - **Extensibility** - Supports the ability to create custom widgets for content generation <!--en-->
 
@@ -29,7 +30,8 @@ Using ${name}, you can: <!--en-->
 
 - **README на нескольких языках** - Поддержка EN/ZN/RU и любых других языков<!--ru-->
 - **Переменные** - Повторно используемые блоки контента<!--ru-->
-- **Готовые виджеты** - Оглавление, импорт файлов, TODO-списки и другие<!--ru-->
+- **Готовые виджеты** - Оглавление, импорт файлов, TODO-списки, alert-блоки, бейджи и другие<!--ru-->
+- **LaTeX-формулы** - Надёжный рендеринг через `$…$` / `$$…$$` или SVG-фолбэк для случаев, где встроенный GitHub MathJax не справляется<!--ru-->
 - **Гибкая интеграция** - CLI, Maven-плагин или Java-библиотека <!--ru-->
 - **Расширяемость** - Возможность писать собственные виджеты для генерации контента <!--ru-->
 

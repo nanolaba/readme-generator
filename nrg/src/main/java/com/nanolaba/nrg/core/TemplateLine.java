@@ -16,7 +16,7 @@ import static org.apache.commons.lang3.StringUtils.*;
 
 public class TemplateLine {
 
-    public static final Pattern WIDGET_TAG_PATTERN = Pattern.compile("\\$\\{ *widget:(\\w*)(\\(([^}]*)\\))? *}");
+    public static final Pattern WIDGET_TAG_PATTERN = Pattern.compile("\\$\\{ *widget:(\\w*)(\\(([^)]*)\\))? *}");
 
     private final GeneratorConfig config;
     private final String line;

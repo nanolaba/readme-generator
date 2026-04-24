@@ -30,7 +30,8 @@ Using **Nanolaba Readme Generator (NRG)**, you can:
 
 - **Multi-language READMEs** - Support for EN/ZN/RU and any other languages
 - **Smart Variables** - Reusable content blocks
-- **Prebuilt Widgets** - Table of contents, file import, TODOs and others
+- **Prebuilt Widgets** - Table of contents, file import, TODOs, alerts, badges, and more
+- **LaTeX math** - Reliable formula rendering via `$…$` / `$$…$$` or an SVG fallback for places where GitHub's native MathJax breaks
 - **Flexible Integration** - CLI, Maven plugin, or Java library
 - **Extensibility** - Supports the ability to create custom widgets for content generation
 
@@ -62,6 +63,7 @@ The current development version is **0.4-SNAPSHOT**.
 		2. [Widget 'todo'](#widget-todo)
 		3. [Widget 'alert'](#widget-alert)
 		4. [Widget 'badge'](#widget-badge)
+		5. [Widget 'math'](#widget-math)
 1. [Advanced features](#advanced-features)
 	1. [Creating a widget](#creating-a-widget)
 2. [Related projects](#related-projects)
@@ -736,7 +738,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 24.04.2026 21:36:34
+Last updated: 24.04.2026 23:55:48
 ```
 
 </td></tr>
@@ -889,6 +891,90 @@ and produce no output.
 
 ---
 
+#### Widget 'math'
+
+This component renders LaTeX math formulas. GitHub's inline `$…$` /
+block `$$…$$` support can be flaky around `\text`, punctuation, or
+table cells — when that bites, switch to the SVG renderer to get a
+pre-rendered image via a LaTeX-to-SVG endpoint.
+
+<table>
+<tr>
+<th>Usage example</th>
+<th>Generated Markdown</th>
+<th>Rendered result</th>
+</tr>
+<tr><td>
+
+```markdown
+${widget:math(expr = '\\pi r^2')}
+```
+
+</td><td>
+
+```markdown
+$\pi r^2$
+```
+
+</td><td>
+
+$\pi r^2$
+
+</td></tr>
+<tr><td>
+
+```markdown
+${widget:math(expr = '\\sum_{i=0}^{n} x_i', display = 'block')}
+```
+
+</td><td>
+
+```markdown
+$$\sum_{i=0}^{n} x_i$$
+```
+
+</td><td>
+
+$$\sum_{i=0}^{n} x_i$$
+
+</td></tr>
+<tr><td>
+
+```markdown
+${widget:math(expr = '\\Phi_{\\text{org}}', renderer = 'svg')}
+```
+
+</td><td>
+
+```markdown
+![\Phi_{\text{org}}](https://latex.codecogs.com/svg.image?%5CPhi_%7B%5Ctext%7Borg%7D%7D)
+```
+
+</td><td>
+
+![\Phi_{\text{org}}](https://latex.codecogs.com/svg.image?%5CPhi_%7B%5Ctext%7Borg%7D%7D)
+
+</td></tr>
+</table>
+
+Widget parameters:
+
+|   Name   | Description                                                                                                                                                                                                           |              Default value              |
+|:--------:|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:---------------------------------------:|
+|   expr   | LaTeX source. Every backslash must be doubled (so `\\pi` produces a single `\pi`, `\\sum` produces `\sum`, and so on). Missing or empty values log an error and produce no output.                                    |                                         |
+| display  | `inline` renders `$…$`; `block` renders `$$…$$` for the native renderer, or prepends `\\displaystyle` for the svg renderer. Unknown values log an error and produce no output.                                        |                `inline`                 |
+| renderer | `native` emits GitHub MathJax delimiters. `svg` emits a Markdown image that links to a LaTeX-to-SVG service — use it when native rendering mis-parses the formula. Unknown values log an error and produce no output. |                `native`                 |
+|   alt    | Alt text used by the svg renderer. Defaults to the raw expression.                                                                                                                                                    |                 `expr`                  |
+| service  | URL prefix of the LaTeX-to-SVG endpoint; the URL-encoded expression is appended to it. Used only by the svg renderer.                                                                                                 | `https://latex.codecogs.com/svg.image?` |
+
+Tips / caveats:
+
+- Curly braces `{` / `}` inside `expr` work as in LaTeX (subscripts, superscripts, `\\text{…}`, `\\frac{…}{…}`).
+- Raw `(` and `)` are not allowed inside `expr` because the widget-tag parser uses them as delimiters — wrap them with `\\left(` / `\\right)` for LaTeX grouping.
+- The svg renderer depends on an external service, so generated images break if the endpoint disappears. Self-host or pin a known-good URL via `service` for long-lived docs.
+- Pre-rendering, MathML output, and LaTeX linting are out of scope.
+
+---
 
 ## Advanced features
 
@@ -997,8 +1083,10 @@ This section summarises the main user-visible changes in each release. For full 
 - **Custom widgets in the Maven plugin**: the `nrg-maven-plugin` gains a `<widgets>` parameter; invalid entries fail the build with a descriptive `MojoExecutionException`. POM widgets override template-declared ones on name collision.
 - Widget resolution now prefers the last registration on name collision, so user widgets shadow built-ins with the same name.
 - **`--check` flag**: CI-friendly verification mode that compares generated output against files on disk, prints a diff to stderr on mismatch, and exits with status `1`. The `nrg-maven-plugin` exposes it via `<check>` and fails the build with a `MojoExecutionException`.
-- **`alert` widget**: renders GitHub-flavored alert blocks (`> [!NOTE]`, `> [!WARNING]`, `> [!TIP]`, `> [!IMPORTANT]`, `> [!CAUTION]`) from a single `` call, with `\n` escapes for multi-line body text.
+- **`alert` widget**: renders GitHub-flavored alert blocks (`> [!NOTE]`, `> [!WARNING]`, `> [!TIP]`, `> [!IMPORTANT]`, `> [!CAUTION]`) from a single `${widget:alert(type='...', text='...')}` call, with `\n` escapes for multi-line body text.
 - **`badge` widget**: renders shields.io badges for `maven-central`, `license`, `github-release`, `github-stars`, and a free-form `custom` variant — no more hand-crafted URLs.
+- **`math` widget**: renders LaTeX formulas via GitHub's native `$…$` / `$$…$$` delimiters or as `![alt](…)` images through a LaTeX-to-SVG service (default: `latex.codecogs.com`).
+- Widget parameters may now contain `{` and `}` (LaTeX-friendly); the tag regex now delimits parameters by `(` / `)` instead of `}`.
 - Fixed: the `languages` widget now produces correct link targets when rendered inside an imported fragment.
 
 ### 0.3
