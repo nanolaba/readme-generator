@@ -46,3 +46,21 @@ Generator generator = new Generator(
 
 Collection<GenerationResult> results = generator.getResults();
 ```
+
+**${en:'Option 3', ru:'Вариант 3'}:** ${en:'register widgets directly from the template via the `nrg.widgets` property, or from the CLI via `--widgets` (with `--classpath` pointing to the JAR that contains the classes):', ru:'регистрация виджетов прямо из шаблона при помощи свойства `nrg.widgets` либо из CLI через `--widgets` (при необходимости добавив JAR-файлы через `--classpath`):'}
+
+```markdown
+<!--\@nrg.widgets=com.acme.widgets.Tag,com.acme.widgets.Banner-->
+```
+
+```bash
+nrg --classpath my-widgets.jar --widgets com.acme.widgets.Tag,com.acme.widgets.Banner -f README.src.md
+```
+
+Each widget class must be public and expose a public no-argument<!--en-->
+constructor. NRG falls back to a helpful error message on the console<!--en-->
+if the class cannot be found, doesn't implement `NRGWidget`, or throws<!--en-->
+during instantiation.<!--en-->
+Каждый класс-виджет должен быть публичным и иметь публичный конструктор<!--ru-->
+без аргументов. Если класс не найден, не реализует `NRGWidget` или выбрасывает<!--ru-->
+исключение при создании, NRG выводит понятное сообщение в консоль.<!--ru-->

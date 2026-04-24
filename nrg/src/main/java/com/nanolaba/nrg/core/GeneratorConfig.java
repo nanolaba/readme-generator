@@ -14,8 +14,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static com.nanolaba.nrg.core.NRGConstants.PROPERTY_DEFAULT_LANGUAGE;
-import static com.nanolaba.nrg.core.NRGConstants.PROPERTY_LANGUAGES;
+import static com.nanolaba.nrg.core.NRGConstants.*;
 
 public class GeneratorConfig {
 
@@ -28,6 +27,7 @@ public class GeneratorConfig {
     private File rootSourceFile;
     private List<String> languages = Collections.singletonList("en");
     private String defaultLanguage;
+    private String widgetsProperty;
     private boolean rootGenerator = true;
 
 
@@ -51,6 +51,7 @@ public class GeneratorConfig {
         getSourceLinesStream().forEach(line -> readPropertiesFromLine(line, defaultLanguage));
 
         initDefaultWidgets(this.widgets);
+        this.widgets.addAll(NRGUtil.loadWidgets(widgetsProperty, null));
         if (widgets != null) {
             this.widgets.addAll(widgets);
         }
@@ -74,6 +75,10 @@ public class GeneratorConfig {
         String defaultLang = line.getProperty(PROPERTY_DEFAULT_LANGUAGE, null);
         if (defaultLang != null && !defaultLang.isEmpty()) {
             defaultLanguage = defaultLang;
+        }
+        String widgetsProp = line.getProperty(PROPERTY_WIDGETS, null);
+        if (widgetsProp != null && !widgetsProp.isEmpty()) {
+            widgetsProperty = widgetsProp;
         }
     }
 

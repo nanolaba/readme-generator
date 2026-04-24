@@ -5,6 +5,7 @@ import com.nanolaba.logging.LOG;
 import com.nanolaba.nrg.core.Generator;
 import com.nanolaba.nrg.core.GeneratorConfig;
 import com.nanolaba.nrg.core.NRGConstants;
+import com.nanolaba.nrg.core.NRGUtil;
 import com.nanolaba.nrg.widgets.NRGWidget;
 import com.nanolaba.sugar.Code;
 import org.apache.commons.cli.*;
@@ -15,7 +16,9 @@ import org.apache.commons.lang3.StringUtils;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLClassLoader;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -80,6 +83,14 @@ public class NRG {
                 "when combined with --stdout, print only the given language variant");
         language.setArgName("code");
         options.addOption(language);
+        Option widgets = new Option(null, "widgets", true,
+                "comma-separated fully-qualified class names of custom NRGWidget implementations");
+        widgets.setArgName("FQCN,FQCN,...");
+        options.addOption(widgets);
+        Option classpath = new Option(null, "classpath", true,
+                "additional JARs or directories (" + File.pathSeparator + "-separated) to resolve --widgets classes");
+        classpath.setArgName("path");
+        options.addOption(classpath);
 
         CommandLineParser parser = new DefaultParser();
         CommandLine cmd = parser.parse(options, args);
@@ -94,6 +105,13 @@ public class NRG {
             Charset sourceCharset = cmd.getParsedOptionValue(charset, DEFAULT_CHARSET);
             LOG.debug("Source charset: {}", sourceCharset.displayName());
 
+            ClassLoader extraCl = buildExtraClassLoader(cmd.getOptionValue(classpath));
+            if (extraCl != null) {
+                Thread.currentThread().setContextClassLoader(extraCl);
+            }
+
+            List<NRGWidget> cliWidgets = NRGUtil.loadWidgets(cmd.getOptionValue(widgets), extraCl);
+
             boolean toStdout = cmd.hasOption(stdout);
             String langValue = cmd.getOptionValue(language);
             if (langValue != null && !toStdout) {
@@ -102,9 +120,36 @@ public class NRG {
             }
 
             if (cmd.hasOption(file)) {
-                generate(cmd.getParsedOptionValue(file), sourceCharset, toStdout, langValue);
+                generate(cmd.getParsedOptionValue(file), sourceCharset, toStdout, langValue, cliWidgets);
             }
         }
+    }
+
+    private static ClassLoader buildExtraClassLoader(String classpathValue) {
+        if (classpathValue == null || classpathValue.isEmpty()) {
+            return null;
+        }
+        List<URL> urls = new ArrayList<>();
+        for (String entry : classpathValue.split(java.util.regex.Pattern.quote(File.pathSeparator))) {
+            String trimmed = entry.trim();
+            if (trimmed.isEmpty()) {
+                continue;
+            }
+            File f = new File(trimmed);
+            if (!f.exists()) {
+                LOG.warn("--classpath entry does not exist: {}", f.getAbsolutePath());
+                continue;
+            }
+            try {
+                urls.add(f.toURI().toURL());
+            } catch (MalformedURLException e) {
+                LOG.error(e, () -> "Cannot convert --classpath entry to URL: " + trimmed);
+            }
+        }
+        if (urls.isEmpty()) {
+            return null;
+        }
+        return new URLClassLoader(urls.toArray(new URL[0]), Thread.currentThread().getContextClassLoader());
     }
 
     private static LogLevel resolveLogLevel(String cliValue) throws ParseException {
@@ -133,10 +178,15 @@ public class NRG {
         LOG.init(logger);
     }
 
-    private static void generate(File sourceFile, Charset charset, boolean toStdout, String languageFilter) {
+    private static void generate(File sourceFile, Charset charset, boolean toStdout, String languageFilter, List<NRGWidget> cliWidgets) {
         if (sourceFile.exists()) {
             Code.run(() -> {
-                Generator generator = new Generator(sourceFile, charset, additionalWidgets);
+                List<NRGWidget> widgets = new ArrayList<>();
+                if (cliWidgets != null) {
+                    widgets.addAll(cliWidgets);
+                }
+                widgets.addAll(additionalWidgets);
+                Generator generator = new Generator(sourceFile, charset, widgets);
                 if (toStdout) {
                     printToStdout(generator, languageFilter);
                 } else {
