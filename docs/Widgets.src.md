@@ -15,3 +15,4 @@ ${widget:import(path='widgets/WidgetTODO.src.md')}
 ${widget:import(path='widgets/WidgetAlert.src.md')}
 ${widget:import(path='widgets/WidgetBadge.src.md')}
 ${widget:import(path='widgets/WidgetMath.src.md')}
+${widget:import(path='widgets/WidgetExec.src.md')}

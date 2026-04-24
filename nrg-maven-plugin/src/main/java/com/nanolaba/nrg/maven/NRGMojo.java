@@ -29,6 +29,9 @@ public class NRGMojo extends AbstractMojo {
     @Parameter(property = "check", defaultValue = "false")
     private boolean check;
 
+    @Parameter(property = "allowExec", defaultValue = "false")
+    private boolean allowExec;
+
     @Parameter(property = "file")
     public void setFile(String[] files) {
         this.files = files;
@@ -40,6 +43,10 @@ public class NRGMojo extends AbstractMojo {
 
     public void setCheck(boolean check) {
         this.check = check;
+    }
+
+    public void setAllowExec(boolean allowExec) {
+        this.allowExec = allowExec;
     }
 
     @Override
@@ -68,6 +75,9 @@ public class NRGMojo extends AbstractMojo {
             }
             if (check) {
                 args.add("--check");
+            }
+            if (allowExec) {
+                args.add("--allow-exec");
             }
             int code = NRG.run(args.toArray(new String[0]));
             if (check && code != 0) {

@@ -104,6 +104,9 @@ public class NRG {
         Option check = new Option(null, "check", false,
                 "verify generated output matches files on disk; exit 1 and print a diff when they differ");
         options.addOption(check);
+        Option allowExec = new Option(null, "allow-exec", false,
+                "allow the 'exec' widget to run external commands (disabled by default)");
+        options.addOption(allowExec);
 
         CommandLineParser parser = new DefaultParser();
         CommandLine cmd = parser.parse(options, args);
@@ -141,7 +144,8 @@ public class NRG {
         }
 
         if (cmd.hasOption(file)) {
-            return generate(cmd.getParsedOptionValue(file), sourceCharset, toStdout, langValue, cliWidgets, checkMode);
+            return generate(cmd.getParsedOptionValue(file), sourceCharset, toStdout, langValue, cliWidgets, checkMode,
+                    cmd.hasOption(allowExec));
         }
         return 0;
     }
@@ -200,7 +204,7 @@ public class NRG {
     }
 
     private static int generate(File sourceFile, Charset charset, boolean toStdout, String languageFilter,
-                                List<NRGWidget> cliWidgets, boolean checkMode) {
+                                List<NRGWidget> cliWidgets, boolean checkMode, boolean allowExec) {
         if (!sourceFile.exists()) {
             LOG.error("Source file does not exist: {}", sourceFile.getAbsolutePath());
             return 1;
@@ -212,6 +216,7 @@ public class NRG {
             }
             widgets.addAll(additionalWidgets);
             Generator generator = new Generator(sourceFile, charset, widgets);
+            generator.getConfig().setExecAllowed(allowExec);
             if (checkMode) {
                 return performCheck(generator);
             }

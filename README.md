@@ -64,6 +64,7 @@ The current development version is **0.4-SNAPSHOT**.
 		3. [Widget 'alert'](#widget-alert)
 		4. [Widget 'badge'](#widget-badge)
 		5. [Widget 'math'](#widget-math)
+		6. [Widget 'exec'](#widget-exec)
 1. [Advanced features](#advanced-features)
 	1. [Creating a widget](#creating-a-widget)
 2. [Related projects](#related-projects)
@@ -738,7 +739,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 24.04.2026 23:55:48
+Last updated: 25.04.2026 01:18:55
 ```
 
 </td></tr>
@@ -751,7 +752,7 @@ ${widget:date(pattern = 'dd.MM.yyyy')}
 </td><td>
 
 ```markdown
-24.04.2026
+25.04.2026
 ```
 
 </td></tr>
@@ -976,6 +977,83 @@ Tips / caveats:
 
 ---
 
+#### Widget 'exec'
+
+This component runs an external command and embeds its stdout
+into the generated document — useful for pasting in `--help` output,
+version dumps, a CLI banner, or whatever else a build tool will print.
+
+> [!WARNING]
+> **Opt-in for security.** Execution is disabled by default.
+> The widget only runs commands when the caller explicitly asks for it
+> via the `--allow-exec` CLI flag (or `<allowExec>true</allowExec>` in
+> the Maven plugin). Running `nrg` over an untrusted template without
+> that flag is safe: every `${widget:exec(...)}` call logs an error and
+> renders empty output.
+
+
+<table>
+<tr><th>Usage example</th><th>Behaviour</th></tr>
+<tr><td>
+
+```markdown
+${widget:exec(cmd = 'java -jar nrg.jar --help')}
+```
+
+</td><td>
+
+Runs `java -jar nrg.jar --help`, inlines stdout verbatim (with trailing whitespace trimmed).
+
+</td></tr>
+<tr><td>
+
+```markdown
+${widget:exec(cmd = 'git rev-parse --short HEAD', codeblock = 'text')}
+```
+
+</td><td>
+
+Runs the command and wraps stdout in a fenced code block tagged `text`.
+
+</td></tr>
+<tr><td>
+
+```markdown
+${widget:exec(cmd = './scripts/list-langs.sh', cwd = 'docs', timeout = '5')}
+```
+
+</td><td>
+
+Runs the script from the `docs/` sub-directory of the source file, kills it if it exceeds 5 seconds.
+
+</td></tr>
+</table>
+
+Widget parameters:
+
+|   Name    | Description                                                                                                                                                                                |     Default value     |
+|:---------:|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:---------------------:|
+|    cmd    | Command line. Whitespace-split into argv; **no shell interpolation**, so pipes, redirects, and variable expansion do not work. Missing or blank values log an error and produce no output. |                       |
+|    cwd    | Working directory. Relative paths are resolved against the source-file directory; absolute paths are used as-is. Missing directory logs an error and produces no output.                   | source-file directory |
+|  timeout  | Maximum duration in seconds (positive integer). The subprocess is force-killed on timeout and a warning is logged; output is empty.                                                        |         `30`          |
+|   trim    | `true` strips trailing whitespace/newlines from stdout; `false` preserves them.                                                                                                            |        `true`         |
+| codeblock | When present, wraps stdout in a fenced code block with this language tag (`codeblock=""` wraps without a tag). When absent, stdout is inlined raw.                                         | absent (no wrapping)  |
+
+Enabling execution:
+
+- CLI: pass the `--allow-exec` flag to the `nrg` command.
+- Maven: add `<allowExec>true</allowExec>` to the `nrg-maven-plugin` configuration (or set the `-DallowExec=true` property).
+- Library: call `generator.getConfig().setExecAllowed(true)` before the first `getResult(...)` call.
+
+Error handling:
+
+- Non-zero exit → error in the log (with exit code and stderr snippet) + empty output.
+- Command not found / IO error → error in the log + empty output.
+- Timeout → warning in the log + empty output.
+- Invalid `timeout` or `trim` → error in the log + empty output (command is not run).
+
+---
+
 ## Advanced features
 
 ### Creating a widget
@@ -1086,6 +1164,7 @@ This section summarises the main user-visible changes in each release. For full 
 - **`alert` widget**: renders GitHub-flavored alert blocks (`> [!NOTE]`, `> [!WARNING]`, `> [!TIP]`, `> [!IMPORTANT]`, `> [!CAUTION]`) from a single `${widget:alert(type='...', text='...')}` call, with `\n` escapes for multi-line body text.
 - **`badge` widget**: renders shields.io badges for `maven-central`, `license`, `github-release`, `github-stars`, and a free-form `custom` variant — no more hand-crafted URLs.
 - **`math` widget**: renders LaTeX formulas via GitHub's native `$…$` / `$$…$$` delimiters or as `![alt](…)` images through a LaTeX-to-SVG service (default: `latex.codecogs.com`).
+- **`exec` widget (opt-in)**: runs an external command and embeds its stdout. Disabled by default; enable with `--allow-exec` (CLI) or `<allowExec>true</allowExec>` (Maven plugin). Supports `cwd`, `timeout`, `trim`, and `codeblock` parameters.
 - Widget parameters may now contain `{` and `}` (LaTeX-friendly); the tag regex now delimits parameters by `(` / `)` instead of `}`.
 - Fixed: the `languages` widget now produces correct link targets when rendered inside an imported fragment.
 
@@ -1141,4 +1220,4 @@ We welcome all constructive feedback to make **NRG** better!
 
 
 ---
-*Last updated: 24.04.2026*
+*Last updated: 25.04.2026*
