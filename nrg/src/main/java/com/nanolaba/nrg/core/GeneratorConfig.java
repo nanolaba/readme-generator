@@ -29,6 +29,7 @@ public class GeneratorConfig {
     private String defaultLanguage;
     private String widgetsProperty;
     private boolean rootGenerator = true;
+    private boolean execAllowed = false;
 
 
     public GeneratorConfig(File sourceFile, String templateText, List<NRGWidget> widgets) {
@@ -95,6 +96,7 @@ public class GeneratorConfig {
         widgets.add(new AlertWidget());
         widgets.add(new BadgeWidget());
         widgets.add(new MathWidget());
+        widgets.add(new ExecWidget());
     }
 
     private void printConfiguration() {
@@ -166,5 +168,13 @@ public class GeneratorConfig {
 
     public void setRootGenerator(boolean rootGenerator) {
         this.rootGenerator = rootGenerator;
+    }
+
+    public boolean isExecAllowed() {
+        return execAllowed;
+    }
+
+    public void setExecAllowed(boolean execAllowed) {
+        this.execAllowed = execAllowed;
     }
 }
