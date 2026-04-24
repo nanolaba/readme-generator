@@ -12,3 +12,4 @@ ${widget:import(path='widgets/WidgetImport.src.md')}
 ${widget:import(path='widgets/WidgetTOC.src.md')}
 ${widget:import(path='widgets/WidgetDate.src.md')}
 ${widget:import(path='widgets/WidgetTODO.src.md')}
+${widget:import(path='widgets/WidgetAlert.src.md')}

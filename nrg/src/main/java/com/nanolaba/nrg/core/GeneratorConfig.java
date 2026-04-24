@@ -92,6 +92,7 @@ public class GeneratorConfig {
         widgets.add(new TableOfContentsWidget());
         widgets.add(new DateWidget());
         widgets.add(new TodoWidget());
+        widgets.add(new AlertWidget());
     }
 
     private void printConfiguration() {

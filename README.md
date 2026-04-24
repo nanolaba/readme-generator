@@ -34,7 +34,8 @@ Using **Nanolaba Readme Generator (NRG)**, you can:
 - **Flexible Integration** - CLI, Maven plugin, or Java library
 - **Extensibility** - Supports the ability to create custom widgets for content generation
 
-> 💡 **Nanolaba Readme Generator (NRG)** is written in Java and requires **Java 8** or higher to run.
+> [!NOTE]
+> **Nanolaba Readme Generator (NRG)** is written in Java and requires **Java 8** or higher to run.
 
 The latest stable version of the program is **0.3**.
 The current development version is **0.4-SNAPSHOT**.
@@ -60,6 +61,7 @@ The current development version is **0.4-SNAPSHOT**.
 		1. [Widget 'tableOfContents'](#widget-tableofcontents)
 		1. [Widget 'date'](#widget-date)
 		2. [Widget 'todo'](#widget-todo)
+		3. [Widget 'alert'](#widget-alert)
 1. [Advanced features](#advanced-features)
 	1. [Creating a widget](#creating-a-widget)
 2. [Related projects](#related-projects)
@@ -734,7 +736,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 24.04.2026 19:41:59
+Last updated: 24.04.2026 20:37:37
 ```
 
 </td></tr>
@@ -800,6 +802,53 @@ Widget parameters:
 |:----:|----------------|:-----------------:|
 | text | Displayed text | `Not done yet...` |
 
+#### Widget 'alert'
+
+This component renders a GitHub-flavored alert block
+(`> [!NOTE]`, `> [!WARNING]`, and so on) so you don't have to
+hand-type blockquote syntax in your source templates.
+
+<table>
+<tr><th>Usage example</th><th>Result</th></tr>
+<tr><td>
+
+```markdown
+${widget:alert(type = 'note', text = 'Hello')}
+```
+
+</td><td>
+
+```markdown
+> [!NOTE]
+> Hello
+```
+
+</td></tr>
+<tr><td>
+
+```markdown
+${widget:alert(type = 'warning', text = 'Line 1\nLine 2')}
+```
+
+</td><td>
+
+```markdown
+> [!WARNING]
+> Line 1
+> Line 2
+```
+
+</td></tr>
+</table>
+
+Widget parameters:
+
+| Name | Description                                                                                                                                                                                | Default value |
+|:----:|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:-------------:|
+| type | Alert kind: `note`, `tip`, `important`, `warning`, or `caution` (case-insensitive). Unknown values log an error and produce empty output.                                                  |               |
+| text | ...` for language-specific text.', ru:'Текст блока. Используйте `\\n` для перевода строки и `\\\\` для литерального обратного слэша. Совместимо с `\${en:"...", ru:"..."}` для перевода.'} |     `''`      |
+
+---
 
 ## Advanced features
 
@@ -908,6 +957,7 @@ This section summarises the main user-visible changes in each release. For full 
 - **Custom widgets in the Maven plugin**: the `nrg-maven-plugin` gains a `<widgets>` parameter; invalid entries fail the build with a descriptive `MojoExecutionException`. POM widgets override template-declared ones on name collision.
 - Widget resolution now prefers the last registration on name collision, so user widgets shadow built-ins with the same name.
 - **`--check` flag**: CI-friendly verification mode that compares generated output against files on disk, prints a diff to stderr on mismatch, and exits with status `1`. The `nrg-maven-plugin` exposes it via `<check>` and fails the build with a `MojoExecutionException`.
+- **`alert` widget**: renders GitHub-flavored alert blocks (`> [!NOTE]`, `> [!WARNING]`, `> [!TIP]`, `> [!IMPORTANT]`, `> [!CAUTION]`) from a single `` call, with `\n` escapes for multi-line body text.
 - Fixed: the `languages` widget now produces correct link targets when rendered inside an imported fragment.
 
 ### 0.3
