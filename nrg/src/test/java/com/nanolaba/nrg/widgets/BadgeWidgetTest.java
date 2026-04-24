@@ -112,6 +112,40 @@ class BadgeWidgetTest extends DefaultNRGTest {
     }
 
     @Test
+    public void testGithubWorkflowWithExplicitName() {
+        String body = render("${widget:badge(type='github-workflow', repo='nanolaba/readme-generator', workflow='ci.yml', name='CI')}");
+        assertTrue(body.contains(
+                "[![CI](https://github.com/nanolaba/readme-generator/actions/workflows/ci.yml/badge.svg)]" +
+                        "(https://github.com/nanolaba/readme-generator/actions/workflows/ci.yml)"), body);
+    }
+
+    @Test
+    public void testGithubWorkflowDefaultsNameToFilenameWithoutExtension() {
+        String body = render("${widget:badge(type='github-workflow', repo='nanolaba/readme-generator', workflow='ci.yml')}");
+        assertTrue(body.contains("[![ci]"), body);
+    }
+
+    @Test
+    public void testGithubWorkflowWithBranchQuery() {
+        String body = render("${widget:badge(type='github-workflow', repo='nanolaba/readme-generator', workflow='ci.yml', branch='main', name='CI')}");
+        assertTrue(body.contains("actions/workflows/ci.yml/badge.svg?branch=main"), body);
+    }
+
+    @Test
+    public void testGithubWorkflowMissingWorkflow() {
+        String body = render("${widget:badge(type='github-workflow', repo='nanolaba/readme-generator')}");
+        assertFalse(body.contains("shields.io") || body.contains("badge.svg"));
+        assertTrue(getErrAndClear().contains("requires non-empty parameter 'workflow'"));
+    }
+
+    @Test
+    public void testGithubWorkflowInvalidRepo() {
+        String body = render("${widget:badge(type='github-workflow', repo='bad', workflow='ci.yml')}");
+        assertFalse(body.contains("badge.svg"));
+        assertTrue(getErrAndClear().contains("must be 'owner/name'"));
+    }
+
+    @Test
     public void testShieldsEscapeUnit() {
         assertEquals("Apache--2.0", BadgeWidget.shieldsEscape("Apache-2.0"));
         assertEquals("foo__bar", BadgeWidget.shieldsEscape("foo_bar"));
