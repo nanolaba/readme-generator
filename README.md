@@ -736,7 +736,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 24.04.2026 21:00:47
+Last updated: 24.04.2026 21:03:59
 ```
 
 </td></tr>
@@ -923,25 +923,42 @@ ${widget:badge(type = 'custom', label = 'docs', message = 'up to date', color = 
 ```
 
 </td></tr>
+<tr><td>
+
+```markdown
+${widget:badge(type = 'github-workflow', repo = 'nanolaba/readme-generator', workflow = 'ci.yml', name = 'CI')}
+```
+
+</td><td>
+
+```markdown
+[![CI](https://github.com/nanolaba/readme-generator/actions/workflows/ci.yml/badge.svg)](https://github.com/nanolaba/readme-generator/actions/workflows/ci.yml)
+```
+
+</td></tr>
 </table>
 
 Widget parameters:
 
-|    Name     | Description                                                                     |           Required for           |
-|:-----------:|---------------------------------------------------------------------------------|:--------------------------------:|
-|    type     | One of: `maven-central`, `license`, `github-release`, `github-stars`, `custom`. |               all                |
-| coordinates | Maven coordinates `groupId:artifactId`.                                         |         `maven-central`          |
-|    value    | License identifier (e.g. `Apache-2.0`, `MIT`).                                  |            `license`             |
-|    repo     | GitHub repository `owner/name`.                                                 | `github-release`, `github-stars` |
-|    label    | Left-side label of the badge.                                                   |             `custom`             |
-|   message   | Right-side text of the badge.                                                   |             `custom`             |
-|    color    | Badge color (`brightgreen`, `blue`, hex, …).                                    |             `custom`             |
-|     url     | Optional link target. Without it the badge is non-clickable.                    |                —                 |
+|    Name     | Description                                                                                        |                    Required for                     |
+|:-----------:|----------------------------------------------------------------------------------------------------|:---------------------------------------------------:|
+|    type     | One of: `maven-central`, `license`, `github-release`, `github-stars`, `github-workflow`, `custom`. |                         all                         |
+| coordinates | Maven coordinates `groupId:artifactId`.                                                            |                   `maven-central`                   |
+|    value    | License identifier (e.g. `Apache-2.0`, `MIT`).                                                     |                      `license`                      |
+|    repo     | GitHub repository `owner/name`.                                                                    | `github-release`, `github-stars`, `github-workflow` |
+|  workflow   | Workflow filename (e.g. `ci.yml`).                                                                 |                  `github-workflow`                  |
+|    name     | Optional alt text for the workflow badge; defaults to the workflow filename without its extension. |                          —                          |
+|   branch    | Optional branch filter appended as `?branch=...`.                                                  |                          —                          |
+|    label    | Left-side label of the badge.                                                                      |                      `custom`                       |
+|   message   | Right-side text of the badge.                                                                      |                      `custom`                       |
+|    color    | Badge color (`brightgreen`, `blue`, hex, …).                                                       |                      `custom`                       |
+|     url     | Optional link target. Without it the badge is non-clickable.                                       |                          —                          |
 
 Unknown `type` values and missing required parameters log an error
 and produce no output.
 
 ---
+
 
 ## Advanced features
 

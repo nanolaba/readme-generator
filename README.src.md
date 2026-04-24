@@ -9,7 +9,7 @@ ${widget:languages}
 
 # Nanolaba Readme Generator (NRG)${en:' - Automated Markdown Documentation Tool', ru:''}
 
-[![CI](https://github.com/nanolaba/readme-generator/actions/workflows/ci.yml/badge.svg)](https://github.com/nanolaba/readme-generator/actions/workflows/ci.yml)
+${widget:badge(type='github-workflow', repo='nanolaba/readme-generator', workflow='ci.yml', name='CI')}
 ${widget:badge(type='maven-central', coordinates='com.nanolaba:readme-generator')}
 ${widget:badge(type='license', value='Apache 2.0', url='https://www.apache.org/licenses/LICENSE-2.0')}
 ${widget:badge(type='custom', label='Java', message='8+', color='orange')}

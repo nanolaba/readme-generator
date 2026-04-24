@@ -739,7 +739,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 24.04.2026 21:00:47
+Last updated: 24.04.2026 21:03:59
 ```
 
 </td></tr>
@@ -926,25 +926,42 @@ ${widget:badge(type = 'custom', label = 'docs', message = 'up to date', color = 
 ```
 
 </td></tr>
+<tr><td>
+
+```markdown
+${widget:badge(type = 'github-workflow', repo = 'nanolaba/readme-generator', workflow = 'ci.yml', name = 'CI')}
+```
+
+</td><td>
+
+```markdown
+[![CI](https://github.com/nanolaba/readme-generator/actions/workflows/ci.yml/badge.svg)](https://github.com/nanolaba/readme-generator/actions/workflows/ci.yml)
+```
+
+</td></tr>
 </table>
 
 Свойства виджета:
 
-| Наименование | Описание                                                                         |         Обязательно для          |
-|:------------:|----------------------------------------------------------------------------------|:--------------------------------:|
-|     type     | Одно из: `maven-central`, `license`, `github-release`, `github-stars`, `custom`. |               все                |
-| coordinates  | Координаты Maven `groupId:artifactId`.                                           |         `maven-central`          |
-|    value     | Идентификатор лицензии (например, `Apache-2.0`, `MIT`).                          |            `license`             |
-|     repo     | Репозиторий GitHub `owner/name`.                                                 | `github-release`, `github-stars` |
-|    label     | Левая подпись бейджа.                                                            |             `custom`             |
-|   message    | Правая часть (значение) бейджа.                                                  |             `custom`             |
-|    color     | Цвет бейджа (`brightgreen`, `blue`, hex, …).                                     |             `custom`             |
-|     url      | Необязательная ссылка. Без неё бейдж не кликабелен.                              |                —                 |
+| Наименование | Описание                                                                                            |                   Обязательно для                   |
+|:------------:|-----------------------------------------------------------------------------------------------------|:---------------------------------------------------:|
+|     type     | Одно из: `maven-central`, `license`, `github-release`, `github-stars`, `github-workflow`, `custom`. |                         все                         |
+| coordinates  | Координаты Maven `groupId:artifactId`.                                                              |                   `maven-central`                   |
+|    value     | Идентификатор лицензии (например, `Apache-2.0`, `MIT`).                                             |                      `license`                      |
+|     repo     | Репозиторий GitHub `owner/name`.                                                                    | `github-release`, `github-stars`, `github-workflow` |
+|   workflow   | Имя файла workflow (например, `ci.yml`).                                                            |                  `github-workflow`                  |
+|     name     | Необязательный alt-текст для workflow-бейджа; по умолчанию — имя файла без расширения.              |                          —                          |
+|    branch    | Необязательный фильтр ветки — добавляется как `?branch=...`.                                        |                          —                          |
+|    label     | Левая подпись бейджа.                                                                               |                      `custom`                       |
+|   message    | Правая часть (значение) бейджа.                                                                     |                      `custom`                       |
+|    color     | Цвет бейджа (`brightgreen`, `blue`, hex, …).                                                        |                      `custom`                       |
+|     url      | Необязательная ссылка. Без неё бейдж не кликабелен.                                                 |                          —                          |
 
 Неизвестные значения `type` и отсутствие обязательных параметров
 приводят к ошибке в логе и пустому выводу.
 
 ---
+
 
 ## Расширенные возможности
 

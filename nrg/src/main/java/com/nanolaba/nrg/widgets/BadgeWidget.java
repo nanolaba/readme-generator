@@ -31,10 +31,12 @@ public class BadgeWidget extends DefaultWidget {
                 return renderGithubRelease(p);
             case "github-stars":
                 return renderGithubStars(p);
+            case "github-workflow":
+                return renderGithubWorkflow(p);
             case "custom":
                 return renderCustom(p);
             default:
-                LOG.error("badge widget: unknown type '{}' (expected maven-central|license|github-release|github-stars|custom)", type);
+                LOG.error("badge widget: unknown type '{}' (expected maven-central|license|github-release|github-stars|github-workflow|custom)", type);
                 return "";
         }
     }
@@ -81,6 +83,29 @@ public class BadgeWidget extends DefaultWidget {
         String img = "https://img.shields.io/github/stars/" + repo + "?style=social";
         String link = "https://github.com/" + repo;
         return "[![GitHub stars](" + img + ")](" + link + ")";
+    }
+
+    private String renderGithubWorkflow(Map<String, String> p) {
+        String repo = requireRepo(p, "github-workflow");
+        if (repo == null) return "";
+        String workflow = require(p, "workflow", "github-workflow");
+        if (workflow == null) return "";
+        String name = p.get("name");
+        if (name == null || name.isEmpty()) {
+            name = stripWorkflowExtension(workflow);
+        }
+        String base = "https://github.com/" + repo + "/actions/workflows/" + workflow;
+        String img = base + "/badge.svg";
+        String branch = p.get("branch");
+        if (branch != null && !branch.isEmpty()) {
+            img += "?branch=" + branch;
+        }
+        return "[![" + name + "](" + img + ")](" + base + ")";
+    }
+
+    private static String stripWorkflowExtension(String workflow) {
+        int dot = workflow.lastIndexOf('.');
+        return dot > 0 ? workflow.substring(0, dot) : workflow;
     }
 
     private String renderCustom(Map<String, String> p) {
