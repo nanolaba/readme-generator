@@ -39,6 +39,7 @@ Using **Nanolaba Readme Generator (NRG)**, you can:
 The latest stable version of the program is **0.3**.
 The current development version is **0.4-SNAPSHOT**.
 
+
 ## Table of contents
 1. [Quick start](#quick-start)
 1. [Usage](#usage)
@@ -635,12 +636,13 @@ ${widget:tableOfContents(title = "${en:'Table of contents', ru:'Содержан
 
 Widget parameters:
 
-|   Name    | Description                                                                                                          | Default value |
-|:---------:|----------------------------------------------------------------------------------------------------------------------|:-------------:|
-|   title   | Title of the table of contents                                                                                       |               |
-|  ordered  | Should the items in the table of contents be numbered                                                                |    `false`    |
-| min-depth | Minimum heading level to include (1–6). Headings shallower than this are skipped. 1 includes top-level `#` headings. |      `2`      |
-| max-depth | Maximum heading level to include (1–6). Headings deeper than this are skipped.                                       |      `6`      |
+|   Name    | Description                                                                                                                                                                      | Default value |
+|:---------:|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:-------------:|
+|   title   | Title of the table of contents                                                                                                                                                   |               |
+|  ordered  | Should the items in the table of contents be numbered                                                                                                                            |    `false`    |
+| min-depth | Minimum heading level to include (1–6). Headings shallower than this are skipped. 1 includes top-level `#` headings.                                                             |      `2`      |
+| max-depth | Maximum heading level to include (1–6). Headings deeper than this are skipped.                                                                                                   |      `6`      |
+| min-items | Minimum number of headings (after depth and `<!--toc.ignore-->` filters) required to render the widget. Below this threshold the widget produces no output (no title, no items). |      `1`      |
 
 ---
 
@@ -659,7 +661,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 24.04.2026 17:59:14
+Last updated: 24.04.2026 18:06:24
 ```
 
 </td></tr>
@@ -810,6 +812,7 @@ This section summarises the main user-visible changes in each release. For full 
 - **`import` widget**: added the `lines`, `region`, `wrap`, `lang`, and `dedent` parameters for fine-grained inclusion of source files.
 - Added `<!--nrg.ignore-->` and paired `<!--nrg.ignore.begin-->` / `<!--nrg.ignore.end-->` markers for removing author notes from generated output (also inside imported files).
 - **`tableOfContents` widget**: added the `min-depth` and `max-depth` parameters to limit which heading levels appear in the table of contents.
+- **`tableOfContents` widget**: added the `min-items` parameter — the widget now skips rendering entirely (title included) when fewer than this many headings survive the filters.
 - Fixed: the `languages` widget now produces correct link targets when rendered inside an imported fragment.
 
 ### 0.3

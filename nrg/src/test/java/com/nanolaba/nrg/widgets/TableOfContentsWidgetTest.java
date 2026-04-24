@@ -336,6 +336,111 @@ class TableOfContentsWidgetTest extends DefaultNRGTest {
     }
 
     @Test
+    public void testTOCMinItemsThresholdMet() {
+        Generator generator = new NoHeadCommentGenerator(new File("README.src.md"),
+                "<!--@nrg.languages=en-->\n" +
+                        "${widget:tableOfContents(title = \"TOC\", ordered = \"true\", min-items = \"3\")}\n" +
+                        "## AAA\n" +
+                        "## BBB\n" +
+                        "## CCC\n"
+        );
+
+        String bodyEn = generator.getResult("en").getContent().toString();
+        LOG.info(bodyEn);
+
+        assertTrue(bodyEn.contains("## TOC"));
+        assertTrue(bodyEn.contains("1. [AAA](#aaa)"));
+        assertTrue(bodyEn.contains("2. [BBB](#bbb)"));
+        assertTrue(bodyEn.contains("3. [CCC](#ccc)"));
+    }
+
+    @Test
+    public void testTOCMinItemsThresholdNotMetProducesNothing() {
+        Generator generator = new NoHeadCommentGenerator(new File("README.src.md"),
+                "<!--@nrg.languages=en-->\n" +
+                        "${widget:tableOfContents(title = \"TOC\", ordered = \"true\", min-items = \"3\")}\n" +
+                        "## AAA\n" +
+                        "## BBB\n"
+        );
+
+        String bodyEn = generator.getResult("en").getContent().toString();
+        LOG.info(bodyEn);
+
+        assertFalse(bodyEn.contains("## TOC"));
+        assertFalse(bodyEn.contains("[AAA]"));
+        assertFalse(bodyEn.contains("[BBB]"));
+        assertTrue(bodyEn.contains("## AAA"));
+        assertTrue(bodyEn.contains("## BBB"));
+    }
+
+    @Test
+    public void testTOCMinItemsCountsAfterTocIgnore() {
+        Generator generator = new NoHeadCommentGenerator(new File("README.src.md"),
+                "<!--@nrg.languages=en-->\n" +
+                        "${widget:tableOfContents(title = \"TOC\", min-items = \"3\")}\n" +
+                        "## AAA\n" +
+                        "## BBB<!--toc.ignore-->\n" +
+                        "## CCC\n"
+        );
+
+        String bodyEn = generator.getResult("en").getContent().toString();
+        LOG.info(bodyEn);
+
+        assertFalse(bodyEn.contains("## TOC"));
+        assertFalse(bodyEn.contains("[AAA](#aaa)"));
+        assertFalse(bodyEn.contains("[CCC](#ccc)"));
+    }
+
+    @Test
+    public void testTOCMinItemsCountsAfterDepthFilter() {
+        Generator generator = new NoHeadCommentGenerator(new File("README.src.md"),
+                "<!--@nrg.languages=en-->\n" +
+                        "${widget:tableOfContents(title = \"TOC\", min-items = \"3\", max-depth = \"2\")}\n" +
+                        "## AAA\n" +
+                        "## BBB\n" +
+                        "### ccc\n" +
+                        "### ddd\n"
+        );
+
+        String bodyEn = generator.getResult("en").getContent().toString();
+        LOG.info(bodyEn);
+
+        assertFalse(bodyEn.contains("## TOC"));
+        assertFalse(bodyEn.contains("[AAA](#aaa)"));
+        assertFalse(bodyEn.contains("[BBB](#bbb)"));
+    }
+
+    @Test
+    public void testTOCMinItemsInvalidFallsBackToDefault() {
+        Generator generator = new NoHeadCommentGenerator(new File("README.src.md"),
+                "<!--@nrg.languages=en-->\n" +
+                        "${widget:tableOfContents(title = \"TOC\", min-items = \"zero\")}\n" +
+                        "## AAA\n"
+        );
+
+        String bodyEn = generator.getResult("en").getContent().toString();
+        LOG.info(bodyEn);
+
+        assertTrue(bodyEn.contains("## TOC"));
+        assertTrue(bodyEn.contains("[AAA](#aaa)"));
+    }
+
+    @Test
+    public void testTOCMinItemsZeroFallsBackToDefault() {
+        Generator generator = new NoHeadCommentGenerator(new File("README.src.md"),
+                "<!--@nrg.languages=en-->\n" +
+                        "${widget:tableOfContents(title = \"TOC\", min-items = \"0\")}\n" +
+                        "## AAA\n"
+        );
+
+        String bodyEn = generator.getResult("en").getContent().toString();
+        LOG.info(bodyEn);
+
+        assertTrue(bodyEn.contains("## TOC"));
+        assertTrue(bodyEn.contains("[AAA](#aaa)"));
+    }
+
+    @Test
     public void testTOCMinGreaterThanMaxFallsBackToDefaults() {
         Generator generator = new NoHeadCommentGenerator(new File("README.src.md"),
                 "<!--@nrg.languages=en-->\n" +
