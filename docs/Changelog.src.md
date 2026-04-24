@@ -15,6 +15,7 @@ This section summarises the main user-visible changes in each release. For full 
 - **Custom widgets from CLI and templates**: the `nrg.widgets` template property and the `--widgets` / `--classpath` CLI flags let users register custom `NRGWidget` implementations without a custom launcher.<!--en-->
 - **Custom widgets in the Maven plugin**: the `nrg-maven-plugin` gains a `<widgets>` parameter; invalid entries fail the build with a descriptive `MojoExecutionException`. POM widgets override template-declared ones on name collision.<!--en-->
 - Widget resolution now prefers the last registration on name collision, so user widgets shadow built-ins with the same name.<!--en-->
+- **`--check` flag**: CI-friendly verification mode that compares generated output against files on disk, prints a diff to stderr on mismatch, and exits with status `1`. The `nrg-maven-plugin` exposes it via `<check>` and fails the build with a `MojoExecutionException`.<!--en-->
 - Fixed: the `languages` widget now produces correct link targets when rendered inside an imported fragment.<!--en-->
 - **Виджет `import`**: добавлены параметры `lines`, `region`, `wrap`, `lang` и `dedent` для точного включения фрагментов файлов.<!--ru-->
 - Добавлены маркеры `<\!--nrg.ignore-->` и парные `<\!--nrg.ignore.begin-->` / `<\!--nrg.ignore.end-->` для исключения авторских заметок из результирующих файлов (в т.ч. внутри импортированных файлов).<!--ru-->
@@ -26,6 +27,7 @@ This section summarises the main user-visible changes in each release. For full 
 - **Пользовательские виджеты в CLI и шаблонах**: свойство шаблона `nrg.widgets` и флаги CLI `--widgets` / `--classpath` позволяют регистрировать собственные реализации `NRGWidget` без необходимости писать свой лаунчер.<!--ru-->
 - **Пользовательские виджеты в Maven-плагине**: в `nrg-maven-plugin` добавлен параметр `<widgets>`; некорректные записи прерывают сборку с понятным `MojoExecutionException`. Виджеты из POM имеют приоритет над объявленными через свойство шаблона при совпадении имён.<!--ru-->
 - При совпадении имён поиск виджета теперь возвращает последний зарегистрированный, что позволяет пользовательским виджетам перекрывать встроенные.<!--ru-->
+- **Флаг `--check`**: режим проверки для CI, сравнивает сгенерированный вывод с файлами на диске, выводит diff в stderr при расхождении и завершается с кодом `1`. `nrg-maven-plugin` предоставляет соответствующий параметр `<check>` и падает с `MojoExecutionException`.<!--ru-->
 - Исправлено: виджет `languages` теперь правильно формирует ссылки при использовании внутри импортированного фрагмента.<!--ru-->
 
 ### 0.3<!--toc.ignore-->

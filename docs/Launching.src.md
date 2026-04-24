@@ -34,6 +34,26 @@ To see the list of available options for the console application, type:<!--en-->
 nrg --help
 ```
 
+#### ${en:'Verifying generated files (CI mode)', ru:'Проверка сгенерированных файлов (режим CI)'}
+
+Use `--check` to verify that files on disk match what NRG would<!--en-->
+generate right now. The flag is meant for CI / pre-commit hooks:<!--en-->
+no files are written, a missing or out-of-date target file prints<!--en-->
+a diff to stderr, and the process exits with status `1`.<!--en-->
+Флаг `--check` проверяет, что файлы на диске совпадают с тем, что<!--ru-->
+NRG сгенерировал бы прямо сейчас. Режим предназначен для CI / pre-commit:<!--ru-->
+файлы не записываются, при отсутствии или расхождении выводится diff<!--ru-->
+в stderr, процесс завершается с кодом `1`.<!--ru-->
+
+```bash
+nrg --check -f README.src.md && echo "README is up to date"
+```
+
+`--check` validates every language configured via `nrg.languages`<!--en-->
+and is mutually exclusive with `--stdout`.<!--en-->
+`--check` проверяет все языки, заявленные в `nrg.languages`, и<!--ru-->
+несовместим с флагом `--stdout`.<!--ru-->
+
 #### ${en:'Print to stdout', ru:'Вывод в stdout'}
 
 Use `--stdout` to stream generated output to standard output instead<!--en-->
@@ -98,6 +118,7 @@ Add the following code to your `pom.xml`:<!--en-->
                 <widget>com.example.MyWidget</widget>
                 <widget>com.example.OtherWidget</widget>
             </widgets>
+            <check>false</check>
         </configuration>
         <dependencies>
             <dependency>
@@ -128,6 +149,17 @@ On a name collision, POM-declared widgets override those declared via the<!--en-
 необходимо подключить через `<dependencies>` самого плагина, чтобы<!--ru-->
 Maven мог их найти. При совпадении имён виджеты из POM имеют приоритет<!--ru-->
 над объявленными через свойство шаблона `nrg.widgets`.<!--ru-->
+
+Set `<check>true</check>` (or pass `-Dcheck=true` on the command line)<!--en-->
+to run the plugin in verification mode: no files are written, and the<!--en-->
+build fails with a `MojoExecutionException` and a diff in the log when<!--en-->
+the generated output diverges from the committed files. Handy for a<!--en-->
+`mvn verify` step in CI to guard against stale READMEs.<!--en-->
+Параметр `<check>true</check>` (или `-Dcheck=true` из командной строки)<!--ru-->
+переключает плагин в режим проверки: файлы не записываются, при<!--ru-->
+расхождении сборка падает с `MojoExecutionException` и выводом diff<!--ru-->
+в лог. Удобно для шага `mvn verify` в CI, чтобы не пропустить устаревший<!--ru-->
+README.<!--ru-->
 
 Для использования SNAPSHOT-версий также необходимо добавить в `pom.xml` следующий код:<!--ru-->
 To use SNAPSHOT versions, you also need to add the following code to your `pom.xml`:<!--en-->
