@@ -739,7 +739,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 24.04.2026 21:31:39
+Last updated: 24.04.2026 21:36:34
 ```
 
 </td></tr>
@@ -857,7 +857,7 @@ ${widget:alert(type = 'warning', text = 'Line 1\nLine 2')}
 
 Этот компонент формирует markdown-ссылки с картинкой для
 shields.io-бейджей типовых назначений (Maven Central, лицензия,
-GitHub релиз/звёзды) и произвольного `custom`.
+GitHub релиз / звёзды / workflow) и произвольного `custom`.
 
 <table>
 <tr><th>Пример использования</th><th>Результат</th></tr>
@@ -874,88 +874,18 @@ ${widget:badge(type = 'maven-central', coordinates = 'com.nanolaba:readme-genera
 ```
 
 </td></tr>
-<tr><td>
-
-```markdown
-${widget:badge(type = 'license', value = 'Apache-2.0', url = 'https://www.apache.org/licenses/LICENSE-2.0')}
-```
-
-</td><td>
-
-```markdown
-[![License: Apache-2.0](https://img.shields.io/badge/License-Apache--2.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
-```
-
-</td></tr>
-<tr><td>
-
-```markdown
-${widget:badge(type = 'github-release', repo = 'nanolaba/readme-generator')}
-```
-
-</td><td>
-
-```markdown
-[![GitHub release](https://img.shields.io/github/v/release/nanolaba/readme-generator)](https://github.com/nanolaba/readme-generator/releases/latest)
-```
-
-</td></tr>
-<tr><td>
-
-```markdown
-${widget:badge(type = 'github-stars', repo = 'nanolaba/readme-generator')}
-```
-
-</td><td>
-
-```markdown
-[![GitHub stars](https://img.shields.io/github/stars/nanolaba/readme-generator?style=social)](https://github.com/nanolaba/readme-generator)
-```
-
-</td></tr>
-<tr><td>
-
-```markdown
-${widget:badge(type = 'custom', label = 'docs', message = 'up to date', color = 'brightgreen')}
-```
-
-</td><td>
-
-```markdown
-![docs](https://img.shields.io/badge/docs-up_to_date-brightgreen.svg)
-```
-
-</td></tr>
-<tr><td>
-
-```markdown
-${widget:badge(type = 'github-workflow', repo = 'nanolaba/readme-generator', workflow = 'ci.yml', name = 'CI')}
-```
-
-</td><td>
-
-```markdown
-[![CI](https://github.com/nanolaba/readme-generator/actions/workflows/ci.yml/badge.svg)](https://github.com/nanolaba/readme-generator/actions/workflows/ci.yml)
-```
-
-</td></tr>
 </table>
 
-Свойства виджета:
+Поддерживаемые типы и их параметры:
 
-| Наименование | Описание                                                                                            |                   Обязательно для                   |
-|:------------:|-----------------------------------------------------------------------------------------------------|:---------------------------------------------------:|
-|     type     | Одно из: `maven-central`, `license`, `github-release`, `github-stars`, `github-workflow`, `custom`. |                         все                         |
-| coordinates  | Координаты Maven `groupId:artifactId`.                                                              |                   `maven-central`                   |
-|    value     | Идентификатор лицензии (например, `Apache-2.0`, `MIT`).                                             |                      `license`                      |
-|     repo     | Репозиторий GitHub `owner/name`.                                                                    | `github-release`, `github-stars`, `github-workflow` |
-|   workflow   | Имя файла workflow (например, `ci.yml`).                                                            |                  `github-workflow`                  |
-|     name     | Необязательный alt-текст для workflow-бейджа; по умолчанию — имя файла без расширения.              |                          —                          |
-|    branch    | Необязательный фильтр ветки — добавляется как `?branch=...`.                                        |                          —                          |
-|    label     | Левая подпись бейджа.                                                                               |                      `custom`                       |
-|   message    | Правая часть (значение) бейджа.                                                                     |                      `custom`                       |
-|    color     | Цвет бейджа (`brightgreen`, `blue`, hex, …).                                                        |                      `custom`                       |
-|     url      | Необязательная ссылка. Без неё бейдж не кликабелен.                                                 |                          —                          |
+|       type        | Обязательные параметры                                                                                               | Необязательные параметры                                                                                                 |
+|:-----------------:|----------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------|
+|  `maven-central`  | `coordinates` — координаты Maven `groupId:artifactId`.                                                               | —                                                                                                                        |
+|     `license`     | `value` — идентификатор лицензии (например, `Apache-2.0`).                                                           | `url` — целевая ссылка; без неё бейдж не кликабелен.                                                                     |
+| `github-release`  | `repo` — репозиторий `owner/name`.                                                                                   | —                                                                                                                        |
+|  `github-stars`   | `repo` — репозиторий `owner/name`.                                                                                   | —                                                                                                                        |
+| `github-workflow` | `repo` — репозиторий `owner/name`;  `workflow` — имя файла workflow (например, `ci.yml`).                            | `name` — alt-текст; по умолчанию — имя файла без расширения.  `branch` — фильтр по ветке, добавляется как `?branch=...`. |
+|     `custom`      | `label` — левая часть бейджа;  `message` — правая часть бейджа;  `color` — цвет (ключевое слово shields.io или hex). | `url` — целевая ссылка; без неё бейдж не кликабелен.                                                                     |
 
 Неизвестные значения `type` и отсутствие обязательных параметров
 приводят к ошибке в логе и пустому выводу.
