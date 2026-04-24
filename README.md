@@ -11,7 +11,8 @@
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
 ![Java](https://img.shields.io/badge/Java-8%2B-orange)
 
-**Nanolaba Readme Generator (NRG)** — is an open-source Java tool for automating Markdown documentation with multi-language support, dynamic variables, and custom widgets.
+**Nanolaba Readme Generator (NRG)** — is an open-source Java tool for automating Markdown documentation with multi-language
+support, dynamic variables, and custom widgets.
 
 ## Overview
 
@@ -35,7 +36,8 @@ Using **Nanolaba Readme Generator (NRG)**, you can:
 
 > 💡 **Nanolaba Readme Generator (NRG)** is written in Java and requires **Java 8** or higher to run.
 
-The latest stable version of the program is **0.3**. The current development version is **0.4-SNAPSHOT**.
+The latest stable version of the program is **0.3**.
+The current development version is **0.4-SNAPSHOT**.
 
 ## Table of contents
 1. [Quick start](#quick-start)
@@ -265,13 +267,15 @@ implementation 'com.nanolaba:readme-generator:0.3'
 Get the JAR from [Maven Central](https://repo1.maven.org/maven2/com/nanolaba/readme-generator/0.3).
 Add it to your project's classpath.
 
-After this, you can call the file generation function in your project by passing the same parameters as in the console application, for example:
+After this, you can call the file generation function in your project by passing
+the same parameters as in the console application, for example:
 
 ```java
 NRG.main("-f","path-to-file","--charset","UTF-8");
 ```
 
-An alternative approach — and a more flexible one for configuring program behavior — is to use the `Generator` class:
+An alternative approach — and a more flexible one for configuring program
+behavior — is to use the `Generator` class:
 
 ```java
 package com.nanolaba.nrg.examples;
@@ -318,7 +322,8 @@ The output of variable values is done using the following construct:
 ${variable_name}
 ```
 
-To display a construct like *${...}* without replacing it with the variable's value, precede it with the '\\' character:
+To display a construct like *${...}* without replacing it with
+the variable's value, precede it with the '\\' character:
 
 ```markdown
 \${variable_name}
@@ -396,13 +401,16 @@ To escape quotes, use character doubling, for example:
 
 ### Ignoring content
 
-To mark a fragment as an author note that must not appear in any generated file, use the `nrg.ignore` markers. They work in the root template and inside imported files.
+To mark a fragment as an author note that must not appear in any generated file,
+use the `nrg.ignore` markers. They work in the root template and inside imported files.
 
 - `<!--nrg.ignore-->` — drops the entire line containing the marker.
 - `<!--nrg.ignore.begin-->` ... `<!--nrg.ignore.end-->` — drops all lines of the block, including the markers themselves.
 
-If an `<!--nrg.ignore.begin-->` has no matching `<!--nrg.ignore.end-->`, an error is logged and everything from the opening marker to the end of the file is dropped. A lone
-`<!--nrg.ignore.end-->` without a preceding begin is also logged as an error and removed from the output.
+If an `<!--nrg.ignore.begin-->` has no matching `<!--nrg.ignore.end-->`, an error is
+logged and everything from the opening marker to the end of the file is dropped. A lone
+`<!--nrg.ignore.end-->` without a preceding begin is also logged as an error and
+removed from the output.
 
 <table>
 <tr><th>Usage example</th><th>Result</th></tr>
@@ -469,7 +477,8 @@ ${widget:languages}
 
 #### Widget 'import'
 
-This component enables text import from another document, code file, or template. Optionally selects a fragment by line range or named region, and wraps the result in a fenced code block.
+This component enables text import from another document, code file, or template.
+Optionally selects a fragment by line range or named region, and wraps the result in a fenced code block.
 
 <table>
 <tr><th>Basic usage example</th></tr>
@@ -518,15 +527,18 @@ This allows defining global variables in the root file and reusing them across a
 
 **Wrapping in a code fence**
 
-By default (`wrap='false'`), the widget emits the selected content as-is, which preserves the behavior of existing template-composition imports (`*.src.md` files). To wrap a code fragment in a fenced block, set `wrap='true'` explicitly. The fence language is taken from `lang`, or detected from the file extension when `lang='auto'` (the default).
+By default (`wrap='false'`), the widget emits the selected content as-is, which preserves the behavior of existing template-composition imports (`*.src.md` files).
+To wrap a code fragment in a fenced block, set `wrap='true'` explicitly. The fence language is taken from `lang`, or detected from the file extension when `lang='auto'` (the default).
 
 **Auto-dedent**
 
-When `dedent='auto'` (the default), common leading whitespace is stripped automatically if `lines` or `region` is set, and left untouched otherwise. Use `dedent='true'` or `dedent='false'` to force the behavior explicitly.
+When `dedent='auto'` (the default), common leading whitespace is stripped automatically if `lines` or `region` is set, and left untouched otherwise.
+Use `dedent='true'` or `dedent='false'` to force the behavior explicitly.
 
 **Region markers**
 
-Mark a region in the source file using `nrg:begin:NAME` and `nrg:end:NAME` tokens inside any comment. The matching is language-agnostic — the widget recognizes the markers regardless of the surrounding comment syntax:
+Mark a region in the source file using `nrg:begin:NAME` and `nrg:end:NAME` tokens inside any comment.
+The matching is language-agnostic — the widget recognizes the markers regardless of the surrounding comment syntax:
 
 <table>
 <tr><th>Comment style examples</th></tr>
@@ -543,7 +555,8 @@ Mark a region in the source file using `nrg:begin:NAME` and `nrg:end:NAME` token
 </td></tr>
 </table>
 
-Region names match the pattern `[A-Za-z0-9_-]+`. Region markers are stripped from the output. Nested regions are supported — when extracting an outer region, inner region markers are also stripped from the output.
+Region names match the pattern `[A-Za-z0-9_-]+`. Region markers are stripped from the output.
+Nested regions are supported — when extracting an outer region, inner region markers are also stripped from the output.
 
 ---
 
@@ -622,10 +635,12 @@ ${widget:tableOfContents(title = "${en:'Table of contents', ru:'Содержан
 
 Widget parameters:
 
-|  Name   | Description                                           | Default value |
-|:-------:|-------------------------------------------------------|:-------------:|
-|  title  | Title of the table of contents                        |               |
-| ordered | Should the items in the table of contents be numbered |    `false`    |
+|   Name    | Description                                                                                                          | Default value |
+|:---------:|----------------------------------------------------------------------------------------------------------------------|:-------------:|
+|   title   | Title of the table of contents                                                                                       |               |
+|  ordered  | Should the items in the table of contents be numbered                                                                |    `false`    |
+| min-depth | Minimum heading level to include (1–6). Headings shallower than this are skipped. 1 includes top-level `#` headings. |      `2`      |
+| max-depth | Maximum heading level to include (1–6). Headings deeper than this are skipped.                                       |      `6`      |
 
 ---
 
@@ -644,7 +659,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 24.04.2026 17:31:15
+Last updated: 24.04.2026 17:59:14
 ```
 
 </td></tr>
@@ -715,7 +730,8 @@ Widget parameters:
 
 ### Creating a widget
 
-To create a widget, you need to implement the `NRGWidget` interface or extend an existing widget (e.g., `DefaultWidget`):
+To create a widget, you need to implement the `NRGWidget` interface or
+extend an existing widget (e.g., `DefaultWidget`):
 
 ```java
 public class ExampleWidget extends DefaultWidget {
@@ -773,10 +789,15 @@ Collection<GenerationResult> results = generator.getResults();
 
 Other tools in the same space — useful if **Nanolaba Readme Generator (NRG)** does not fit your stack or workflow:
 
-- **[multilingual-markdown](https://github.com/ryul1206/multilingual-markdown)** (Python) — generates per-language markdown files from a single base document, similar to NRG's multi-language flow but without widgets or template imports.
-- **[embedme](https://github.com/zakhenry/embedme)** (Node.js) — embeds external code snippets into markdown via fenced-block annotations; overlaps with NRG's `import` widget (region / lines extraction).
-- **[cog](https://github.com/nedbat/cog)** (Python) — runs embedded Python snippets inside source files to generate text; a different philosophy (code execution instead of declarative widgets) for the same goal of keeping generated documentation in sync with its source of truth.
-- **[doctoc](https://github.com/thlorenz/doctoc)** (Node.js) — auto-generates and updates the table of contents in an existing markdown file; a focused alternative to NRG's `tableOfContents` widget.
+- **[multilingual-markdown](https://github.com/ryul1206/multilingual-markdown)** (Python) — generates per-language markdown files from a single base document,
+  similar to NRG's multi-language flow but without widgets or template imports.
+- **[embedme](https://github.com/zakhenry/embedme)** (Node.js) — embeds external code snippets into markdown via fenced-block annotations;
+  overlaps with NRG's `import` widget (region / lines extraction).
+- **[cog](https://github.com/nedbat/cog)** (Python) — runs embedded Python snippets inside source files to generate text;
+  a different philosophy (code execution instead of declarative widgets) for the same goal of
+  keeping generated documentation in sync with its source of truth.
+- **[doctoc](https://github.com/thlorenz/doctoc)** (Node.js) — auto-generates and updates the table of contents in an existing markdown file;
+  a focused alternative to NRG's `tableOfContents` widget.
 - **[remark](https://github.com/remarkjs/remark)** (Node.js) — pluggable markdown processor; with plugins such as `remark-toc` and `remark-include`
   it can be composed into a pipeline that covers several NRG features separately.
 
@@ -788,6 +809,7 @@ This section summarises the main user-visible changes in each release. For full 
 
 - **`import` widget**: added the `lines`, `region`, `wrap`, `lang`, and `dedent` parameters for fine-grained inclusion of source files.
 - Added `<!--nrg.ignore-->` and paired `<!--nrg.ignore.begin-->` / `<!--nrg.ignore.end-->` markers for removing author notes from generated output (also inside imported files).
+- **`tableOfContents` widget**: added the `min-depth` and `max-depth` parameters to limit which heading levels appear in the table of contents.
 - Fixed: the `languages` widget now produces correct link targets when rendered inside an imported fragment.
 
 ### 0.3

@@ -224,4 +224,132 @@ class TableOfContentsWidgetTest extends DefaultNRGTest {
             fail("The message has been found");
         }
     }
+
+    @Test
+    public void testTOCMaxDepth() {
+        Generator generator = new NoHeadCommentGenerator(new File("README.src.md"),
+                "<!--@nrg.languages=en-->\n" +
+                        "${widget:tableOfContents(ordered = \"true\", max-depth = \"3\")}\n" +
+                        "# MainHeader\n" +
+                        "## AAA\n" +
+                        "### aaa\n" +
+                        "#### aaaa\n" +
+                        "##### aaaaa\n" +
+                        "## BBB\n" +
+                        "### bbb\n" +
+                        "#### bbbb\n"
+        );
+
+        String bodyEn = generator.getResult("en").getContent().toString();
+        LOG.info(bodyEn);
+
+        assertTrue(bodyEn.contains("1. [AAA](#aaa)"));
+        assertTrue(bodyEn.contains("\t1. [aaa](#aaa)"));
+        assertTrue(bodyEn.contains("\t1. [bbb](#bbb)"));
+        assertFalse(bodyEn.contains("[aaaa]"));
+        assertFalse(bodyEn.contains("[aaaaa]"));
+        assertFalse(bodyEn.contains("[bbbb]"));
+        assertFalse(bodyEn.contains("[MainHeader]"));
+    }
+
+    @Test
+    public void testTOCMinDepthIncludesH1() {
+        Generator generator = new NoHeadCommentGenerator(new File("README.src.md"),
+                "<!--@nrg.languages=en-->\n" +
+                        "${widget:tableOfContents(ordered = \"true\", min-depth = \"1\", max-depth = \"2\")}\n" +
+                        "# MainHeader\n" +
+                        "## AAA\n" +
+                        "### aaa\n" +
+                        "## BBB\n"
+        );
+
+        String bodyEn = generator.getResult("en").getContent().toString();
+        LOG.info(bodyEn);
+
+        assertTrue(bodyEn.contains("1. [MainHeader](#mainheader)"));
+        assertTrue(bodyEn.contains("\t1. [AAA](#aaa)"));
+        assertTrue(bodyEn.contains("\t2. [BBB](#bbb)"));
+        assertFalse(bodyEn.contains("[aaa]"));
+    }
+
+    @Test
+    public void testTOCMinDepthSkipsShallowHeaders() {
+        Generator generator = new NoHeadCommentGenerator(new File("README.src.md"),
+                "<!--@nrg.languages=en-->\n" +
+                        "${widget:tableOfContents(ordered = \"true\", min-depth = \"3\")}\n" +
+                        "# MainHeader\n" +
+                        "## AAA\n" +
+                        "### aaa\n" +
+                        "### bbb\n" +
+                        "## BBB\n" +
+                        "### ccc\n"
+        );
+
+        String bodyEn = generator.getResult("en").getContent().toString();
+        LOG.info(bodyEn);
+
+        assertFalse(bodyEn.contains("[MainHeader]"));
+        assertFalse(bodyEn.contains("[AAA]"));
+        assertFalse(bodyEn.contains("[BBB]"));
+        assertTrue(bodyEn.contains("1. [aaa](#aaa)"));
+        assertTrue(bodyEn.contains("2. [bbb](#bbb)"));
+        assertTrue(bodyEn.contains("1. [ccc](#ccc)"));
+        assertFalse(bodyEn.contains("\t"));
+    }
+
+    @Test
+    public void testTOCRespectsIgnoreWithDepthParams() {
+        Generator generator = new NoHeadCommentGenerator(new File("README.src.md"),
+                "<!--@nrg.languages=en-->\n" +
+                        "${widget:tableOfContents(ordered = \"true\", min-depth = \"1\", max-depth = \"3\")}\n" +
+                        "# MainHeader<!--toc.ignore-->\n" +
+                        "## AAA\n" +
+                        "### aaa<!--toc.ignore-->\n" +
+                        "### bbb\n"
+        );
+
+        String bodyEn = generator.getResult("en").getContent().toString();
+        LOG.info(bodyEn);
+
+        assertFalse(bodyEn.contains("[MainHeader]"));
+        assertFalse(bodyEn.contains("[aaa]"));
+        assertTrue(bodyEn.contains("[AAA]"));
+        assertTrue(bodyEn.contains("[bbb]"));
+    }
+
+    @Test
+    public void testTOCInvalidDepthFallsBackToDefaults() {
+        Generator generator = new NoHeadCommentGenerator(new File("README.src.md"),
+                "<!--@nrg.languages=en-->\n" +
+                        "${widget:tableOfContents(ordered = \"true\", max-depth = \"9\", min-depth = \"zero\")}\n" +
+                        "# MainHeader\n" +
+                        "## AAA\n" +
+                        "### aaa\n"
+        );
+
+        String bodyEn = generator.getResult("en").getContent().toString();
+        LOG.info(bodyEn);
+
+        assertFalse(bodyEn.contains("[MainHeader]"));
+        assertTrue(bodyEn.contains("1. [AAA](#aaa)"));
+        assertTrue(bodyEn.contains("\t1. [aaa](#aaa)"));
+    }
+
+    @Test
+    public void testTOCMinGreaterThanMaxFallsBackToDefaults() {
+        Generator generator = new NoHeadCommentGenerator(new File("README.src.md"),
+                "<!--@nrg.languages=en-->\n" +
+                        "${widget:tableOfContents(ordered = \"true\", min-depth = \"4\", max-depth = \"2\")}\n" +
+                        "# MainHeader\n" +
+                        "## AAA\n" +
+                        "### aaa\n"
+        );
+
+        String bodyEn = generator.getResult("en").getContent().toString();
+        LOG.info(bodyEn);
+
+        assertFalse(bodyEn.contains("[MainHeader]"));
+        assertTrue(bodyEn.contains("1. [AAA](#aaa)"));
+        assertTrue(bodyEn.contains("\t1. [aaa](#aaa)"));
+    }
 }
