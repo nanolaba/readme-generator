@@ -736,7 +736,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 24.04.2026 21:03:59
+Last updated: 24.04.2026 21:31:39
 ```
 
 </td></tr>
@@ -843,10 +843,10 @@ ${widget:alert(type = 'warning', text = 'Line 1\nLine 2')}
 
 Widget parameters:
 
-| Name | Description                                                                                                                                                                                | Default value |
-|:----:|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:-------------:|
-| type | Alert kind: `note`, `tip`, `important`, `warning`, or `caution` (case-insensitive). Unknown values log an error and produce empty output.                                                  |               |
-| text | ...` for language-specific text.', ru:'Текст блока. Используйте `\\n` для перевода строки и `\\\\` для литерального обратного слэша. Совместимо с `\${en:"...", ru:"..."}` для перевода.'} |     `''`      |
+| Name | Description                                                                                                                                                                                                                         | Default value |
+|:----:|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:-------------:|
+| type | Alert kind: `note`, `tip`, `important`, `warning`, or `caution` (case-insensitive). Unknown values log an error and produce empty output.                                                                                           |               |
+| text | Body of the alert. Use `\n` to split into multiple quoted lines and `\\` for a literal backslash. Language-substitution constructs in the outer template are resolved before the widget runs, so per-language text works naturally. |     `''`      |
 
 ---
 
