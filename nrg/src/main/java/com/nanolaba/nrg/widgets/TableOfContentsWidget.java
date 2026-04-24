@@ -52,6 +52,10 @@ public class TableOfContentsWidget extends DefaultWidget {
 
     protected String createTOC(WidgetTag widgetTag, GeneratorConfig config, String language, Config tocConfig) {
 
+        if (tocConfig.getAnchorStyle() == null) {
+            return "";
+        }
+
         List<Header> allHeaders = new ArrayList<>();
 
         Generator generator = new Generator(config.getSourceFile(), config.getSourceFileBody());
@@ -118,6 +122,14 @@ public class TableOfContentsWidget extends DefaultWidget {
                 config.setMinItems(value);
             }
         }
+        if (map.containsKey("anchor-style")) {
+            AnchorStyle style = AnchorStyle.from(map.get("anchor-style"));
+            if (style == null) {
+                LOG.error("tableOfContents widget: unknown anchor-style '{}' (expected github|gitlab|bitbucket)",
+                        map.get("anchor-style"));
+            }
+            config.setAnchorStyle(style);
+        }
         if (config.getMinDepth() > config.getMaxDepth()) {
             LOG.error("tableOfContents widget: min-depth ({}) must not exceed max-depth ({}); using defaults",
                     config.getMinDepth(), config.getMaxDepth());
@@ -158,12 +170,33 @@ public class TableOfContentsWidget extends DefaultWidget {
 
     /// /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+    public enum AnchorStyle {
+        GITHUB, GITLAB, BITBUCKET;
+
+        public static AnchorStyle from(String raw) {
+            if (raw == null) {
+                return null;
+            }
+            switch (raw.trim().toLowerCase()) {
+                case "github":
+                    return GITHUB;
+                case "gitlab":
+                    return GITLAB;
+                case "bitbucket":
+                    return BITBUCKET;
+                default:
+                    return null;
+            }
+        }
+    }
+
     protected static class Config {
         private String title;
         private boolean ordered;
         private int minDepth = 2;
         private int maxDepth = 6;
         private int minItems = 1;
+        private AnchorStyle anchorStyle = AnchorStyle.GITHUB;
 
         public String getTitle() {
             return title;
@@ -203,6 +236,14 @@ public class TableOfContentsWidget extends DefaultWidget {
 
         public void setMinItems(int minItems) {
             this.minItems = minItems;
+        }
+
+        public AnchorStyle getAnchorStyle() {
+            return anchorStyle;
+        }
+
+        public void setAnchorStyle(AnchorStyle anchorStyle) {
+            this.anchorStyle = anchorStyle;
         }
     }
 
@@ -254,13 +295,28 @@ public class TableOfContentsWidget extends DefaultWidget {
                     .replaceAll("https?://\\S+", "") // Удаляем URL
                     .replaceAll("www\\.\\S+", ""); // Удаляем URL
 
-            // GitHub-style anchor generation - сохраняем Unicode символы
-            return cleaned.toLowerCase()
-                    .replaceAll("[^\\p{L}\\p{N}\\p{M}\\s_-]", "") // Оставляем буквы, цифры, модификаторы, пробелы, дефисы и подчеркивания
-                    .replaceAll("\\s+", "-") // Заменяем пробелы на дефисы
-                    .replaceAll("_", "-") // Заменяем подчеркивания на дефисы
-                    .replaceAll("-{2,}", "-") // Удаляем множественные дефисы
-                    .replaceAll("^-+|-+$", ""); // Удаляем дефисы в начале и конце
+            AnchorStyle style = config.getAnchorStyle() == null ? AnchorStyle.GITHUB : config.getAnchorStyle();
+            switch (style) {
+                case GITLAB:
+                    return cleaned.toLowerCase()
+                            .replaceAll("[^\\p{L}\\p{N}\\p{M}\\s_-]", "")
+                            .replaceAll("\\s+", "-")
+                            .replaceAll("^-+|-+$", "");
+                case BITBUCKET:
+                    return "markdown-header-" + cleaned.toLowerCase()
+                            .replaceAll("[^\\p{L}\\p{N}\\p{M}\\s-]", "")
+                            .replaceAll("\\s+", "-")
+                            .replaceAll("-{2,}", "-")
+                            .replaceAll("^-+|-+$", "");
+                case GITHUB:
+                default:
+                    return cleaned.toLowerCase()
+                            .replaceAll("[^\\p{L}\\p{N}\\p{M}\\s_-]", "")
+                            .replaceAll("\\s+", "-")
+                            .replaceAll("_", "-")
+                            .replaceAll("-{2,}", "-")
+                            .replaceAll("^-+|-+$", "");
+            }
         }
 
         private Header getPreviousHeader(int level) {

@@ -441,6 +441,99 @@ class TableOfContentsWidgetTest extends DefaultNRGTest {
     }
 
     @Test
+    public void testTOCAnchorStyleGithubIsDefault() {
+        Generator generator = new NoHeadCommentGenerator(new File("README.src.md"),
+                "<!--@nrg.languages=en-->\n" +
+                        "${widget:tableOfContents}\n" +
+                        "## Hello World\n"
+        );
+
+        String bodyEn = generator.getResult("en").getContent().toString();
+        LOG.info(bodyEn);
+
+        assertTrue(bodyEn.contains("[Hello World](#hello-world)"));
+    }
+
+    @Test
+    public void testTOCAnchorStyleGitlabKeepsUnderscoresAndRepeatedHyphens() {
+        Generator generator = new NoHeadCommentGenerator(new File("README.src.md"),
+                "<!--@nrg.languages=en-->\n" +
+                        "${widget:tableOfContents(anchor-style = \"gitlab\")}\n" +
+                        "## snake_case name\n" +
+                        "## a -- b\n"
+        );
+
+        String bodyEn = generator.getResult("en").getContent().toString();
+        LOG.info(bodyEn);
+
+        assertTrue(bodyEn.contains("[snake_case name](#snake_case-name)"));
+        assertTrue(bodyEn.contains("[a -- b](#a----b)"));
+    }
+
+    @Test
+    public void testTOCAnchorStyleGithubCollapsesConsecutiveHyphens() {
+        Generator generator = new NoHeadCommentGenerator(new File("README.src.md"),
+                "<!--@nrg.languages=en-->\n" +
+                        "${widget:tableOfContents}\n" +
+                        "## a -- b\n"
+        );
+
+        String bodyEn = generator.getResult("en").getContent().toString();
+        LOG.info(bodyEn);
+
+        assertTrue(bodyEn.contains("[a -- b](#a-b)"));
+    }
+
+    @Test
+    public void testTOCAnchorStyleBitbucketUsesPrefix() {
+        Generator generator = new NoHeadCommentGenerator(new File("README.src.md"),
+                "<!--@nrg.languages=en-->\n" +
+                        "${widget:tableOfContents(anchor-style = \"bitbucket\")}\n" +
+                        "## Hello World\n" +
+                        "## snake_case name\n"
+        );
+
+        String bodyEn = generator.getResult("en").getContent().toString();
+        LOG.info(bodyEn);
+
+        assertTrue(bodyEn.contains("[Hello World](#markdown-header-hello-world)"));
+        assertTrue(bodyEn.contains("[snake_case name](#markdown-header-snakecase-name)"));
+    }
+
+    @Test
+    public void testTOCAnchorStyleInvalidProducesEmptyOutput() {
+        Generator generator = new NoHeadCommentGenerator(new File("README.src.md"),
+                "<!--@nrg.languages=en-->\n" +
+                        "${widget:tableOfContents(title = \"TOC\", anchor-style = \"confluence\")}\n" +
+                        "## Hello\n" +
+                        "## World\n"
+        );
+
+        String bodyEn = generator.getResult("en").getContent().toString();
+        LOG.info(bodyEn);
+
+        assertFalse(bodyEn.contains("## TOC"));
+        assertFalse(bodyEn.contains("[Hello](#"));
+        assertFalse(bodyEn.contains("[World](#"));
+        assertTrue(bodyEn.contains("## Hello"));
+        assertTrue(bodyEn.contains("## World"));
+    }
+
+    @Test
+    public void testTOCAnchorStylePreservesUnicodeForGitlab() {
+        Generator generator = new NoHeadCommentGenerator(new File("README.src.md"),
+                "<!--@nrg.languages=en-->\n" +
+                        "${widget:tableOfContents(anchor-style = \"gitlab\")}\n" +
+                        "## Раздел\n"
+        );
+
+        String bodyEn = generator.getResult("en").getContent().toString();
+        LOG.info(bodyEn);
+
+        assertTrue(bodyEn.contains("[Раздел](#раздел)"));
+    }
+
+    @Test
     public void testTOCMinGreaterThanMaxFallsBackToDefaults() {
         Generator generator = new NoHeadCommentGenerator(new File("README.src.md"),
                 "<!--@nrg.languages=en-->\n" +
