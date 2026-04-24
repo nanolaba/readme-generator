@@ -73,6 +73,13 @@ public class NRG {
                 "log verbosity: trace|debug|info|warn|error (default: info, overrides $" + ENV_LOG_LEVEL + ")");
         logLevel.setArgName("level");
         options.addOption(logLevel);
+        Option stdout = new Option(null, "stdout", false,
+                "print generated output to stdout instead of writing files");
+        options.addOption(stdout);
+        Option language = new Option(null, "language", true,
+                "when combined with --stdout, print only the given language variant");
+        language.setArgName("code");
+        options.addOption(language);
 
         CommandLineParser parser = new DefaultParser();
         CommandLine cmd = parser.parse(options, args);
@@ -86,8 +93,16 @@ public class NRG {
         } else {
             Charset sourceCharset = cmd.getParsedOptionValue(charset, DEFAULT_CHARSET);
             LOG.debug("Source charset: {}", sourceCharset.displayName());
+
+            boolean toStdout = cmd.hasOption(stdout);
+            String langValue = cmd.getOptionValue(language);
+            if (langValue != null && !toStdout) {
+                LOG.warn("--language has no effect without --stdout; ignoring");
+                langValue = null;
+            }
+
             if (cmd.hasOption(file)) {
-                generate(cmd.getParsedOptionValue(file), sourceCharset);
+                generate(cmd.getParsedOptionValue(file), sourceCharset, toStdout, langValue);
             }
         }
     }
@@ -118,9 +133,16 @@ public class NRG {
         LOG.init(logger);
     }
 
-    private static void generate(File sourceFile, Charset charset) {
+    private static void generate(File sourceFile, Charset charset, boolean toStdout, String languageFilter) {
         if (sourceFile.exists()) {
-            Code.run(() -> createFiles(new Generator(sourceFile, charset, additionalWidgets)));
+            Code.run(() -> {
+                Generator generator = new Generator(sourceFile, charset, additionalWidgets);
+                if (toStdout) {
+                    printToStdout(generator, languageFilter);
+                } else {
+                    createFiles(generator);
+                }
+            });
         } else {
             LOG.error("Source file does not exist: {}", sourceFile.getAbsolutePath());
         }
@@ -132,6 +154,29 @@ public class NRG {
             LOG.debug("Generating file for language \"{}\" - {}", language, readmeFile.getAbsolutePath());
             FileUtils.write(readmeFile, generator.getResult(language).getContent(), StandardCharsets.UTF_8);
             LOG.info("File \"{}\" created, total size {}", readmeFile.getName(), FileUtils.byteCountToDisplaySize(readmeFile.length()));
+        }
+    }
+
+    private static void printToStdout(Generator generator, String languageFilter) {
+        List<String> languages = generator.getConfig().getLanguages();
+        if (languageFilter != null) {
+            if (!languages.contains(languageFilter)) {
+                LOG.error("Unknown language '{}'; available: {}", languageFilter, languages);
+                return;
+            }
+            System.out.print(generator.getResult(languageFilter).getContent());
+            return;
+        }
+        boolean multiple = languages.size() > 1;
+        for (String lang : languages) {
+            if (multiple) {
+                File readmeFile = getReadmeFile(lang, generator.getConfig());
+                System.out.println("=== " + readmeFile.getName() + " ===");
+            }
+            System.out.print(generator.getResult(lang).getContent());
+            if (multiple) {
+                System.out.println();
+            }
         }
     }
 

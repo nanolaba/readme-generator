@@ -44,7 +44,8 @@ The current development version is **0.4-SNAPSHOT**.
 1. [Quick start](#quick-start)
 1. [Usage](#usage)
 	1. [Using the Command Line Interface](#using-the-command-line-interface)
-		1. [Logging verbosity](#logging-verbosity)
+		1. [Print to stdout](#print-to-stdout)
+		2. [Logging verbosity](#logging-verbosity)
 	2. [Use as maven plugin](#use-as-maven-plugin)
 	3. [Use as a java-library](#use-as-a-java-library)
 2. [Template syntax](#template-syntax)
@@ -196,6 +197,22 @@ To see the list of available options for the console application, type:
 ```bash
 nrg --help
 ```
+
+#### Print to stdout
+
+Use `--stdout` to stream generated output to standard output instead
+of writing files to disk. Combine with `--language <code>` to print
+only a single language variant; without it, every configured variant
+is printed, prefixed with a separator line like `=== README.ru.md ===`
+so the output can be split by downstream tools.
+
+```bash
+nrg --stdout -f README.src.md
+nrg --stdout --language en -f README.src.md
+```
+
+The `--language` flag is only meaningful with `--stdout` — using it
+on its own logs a warning and the flag is ignored.
 
 #### Logging verbosity
 
@@ -678,7 +695,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 24.04.2026 18:34:58
+Last updated: 24.04.2026 19:02:00
 ```
 
 </td></tr>
@@ -832,6 +849,7 @@ This section summarises the main user-visible changes in each release. For full 
 - **`tableOfContents` widget**: added the `min-items` parameter — the widget now skips rendering entirely (title included) when fewer than this many headings survive the filters.
 - **`tableOfContents` widget**: added the `anchor-style` parameter (`github` | `gitlab` | `bitbucket`) to match the slugification rules of the target hosting platform.
 - **Log levels**: added the `--log-level` CLI flag (`trace|debug|info|warn|error`, default `info`), the `NRG_LOG_LEVEL` environment variable fallback, and a matching `<logLevel>` Maven plugin parameter.
+- **`--stdout` flag**: new CLI flag that streams generated output to standard output instead of writing files; pair with `--language <code>` to select a single variant.
 - Fixed: the `languages` widget now produces correct link targets when rendered inside an imported fragment.
 
 ### 0.3

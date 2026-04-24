@@ -34,6 +34,29 @@ To see the list of available options for the console application, type:<!--en-->
 nrg --help
 ```
 
+#### ${en:'Print to stdout', ru:'Вывод в stdout'}
+
+Use `--stdout` to stream generated output to standard output instead<!--en-->
+of writing files to disk. Combine with `--language <code>` to print<!--en-->
+only a single language variant; without it, every configured variant<!--en-->
+is printed, prefixed with a separator line like `=== README.ru.md ===`<!--en-->
+so the output can be split by downstream tools.<!--en-->
+Флаг `--stdout` перенаправляет сгенерированный вывод в stdout,<!--ru-->
+файлы на диск при этом не создаются. В сочетании с `--language <код>`<!--ru-->
+печатается только один языковой вариант; без него выводятся все<!--ru-->
+настроенные варианты, каждый предваряется строкой-разделителем вида<!--ru-->
+`=== README.ru.md ===`, чтобы вывод можно было разрезать во внешних инструментах.<!--ru-->
+
+```bash
+nrg --stdout -f README.src.md
+nrg --stdout --language en -f README.src.md
+```
+
+The `--language` flag is only meaningful with `--stdout` — using it<!--en-->
+on its own logs a warning and the flag is ignored.<!--en-->
+Флаг `--language` имеет смысл только вместе с `--stdout` — в одиночку<!--ru-->
+он логируется как предупреждение и игнорируется.<!--ru-->
+
 #### ${en:'Logging verbosity', ru:'Уровень логирования'}
 
 Control how much NRG prints to the console with `--log-level`. Accepted<!--en-->
