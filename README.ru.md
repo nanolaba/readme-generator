@@ -698,7 +698,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 24.04.2026 19:02:00
+Last updated: 24.04.2026 19:14:22
 ```
 
 </td></tr>
@@ -824,6 +824,20 @@ Generator generator = new Generator(
 Collection<GenerationResult> results = generator.getResults();
 ```
 
+**Вариант 3:** регистрация виджетов прямо из шаблона при помощи свойства `nrg.widgets` либо из CLI через `--widgets` (при необходимости добавив JAR-файлы через `--classpath`):
+
+```markdown
+<!--@nrg.widgets=com.acme.widgets.Tag,com.acme.widgets.Banner-->
+```
+
+```bash
+nrg --classpath my-widgets.jar --widgets com.acme.widgets.Tag,com.acme.widgets.Banner -f README.src.md
+```
+
+Каждый класс-виджет должен быть публичным и иметь публичный конструктор
+без аргументов. Если класс не найден, не реализует `NRGWidget` или выбрасывает
+исключение при создании, NRG выводит понятное сообщение в консоль.
+
 ## Похожие проекты
 
 Другие инструменты в этой области — пригодятся, если **Nanolaba Readme Generator (NRG)** не подходит под ваш стек или рабочий процесс:
@@ -853,6 +867,7 @@ Collection<GenerationResult> results = generator.getResults();
 - **Виджет `tableOfContents`**: добавлен параметр `anchor-style` (`github` | `gitlab` | `bitbucket`) для соответствия правилам формирования якорей на целевой платформе хостинга.
 - **Уровни логирования**: добавлен флаг CLI `--log-level` (`trace|debug|info|warn|error`, по умолчанию `info`), резервная переменная окружения `NRG_LOG_LEVEL` и соответствующий параметр `<logLevel>` в Maven-плагине.
 - **Флаг `--stdout`**: новый CLI-флаг, выводящий сгенерированный результат в stdout вместо записи файлов; в паре с `--language <код>` печатает только один языковой вариант.
+- **Пользовательские виджеты в CLI и шаблонах**: свойство шаблона `nrg.widgets` и флаги CLI `--widgets` / `--classpath` позволяют регистрировать собственные реализации `NRGWidget` без необходимости писать свой лаунчер.
 - Исправлено: виджет `languages` теперь правильно формирует ссылки при использовании внутри импортированного фрагмента.
 
 ### 0.3

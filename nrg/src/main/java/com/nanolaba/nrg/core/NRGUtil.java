@@ -1,16 +1,64 @@
 package com.nanolaba.nrg.core;
 
+import com.nanolaba.logging.LOG;
+import com.nanolaba.nrg.widgets.NRGWidget;
 import org.apache.commons.lang3.StringUtils;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
+import java.lang.reflect.InvocationTargetException;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class NRGUtil {
 
     private NRGUtil() {/**/}
+
+    public static List<NRGWidget> loadWidgets(String commaSeparatedFqcns, ClassLoader classLoader) {
+        List<NRGWidget> result = new ArrayList<>();
+        if (StringUtils.isBlank(commaSeparatedFqcns)) {
+            return result;
+        }
+        ClassLoader cl = classLoader != null ? classLoader : Thread.currentThread().getContextClassLoader();
+        for (String raw : commaSeparatedFqcns.split(",")) {
+            String fqcn = raw.trim();
+            if (fqcn.isEmpty()) {
+                continue;
+            }
+            NRGWidget widget = loadWidget(fqcn, cl);
+            if (widget != null) {
+                result.add(widget);
+            }
+        }
+        return result;
+    }
+
+    private static NRGWidget loadWidget(String fqcn, ClassLoader classLoader) {
+        Class<?> cls;
+        try {
+            cls = Class.forName(fqcn, true, classLoader);
+        } catch (ClassNotFoundException e) {
+            LOG.error("Widget class not found: '{}' (check the classpath and the spelling)", fqcn);
+            return null;
+        }
+        if (!NRGWidget.class.isAssignableFrom(cls)) {
+            LOG.error("Class '{}' does not implement {}", fqcn, NRGWidget.class.getName());
+            return null;
+        }
+        try {
+            Object instance = cls.getDeclaredConstructor().newInstance();
+            return (NRGWidget) instance;
+        } catch (NoSuchMethodException e) {
+            LOG.error("Widget class '{}' must declare a public no-argument constructor", fqcn);
+            return null;
+        } catch (InvocationTargetException e) {
+            LOG.error(e.getCause() != null ? e.getCause() : e,
+                    () -> "Widget class '" + fqcn + "' threw during construction");
+            return null;
+        } catch (Throwable e) {
+            LOG.error(e, () -> "Failed to instantiate widget class '" + fqcn + "'");
+            return null;
+        }
+    }
 
     public static void mergeProperty(Object key, Object value, Properties properties) {
         properties.setProperty(key.toString(), String.valueOf(value));

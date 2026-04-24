@@ -7,6 +7,7 @@ public class NRGConstants {
 
     public static final String PROPERTY_LANGUAGES = "nrg.languages";
     public static final String PROPERTY_DEFAULT_LANGUAGE = "nrg.defaultLanguage";
+    public static final String PROPERTY_WIDGETS = "nrg.widgets";
 
     public static final Charset DEFAULT_CHARSET = StandardCharsets.UTF_8;
     public static final String DEFAULT_SOURCE_EXTENSION = "src.md";

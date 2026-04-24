@@ -695,7 +695,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 24.04.2026 19:02:00
+Last updated: 24.04.2026 19:14:22
 ```
 
 </td></tr>
@@ -821,6 +821,21 @@ Generator generator = new Generator(
 Collection<GenerationResult> results = generator.getResults();
 ```
 
+**Option 3:** register widgets directly from the template via the `nrg.widgets` property, or from the CLI via `--widgets` (with `--classpath` pointing to the JAR that contains the classes):
+
+```markdown
+<!--@nrg.widgets=com.acme.widgets.Tag,com.acme.widgets.Banner-->
+```
+
+```bash
+nrg --classpath my-widgets.jar --widgets com.acme.widgets.Tag,com.acme.widgets.Banner -f README.src.md
+```
+
+Each widget class must be public and expose a public no-argument
+constructor. NRG falls back to a helpful error message on the console
+if the class cannot be found, doesn't implement `NRGWidget`, or throws
+during instantiation.
+
 ## Related projects
 
 Other tools in the same space — useful if **Nanolaba Readme Generator (NRG)** does not fit your stack or workflow:
@@ -850,6 +865,7 @@ This section summarises the main user-visible changes in each release. For full 
 - **`tableOfContents` widget**: added the `anchor-style` parameter (`github` | `gitlab` | `bitbucket`) to match the slugification rules of the target hosting platform.
 - **Log levels**: added the `--log-level` CLI flag (`trace|debug|info|warn|error`, default `info`), the `NRG_LOG_LEVEL` environment variable fallback, and a matching `<logLevel>` Maven plugin parameter.
 - **`--stdout` flag**: new CLI flag that streams generated output to standard output instead of writing files; pair with `--language <code>` to select a single variant.
+- **Custom widgets from CLI and templates**: the `nrg.widgets` template property and the `--widgets` / `--classpath` CLI flags let users register custom `NRGWidget` implementations without a custom launcher.
 - Fixed: the `languages` widget now produces correct link targets when rendered inside an imported fragment.
 
 ### 0.3
