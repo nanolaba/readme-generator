@@ -34,6 +34,25 @@ To see the list of available options for the console application, type:<!--en-->
 nrg --help
 ```
 
+#### ${en:'Logging verbosity', ru:'Уровень логирования'}
+
+Control how much NRG prints to the console with `--log-level`. Accepted<!--en-->
+values are `trace`, `debug`, `info` (default), `warn`, and `error` —<!--en-->
+each level suppresses messages below it. The environment variable<!--en-->
+`NRG_LOG_LEVEL` is consulted when `--log-level` is not supplied, which<!--en-->
+is convenient for CI and the Maven plugin. Invalid values abort the<!--en-->
+run with a usage error on stderr.<!--en-->
+Управляйте детализацией вывода через `--log-level`. Допустимые значения —<!--ru-->
+`trace`, `debug`, `info` (по умолчанию), `warn`, `error`; каждый уровень<!--ru-->
+подавляет сообщения ниже по важности. Если флаг не задан, используется<!--ru-->
+переменная окружения `NRG_LOG_LEVEL` — удобно для CI и Maven-плагина.<!--ru-->
+Неизвестное значение приводит к завершению с сообщением об ошибке в stderr.<!--ru-->
+
+```bash
+nrg --log-level warn -f /path/to/README.src.md
+NRG_LOG_LEVEL=warn nrg -f /path/to/README.src.md
+```
+
 ### ${en:'Use as maven plugin', ru:'Использование как плагина для maven'}
 
 Добавьте следующий код в ваш `pom.xml`:<!--ru-->
@@ -51,6 +70,7 @@ Add the following code to your `pom.xml`:<!--en-->
                 <item>README.src.md</item>
                 <item>another-file.src.md</item>
             </file>
+            <logLevel>warn</logLevel>
         </configuration>
         <executions>
             <execution>

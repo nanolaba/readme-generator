@@ -44,6 +44,7 @@ The current development version is **0.4-SNAPSHOT**.
 1. [Quick start](#quick-start)
 1. [Usage](#usage)
 	1. [Using the Command Line Interface](#using-the-command-line-interface)
+		1. [Logging verbosity](#logging-verbosity)
 	2. [Use as maven plugin](#use-as-maven-plugin)
 	3. [Use as a java-library](#use-as-a-java-library)
 2. [Template syntax](#template-syntax)
@@ -196,6 +197,20 @@ To see the list of available options for the console application, type:
 nrg --help
 ```
 
+#### Logging verbosity
+
+Control how much NRG prints to the console with `--log-level`. Accepted
+values are `trace`, `debug`, `info` (default), `warn`, and `error` —
+each level suppresses messages below it. The environment variable
+`NRG_LOG_LEVEL` is consulted when `--log-level` is not supplied, which
+is convenient for CI and the Maven plugin. Invalid values abort the
+run with a usage error on stderr.
+
+```bash
+nrg --log-level warn -f /path/to/README.src.md
+NRG_LOG_LEVEL=warn nrg -f /path/to/README.src.md
+```
+
 ### Use as maven plugin
 
 Add the following code to your `pom.xml`:
@@ -212,6 +227,7 @@ Add the following code to your `pom.xml`:
                 <item>README.src.md</item>
                 <item>another-file.src.md</item>
             </file>
+            <logLevel>warn</logLevel>
         </configuration>
         <executions>
             <execution>
@@ -662,7 +678,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 24.04.2026 18:14:04
+Last updated: 24.04.2026 18:34:58
 ```
 
 </td></tr>
@@ -815,6 +831,7 @@ This section summarises the main user-visible changes in each release. For full 
 - **`tableOfContents` widget**: added the `min-depth` and `max-depth` parameters to limit which heading levels appear in the table of contents.
 - **`tableOfContents` widget**: added the `min-items` parameter — the widget now skips rendering entirely (title included) when fewer than this many headings survive the filters.
 - **`tableOfContents` widget**: added the `anchor-style` parameter (`github` | `gitlab` | `bitbucket`) to match the slugification rules of the target hosting platform.
+- **Log levels**: added the `--log-level` CLI flag (`trace|debug|info|warn|error`, default `info`), the `NRG_LOG_LEVEL` environment variable fallback, and a matching `<logLevel>` Maven plugin parameter.
 - Fixed: the `languages` widget now produces correct link targets when rendered inside an imported fragment.
 
 ### 0.3
