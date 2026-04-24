@@ -9,7 +9,7 @@
 [![CI](https://github.com/nanolaba/readme-generator/actions/workflows/ci.yml/badge.svg)](https://github.com/nanolaba/readme-generator/actions/workflows/ci.yml)
 [![Maven Central](https://img.shields.io/maven-central/v/com.nanolaba/readme-generator?label=Maven%20Central)](https://central.sonatype.com/artifact/com.nanolaba/readme-generator)
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
-![Java](https://img.shields.io/badge/Java-8%2B-orange)
+![Java](https://img.shields.io/badge/Java-8+-orange.svg)
 
 **Nanolaba Readme Generator (NRG)** — это инструмент с открытым исходным кодом на Java для автоматизации создания Markdown-документации
 с поддержкой нескольких языков, динамическими переменными и пользовательскими виджетами.
@@ -34,8 +34,7 @@
 - **Гибкая интеграция** - CLI, Maven-плагин или Java-библиотека
 - **Расширяемость** - Возможность писать собственные виджеты для генерации контента
 
-> [!NOTE]
-> **Nanolaba Readme Generator (NRG)** написан на Java и требует для запуска версии **Java 8** и выше.
+> 💡 **Nanolaba Readme Generator (NRG)** написан на Java и требует для запуска версии **Java 8** и выше.
 
 Последняя стабильная версия - **0.3**.
 Текущая версия разработки - **0.4-SNAPSHOT**.
@@ -62,6 +61,7 @@
 		1. [Виджет 'date'](#виджет-date)
 		2. [Виджет 'todo'](#виджет-todo)
 		3. [Виджет 'alert'](#виджет-alert)
+		4. [Виджет 'badge'](#виджет-badge)
 1. [Расширенные возможности](#расширенные-возможности)
 	1. [Создание виджета](#создание-виджета)
 2. [Похожие проекты](#похожие-проекты)
@@ -739,7 +739,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 24.04.2026 20:37:37
+Last updated: 24.04.2026 21:00:47
 ```
 
 </td></tr>
@@ -853,6 +853,99 @@ ${widget:alert(type = 'warning', text = 'Line 1\nLine 2')}
 
 ---
 
+#### Виджет 'badge'
+
+Этот компонент формирует markdown-ссылки с картинкой для
+shields.io-бейджей типовых назначений (Maven Central, лицензия,
+GitHub релиз/звёзды) и произвольного `custom`.
+
+<table>
+<tr><th>Пример использования</th><th>Результат</th></tr>
+<tr><td>
+
+```markdown
+${widget:badge(type = 'maven-central', coordinates = 'com.nanolaba:readme-generator')}
+```
+
+</td><td>
+
+```markdown
+[![Maven Central](https://img.shields.io/maven-central/v/com.nanolaba/readme-generator?label=Maven%20Central)](https://central.sonatype.com/artifact/com.nanolaba/readme-generator)
+```
+
+</td></tr>
+<tr><td>
+
+```markdown
+${widget:badge(type = 'license', value = 'Apache-2.0', url = 'https://www.apache.org/licenses/LICENSE-2.0')}
+```
+
+</td><td>
+
+```markdown
+[![License: Apache-2.0](https://img.shields.io/badge/License-Apache--2.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
+```
+
+</td></tr>
+<tr><td>
+
+```markdown
+${widget:badge(type = 'github-release', repo = 'nanolaba/readme-generator')}
+```
+
+</td><td>
+
+```markdown
+[![GitHub release](https://img.shields.io/github/v/release/nanolaba/readme-generator)](https://github.com/nanolaba/readme-generator/releases/latest)
+```
+
+</td></tr>
+<tr><td>
+
+```markdown
+${widget:badge(type = 'github-stars', repo = 'nanolaba/readme-generator')}
+```
+
+</td><td>
+
+```markdown
+[![GitHub stars](https://img.shields.io/github/stars/nanolaba/readme-generator?style=social)](https://github.com/nanolaba/readme-generator)
+```
+
+</td></tr>
+<tr><td>
+
+```markdown
+${widget:badge(type = 'custom', label = 'docs', message = 'up to date', color = 'brightgreen')}
+```
+
+</td><td>
+
+```markdown
+![docs](https://img.shields.io/badge/docs-up_to_date-brightgreen.svg)
+```
+
+</td></tr>
+</table>
+
+Свойства виджета:
+
+| Наименование | Описание                                                                         |         Обязательно для          |
+|:------------:|----------------------------------------------------------------------------------|:--------------------------------:|
+|     type     | Одно из: `maven-central`, `license`, `github-release`, `github-stars`, `custom`. |               все                |
+| coordinates  | Координаты Maven `groupId:artifactId`.                                           |         `maven-central`          |
+|    value     | Идентификатор лицензии (например, `Apache-2.0`, `MIT`).                          |            `license`             |
+|     repo     | Репозиторий GitHub `owner/name`.                                                 | `github-release`, `github-stars` |
+|    label     | Левая подпись бейджа.                                                            |             `custom`             |
+|   message    | Правая часть (значение) бейджа.                                                  |             `custom`             |
+|    color     | Цвет бейджа (`brightgreen`, `blue`, hex, …).                                     |             `custom`             |
+|     url      | Необязательная ссылка. Без неё бейдж не кликабелен.                              |                —                 |
+
+Неизвестные значения `type` и отсутствие обязательных параметров
+приводят к ошибке в логе и пустому выводу.
+
+---
+
 ## Расширенные возможности
 
 ### Создание виджета
@@ -960,6 +1053,7 @@ nrg --classpath my-widgets.jar --widgets com.acme.widgets.Tag,com.acme.widgets.B
 - При совпадении имён поиск виджета теперь возвращает последний зарегистрированный, что позволяет пользовательским виджетам перекрывать встроенные.
 - **Флаг `--check`**: режим проверки для CI, сравнивает сгенерированный вывод с файлами на диске, выводит diff в stderr при расхождении и завершается с кодом `1`. `nrg-maven-plugin` предоставляет соответствующий параметр `<check>` и падает с `MojoExecutionException`.
 - **Виджет `alert`**: формирует alert-блоки в стиле GitHub (`> [!NOTE]`, `> [!WARNING]`, `> [!TIP]`, `> [!IMPORTANT]`, `> [!CAUTION]`) одним вызовом ``, поддерживает `\n` для многострочного текста.
+- **Виджет `badge`**: формирует shields.io-бейджи для `maven-central`, `license`, `github-release`, `github-stars` и свободного `custom`-варианта — URL-адреса больше не нужно собирать вручную.
 - Исправлено: виджет `languages` теперь правильно формирует ссылки при использовании внутри импортированного фрагмента.
 
 ### 0.3

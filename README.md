@@ -9,7 +9,7 @@
 [![CI](https://github.com/nanolaba/readme-generator/actions/workflows/ci.yml/badge.svg)](https://github.com/nanolaba/readme-generator/actions/workflows/ci.yml)
 [![Maven Central](https://img.shields.io/maven-central/v/com.nanolaba/readme-generator?label=Maven%20Central)](https://central.sonatype.com/artifact/com.nanolaba/readme-generator)
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
-![Java](https://img.shields.io/badge/Java-8%2B-orange)
+![Java](https://img.shields.io/badge/Java-8+-orange.svg)
 
 **Nanolaba Readme Generator (NRG)** — is an open-source Java tool for automating Markdown documentation with multi-language
 support, dynamic variables, and custom widgets.
@@ -34,8 +34,7 @@ Using **Nanolaba Readme Generator (NRG)**, you can:
 - **Flexible Integration** - CLI, Maven plugin, or Java library
 - **Extensibility** - Supports the ability to create custom widgets for content generation
 
-> [!NOTE]
-> **Nanolaba Readme Generator (NRG)** is written in Java and requires **Java 8** or higher to run.
+> 💡 **Nanolaba Readme Generator (NRG)** is written in Java and requires **Java 8** or higher to run.
 
 The latest stable version of the program is **0.3**.
 The current development version is **0.4-SNAPSHOT**.
@@ -62,6 +61,7 @@ The current development version is **0.4-SNAPSHOT**.
 		1. [Widget 'date'](#widget-date)
 		2. [Widget 'todo'](#widget-todo)
 		3. [Widget 'alert'](#widget-alert)
+		4. [Widget 'badge'](#widget-badge)
 1. [Advanced features](#advanced-features)
 	1. [Creating a widget](#creating-a-widget)
 2. [Related projects](#related-projects)
@@ -736,7 +736,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 24.04.2026 20:37:37
+Last updated: 24.04.2026 21:00:47
 ```
 
 </td></tr>
@@ -850,6 +850,99 @@ Widget parameters:
 
 ---
 
+#### Widget 'badge'
+
+This component generates Markdown image links for shields.io badges
+of common project-status flavors (Maven Central version, license,
+GitHub release/stars) and a free-form `custom` variant.
+
+<table>
+<tr><th>Usage example</th><th>Result</th></tr>
+<tr><td>
+
+```markdown
+${widget:badge(type = 'maven-central', coordinates = 'com.nanolaba:readme-generator')}
+```
+
+</td><td>
+
+```markdown
+[![Maven Central](https://img.shields.io/maven-central/v/com.nanolaba/readme-generator?label=Maven%20Central)](https://central.sonatype.com/artifact/com.nanolaba/readme-generator)
+```
+
+</td></tr>
+<tr><td>
+
+```markdown
+${widget:badge(type = 'license', value = 'Apache-2.0', url = 'https://www.apache.org/licenses/LICENSE-2.0')}
+```
+
+</td><td>
+
+```markdown
+[![License: Apache-2.0](https://img.shields.io/badge/License-Apache--2.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
+```
+
+</td></tr>
+<tr><td>
+
+```markdown
+${widget:badge(type = 'github-release', repo = 'nanolaba/readme-generator')}
+```
+
+</td><td>
+
+```markdown
+[![GitHub release](https://img.shields.io/github/v/release/nanolaba/readme-generator)](https://github.com/nanolaba/readme-generator/releases/latest)
+```
+
+</td></tr>
+<tr><td>
+
+```markdown
+${widget:badge(type = 'github-stars', repo = 'nanolaba/readme-generator')}
+```
+
+</td><td>
+
+```markdown
+[![GitHub stars](https://img.shields.io/github/stars/nanolaba/readme-generator?style=social)](https://github.com/nanolaba/readme-generator)
+```
+
+</td></tr>
+<tr><td>
+
+```markdown
+${widget:badge(type = 'custom', label = 'docs', message = 'up to date', color = 'brightgreen')}
+```
+
+</td><td>
+
+```markdown
+![docs](https://img.shields.io/badge/docs-up_to_date-brightgreen.svg)
+```
+
+</td></tr>
+</table>
+
+Widget parameters:
+
+|    Name     | Description                                                                     |           Required for           |
+|:-----------:|---------------------------------------------------------------------------------|:--------------------------------:|
+|    type     | One of: `maven-central`, `license`, `github-release`, `github-stars`, `custom`. |               all                |
+| coordinates | Maven coordinates `groupId:artifactId`.                                         |         `maven-central`          |
+|    value    | License identifier (e.g. `Apache-2.0`, `MIT`).                                  |            `license`             |
+|    repo     | GitHub repository `owner/name`.                                                 | `github-release`, `github-stars` |
+|    label    | Left-side label of the badge.                                                   |             `custom`             |
+|   message   | Right-side text of the badge.                                                   |             `custom`             |
+|    color    | Badge color (`brightgreen`, `blue`, hex, …).                                    |             `custom`             |
+|     url     | Optional link target. Without it the badge is non-clickable.                    |                —                 |
+
+Unknown `type` values and missing required parameters log an error
+and produce no output.
+
+---
+
 ## Advanced features
 
 ### Creating a widget
@@ -958,6 +1051,7 @@ This section summarises the main user-visible changes in each release. For full 
 - Widget resolution now prefers the last registration on name collision, so user widgets shadow built-ins with the same name.
 - **`--check` flag**: CI-friendly verification mode that compares generated output against files on disk, prints a diff to stderr on mismatch, and exits with status `1`. The `nrg-maven-plugin` exposes it via `<check>` and fails the build with a `MojoExecutionException`.
 - **`alert` widget**: renders GitHub-flavored alert blocks (`> [!NOTE]`, `> [!WARNING]`, `> [!TIP]`, `> [!IMPORTANT]`, `> [!CAUTION]`) from a single `` call, with `\n` escapes for multi-line body text.
+- **`badge` widget**: renders shields.io badges for `maven-central`, `license`, `github-release`, `github-stars`, and a free-form `custom` variant — no more hand-crafted URLs.
 - Fixed: the `languages` widget now produces correct link targets when rendered inside an imported fragment.
 
 ### 0.3

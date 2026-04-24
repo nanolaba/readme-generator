@@ -10,9 +10,9 @@ ${widget:languages}
 # Nanolaba Readme Generator (NRG)${en:' - Automated Markdown Documentation Tool', ru:''}
 
 [![CI](https://github.com/nanolaba/readme-generator/actions/workflows/ci.yml/badge.svg)](https://github.com/nanolaba/readme-generator/actions/workflows/ci.yml)
-[![Maven Central](https://img.shields.io/maven-central/v/com.nanolaba/readme-generator?label=Maven%20Central)](https://central.sonatype.com/artifact/com.nanolaba/readme-generator)
-[![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
-![Java](https://img.shields.io/badge/Java-8%2B-orange)
+${widget:badge(type='maven-central', coordinates='com.nanolaba:readme-generator')}
+${widget:badge(type='license', value='Apache 2.0', url='https://www.apache.org/licenses/LICENSE-2.0')}
+${widget:badge(type='custom', label='Java', message='8+', color='orange')}
 
 ${name} — это инструмент с открытым исходным кодом на Java для автоматизации создания Markdown-документации <!--ru-->
 с поддержкой нескольких языков, динамическими переменными и пользовательскими виджетами.<!--ru-->

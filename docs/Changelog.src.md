@@ -17,6 +17,7 @@ This section summarises the main user-visible changes in each release. For full 
 - Widget resolution now prefers the last registration on name collision, so user widgets shadow built-ins with the same name.<!--en-->
 - **`--check` flag**: CI-friendly verification mode that compares generated output against files on disk, prints a diff to stderr on mismatch, and exits with status `1`. The `nrg-maven-plugin` exposes it via `<check>` and fails the build with a `MojoExecutionException`.<!--en-->
 - **`alert` widget**: renders GitHub-flavored alert blocks (`> [!NOTE]`, `> [!WARNING]`, `> [!TIP]`, `> [!IMPORTANT]`, `> [!CAUTION]`) from a single `${widget:alert(type='...', text='...')}` call, with `\n` escapes for multi-line body text.<!--en-->
+- **`badge` widget**: renders shields.io badges for `maven-central`, `license`, `github-release`, `github-stars`, and a free-form `custom` variant — no more hand-crafted URLs.<!--en-->
 - Fixed: the `languages` widget now produces correct link targets when rendered inside an imported fragment.<!--en-->
 - **Виджет `import`**: добавлены параметры `lines`, `region`, `wrap`, `lang` и `dedent` для точного включения фрагментов файлов.<!--ru-->
 - Добавлены маркеры `<\!--nrg.ignore-->` и парные `<\!--nrg.ignore.begin-->` / `<\!--nrg.ignore.end-->` для исключения авторских заметок из результирующих файлов (в т.ч. внутри импортированных файлов).<!--ru-->
@@ -30,6 +31,7 @@ This section summarises the main user-visible changes in each release. For full 
 - При совпадении имён поиск виджета теперь возвращает последний зарегистрированный, что позволяет пользовательским виджетам перекрывать встроенные.<!--ru-->
 - **Флаг `--check`**: режим проверки для CI, сравнивает сгенерированный вывод с файлами на диске, выводит diff в stderr при расхождении и завершается с кодом `1`. `nrg-maven-plugin` предоставляет соответствующий параметр `<check>` и падает с `MojoExecutionException`.<!--ru-->
 - **Виджет `alert`**: формирует alert-блоки в стиле GitHub (`> [!NOTE]`, `> [!WARNING]`, `> [!TIP]`, `> [!IMPORTANT]`, `> [!CAUTION]`) одним вызовом `${widget:alert(type='...', text='...')}`, поддерживает `\n` для многострочного текста.<!--ru-->
+- **Виджет `badge`**: формирует shields.io-бейджи для `maven-central`, `license`, `github-release`, `github-stars` и свободного `custom`-варианта — URL-адреса больше не нужно собирать вручную.<!--ru-->
 - Исправлено: виджет `languages` теперь правильно формирует ссылки при использовании внутри импортированного фрагмента.<!--ru-->
 
 ### 0.3<!--toc.ignore-->
