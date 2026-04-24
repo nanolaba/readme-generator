@@ -33,9 +33,14 @@ public class TableOfContentsWidget extends DefaultWidget {
 
         Config tocConfig = getConfig(widgetTag.getParameters());
 
+        String toc = createTOC(widgetTag, config, language, tocConfig);
+        if (toc.isEmpty()) {
+            return "";
+        }
+
         String title = StringUtils.isNotEmpty(tocConfig.getTitle()) ? "## " + tocConfig.getTitle() + System.lineSeparator() : "";
 
-        return title + createTOC(widgetTag, config, language, tocConfig);
+        return title + toc;
     }
 
     @Override
@@ -62,15 +67,24 @@ public class TableOfContentsWidget extends DefaultWidget {
             int minLevel = tocConfig.getMinDepth() - 1;
             int maxLevel = tocConfig.getMaxDepth() - 1;
 
-            return indexOfTOC < 0 ? "" : reader.lines()
+            if (indexOfTOC < 0) {
+                return "";
+            }
+
+            List<String> items = reader.lines()
                     .skip(indexOfTOC)
                     .filter(line -> !line.contains(IGNORE_ATTR))
                     .map(s -> new TemplateLine(config, s, 0).fillLineWithProperties(language))
                     .filter(Objects::nonNull)
                     .map(line -> new Header(line, tocConfig, allHeaders))
-                                         .filter(header -> header.level >= minLevel && header.level <= maxLevel)
+                    .filter(header -> header.level >= minLevel && header.level <= maxLevel)
                     .map(Object::toString)
-                    .collect(Collectors.joining());
+                    .collect(Collectors.toList());
+
+            if (items.size() < tocConfig.getMinItems()) {
+                return "";
+            }
+            return String.join("", items);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -98,6 +112,12 @@ public class TableOfContentsWidget extends DefaultWidget {
                 config.setMaxDepth(value);
             }
         }
+        if (map.containsKey("min-items")) {
+            Integer value = parseMinItems(map.get("min-items"));
+            if (value != null) {
+                config.setMinItems(value);
+            }
+        }
         if (config.getMinDepth() > config.getMaxDepth()) {
             LOG.error("tableOfContents widget: min-depth ({}) must not exceed max-depth ({}); using defaults",
                     config.getMinDepth(), config.getMaxDepth());
@@ -122,6 +142,20 @@ public class TableOfContentsWidget extends DefaultWidget {
         }
     }
 
+    private static Integer parseMinItems(String raw) {
+        try {
+            int value = Integer.parseInt(raw.trim());
+            if (value < 1) {
+                LOG.error("tableOfContents widget: min-items must be >= 1, got '{}'", raw);
+                return null;
+            }
+            return value;
+        } catch (NumberFormatException e) {
+            LOG.error("tableOfContents widget: min-items must be an integer, got '{}'", raw);
+            return null;
+        }
+    }
+
     /// /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     protected static class Config {
@@ -129,6 +163,7 @@ public class TableOfContentsWidget extends DefaultWidget {
         private boolean ordered;
         private int minDepth = 2;
         private int maxDepth = 6;
+        private int minItems = 1;
 
         public String getTitle() {
             return title;
@@ -160,6 +195,14 @@ public class TableOfContentsWidget extends DefaultWidget {
 
         public void setMaxDepth(int maxDepth) {
             this.maxDepth = maxDepth;
+        }
+
+        public int getMinItems() {
+            return minItems;
+        }
+
+        public void setMinItems(int minItems) {
+            this.minItems = minItems;
         }
     }
 
