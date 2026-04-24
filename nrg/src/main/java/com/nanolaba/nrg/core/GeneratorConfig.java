@@ -33,7 +33,7 @@ public class GeneratorConfig {
 
     public GeneratorConfig(File sourceFile, String templateText, List<NRGWidget> widgets) {
         this.sourceFile = sourceFile;
-        this.sourceFileBody = templateText;
+        this.sourceFileBody = IgnoreBlockStripper.strip(templateText);
         this.rootSourceFile = sourceFile;
 
         getSourceLinesStream().forEach(this::readLanguagesPropertiesFromLine);

@@ -47,7 +47,8 @@ The latest stable version of the program is **0.3**. The current development ver
 	1. [Variables](#variables)
 	2. [Properties](#properties)
 	3. [Multilanguage support](#multilanguage-support)
-	4. [Widgets](#widgets)
+	4. [Ignoring content](#ignoring-content)
+	5. [Widgets](#widgets)
 		1. [Widget 'languages'](#widget-languages)
 		2. [Widget 'import'](#widget-import)
 		1. [Widget 'tableOfContents'](#widget-tableofcontents)
@@ -393,6 +394,40 @@ To escape quotes, use character doubling, for example:
 - `${en:'It''s working'}` → `It's working`
 - `${en:"Text with ""quotes"""}` → `Text with "quotes"`
 
+### Ignoring content
+
+To mark a fragment as an author note that must not appear in any generated file, use the `nrg.ignore` markers. They work in the root template and inside imported files.
+
+- `<!--nrg.ignore-->` — drops the entire line containing the marker.
+- `<!--nrg.ignore.begin-->` ... `<!--nrg.ignore.end-->` — drops all lines of the block, including the markers themselves.
+
+If an `<!--nrg.ignore.begin-->` has no matching `<!--nrg.ignore.end-->`, an error is logged and everything from the opening marker to the end of the file is dropped. A lone
+`<!--nrg.ignore.end-->` without a preceding begin is also logged as an error and removed from the output.
+
+<table>
+<tr><th>Usage example</th><th>Result</th></tr>
+<tr><td>
+
+```markdown
+Visible line.
+This is a TODO<!--nrg.ignore-->
+<!--nrg.ignore.begin-->
+Author notes that should not leak
+into the generated README.
+<!--nrg.ignore.end-->
+Another visible line.
+```
+
+</td><td>
+
+```markdown
+Visible line.
+Another visible line.
+```
+
+</td></tr>
+</table>
+
 ### Widgets
 
 Widgets allow you to insert programmatically generated text into a document.
@@ -609,7 +644,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 24.04.2026 03:55:21
+Last updated: 24.04.2026 17:31:15
 ```
 
 </td></tr>
@@ -674,6 +709,7 @@ Widget parameters:
 | Name | Description    |   Default value   |
 |:----:|----------------|:-----------------:|
 | text | Displayed text | `Not done yet...` |
+
 
 ## Advanced features
 
@@ -751,6 +787,7 @@ This section summarises the main user-visible changes in each release. For full 
 ### Unreleased (0.4-SNAPSHOT)
 
 - **`import` widget**: added the `lines`, `region`, `wrap`, `lang`, and `dedent` parameters for fine-grained inclusion of source files.
+- Added `<!--nrg.ignore-->` and paired `<!--nrg.ignore.begin-->` / `<!--nrg.ignore.end-->` markers for removing author notes from generated output (also inside imported files).
 - Fixed: the `languages` widget now produces correct link targets when rendered inside an imported fragment.
 
 ### 0.3

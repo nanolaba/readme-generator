@@ -36,6 +36,21 @@ class ImportWidgetTest {
     }
 
     @Test
+    public void testIgnoreMarkersInsideImportedFile() throws IOException {
+        File sourceFile = new File(getClass().getClassLoader().getResource("ImportWidgetTest/testIgnoreInsideImport/test.src.md").getFile());
+        Generator generator = new Generator(sourceFile, StandardCharsets.UTF_8);
+
+        String body = generator.getResult("en").getContent().toString();
+        LOG.info(body);
+        assertTrue(body.contains("imported-before"));
+        assertTrue(body.contains("imported-after"));
+        assertFalse(body.contains("imported-inline-note"));
+        assertFalse(body.contains("author note line 1"));
+        assertFalse(body.contains("author note line 2"));
+        assertFalse(body.contains("nrg.ignore"));
+    }
+
+    @Test
     public void testImportForDifferentLanguages() throws IOException {
         File sourceFile = new File(getClass().getClassLoader().getResource("ImportWidgetTest/testImportForDifferentLanguages/test.src.md").getFile());
         Generator generator = new Generator(sourceFile, StandardCharsets.UTF_8);
