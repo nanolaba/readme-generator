@@ -245,7 +245,18 @@ NRG_LOG_LEVEL=warn nrg -f /path/to/README.src.md
                 <item>another-file.src.md</item>
             </file>
             <logLevel>warn</logLevel>
+            <widgets>
+                <widget>com.example.MyWidget</widget>
+                <widget>com.example.OtherWidget</widget>
+            </widgets>
         </configuration>
+        <dependencies>
+            <dependency>
+                <groupId>com.example</groupId>
+                <artifactId>my-widgets</artifactId>
+                <version>1.0.0</version>
+            </dependency>
+        </dependencies>
         <executions>
             <execution>
                 <phase>compile</phase>
@@ -257,6 +268,12 @@ NRG_LOG_LEVEL=warn nrg -f /path/to/README.src.md
     </plugin>
 </plugins>
 ```
+
+Элементы `<widgets>` должны указывать на публичные классы, реализующие
+`NRGWidget` и имеющие публичный конструктор без аргументов; их артефакт
+необходимо подключить через `<dependencies>` самого плагина, чтобы
+Maven мог их найти. При совпадении имён виджеты из POM имеют приоритет
+над объявленными через свойство шаблона `nrg.widgets`.
 
 Для использования SNAPSHOT-версий также необходимо добавить в `pom.xml` следующий код:
 
@@ -698,7 +715,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 24.04.2026 19:14:22
+Last updated: 24.04.2026 19:24:00
 ```
 
 </td></tr>
@@ -868,6 +885,8 @@ nrg --classpath my-widgets.jar --widgets com.acme.widgets.Tag,com.acme.widgets.B
 - **Уровни логирования**: добавлен флаг CLI `--log-level` (`trace|debug|info|warn|error`, по умолчанию `info`), резервная переменная окружения `NRG_LOG_LEVEL` и соответствующий параметр `<logLevel>` в Maven-плагине.
 - **Флаг `--stdout`**: новый CLI-флаг, выводящий сгенерированный результат в stdout вместо записи файлов; в паре с `--language <код>` печатает только один языковой вариант.
 - **Пользовательские виджеты в CLI и шаблонах**: свойство шаблона `nrg.widgets` и флаги CLI `--widgets` / `--classpath` позволяют регистрировать собственные реализации `NRGWidget` без необходимости писать свой лаунчер.
+- **Пользовательские виджеты в Maven-плагине**: в `nrg-maven-plugin` добавлен параметр `<widgets>`; некорректные записи прерывают сборку с понятным `MojoExecutionException`. Виджеты из POM имеют приоритет над объявленными через свойство шаблона при совпадении имён.
+- При совпадении имён поиск виджета теперь возвращает последний зарегистрированный, что позволяет пользовательским виджетам перекрывать встроенные.
 - Исправлено: виджет `languages` теперь правильно формирует ссылки при использовании внутри импортированного фрагмента.
 
 ### 0.3

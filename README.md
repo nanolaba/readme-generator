@@ -245,7 +245,18 @@ Add the following code to your `pom.xml`:
                 <item>another-file.src.md</item>
             </file>
             <logLevel>warn</logLevel>
+            <widgets>
+                <widget>com.example.MyWidget</widget>
+                <widget>com.example.OtherWidget</widget>
+            </widgets>
         </configuration>
+        <dependencies>
+            <dependency>
+                <groupId>com.example</groupId>
+                <artifactId>my-widgets</artifactId>
+                <version>1.0.0</version>
+            </dependency>
+        </dependencies>
         <executions>
             <execution>
                 <phase>compile</phase>
@@ -257,6 +268,12 @@ Add the following code to your `pom.xml`:
     </plugin>
 </plugins>
 ```
+
+The `<widgets>` entries must name public classes that implement `NRGWidget`
+and declare a public no-argument constructor, and their artifact must be
+listed under the plugin's own `<dependencies>` so Maven can resolve them.
+On a name collision, POM-declared widgets override those declared via the
+`nrg.widgets` template property.
 
 To use SNAPSHOT versions, you also need to add the following code to your `pom.xml`:
 
@@ -695,7 +712,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 24.04.2026 19:14:22
+Last updated: 24.04.2026 19:24:00
 ```
 
 </td></tr>
@@ -866,6 +883,8 @@ This section summarises the main user-visible changes in each release. For full 
 - **Log levels**: added the `--log-level` CLI flag (`trace|debug|info|warn|error`, default `info`), the `NRG_LOG_LEVEL` environment variable fallback, and a matching `<logLevel>` Maven plugin parameter.
 - **`--stdout` flag**: new CLI flag that streams generated output to standard output instead of writing files; pair with `--language <code>` to select a single variant.
 - **Custom widgets from CLI and templates**: the `nrg.widgets` template property and the `--widgets` / `--classpath` CLI flags let users register custom `NRGWidget` implementations without a custom launcher.
+- **Custom widgets in the Maven plugin**: the `nrg-maven-plugin` gains a `<widgets>` parameter; invalid entries fail the build with a descriptive `MojoExecutionException`. POM widgets override template-declared ones on name collision.
+- Widget resolution now prefers the last registration on name collision, so user widgets shadow built-ins with the same name.
 - Fixed: the `languages` widget now produces correct link targets when rendered inside an imported fragment.
 
 ### 0.3

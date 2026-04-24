@@ -108,9 +108,13 @@ public class GeneratorConfig {
     }
 
     public NRGWidget getWidget(String widgetName) {
-        return getWidgets().stream()
-                .filter(e -> e.getName().equals(widgetName))
-                .findFirst().orElse(null);
+        NRGWidget match = null;
+        for (NRGWidget widget : getWidgets()) {
+            if (widget.getName().equals(widgetName)) {
+                match = widget;
+            }
+        }
+        return match;
     }
 
     public File getSourceFile() {
