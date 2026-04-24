@@ -1,5 +1,6 @@
 package com.nanolaba.nrg.widgets;
 
+import com.nanolaba.logging.LOG;
 import com.nanolaba.nrg.core.Generator;
 import com.nanolaba.nrg.core.GeneratorConfig;
 import com.nanolaba.nrg.core.NRGUtil;
@@ -58,13 +59,16 @@ public class TableOfContentsWidget extends DefaultWidget {
 
             int indexOfTOC = NRGUtil.findFirstUnescapedOccurrenceLine(sourceFileBody, "${widget:tableOfContents");
 
+            int minLevel = tocConfig.getMinDepth() - 1;
+            int maxLevel = tocConfig.getMaxDepth() - 1;
+
             return indexOfTOC < 0 ? "" : reader.lines()
                     .skip(indexOfTOC)
                     .filter(line -> !line.contains(IGNORE_ATTR))
                     .map(s -> new TemplateLine(config, s, 0).fillLineWithProperties(language))
                     .filter(Objects::nonNull)
                     .map(line -> new Header(line, tocConfig, allHeaders))
-                    .filter(header -> header.level > 0)
+                                         .filter(header -> header.level >= minLevel && header.level <= maxLevel)
                     .map(Object::toString)
                     .collect(Collectors.joining());
         } catch (IOException e) {
@@ -82,8 +86,40 @@ public class TableOfContentsWidget extends DefaultWidget {
         if (map.containsKey("ordered")) {
             config.setOrdered(Boolean.parseBoolean(map.get("ordered")));
         }
+        if (map.containsKey("min-depth")) {
+            Integer value = parseDepth(map.get("min-depth"), "min-depth");
+            if (value != null) {
+                config.setMinDepth(value);
+            }
+        }
+        if (map.containsKey("max-depth")) {
+            Integer value = parseDepth(map.get("max-depth"), "max-depth");
+            if (value != null) {
+                config.setMaxDepth(value);
+            }
+        }
+        if (config.getMinDepth() > config.getMaxDepth()) {
+            LOG.error("tableOfContents widget: min-depth ({}) must not exceed max-depth ({}); using defaults",
+                    config.getMinDepth(), config.getMaxDepth());
+            config.setMinDepth(2);
+            config.setMaxDepth(6);
+        }
 
         return config;
+    }
+
+    private static Integer parseDepth(String raw, String paramName) {
+        try {
+            int value = Integer.parseInt(raw.trim());
+            if (value < 1 || value > 6) {
+                LOG.error("tableOfContents widget: {} must be between 1 and 6, got '{}'", paramName, raw);
+                return null;
+            }
+            return value;
+        } catch (NumberFormatException e) {
+            LOG.error("tableOfContents widget: {} must be an integer, got '{}'", paramName, raw);
+            return null;
+        }
     }
 
     /// /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -91,6 +127,8 @@ public class TableOfContentsWidget extends DefaultWidget {
     protected static class Config {
         private String title;
         private boolean ordered;
+        private int minDepth = 2;
+        private int maxDepth = 6;
 
         public String getTitle() {
             return title;
@@ -106,6 +144,22 @@ public class TableOfContentsWidget extends DefaultWidget {
 
         public void setOrdered(boolean ordered) {
             this.ordered = ordered;
+        }
+
+        public int getMinDepth() {
+            return minDepth;
+        }
+
+        public void setMinDepth(int minDepth) {
+            this.minDepth = minDepth;
+        }
+
+        public int getMaxDepth() {
+            return maxDepth;
+        }
+
+        public void setMaxDepth(int maxDepth) {
+            this.maxDepth = maxDepth;
         }
     }
 
@@ -182,7 +236,8 @@ public class TableOfContentsWidget extends DefaultWidget {
         @Override
         public String toString() {
             StringBuilder res = new StringBuilder();
-            for (int i = 0; i < Math.max(0, level - 1); i++) {
+            int minLevel = config.getMinDepth() - 1;
+            for (int i = 0; i < Math.max(0, level - minLevel); i++) {
                 res.append("\t");
             }
             if (config.isOrdered()) {
