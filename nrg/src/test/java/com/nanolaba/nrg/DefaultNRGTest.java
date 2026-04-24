@@ -20,6 +20,7 @@ public abstract class DefaultNRGTest {
     @BeforeEach
     public void setUpStreams() {
         LOG.init();
+        NRG.exitOnFailure = false;
         System.setOut(new PrintStream(new TeeOutputStream(originalOut, outContent)));
         System.setErr(new PrintStream(new TeeOutputStream(originalErr, errContent)));
     }

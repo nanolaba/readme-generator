@@ -44,8 +44,9 @@ The current development version is **0.4-SNAPSHOT**.
 1. [Quick start](#quick-start)
 1. [Usage](#usage)
 	1. [Using the Command Line Interface](#using-the-command-line-interface)
-		1. [Print to stdout](#print-to-stdout)
-		2. [Logging verbosity](#logging-verbosity)
+		1. [Verifying generated files (CI mode)](#verifying-generated-files-ci-mode)
+		2. [Print to stdout](#print-to-stdout)
+		3. [Logging verbosity](#logging-verbosity)
 	2. [Use as maven plugin](#use-as-maven-plugin)
 	3. [Use as a java-library](#use-as-a-java-library)
 2. [Template syntax](#template-syntax)
@@ -198,6 +199,20 @@ To see the list of available options for the console application, type:
 nrg --help
 ```
 
+#### Verifying generated files (CI mode)
+
+Use `--check` to verify that files on disk match what NRG would
+generate right now. The flag is meant for CI / pre-commit hooks:
+no files are written, a missing or out-of-date target file prints
+a diff to stderr, and the process exits with status `1`.
+
+```bash
+nrg --check -f README.src.md && echo "README is up to date"
+```
+
+`--check` validates every language configured via `nrg.languages`
+and is mutually exclusive with `--stdout`.
+
 #### Print to stdout
 
 Use `--stdout` to stream generated output to standard output instead
@@ -249,6 +264,7 @@ Add the following code to your `pom.xml`:
                 <widget>com.example.MyWidget</widget>
                 <widget>com.example.OtherWidget</widget>
             </widgets>
+            <check>false</check>
         </configuration>
         <dependencies>
             <dependency>
@@ -274,6 +290,12 @@ and declare a public no-argument constructor, and their artifact must be
 listed under the plugin's own `<dependencies>` so Maven can resolve them.
 On a name collision, POM-declared widgets override those declared via the
 `nrg.widgets` template property.
+
+Set `<check>true</check>` (or pass `-Dcheck=true` on the command line)
+to run the plugin in verification mode: no files are written, and the
+build fails with a `MojoExecutionException` and a diff in the log when
+the generated output diverges from the committed files. Handy for a
+`mvn verify` step in CI to guard against stale READMEs.
 
 To use SNAPSHOT versions, you also need to add the following code to your `pom.xml`:
 
@@ -712,7 +734,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 24.04.2026 19:24:00
+Last updated: 24.04.2026 19:41:59
 ```
 
 </td></tr>
@@ -885,6 +907,7 @@ This section summarises the main user-visible changes in each release. For full 
 - **Custom widgets from CLI and templates**: the `nrg.widgets` template property and the `--widgets` / `--classpath` CLI flags let users register custom `NRGWidget` implementations without a custom launcher.
 - **Custom widgets in the Maven plugin**: the `nrg-maven-plugin` gains a `<widgets>` parameter; invalid entries fail the build with a descriptive `MojoExecutionException`. POM widgets override template-declared ones on name collision.
 - Widget resolution now prefers the last registration on name collision, so user widgets shadow built-ins with the same name.
+- **`--check` flag**: CI-friendly verification mode that compares generated output against files on disk, prints a diff to stderr on mismatch, and exits with status `1`. The `nrg-maven-plugin` exposes it via `<check>` and fails the build with a `MojoExecutionException`.
 - Fixed: the `languages` widget now produces correct link targets when rendered inside an imported fragment.
 
 ### 0.3

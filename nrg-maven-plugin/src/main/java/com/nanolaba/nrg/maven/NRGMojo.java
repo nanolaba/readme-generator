@@ -26,6 +26,9 @@ public class NRGMojo extends AbstractMojo {
     @Parameter
     private List<String> widgets;
 
+    @Parameter(property = "check", defaultValue = "false")
+    private boolean check;
+
     @Parameter(property = "file")
     public void setFile(String[] files) {
         this.files = files;
@@ -33,6 +36,10 @@ public class NRGMojo extends AbstractMojo {
 
     public void setWidgets(List<String> widgets) {
         this.widgets = widgets;
+    }
+
+    public void setCheck(boolean check) {
+        this.check = check;
     }
 
     @Override
@@ -44,6 +51,7 @@ public class NRGMojo extends AbstractMojo {
 
         String widgetsArg = validateAndJoinWidgets();
 
+        boolean anyCheckFailure = false;
         for (String file : files) {
             List<String> args = new ArrayList<>();
             args.add("-f");
@@ -58,7 +66,19 @@ public class NRGMojo extends AbstractMojo {
                 args.add("--widgets");
                 args.add(widgetsArg);
             }
-            NRG.main(args.toArray(new String[0]));
+            if (check) {
+                args.add("--check");
+            }
+            int code = NRG.run(args.toArray(new String[0]));
+            if (check && code != 0) {
+                anyCheckFailure = true;
+            }
+        }
+
+        if (anyCheckFailure) {
+            throw new MojoExecutionException(
+                    "Generated output differs from files on disk (see diff above). " +
+                            "Regenerate README files by running the plugin without <check>.");
         }
     }
 

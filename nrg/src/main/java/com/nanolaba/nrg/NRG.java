@@ -48,16 +48,26 @@ public class NRG {
 
     private static List<NRGWidget> additionalWidgets = new ArrayList<>();
 
+    public static boolean exitOnFailure = true;
+
     public static void main(String... args) {
-        try {
-            parseCommandLine(args);
-        } catch (ParseException e) {
-            System.err.println("Incorrect command line arguments: " + e.getMessage());
-            System.err.println("To view help, run with the -h option");
+        int code = run(args);
+        if (code != 0 && exitOnFailure) {
+            System.exit(code);
         }
     }
 
-    private static void parseCommandLine(String[] args) throws ParseException {
+    public static int run(String... args) {
+        try {
+            return parseCommandLine(args);
+        } catch (ParseException e) {
+            System.err.println("Incorrect command line arguments: " + e.getMessage());
+            System.err.println("To view help, run with the -h option");
+            return 1;
+        }
+    }
+
+    private static int parseCommandLine(String[] args) throws ParseException {
         Options options = new Options();
 
         Option version = new Option(null, "version", false, "print the version information and exit");
@@ -91,6 +101,9 @@ public class NRG {
                 "additional JARs or directories (" + File.pathSeparator + "-separated) to resolve --widgets classes");
         classpath.setArgName("path");
         options.addOption(classpath);
+        Option check = new Option(null, "check", false,
+                "verify generated output matches files on disk; exit 1 and print a diff when they differ");
+        options.addOption(check);
 
         CommandLineParser parser = new DefaultParser();
         CommandLine cmd = parser.parse(options, args);
@@ -99,30 +112,38 @@ public class NRG {
 
         if (cmd.hasOption(version)) {
             printVersion();
-        } else if (cmd.hasOption(help)) {
-            printHelp(options);
-        } else {
-            Charset sourceCharset = cmd.getParsedOptionValue(charset, DEFAULT_CHARSET);
-            LOG.debug("Source charset: {}", sourceCharset.displayName());
-
-            ClassLoader extraCl = buildExtraClassLoader(cmd.getOptionValue(classpath));
-            if (extraCl != null) {
-                Thread.currentThread().setContextClassLoader(extraCl);
-            }
-
-            List<NRGWidget> cliWidgets = NRGUtil.loadWidgets(cmd.getOptionValue(widgets), extraCl);
-
-            boolean toStdout = cmd.hasOption(stdout);
-            String langValue = cmd.getOptionValue(language);
-            if (langValue != null && !toStdout) {
-                LOG.warn("--language has no effect without --stdout; ignoring");
-                langValue = null;
-            }
-
-            if (cmd.hasOption(file)) {
-                generate(cmd.getParsedOptionValue(file), sourceCharset, toStdout, langValue, cliWidgets);
-            }
+            return 0;
         }
+        if (cmd.hasOption(help)) {
+            printHelp(options);
+            return 0;
+        }
+
+        Charset sourceCharset = cmd.getParsedOptionValue(charset, DEFAULT_CHARSET);
+        LOG.debug("Source charset: {}", sourceCharset.displayName());
+
+        ClassLoader extraCl = buildExtraClassLoader(cmd.getOptionValue(classpath));
+        if (extraCl != null) {
+            Thread.currentThread().setContextClassLoader(extraCl);
+        }
+
+        List<NRGWidget> cliWidgets = NRGUtil.loadWidgets(cmd.getOptionValue(widgets), extraCl);
+
+        boolean toStdout = cmd.hasOption(stdout);
+        boolean checkMode = cmd.hasOption(check);
+        if (toStdout && checkMode) {
+            throw new ParseException("--stdout and --check are mutually exclusive");
+        }
+        String langValue = cmd.getOptionValue(language);
+        if (langValue != null && !toStdout) {
+            LOG.warn("--language has no effect without --stdout; ignoring");
+            langValue = null;
+        }
+
+        if (cmd.hasOption(file)) {
+            return generate(cmd.getParsedOptionValue(file), sourceCharset, toStdout, langValue, cliWidgets, checkMode);
+        }
+        return 0;
     }
 
     private static ClassLoader buildExtraClassLoader(String classpathValue) {
@@ -178,24 +199,101 @@ public class NRG {
         LOG.init(logger);
     }
 
-    private static void generate(File sourceFile, Charset charset, boolean toStdout, String languageFilter, List<NRGWidget> cliWidgets) {
-        if (sourceFile.exists()) {
-            Code.run(() -> {
-                List<NRGWidget> widgets = new ArrayList<>();
-                if (cliWidgets != null) {
-                    widgets.addAll(cliWidgets);
-                }
-                widgets.addAll(additionalWidgets);
-                Generator generator = new Generator(sourceFile, charset, widgets);
-                if (toStdout) {
-                    printToStdout(generator, languageFilter);
-                } else {
-                    createFiles(generator);
-                }
-            });
-        } else {
+    private static int generate(File sourceFile, Charset charset, boolean toStdout, String languageFilter,
+                                List<NRGWidget> cliWidgets, boolean checkMode) {
+        if (!sourceFile.exists()) {
             LOG.error("Source file does not exist: {}", sourceFile.getAbsolutePath());
+            return 1;
         }
+        try {
+            List<NRGWidget> widgets = new ArrayList<>();
+            if (cliWidgets != null) {
+                widgets.addAll(cliWidgets);
+            }
+            widgets.addAll(additionalWidgets);
+            Generator generator = new Generator(sourceFile, charset, widgets);
+            if (checkMode) {
+                return performCheck(generator);
+            }
+            if (toStdout) {
+                printToStdout(generator, languageFilter);
+                return 0;
+            }
+            createFiles(generator);
+            return 0;
+        } catch (IOException e) {
+            LOG.error(e, () -> "Generation failed: " + sourceFile.getAbsolutePath());
+            return 1;
+        }
+    }
+
+    private static int performCheck(Generator generator) throws IOException {
+        boolean failed = false;
+        for (String language : generator.getConfig().getLanguages()) {
+            File readmeFile = getReadmeFile(language, generator.getConfig());
+            String generated = generator.getResult(language).getContent().toString();
+            if (!readmeFile.exists()) {
+                System.err.println("Missing file: " + readmeFile.getName() + " (would be created by generation)");
+                failed = true;
+                continue;
+            }
+            String existing = FileUtils.readFileToString(readmeFile, StandardCharsets.UTF_8);
+            if (!generated.equals(existing)) {
+                System.err.print(unifiedDiff(existing, generated, readmeFile.getName()));
+                failed = true;
+            }
+        }
+        return failed ? 1 : 0;
+    }
+
+    static String unifiedDiff(String existingContent, String generatedContent, String filename) {
+        if (Objects.equals(existingContent, generatedContent)) {
+            return "";
+        }
+        List<String> a = splitLines(existingContent);
+        List<String> b = splitLines(generatedContent);
+
+        int prefix = 0;
+        int maxPrefix = Math.min(a.size(), b.size());
+        while (prefix < maxPrefix && a.get(prefix).equals(b.get(prefix))) {
+            prefix++;
+        }
+        int suffix = 0;
+        int maxSuffix = Math.min(a.size() - prefix, b.size() - prefix);
+        while (suffix < maxSuffix && a.get(a.size() - 1 - suffix).equals(b.get(b.size() - 1 - suffix))) {
+            suffix++;
+        }
+
+        int ctx = 3;
+        int ctxStart = Math.max(0, prefix - ctx);
+        int ctxEndA = Math.min(a.size(), a.size() - suffix + ctx);
+
+        StringBuilder sb = new StringBuilder();
+        String ls = System.lineSeparator();
+        sb.append("--- ").append(filename).append(" (on disk)").append(ls);
+        sb.append("+++ ").append(filename).append(" (generated)").append(ls);
+        sb.append("@@ line ").append(prefix + 1).append(" @@").append(ls);
+
+        for (int i = ctxStart; i < prefix; i++) {
+            sb.append(' ').append(a.get(i)).append(ls);
+        }
+        for (int i = prefix; i < a.size() - suffix; i++) {
+            sb.append('-').append(a.get(i)).append(ls);
+        }
+        for (int i = prefix; i < b.size() - suffix; i++) {
+            sb.append('+').append(b.get(i)).append(ls);
+        }
+        for (int i = a.size() - suffix; i < ctxEndA; i++) {
+            sb.append(' ').append(a.get(i)).append(ls);
+        }
+        return sb.toString();
+    }
+
+    private static List<String> splitLines(String s) {
+        if (s == null || s.isEmpty()) {
+            return new ArrayList<>();
+        }
+        return new ArrayList<>(java.util.Arrays.asList(s.split("\\R", -1)));
     }
 
     private static void createFiles(Generator generator) throws IOException {
