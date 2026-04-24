@@ -53,9 +53,11 @@
 		1. [Виджет 'tableOfContents'](#виджет-tableofcontents)
 		1. [Виджет 'date'](#виджет-date)
 		2. [Виджет 'todo'](#виджет-todo)
-1. [Похожие проекты](#похожие-проекты)
-2. [История изменений](#история-изменений)
-3. [Обратная связь и поддержка](#обратная-связь-и-поддержка)
+1. [Расширенные возможности](#расширенные-возможности)
+	1. [Создание виджета](#создание-виджета)
+2. [Похожие проекты](#похожие-проекты)
+3. [История изменений](#история-изменений)
+4. [Обратная связь и поддержка](#обратная-связь-и-поддержка)
 	1. [Поддержка сообщества](#поддержка-сообщества)
 	2. [Прямая связь](#прямая-связь)
 	3. [Рекомендации](#рекомендации)
@@ -606,7 +608,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 23.04.2026 10:34:18
+Last updated: 24.04.2026 03:55:21
 ```
 
 </td></tr>
@@ -619,7 +621,7 @@ ${widget:date(pattern = 'dd.MM.yyyy')}
 </td><td>
 
 ```markdown
-23.04.2026
+24.04.2026
 ```
 
 </td></tr>
@@ -672,6 +674,63 @@ ${widget:todo(text="${en:'Example message', ru:'Пример сообщения'
 |:------------:|--------------------|:---------------------:|
 |     text     | Отображаемый текст |   `Not done yet...`   |
 
+## Расширенные возможности
+
+### Создание виджета
+
+Для создания виджета вам нужно реализовать интерфейс `NRGWidget`, или создать наследника существующего виджета, например `DefaultWidget`:
+
+```java
+public class ExampleWidget extends DefaultWidget {
+
+    @Override
+    public String getName() {
+        return "exampleWidget";
+    }
+
+    @Override
+    public String getBody(WidgetTag widgetTag, GeneratorConfig config, String language) {
+        String parameters = widgetTag.getParameters();
+        Map<String, String> map = NRGUtil.parseParametersLine(parameters);
+
+        return "Hello, " + map.get("name") + "!";
+    }
+}
+```
+
+Теперь этот виджет можно использовать в шаблоне:
+
+```markdown
+${widget:exampleWidget(name='World')}
+```
+
+Прежде чем запускать генерацию, виджет нужно зарегистрировать в NRG. Это можно сделать двумя способами:
+
+**Вариант 1:** через статический метод `NRG.addWidget`:
+
+```java
+NRG.addWidget(new ExampleWidget());
+NRG.main("--charset", "UTF-8", "-f", "/path/to/your/file.src.md");
+```
+
+**Вариант 2:** через конструктор класса `Generator`, принимающий список виджетов:
+
+```java
+import com.nanolaba.nrg.core.GenerationResult;
+import com.nanolaba.nrg.core.Generator;
+
+import java.io.File;
+import java.nio.charset.StandardCharsets;
+import java.util.Collection;
+import java.util.Collections;
+
+Generator generator = new Generator(
+        new File("README.src.md"),
+        StandardCharsets.UTF_8,
+        Collections.singletonList(new ExampleWidget()));
+
+Collection<GenerationResult> results = generator.getResults();
+```
 
 ## Похожие проекты
 
@@ -745,4 +804,4 @@ ${widget:todo(text="${en:'Example message', ru:'Пример сообщения'
 
 
 ---
-*Дата последнего обновления: 23.04.2026*
+*Дата последнего обновления: 24.04.2026*

@@ -53,9 +53,11 @@ The latest stable version of the program is **0.3**. The current development ver
 		1. [Widget 'tableOfContents'](#widget-tableofcontents)
 		1. [Widget 'date'](#widget-date)
 		2. [Widget 'todo'](#widget-todo)
-1. [Related projects](#related-projects)
-2. [Changelog](#changelog)
-3. [Feedback & Support](#feedback-support)
+1. [Advanced features](#advanced-features)
+	1. [Creating a widget](#creating-a-widget)
+2. [Related projects](#related-projects)
+3. [Changelog](#changelog)
+4. [Feedback & Support](#feedback-support)
 	1. [Community Support](#community-support)
 	2. [Direct Communication](#direct-communication)
 	3. [Contribution Guide](#contribution-guide)
@@ -607,7 +609,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 23.04.2026 10:34:18
+Last updated: 24.04.2026 03:55:21
 ```
 
 </td></tr>
@@ -620,7 +622,7 @@ ${widget:date(pattern = 'dd.MM.yyyy')}
 </td><td>
 
 ```markdown
-23.04.2026
+24.04.2026
 ```
 
 </td></tr>
@@ -673,6 +675,63 @@ Widget parameters:
 |:----:|----------------|:-----------------:|
 | text | Displayed text | `Not done yet...` |
 
+## Advanced features
+
+### Creating a widget
+
+To create a widget, you need to implement the `NRGWidget` interface or extend an existing widget (e.g., `DefaultWidget`):
+
+```java
+public class ExampleWidget extends DefaultWidget {
+
+    @Override
+    public String getName() {
+        return "exampleWidget";
+    }
+
+    @Override
+    public String getBody(WidgetTag widgetTag, GeneratorConfig config, String language) {
+        String parameters = widgetTag.getParameters();
+        Map<String, String> map = NRGUtil.parseParametersLine(parameters);
+
+        return "Hello, " + map.get("name") + "!";
+    }
+}
+```
+
+Now you can use the widget in your template:
+
+```markdown
+${widget:exampleWidget(name='World')}
+```
+
+Before running the generator, the widget must be registered with NRG. There are two ways to do this:
+
+**Option 1:** via the `NRG.addWidget` static method:
+
+```java
+NRG.addWidget(new ExampleWidget());
+NRG.main("--charset", "UTF-8", "-f", "/path/to/your/file.src.md");
+```
+
+**Option 2:** via the `Generator` class constructor that accepts a widget list:
+
+```java
+import com.nanolaba.nrg.core.GenerationResult;
+import com.nanolaba.nrg.core.Generator;
+
+import java.io.File;
+import java.nio.charset.StandardCharsets;
+import java.util.Collection;
+import java.util.Collections;
+
+Generator generator = new Generator(
+        new File("README.src.md"),
+        StandardCharsets.UTF_8,
+        Collections.singletonList(new ExampleWidget()));
+
+Collection<GenerationResult> results = generator.getResults();
+```
 
 ## Related projects
 
@@ -746,4 +805,4 @@ We welcome all constructive feedback to make **NRG** better!
 
 
 ---
-*Last updated: 23.04.2026*
+*Last updated: 24.04.2026*
