@@ -33,8 +33,8 @@ Using ${name}, you can: <!--en-->
 - **Гибкая интеграция** - CLI, Maven-плагин или Java-библиотека <!--ru-->
 - **Расширяемость** - Возможность писать собственные виджеты для генерации контента <!--ru-->
 
-${widget:alert(type='note', text='${name} is written in Java and requires **Java 8** or higher to run.')}<!--en-->
-${widget:alert(type='note', text='${name} написан на Java и требует для запуска версии **Java 8** и выше.')}<!--ru-->
+> 💡 ${name} is written in Java and requires **Java 8** or higher to run.<!--en-->
+> 💡 ${name} написан на Java и требует для запуска версии **Java 8** и выше.<!--ru-->
 
 The latest stable version of the program is **${stableVersion}**.<!--en-->
 The current development version is **${devVersion}**.<!--en-->
