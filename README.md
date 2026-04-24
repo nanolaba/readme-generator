@@ -736,7 +736,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 24.04.2026 21:31:39
+Last updated: 24.04.2026 21:36:34
 ```
 
 </td></tr>
@@ -854,7 +854,7 @@ Widget parameters:
 
 This component generates Markdown image links for shields.io badges
 of common project-status flavors (Maven Central version, license,
-GitHub release/stars) and a free-form `custom` variant.
+GitHub release / stars / workflow) and a free-form `custom` variant.
 
 <table>
 <tr><th>Usage example</th><th>Result</th></tr>
@@ -871,88 +871,18 @@ ${widget:badge(type = 'maven-central', coordinates = 'com.nanolaba:readme-genera
 ```
 
 </td></tr>
-<tr><td>
-
-```markdown
-${widget:badge(type = 'license', value = 'Apache-2.0', url = 'https://www.apache.org/licenses/LICENSE-2.0')}
-```
-
-</td><td>
-
-```markdown
-[![License: Apache-2.0](https://img.shields.io/badge/License-Apache--2.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
-```
-
-</td></tr>
-<tr><td>
-
-```markdown
-${widget:badge(type = 'github-release', repo = 'nanolaba/readme-generator')}
-```
-
-</td><td>
-
-```markdown
-[![GitHub release](https://img.shields.io/github/v/release/nanolaba/readme-generator)](https://github.com/nanolaba/readme-generator/releases/latest)
-```
-
-</td></tr>
-<tr><td>
-
-```markdown
-${widget:badge(type = 'github-stars', repo = 'nanolaba/readme-generator')}
-```
-
-</td><td>
-
-```markdown
-[![GitHub stars](https://img.shields.io/github/stars/nanolaba/readme-generator?style=social)](https://github.com/nanolaba/readme-generator)
-```
-
-</td></tr>
-<tr><td>
-
-```markdown
-${widget:badge(type = 'custom', label = 'docs', message = 'up to date', color = 'brightgreen')}
-```
-
-</td><td>
-
-```markdown
-![docs](https://img.shields.io/badge/docs-up_to_date-brightgreen.svg)
-```
-
-</td></tr>
-<tr><td>
-
-```markdown
-${widget:badge(type = 'github-workflow', repo = 'nanolaba/readme-generator', workflow = 'ci.yml', name = 'CI')}
-```
-
-</td><td>
-
-```markdown
-[![CI](https://github.com/nanolaba/readme-generator/actions/workflows/ci.yml/badge.svg)](https://github.com/nanolaba/readme-generator/actions/workflows/ci.yml)
-```
-
-</td></tr>
 </table>
 
-Widget parameters:
+Supported types and their parameters:
 
-|    Name     | Description                                                                                        |                    Required for                     |
-|:-----------:|----------------------------------------------------------------------------------------------------|:---------------------------------------------------:|
-|    type     | One of: `maven-central`, `license`, `github-release`, `github-stars`, `github-workflow`, `custom`. |                         all                         |
-| coordinates | Maven coordinates `groupId:artifactId`.                                                            |                   `maven-central`                   |
-|    value    | License identifier (e.g. `Apache-2.0`, `MIT`).                                                     |                      `license`                      |
-|    repo     | GitHub repository `owner/name`.                                                                    | `github-release`, `github-stars`, `github-workflow` |
-|  workflow   | Workflow filename (e.g. `ci.yml`).                                                                 |                  `github-workflow`                  |
-|    name     | Optional alt text for the workflow badge; defaults to the workflow filename without its extension. |                          —                          |
-|   branch    | Optional branch filter appended as `?branch=...`.                                                  |                          —                          |
-|    label    | Left-side label of the badge.                                                                      |                      `custom`                       |
-|   message   | Right-side text of the badge.                                                                      |                      `custom`                       |
-|    color    | Badge color (`brightgreen`, `blue`, hex, …).                                                       |                      `custom`                       |
-|     url     | Optional link target. Without it the badge is non-clickable.                                       |                          —                          |
+|       type        | Required parameters                                                                                                 | Optional parameters                                                                                                              |
+|:-----------------:|---------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------|
+|  `maven-central`  | `coordinates` — Maven coordinates `groupId:artifactId`.                                                             | —                                                                                                                                |
+|     `license`     | `value` — license identifier (e.g. `Apache-2.0`).                                                                   | `url` — link target; omitted → non-clickable badge.                                                                              |
+| `github-release`  | `repo` — repository `owner/name`.                                                                                   | —                                                                                                                                |
+|  `github-stars`   | `repo` — repository `owner/name`.                                                                                   | —                                                                                                                                |
+| `github-workflow` | `repo` — repository `owner/name`;  `workflow` — workflow filename (e.g. `ci.yml`).                                  | `name` — alt text; defaults to the workflow filename without extension.  `branch` — filter by branch, appended as `?branch=...`. |
+|     `custom`      | `label` — left side of the badge;  `message` — right side of the badge;  `color` — shields.io color keyword or hex. | `url` — link target; omitted → non-clickable badge.                                                                              |
 
 Unknown `type` values and missing required parameters log an error
 and produce no output.
