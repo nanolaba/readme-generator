@@ -94,7 +94,18 @@ Add the following code to your `pom.xml`:<!--en-->
                 <item>another-file.src.md</item>
             </file>
             <logLevel>warn</logLevel>
+            <widgets>
+                <widget>com.example.MyWidget</widget>
+                <widget>com.example.OtherWidget</widget>
+            </widgets>
         </configuration>
+        <dependencies>
+            <dependency>
+                <groupId>com.example</groupId>
+                <artifactId>my-widgets</artifactId>
+                <version>1.0.0</version>
+            </dependency>
+        </dependencies>
         <executions>
             <execution>
                 <phase>compile</phase>
@@ -106,6 +117,17 @@ Add the following code to your `pom.xml`:<!--en-->
     </plugin>
 </plugins>
 ```
+
+The `<widgets>` entries must name public classes that implement `NRGWidget`<!--en-->
+and declare a public no-argument constructor, and their artifact must be<!--en-->
+listed under the plugin's own `<dependencies>` so Maven can resolve them.<!--en-->
+On a name collision, POM-declared widgets override those declared via the<!--en-->
+`nrg.widgets` template property.<!--en-->
+Элементы `<widgets>` должны указывать на публичные классы, реализующие<!--ru-->
+`NRGWidget` и имеющие публичный конструктор без аргументов; их артефакт<!--ru-->
+необходимо подключить через `<dependencies>` самого плагина, чтобы<!--ru-->
+Maven мог их найти. При совпадении имён виджеты из POM имеют приоритет<!--ru-->
+над объявленными через свойство шаблона `nrg.widgets`.<!--ru-->
 
 Для использования SNAPSHOT-версий также необходимо добавить в `pom.xml` следующий код:<!--ru-->
 To use SNAPSHOT versions, you also need to add the following code to your `pom.xml`:<!--en-->
