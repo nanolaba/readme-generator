@@ -2,6 +2,7 @@
 <!-- Visit https://github.com/nanolaba/readme-generator for details -->
 
 
+
 [ **en** | [ru](README.ru.md) ]
 
 # Nanolaba Readme Generator (NRG) - Automated Markdown Documentation Tool
@@ -11,29 +12,31 @@
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
 ![Java](https://img.shields.io/badge/Java-8+-orange.svg)
 
-**Nanolaba Readme Generator (NRG)** — is an open-source Java tool for automating Markdown documentation with multi-language
+**Nanolaba Readme Generator (NRG)** — is an open-source Java tool for automating Markdown documentation with multi-language 
 support, dynamic variables, and custom widgets.
 
 ## Overview
 
-Using **Nanolaba Readme Generator (NRG)**, you can:
+Using **Nanolaba Readme Generator (NRG)**, you can: 
 
-- Generate professional README files in multiple languages
-- Automate documentation with dynamic templates
-- Create maintainable Markdown with variables and widgets
-- Streamline GitHub project documentation
+- Generate professional README files in multiple languages 
+- Automate documentation with dynamic templates 
+- Create maintainable Markdown with variables and widgets 
+- Streamline GitHub project documentation 
 
-> 💡 **Example**: This document was generated from [this template](README.src.md).
+> 💡 **Example**: This document was generated from [this template](README.src.md). 
 > Try our **[Quick Start Guide](#quick-start)** to begin!
 
-## Key Features
+## Key Features 
 
 - **Multi-language READMEs** - Support for EN/ZN/RU and any other languages
 - **Smart Variables** - Reusable content blocks
 - **Prebuilt Widgets** - Table of contents, file import, TODOs, alerts, badges, and more
 - **LaTeX math** - Reliable formula rendering via `$…$` / `$$…$$` or an SVG fallback for places where GitHub's native MathJax breaks
-- **Flexible Integration** - CLI, Maven plugin, or Java library
-- **Extensibility** - Supports the ability to create custom widgets for content generation
+- **Flexible Integration** - CLI, Maven plugin, or Java library 
+- **Extensibility** - Supports the ability to create custom widgets for content generation 
+
+
 
 > 💡 **Nanolaba Readme Generator (NRG)** is written in Java and requires **Java 8** or higher to run.
 
@@ -54,9 +57,10 @@ The current development version is **0.4-SNAPSHOT**.
 	1. [Variables](#variables)
 	2. [Properties](#properties)
 	3. [Environment variables](#environment-variables)
-	4. [Multilanguage support](#multilanguage-support)
-	5. [Ignoring content](#ignoring-content)
-	6. [Widgets](#widgets)
+	4. [Maven POM values](#maven-pom-values)
+	5. [Multilanguage support](#multilanguage-support)
+	6. [Ignoring content](#ignoring-content)
+	7. [Widgets](#widgets)
 		1. [Widget 'languages'](#widget-languages)
 		2. [Widget 'import'](#widget-import)
 		1. [Widget 'tableOfContents'](#widget-tableofcontents)
@@ -346,14 +350,14 @@ implementation 'com.nanolaba:readme-generator:0.3'
 Get the JAR from [Maven Central](https://repo1.maven.org/maven2/com/nanolaba/readme-generator/0.3).
 Add it to your project's classpath.
 
-After this, you can call the file generation function in your project by passing
+After this, you can call the file generation function in your project by passing 
 the same parameters as in the console application, for example:
 
 ```java
 NRG.main("-f","path-to-file","--charset","UTF-8");
 ```
 
-An alternative approach — and a more flexible one for configuring program
+An alternative approach — and a more flexible one for configuring program 
 behavior — is to use the `Generator` class:
 
 ```java
@@ -401,7 +405,7 @@ The output of variable values is done using the following construct:
 ${variable_name}
 ```
 
-To display a construct like *${...}* without replacing it with
+To display a construct like *${...}* without replacing it with 
 the variable's value, precede it with the '\\' character:
 
 ```markdown
@@ -477,11 +481,45 @@ Behaviour:
 - Names must match the POSIX identifier pattern `[A-Za-z_][A-Za-z0-9_]*`. Dotted names like `${app.version}` fall through to the regular property resolver.
 - Backslash escapes work as for any other `${…}` reference: `\\${env.NAME}` renders as the literal text.
 
+
+
 > [!WARNING]
 > The substitution reads whatever `System.getenv()` exposes. On shared CI
 > machines, treat the generated README as exposing every environment
 > variable it references — do not template `${env.AWS_SECRET_…}` into a
 > public document.
+
+
+### Maven POM values
+
+The reserved `pom.` namespace inside `${…}` reads values directly from
+the project's `pom.xml`. Resolution happens after env substitution but
+before language and property substitution, so the same `${pom.…}`
+reference works in body text, in `<!--@key=value-->` declaration values,
+and inside widget parameters.
+
+```markdown
+${pom.version}
+${pom.groupId}:${pom.artifactId}:${pom.version}
+${pom.scm.url}
+${pom.parent.version}
+${pom.properties.java.version}
+${pom.version:0.0.0-SNAPSHOT}
+<!--@coords=${pom.groupId}:${pom.artifactId}-->
+```
+
+Behaviour:
+
+- The path is interpreted as a walk from the implicit `<project>` root: `pom.X` reads `<X>`, `pom.X.Y` reads `<X><Y>`, and so on.
+- `pom.properties.KEY` is a flat-map lookup: the remainder of the path is used verbatim as the `<properties>` child element name (so dotted keys like `java.version` work).
+- `pom.parent.X` reads the local `<parent>` block as written. Cross-file parent POM traversal is out of scope.
+- For unqualified `pom.groupId`, `pom.version`, and `pom.name`: if the element is absent under `<project>`, the value is taken from `<project><parent>` (Maven's standard inheritance rules).
+- POM values may themselves reference `${prop}`, `${project.X}`, and `${env.NAME}` / `${env.NAME:default}` — NRG resolves a single pass against the same POM and the template-level env provider.
+- `${pom.path:default}` substitutes the literal default after the first `:` when the path is missing. Without a default, the substitution renders empty and one warning per distinct path is logged.
+- Backslash escapes work as for any other `${…}` reference: `\\${pom.version}` renders as the literal text.
+- The `pom.xml` location defaults to the source-file directory; override with `<!--\@nrg.pom.path=relative/or/absolute/pom.xml-->`.
+
+
 
 ### Multilanguage support
 
@@ -617,16 +655,16 @@ ${widget:import(path='Foo.java', region='example', wrap='true', dedent='false')}
 
 Widget parameters:
 
-|     Name      | Description                                                               | Default value |
-|:-------------:|---------------------------------------------------------------------------|:-------------:|
-|     path      | Path to the imported file                                                 |               |
-|    charset    | File encoding                                                             |    `UTF-8`    |
-| run-generator | Should the system perform text generation when importing template files   |    `true`     |
-|     lines     | Line range(s) to extract: e.g. `10-20`, `10-`, `-20`, `15`, `10-20,30-35` |               |
-|    region     | Name of a region marked in the source file                                |               |
-|     wrap      | Wrap output in a code fence: `true`, `false`                              |    `false`    |
-|     lang      | Language tag for the fence; `auto` detects from file extension            |    `auto`     |
-|    dedent     | Strip common leading whitespace: `auto`, `true`, `false`                  |    `auto`     |
+| Name | Description                                                                                                                                            | Default value |
+|:-------------------------------:|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:-------------------------------------------------:|
+|              path               | Path to the imported file                                                                                                           |                                                   |
+|             charset             | File encoding                                                                                                                 |                      `UTF-8`                      |
+|          run-generator          | Should the system perform text generation when importing template files                          |                      `true`                       |
+|              lines              | Line range(s) to extract: e.g. `10-20`, `10-`, `-20`, `15`, `10-20,30-35` |                                                   |
+|             region              | Name of a region marked in the source file                                                                  |                                                   |
+|              wrap               | Wrap output in a code fence: `true`, `false`                                                               |                      `false`                      |
+|              lang               | Language tag for the fence; `auto` detects from file extension                                       |                      `auto`                       |
+|             dedent              | Strip common leading whitespace: `auto`, `true`, `false`                                                          |                      `auto`                       |
 
 When importing a template file, generation is performed using variables declared in the parent file.
 This allows defining global variables in the root file and reusing them across all imported templates.
@@ -741,14 +779,14 @@ ${widget:tableOfContents(title = "${en:'Table of contents', ru:'Содержан
 
 Widget parameters:
 
-|     Name     | Description                                                                                                                                                                                                                                                                   | Default value |
-|:------------:|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:-------------:|
-|    title     | Title of the table of contents                                                                                                                                                                                                                                                |               |
-|   ordered    | Should the items in the table of contents be numbered                                                                                                                                                                                                                         |    `false`    |
-|  min-depth   | Minimum heading level to include (1–6). Headings shallower than this are skipped. 1 includes top-level `#` headings.                                                                                                                                                          |      `2`      |
-|  max-depth   | Maximum heading level to include (1–6). Headings deeper than this are skipped.                                                                                                                                                                                                |      `6`      |
-|  min-items   | Minimum number of headings (after depth and `<!--toc.ignore-->` filters) required to render the widget. Below this threshold the widget produces no output (no title, no items).                                                                                              |      `1`      |
-| anchor-style | Anchor-slugification style: `github` (default), `gitlab`, or `bitbucket`. GitLab preserves underscores and does not collapse consecutive hyphens; Bitbucket prefixes anchors with `markdown-header-`. An unknown value logs an error and causes the widget to render nothing. |   `github`    |
+| Name | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    | Default value |
+|:-------------------------------:|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:-------------------------------------------------:|
+|              title              | Title of the table of contents                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |                                                   |
+|             ordered             | Should the items in the table of contents be numbered                                                                                                                                                                                                                                                                                                                                                                                                                                                    |                      `false`                      |
+|            min-depth            | Minimum heading level to include (1–6). Headings shallower than this are skipped. 1 includes top-level `#` headings.                                                                                                                                                                                                                                                                                                |                        `2`                        |
+|            max-depth            | Maximum heading level to include (1–6). Headings deeper than this are skipped.                                                                                                                                                                                                                                                                                                                                                                                      |                        `6`                        |
+|            min-items            | Minimum number of headings (after depth and `<!--toc.ignore-->` filters) required to render the widget. Below this threshold the widget produces no output (no title, no items).                                                                                                                                                                        |                        `1`                        |
+|          anchor-style           | Anchor-slugification style: `github` (default), `gitlab`, or `bitbucket`. GitLab preserves underscores and does not collapse consecutive hyphens; Bitbucket prefixes anchors with `markdown-header-`. An unknown value logs an error and causes the widget to render nothing. |                     `github`                      |
 
 ---
 
@@ -767,7 +805,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 25.04.2026 10:22:08
+Last updated: 25.04.2026 12:57:11
 ```
 
 </td></tr>
@@ -788,9 +826,9 @@ ${widget:date(pattern = 'dd.MM.yyyy')}
 
 Widget parameters:
 
-|  Name   | Description                                           |     Default value     |
-|:-------:|-------------------------------------------------------|:---------------------:|
-| pattern | Pattern according to which the date will be formatted | `dd.MM.yyyy HH:mm:ss` |
+| Name | Description                                                                                              | Default value |
+|:-------------------------------:|---------------------------------------------------------------------------------------------------------------------------------|:-------------------------------------------------:|
+|             pattern             | Pattern according to which the date will be formatted |               `dd.MM.yyyy HH:mm:ss`               |
 
 You can read more about date pattern syntax in the
 [Java documentation](https://docs.oracle.com/javase/8/docs/api/java/text/SimpleDateFormat.html).
@@ -829,9 +867,9 @@ ${widget:todo(text="${en:'Example message', ru:'Пример сообщения'
 
 Widget parameters:
 
-| Name | Description    |   Default value   |
-|:----:|----------------|:-----------------:|
-| text | Displayed text | `Not done yet...` |
+| Name | Description              | Default value |
+|:-------------------------------:|-------------------------------------------------|:-------------------------------------------------:|
+|              text               | Displayed text |                 `Not done yet...`                 |
 
 #### Widget 'alert'
 
@@ -874,10 +912,10 @@ ${widget:alert(type = 'warning', text = 'Line 1\nLine 2')}
 
 Widget parameters:
 
-| Name | Description                                                                                                                                                                                                                         | Default value |
-|:----:|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:-------------:|
-| type | Alert kind: `note`, `tip`, `important`, `warning`, or `caution` (case-insensitive). Unknown values log an error and produce empty output.                                                                                           |               |
-| text | Body of the alert. Use `\n` to split into multiple quoted lines and `\\` for a literal backslash. Language-substitution constructs in the outer template are resolved before the widget runs, so per-language text works naturally. |     `''`      |
+| Name | Description                                                                                                                                                                                                                                                                                                                                                                                                                       | Default value |
+|:-------------------------------:|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:-------------------------------------------------:|
+|              type               | Alert kind: `note`, `tip`, `important`, `warning`, or `caution` (case-insensitive). Unknown values log an error and produce empty output.                                                                                                                                                      |                                                   |
+|              text               | Body of the alert. Use `\n` to split into multiple quoted lines and `\\` for a literal backslash. Language-substitution constructs in the outer template are resolved before the widget runs, so per-language text works naturally. |                       `''`                        |
 
 ---
 
@@ -906,14 +944,14 @@ ${widget:badge(type = 'maven-central', coordinates = 'com.nanolaba:readme-genera
 
 Supported types and their parameters:
 
-|       type        | Required parameters                                                                                                 | Optional parameters                                                                                                              |
-|:-----------------:|---------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------|
-|  `maven-central`  | `coordinates` — Maven coordinates `groupId:artifactId`.                                                             | —                                                                                                                                |
-|     `license`     | `value` — license identifier (e.g. `Apache-2.0`).                                                                   | `url` — link target; omitted → non-clickable badge.                                                                              |
-| `github-release`  | `repo` — repository `owner/name`.                                                                                   | —                                                                                                                                |
-|  `github-stars`   | `repo` — repository `owner/name`.                                                                                   | —                                                                                                                                |
-| `github-workflow` | `repo` — repository `owner/name`;  `workflow` — workflow filename (e.g. `ci.yml`).                                  | `name` — alt text; defaults to the workflow filename without extension.  `branch` — filter by branch, appended as `?branch=...`. |
-|     `custom`      | `label` — left side of the badge;  `message` — right side of the badge;  `color` — shields.io color keyword or hex. | `url` — link target; omitted → non-clickable badge.                                                                              |
+|       type        | Required parameters                                                                                                                                                                                           | Optional parameters                                                                                                                                                                                                        |
+|:-----------------:|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|  `maven-central`  | `coordinates` — Maven coordinates `groupId:artifactId`.                                                                                                                                       | —                                                                                                                                                                                                                                                                 |
+|     `license`     | `value` — license identifier (e.g. `Apache-2.0`).                                                                                                                                   | `url` — link target; omitted → non-clickable badge.                                                                                                                                                    |
+| `github-release`  | `repo` — repository `owner/name`.                                                                                                                                                                          | —                                                                                                                                                                                                                                                                 |
+|  `github-stars`   | `repo` — repository `owner/name`.                                                                                                                                                                          | —                                                                                                                                                                                                                                                                 |
+| `github-workflow` | `repo` — repository `owner/name`;  `workflow` — workflow filename (e.g. `ci.yml`).                                                                 | `name` — alt text; defaults to the workflow filename without extension.  `branch` — filter by branch, appended as `?branch=...`. |
+|     `custom`      | `label` — left side of the badge;  `message` — right side of the badge;  `color` — shields.io color keyword or hex. | `url` — link target; omitted → non-clickable badge.                                                                                                                                                    |
 
 Unknown `type` values and missing required parameters log an error
 and produce no output.
@@ -988,13 +1026,13 @@ ${widget:math(expr = '\\Phi_{\\text{org}}', renderer = 'svg')}
 
 Widget parameters:
 
-|   Name   | Description                                                                                                                                                                                                           |              Default value              |
-|:--------:|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:---------------------------------------:|
-|   expr   | LaTeX source. Every backslash must be doubled (so `\\pi` produces a single `\pi`, `\\sum` produces `\sum`, and so on). Missing or empty values log an error and produce no output.                                    |                                         |
-| display  | `inline` renders `$…$`; `block` renders `$$…$$` for the native renderer, or prepends `\\displaystyle` for the svg renderer. Unknown values log an error and produce no output.                                        |                `inline`                 |
-| renderer | `native` emits GitHub MathJax delimiters. `svg` emits a Markdown image that links to a LaTeX-to-SVG service — use it when native rendering mis-parses the formula. Unknown values log an error and produce no output. |                `native`                 |
-|   alt    | Alt text used by the svg renderer. Defaults to the raw expression.                                                                                                                                                    |                 `expr`                  |
-| service  | URL prefix of the LaTeX-to-SVG endpoint; the URL-encoded expression is appended to it. Used only by the svg renderer.                                                                                                 | `https://latex.codecogs.com/svg.image?` |
+| Name | Description                                                                                                                                                                                                                                                                                                                                                                                                                             | Default value |
+|:-------------------------------:|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:-------------------------------------------------:|
+|              expr               | LaTeX source. Every backslash must be doubled (so `\\pi` produces a single `\pi`, `\\sum` produces `\sum`, and so on). Missing or empty values log an error and produce no output.                                                                                      |                                                   |
+|             display             | `inline` renders `$…$`; `block` renders `$$…$$` for the native renderer, or prepends `\\displaystyle` for the svg renderer. Unknown values log an error and produce no output.                                                                                         |                     `inline`                      |
+|            renderer             | `native` emits GitHub MathJax delimiters. `svg` emits a Markdown image that links to a LaTeX-to-SVG service — use it when native rendering mis-parses the formula. Unknown values log an error and produce no output. |                     `native`                      |
+|               alt               | Alt text used by the svg renderer. Defaults to the raw expression.                                                                                                                                                                                                                                                                                                                   |                      `expr`                       |
+|             service             | URL prefix of the LaTeX-to-SVG endpoint; the URL-encoded expression is appended to it. Used only by the svg renderer.                                                                                                                                                                                                       |      `https://latex.codecogs.com/svg.image?`      |
 
 Tips / caveats:
 
@@ -1002,6 +1040,8 @@ Tips / caveats:
 - Raw `(` and `)` are not allowed inside `expr` because the widget-tag parser uses them as delimiters — wrap them with `\\left(` / `\\right)` for LaTeX grouping.
 - The svg renderer depends on an external service, so generated images break if the endpoint disappears. Self-host or pin a known-good URL via `service` for long-lived docs.
 - Pre-rendering, MathML output, and LaTeX linting are out of scope.
+
+
 
 ---
 
@@ -1059,13 +1099,13 @@ Runs the script from the `docs/` sub-directory of the source file, kills it if i
 
 Widget parameters:
 
-|   Name    | Description                                                                                                                                                                                |     Default value     |
-|:---------:|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:---------------------:|
-|    cmd    | Command line. Whitespace-split into argv; **no shell interpolation**, so pipes, redirects, and variable expansion do not work. Missing or blank values log an error and produce no output. |                       |
-|    cwd    | Working directory. Relative paths are resolved against the source-file directory; absolute paths are used as-is. Missing directory logs an error and produces no output.                   | source-file directory |
-|  timeout  | Maximum duration in seconds (positive integer). The subprocess is force-killed on timeout and a warning is logged; output is empty.                                                        |         `30`          |
-|   trim    | `true` strips trailing whitespace/newlines from stdout; `false` preserves them.                                                                                                            |        `true`         |
-| codeblock | When present, wraps stdout in a fenced code block with this language tag (`codeblock=""` wraps without a tag). When absent, stdout is inlined raw.                                         | absent (no wrapping)  |
+| Name | Description                                                                                                                                                                                                                                                                                                                                                                                                                |      Default value       |
+|:-------------------------------:|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:------------------------------------------------------------:|
+|               cmd               | Command line. Whitespace-split into argv; **no shell interpolation**, so pipes, redirects, and variable expansion do not work. Missing or blank values log an error and produce no output. |                                                              |
+|               cwd               | Working directory. Relative paths are resolved against the source-file directory; absolute paths are used as-is. Missing directory logs an error and produces no output.                                                                                 | source-file directory  |
+|             timeout             | Maximum duration in seconds (positive integer). The subprocess is force-killed on timeout and a warning is logged; output is empty.                                                                                                                                                   |                             `30`                             |
+|              trim               | `true` strips trailing whitespace/newlines from stdout; `false` preserves them.                                                                                                                                                                                                                                                         |                            `true`                            |
+|            codeblock            | When present, wraps stdout in a fenced code block with this language tag (`codeblock=""` wraps without a tag). When absent, stdout is inlined raw.                                                                                                                          | absent (no wrapping) |
 
 Enabling execution:
 
@@ -1080,6 +1120,10 @@ Error handling:
 - Timeout → warning in the log + empty output.
 - Invalid `timeout` or `trim` → error in the log + empty output (command is not run).
 
+
+
+
+
 ---
 
 
@@ -1087,7 +1131,7 @@ Error handling:
 
 ### Creating a widget
 
-To create a widget, you need to implement the `NRGWidget` interface or
+To create a widget, you need to implement the `NRGWidget` interface or 
 extend an existing widget (e.g., `DefaultWidget`):
 
 ```java
@@ -1166,7 +1210,7 @@ Other tools in the same space — useful if **Nanolaba Readme Generator (NRG)** 
 - **[embedme](https://github.com/zakhenry/embedme)** (Node.js) — embeds external code snippets into markdown via fenced-block annotations;
   overlaps with NRG's `import` widget (region / lines extraction).
 - **[cog](https://github.com/nedbat/cog)** (Python) — runs embedded Python snippets inside source files to generate text;
-  a different philosophy (code execution instead of declarative widgets) for the same goal of
+  a different philosophy (code execution instead of declarative widgets) for the same goal of 
   keeping generated documentation in sync with its source of truth.
 - **[doctoc](https://github.com/thlorenz/doctoc)** (Node.js) — auto-generates and updates the table of contents in an existing markdown file;
   a focused alternative to NRG's `tableOfContents` widget.
@@ -1195,6 +1239,7 @@ This section summarises the main user-visible changes in each release. For full 
 - **`math` widget**: renders LaTeX formulas via GitHub's native `$…$` / `$$…$$` delimiters or as `![alt](…)` images through a LaTeX-to-SVG service (default: `latex.codecogs.com`).
 - **`exec` widget (opt-in)**: runs an external command and embeds its stdout. Disabled by default; enable with `--allow-exec` (CLI) or `<allowExec>true</allowExec>` (Maven plugin). Supports `cwd`, `timeout`, `trim`, and `codeblock` parameters.
 - **`${env.NAME}` substitution**: read environment variables directly from any template position with shell-style defaults (`${env.NAME:fallback}`). Works in body text, `<!--@key=value-->` declaration values, and widget parameter values. Missing variables log a warning and render empty.
+- **`${pom.NAME}` substitution**: read values from the project `pom.xml` via a Maven-style dotted path (`${pom.version}`, `${pom.groupId}:${pom.artifactId}`, `${pom.parent.version}`, `${pom.properties.java.version}`). Supports shell-style defaults, parent inheritance for `groupId` / `version` / `name`, and one-level POM-internal interpolation for `${prop}`, `${project.*}`, and `${env.NAME}`. POM path defaults to the source-file directory; override via `<!--\@nrg.pom.path=...-->`.
 - Widget parameters may now contain `{` and `}` (LaTeX-friendly); the tag regex now delimits parameters by `(` / `)` instead of `}`.
 - Fixed: the `languages` widget now produces correct link targets when rendered inside an imported fragment.
 
@@ -1244,9 +1289,9 @@ We value your input! Here are the best ways to connect with us:
 Before submitting feedback:
 
 1. Check [existing issues](https://github.com/nanolaba/readme-generator/issues) to avoid duplicates
-2. Use clear, descriptive titles for your requests
+2. Use clear, descriptive titles for your requests 
 
-We welcome all constructive feedback to make **NRG** better!
+We welcome all constructive feedback to make **NRG** better! 
 
 
 ---
