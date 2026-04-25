@@ -61,7 +61,11 @@ public class Generator {
         GenerationResult result = new GenerationResult(language);
         result.getContent().append(generateHeadComment(language));
 
-        config.getSourceLinesStream()
+        String body = IfBlockProcessor.process(config.getSourceFileBody(), config, language);
+        java.util.concurrent.atomic.AtomicInteger counter = new java.util.concurrent.atomic.AtomicInteger(0);
+        new java.io.BufferedReader(new java.io.StringReader(body))
+                .lines()
+                .map(s -> new TemplateLine(config, s, counter.getAndIncrement()))
                 .filter(t -> t.isLineVisible(language))
                 .map(t -> t.generateLine(language))
                 .forEachOrdered(line -> result.getContent().append(line).append(System.lineSeparator()));

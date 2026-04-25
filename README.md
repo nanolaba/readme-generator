@@ -70,6 +70,7 @@ The current development version is **0.4-SNAPSHOT**.
 		4. [Widget 'badge'](#widget-badge)
 		5. [Widget 'math'](#widget-math)
 		6. [Widget 'exec'](#widget-exec)
+		7. [Widget 'if'](#widget-if)
 1. [Advanced features](#advanced-features)
 	1. [Creating a widget](#creating-a-widget)
 2. [Related projects](#related-projects)
@@ -517,7 +518,7 @@ Behaviour:
 - POM values may themselves reference `${prop}`, `${project.X}`, and `${env.NAME}` / `${env.NAME:default}` — NRG resolves a single pass against the same POM and the template-level env provider.
 - `${pom.path:default}` substitutes the literal default after the first `:` when the path is missing. Without a default, the substitution renders empty and one warning per distinct path is logged.
 - Backslash escapes work as for any other `${…}` reference: `\\${pom.version}` renders as the literal text.
-- The `pom.xml` location defaults to the source-file directory; override with `<!--\@nrg.pom.path=relative/or/absolute/pom.xml-->`.
+- The `pom.xml` location defaults to the source-file directory; override with `<!--@nrg.pom.path=relative/or/absolute/pom.xml-->`.
 
 
 
@@ -805,7 +806,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 25.04.2026 12:57:11
+Last updated: 25.04.2026 13:22:14
 ```
 
 </td></tr>
@@ -1126,6 +1127,88 @@ Error handling:
 
 ---
 
+#### Widget 'if'
+
+This is a **block widget**: it spans an opening `${widget:if(cond='…')}` tag
+and a matching `${widget:endIf}` tag, and decides whether the lines
+between them appear in the generated output. When the condition is false
+the entire block — including any inner widgets — is dropped before the
+per-line pipeline runs, so widgets in dead branches never execute.
+
+<table>
+<tr><th>Usage example</th><th>Behaviour</th></tr>
+<tr><td>
+
+```markdown
+${widget:if(cond='endsWith(${devVersion}, -SNAPSHOT)')}
+> Snapshot build — expect breaking changes.
+${widget:endIf}
+```
+
+</td><td>
+
+` ends with `-SNAPSHOT`; otherwise the entire block (the markers and the body) is removed.', ru:'Блок остаётся, если `${devVersion}` оканчивается на `-SNAPSHOT`; иначе блок полностью удаляется вместе с маркерами.'}
+
+</td></tr>
+<tr><td>
+
+```markdown
+${widget:if(cond='${env.CI}!=true && !${dryRun}')}
+This message only appears outside CI and outside dry runs.
+${widget:endIf}
+```
+
+</td><td>
+
+Combines short-circuit `&&` with `!=` and `!` — the right side is not even resolved when the left is false.
+
+</td></tr>
+<tr><td>
+
+```markdown
+${widget:if(cond='startsWith(${repoUrl}, https://github.com/) || startsWith(${repoUrl}, git@github.com:)')}
+Hosted on GitHub.
+${widget:endIf}
+```
+
+</td><td>
+
+`startsWith` / `endsWith` are case-sensitive; an empty needle is always true.
+
+</td></tr>
+</table>
+
+Condition grammar (precedence low → high):
+
+| Form               | Meaning                                                       |
+|--------------------|---------------------------------------------------------------|
+| `X`                | truthy — true iff `X.trim()` is non-empty                     |
+| `!X`               | falsy — true iff `X.trim()` is empty                          |
+| `X == Y`           | equality (trim each side; quoted strings preserve whitespace) |
+| `X != Y`           | inequality                                                    |
+| `A && B`           | and (short-circuit)                                           |
+| `A                 |                                                               | B`                 | or (short-circuit) |
+| `(expr)`           | grouping                                                      |
+| `startsWith(h, n)` | true iff `h.startsWith(n)`; case-sensitive                    |
+| `endsWith(h, n)`   | true iff `h.endsWith(n)`; case-sensitive                      |
+
+`), quoted strings (`\'…\'` or `"…"` with doubled-quote escape), or bare strings. Quoted strings preserve whitespace and protect operator characters; placeholders inside quoted strings are still resolved.', ru:'Операнды — это плейсхолдеры (`${…}`), quoted-строки (`\'…\'` или `"…"` с удвоением кавычки) или bare-строки. Quoted-строки сохраняют пробелы и защищают operator-символы; плейсхолдеры внутри quoted-строк всё равно разрешаются.'}
+
+Type rules:
+
+- Every value is a string; there are no numbers, booleans, or null.
+- ` resolving to `a && b` is treated as opaque text — operators inside placeholder values are *not* reinterpreted as boolean operators.', ru:'`${msg}`, резолвящийся в `a && b`, остаётся opaque-текстом — операторы внутри значений *не* трактуются как булевы.'}
+- ==True` does not match the env value `true`. Normalise upstream.', ru:'Никакого implicit case folding или числового приведения: `${env.CI}==True` не совпадёт с env-значением `true`. Нормализуйте на стороне источника.'}
+
+Errors:
+
+- ` block is reported via `LOG.error` and everything from the outermost open marker to EOF is dropped from the output.', ru:'Незакрытый блок `${widget:if}` сообщается через `LOG.error`, а всё от внешнего открывающего маркера до EOF выбрасывается из вывода.'}
+- ` (no matching open) is reported via `LOG.error` and the marker line is dropped.', ru:'Одиночный `${widget:endIf}` (без пары) сообщается через `LOG.error`, строка-маркер выбрасывается.'}
+- A malformed condition (unbalanced parens, trailing operators, unknown function names) is reported via `LOG.error` and the block is treated as if the condition were false.
+
+Out of scope (v1): ` resolution inside the *default* of `${env.X:default}` references on the right-hand side of an `==`.', ru:'численные сравнения (`>`, `<`, …), regex-сопоставление, `else`/`elif`, scripting-engine, разрешение `${…}` внутри *default*-части `${env.X:default}` на правой стороне `==`.'}
+
+---
 
 ## Advanced features
 
@@ -1239,7 +1322,8 @@ This section summarises the main user-visible changes in each release. For full 
 - **`math` widget**: renders LaTeX formulas via GitHub's native `$…$` / `$$…$$` delimiters or as `![alt](…)` images through a LaTeX-to-SVG service (default: `latex.codecogs.com`).
 - **`exec` widget (opt-in)**: runs an external command and embeds its stdout. Disabled by default; enable with `--allow-exec` (CLI) or `<allowExec>true</allowExec>` (Maven plugin). Supports `cwd`, `timeout`, `trim`, and `codeblock` parameters.
 - **`${env.NAME}` substitution**: read environment variables directly from any template position with shell-style defaults (`${env.NAME:fallback}`). Works in body text, `<!--@key=value-->` declaration values, and widget parameter values. Missing variables log a warning and render empty.
-- **`${pom.NAME}` substitution**: read values from the project `pom.xml` via a Maven-style dotted path (`${pom.version}`, `${pom.groupId}:${pom.artifactId}`, `${pom.parent.version}`, `${pom.properties.java.version}`). Supports shell-style defaults, parent inheritance for `groupId` / `version` / `name`, and one-level POM-internal interpolation for `${prop}`, `${project.*}`, and `${env.NAME}`. POM path defaults to the source-file directory; override via `<!--\@nrg.pom.path=...-->`.
+- **`${pom.NAME}` substitution**: read values from the project `pom.xml` via a Maven-style dotted path (`${pom.version}`, `${pom.groupId}:${pom.artifactId}`, `${pom.parent.version}`, `${pom.properties.java.version}`). Supports shell-style defaults, parent inheritance for `groupId` / `version` / `name`, and one-level POM-internal interpolation for `${prop}`, `${project.*}`, and `${env.NAME}`. POM path defaults to the source-file directory; override via `<!--@nrg.pom.path=...-->`.
+- **`if` block widget**: `${widget:if(cond='…')}` … `${widget:endIf}` conditionally drops a block of lines from the output. Supports a small string-only DSL: truthy / falsy, `==` / `!=`, `&&` / `||`, `!`, parentheses, and `startsWith` / `endsWith`. Two-phase evaluation (parse-then-resolve) keeps `${…}`-resolved values opaque, preventing operator injection. Inner widgets in dropped branches never execute.
 - Widget parameters may now contain `{` and `}` (LaTeX-friendly); the tag regex now delimits parameters by `(` / `)` instead of `}`.
 - Fixed: the `languages` widget now produces correct link targets when rendered inside an imported fragment.
 

@@ -70,6 +70,7 @@
 		4. [Виджет 'badge'](#виджет-badge)
 		5. [Виджет 'math'](#виджет-math)
 		6. [Виджет 'exec'](#виджет-exec)
+		7. [Виджет 'if'](#виджет-if)
 1. [Расширенные возможности](#расширенные-возможности)
 	1. [Создание виджета](#создание-виджета)
 2. [Похожие проекты](#похожие-проекты)
@@ -520,7 +521,7 @@ ${pom.version:0.0.0-SNAPSHOT}
 - Значения POM сами могут содержать `${prop}`, `${project.X}` и `${env.NAME}` / `${env.NAME:default}` — NRG разрешает их одним проходом по тому же POM и через тот же env-провайдер.
 - `${pom.path:default}` подставляет литерал после первого `:`, если путь отсутствует. Без default подставляется пустая строка и логируется по одному предупреждению на каждый уникальный путь.
 - Эскейп обратным слэшем работает как для любой другой `${…}`-конструкции: `\\${pom.version}` выводится как литерал.
-- Расположение `pom.xml` по умолчанию — каталог исходного файла; переопределяется через `<!--\@nrg.pom.path=relative/or/absolute/pom.xml-->`.
+- Расположение `pom.xml` по умолчанию — каталог исходного файла; переопределяется через `<!--@nrg.pom.path=relative/or/absolute/pom.xml-->`.
 
 ### Multilanguage support
 
@@ -808,7 +809,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 25.04.2026 12:57:12
+Last updated: 25.04.2026 13:22:15
 ```
 
 </td></tr>
@@ -1130,6 +1131,87 @@ ${widget:exec(cmd = './scripts/list-langs.sh', cwd = 'docs', timeout = '5')}
 
 ---
 
+#### Виджет 'if'
+
+Это **блочный виджет**: он охватывает открывающий тег `${widget:if(cond='…')}` и
+парный `${widget:endIf}`, и решает, попадут ли строки между ними в
+итоговый файл. При ложном условии целый блок (включая вложенные виджеты)
+отбрасывается до запуска per-line-конвейера, поэтому виджеты в мёртвой
+ветке не выполняются никогда.
+
+<table>
+<tr><th>Пример использования</th><th>Поведение</th></tr>
+<tr><td>
+
+```markdown
+${widget:if(cond='endsWith(${devVersion}, -SNAPSHOT)')}
+> Snapshot build — expect breaking changes.
+${widget:endIf}
+```
+
+</td><td>
+
+` ends with `-SNAPSHOT`; otherwise the entire block (the markers and the body) is removed.', ru:'Блок остаётся, если `${devVersion}` оканчивается на `-SNAPSHOT`; иначе блок полностью удаляется вместе с маркерами.'}
+
+</td></tr>
+<tr><td>
+
+```markdown
+${widget:if(cond='${env.CI}!=true && !${dryRun}')}
+This message only appears outside CI and outside dry runs.
+${widget:endIf}
+```
+
+</td><td>
+
+Комбинирует short-circuit `&&` с `!=` и `!` — правая часть даже не резолвится, если левая — false.
+
+</td></tr>
+<tr><td>
+
+```markdown
+${widget:if(cond='startsWith(${repoUrl}, https://github.com/) || startsWith(${repoUrl}, git@github.com:)')}
+Hosted on GitHub.
+${widget:endIf}
+```
+
+</td><td>
+
+`startsWith` / `endsWith` — case-sensitive; пустой needle всегда истинен.
+
+</td></tr>
+</table>
+
+Грамматика условия (приоритет от низкого к высокому):
+
+| Форма              | Смысл                                                              |
+|--------------------|--------------------------------------------------------------------|
+| `X`                | truthy — истина, если `X.trim()` не пуст                           |
+| `!X`               | falsy — истина, если `X.trim()` пуст                               |
+| `X == Y`           | равенство (тримит каждую сторону; quoted-строки сохраняют пробелы) |
+| `X != Y`           | неравенство                                                        |
+| `A && B`           | и (short-circuit)                                                  |
+| `A                 |                                                                    | B`                 | или (short-circuit) |
+| `(expr)`           | группировка                                                        |
+| `startsWith(h, n)` | истина, если `h.startsWith(n)`; case-sensitive                     |
+| `endsWith(h, n)`   | истина, если `h.endsWith(n)`; case-sensitive                       |
+
+`), quoted strings (`\'…\'` or `"…"` with doubled-quote escape), or bare strings. Quoted strings preserve whitespace and protect operator characters; placeholders inside quoted strings are still resolved.', ru:'Операнды — это плейсхолдеры (`${…}`), quoted-строки (`\'…\'` или `"…"` с удвоением кавычки) или bare-строки. Quoted-строки сохраняют пробелы и защищают operator-символы; плейсхолдеры внутри quoted-строк всё равно разрешаются.'}
+
+:
+
+- Каждое значение — строка; ни чисел, ни булевых, ни null.
+- `, резолвящийся в `a && b`, остаётся opaque-текстом — операторы внутри значений не трактуются как булевы.'}
+- ==True` не совпадёт с env-значением `true`. Нормализуйте на стороне источника.'}
+
+` сообщается через `LOG.error`, а всё от внешнего открывающего маркера до EOF выбрасывается из вывода.'}
+` (без пары) сообщается через `LOG.error`, строка-маркер выбрасывается.'}
+
+- Некорректное условие (несбалансированные скобки, висящие операторы, неизвестные функции) сообщается через `LOG.error`, блок трактуется как ложный.
+
+За рамками v1: ` resolution inside the *default* of `${env.X:default}` references on the right-hand side of an `==`.', ru:'численные сравнения (`>`, `<`, …), regex-сопоставление, `else`/`elif`, scripting-engine, разрешение `${…}` внутри *default*-части `${env.X:default}` на правой стороне `==`.'}
+
+---
 
 ## Расширенные возможности
 
@@ -1242,7 +1324,8 @@ nrg --classpath my-widgets.jar --widgets com.acme.widgets.Tag,com.acme.widgets.B
 - **Виджет `math`**: рендерит формулы LaTeX через встроенные разделители GitHub `$…$` / `$$…$$` либо как `![alt](…)`-картинку через LaTeX-to-SVG сервис (по умолчанию `latex.codecogs.com`).
 - **Виджет `exec` (opt-in)**: выполняет внешнюю команду и вставляет её stdout. По умолчанию выключен; включается через `--allow-exec` (CLI) или `<allowExec>true</allowExec>` (Maven-плагин). Поддерживает параметры `cwd`, `timeout`, `trim` и `codeblock`.
 - **Подстановка `${env.NAME}`**: чтение переменных окружения из любой позиции в шаблоне, со shell-стилем умолчаний (`${env.NAME:fallback}`). Работает в основном тексте, в значениях `<!--@key=value-->` и в параметрах виджетов. Отсутствующие переменные логируются как warning и подставляют пустую строку.
-- **Подстановка `${pom.NAME}`**: чтение значений из проектного `pom.xml` по Maven-стилю dotted-path (`${pom.version}`, `${pom.groupId}:${pom.artifactId}`, `${pom.parent.version}`, `${pom.properties.java.version}`). Поддерживает shell-стиль умолчаний, parent-наследование для `groupId` / `version` / `name`, и одноуровневую интерполяцию внутри POM-значений для `${prop}`, `${project.*}` и `${env.NAME}`. Путь к POM по умолчанию — каталог исходного файла; переопределяется через `<!--\@nrg.pom.path=...-->`.
+- **Подстановка `${pom.NAME}`**: чтение значений из проектного `pom.xml` по Maven-стилю dotted-path (`${pom.version}`, `${pom.groupId}:${pom.artifactId}`, `${pom.parent.version}`, `${pom.properties.java.version}`). Поддерживает shell-стиль умолчаний, parent-наследование для `groupId` / `version` / `name`, и одноуровневую интерполяцию внутри POM-значений для `${prop}`, `${project.*}` и `${env.NAME}`. Путь к POM по умолчанию — каталог исходного файла; переопределяется через `<!--@nrg.pom.path=...-->`.
+- **Блочный виджет `if`**: `${widget:if(cond='…')}` … `${widget:endIf}` условно отбрасывает блок строк из вывода. Поддерживает компактный string-only DSL: truthy / falsy, `==` / `!=`, `&&` / `||`, `!`, скобки, `startsWith` / `endsWith`. Two-phase evaluation (parse-then-resolve) делает `${…}`-значения opaque, исключая operator-injection. Виджеты внутри отброшенных веток не выполняются.
 - В параметрах виджетов теперь разрешены `{` и `}` (удобно для LaTeX); регулярка тега разделяет параметры скобками `(` / `)` вместо `}`.
 - Исправлено: виджет `languages` теперь правильно формирует ссылки при использовании внутри импортированного фрагмента.
 
