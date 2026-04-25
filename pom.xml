@@ -5,7 +5,7 @@
     <artifactId>readme-generator-parent</artifactId>
     <name>NRG-parent</name>
     <url>https://github.com/nanolaba/readme-generator</url>
-    <version>0.4-SNAPSHOT</version>
+    <version>1.0</version>
     <packaging>pom</packaging>
     <description>Nanolaba readme generator (NRG) parent project</description>
 
@@ -17,7 +17,7 @@
     <properties>
 
         <!-- Latest released version — referenced from README.src.md via ${pom.properties.stableVersion}. -->
-        <stableVersion>0.3</stableVersion>
+        <stableVersion>1.0</stableVersion>
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <github.global.server>github</github.global.server>
