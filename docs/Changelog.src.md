@@ -3,7 +3,7 @@
 This section summarises the main user-visible changes in each release. For full details, see the git history.<!--en-->
 В разделе перечислены основные пользовательские изменения в каждой версии. Подробности — в истории коммитов.<!--ru-->
 
-### ${en:'Unreleased', ru:'В разработке'} (${devVersion})<!--toc.ignore-->
+### ${stableVersion}<!--toc.ignore-->
 
 - **`import` widget**: added the `lines`, `region`, `wrap`, `lang`, and `dedent` parameters for fine-grained inclusion of source files.<!--en-->
 - Added `<\!--nrg.ignore-->` and paired `<\!--nrg.ignore.begin-->` / `<\!--nrg.ignore.end-->` markers for removing author notes from generated output (also inside imported files).<!--en-->
