@@ -85,6 +85,28 @@ the first element in the *nrg.languages* list.<!--en-->
 Название языка должно содержаться в перечне, определенным в свойстве *nrg.languages*.<!--ru-->
 Значение этого свойства по умолчанию - первый элемент списка из свойства *nrg.languages*.<!--ru-->
 
+***nrg.widgets***
+
+Comma-separated fully-qualified class names of custom `NRGWidget` implementations<!--en-->
+to register alongside the built-ins. Each class must be on the runtime classpath<!--en-->
+and declare a public no-argument constructor. Equivalent to the CLI<!--en-->
+`--widgets <FQCN,FQCN,...>` flag and the `<widgets>` parameter of the Maven plugin.<!--en-->
+Comma-separated полные имена классов реализаций `NRGWidget`, которые нужно<!--ru-->
+зарегистрировать дополнительно к встроенным виджетам. Каждый класс должен быть<!--ru-->
+доступен на runtime-classpath и иметь публичный конструктор без аргументов.<!--ru-->
+Эквивалентно CLI-флагу `--widgets <FQCN,FQCN,...>` и параметру `<widgets>` Maven-плагина.<!--ru-->
+
+***nrg.pom.path***
+
+Override the `pom.xml` location used by `\${pom.NAME}` substitution. Relative<!--en-->
+paths are resolved against the source-file directory; absolute paths are used<!--en-->
+as-is. Defaults to `pom.xml` next to the source file. Only consulted when the<!--en-->
+template uses `\${pom.…}` references.<!--en-->
+Переопределяет путь к `pom.xml`, используемый подстановкой `\${pom.NAME}`.<!--ru-->
+Относительные пути разрешаются относительно каталога исходного файла; абсолютные<!--ru-->
+используются как есть. По умолчанию — `pom.xml` рядом с исходным файлом.<!--ru-->
+Учитывается только когда в шаблоне есть ссылки `\${pom.…}`.<!--ru-->
+
 ### ${en:'Environment variables', ru:'Переменные окружения'}
 
 Inside any `\${…}` reference, the reserved `env.` namespace pulls a value<!--en-->

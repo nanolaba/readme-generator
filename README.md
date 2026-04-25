@@ -489,6 +489,20 @@ The language in which the main documentation file will be generated. The languag
 included in the list defined by the property *nrg.languages*. The default value of this property is
 the first element in the *nrg.languages* list.
 
+***nrg.widgets***
+
+Comma-separated fully-qualified class names of custom `NRGWidget` implementations
+to register alongside the built-ins. Each class must be on the runtime classpath
+and declare a public no-argument constructor. Equivalent to the CLI
+`--widgets <FQCN,FQCN,...>` flag and the `<widgets>` parameter of the Maven plugin.
+
+***nrg.pom.path***
+
+Override the `pom.xml` location used by `${pom.NAME}` substitution. Relative
+paths are resolved against the source-file directory; absolute paths are used
+as-is. Defaults to `pom.xml` next to the source file. Only consulted when the
+template uses `${pom.…}` references.
+
 ### Environment variables
 
 Inside any `${…}` reference, the reserved `env.` namespace pulls a value
@@ -834,7 +848,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 25.04.2026 14:53:29
+Last updated: 25.04.2026 15:01:43
 ```
 
 </td></tr>
