@@ -834,7 +834,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 25.04.2026 14:16:24
+Last updated: 25.04.2026 14:36:54
 ```
 
 </td></tr>
@@ -1283,6 +1283,23 @@ Three-level directory-only outline, emitted raw without a code fence.
 
 </td></tr>
 </table>
+
+Live example — `${widget:fileTree(path='../../nrg/src/', dirsOnly = 'true', depth='3')}`:
+
+```
+src
+├── main
+│   ├── assembly
+│   ├── java
+│   │   └── com
+│   └── resources
+└── test
+    ├── java
+    │   └── com
+    └── resources
+        ├── ImportWidgetTest
+        └── LanguagesWidgetTest
+```
 
 Widget parameters:
 

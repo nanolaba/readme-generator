@@ -44,6 +44,10 @@ ${en:'Three-level directory-only outline, emitted raw without a code fence.', ru
 </td></tr>
 </table>
 
+${en:"Live example", ru:"Живой пример"} — `\${widget:fileTree(path='../../nrg/src/', dirsOnly = 'true', depth='3')}`:
+
+${widget:fileTree(path='../../nrg/src/', dirsOnly = 'true', depth='3')}
+
 ${en:'Widget parameters', ru:'Свойства виджета'}:
 
 | ${en:'Name', ru:'Наименование'} | ${en:'Description', ru:'Описание'}                                                                                                                                                                                                                                                                                                                                                          | ${en:'Default value', ru:'Значение по умолчанию'} |

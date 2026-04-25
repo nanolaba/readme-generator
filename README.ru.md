@@ -837,7 +837,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 25.04.2026 14:16:25
+Last updated: 25.04.2026 14:36:54
 ```
 
 </td></tr>
@@ -1286,6 +1286,23 @@ ${widget:fileTree(path = 'nrg/src', depth = '3', dirsOnly = 'true', codeblock = 
 
 </td></tr>
 </table>
+
+Живой пример — `${widget:fileTree(path='../../nrg/src/', dirsOnly = 'true', depth='3')}`:
+
+```
+src
+├── main
+│   ├── assembly
+│   ├── java
+│   │   └── com
+│   └── resources
+└── test
+    ├── java
+    │   └── com
+    └── resources
+        ├── ImportWidgetTest
+        └── LanguagesWidgetTest
+```
 
 Свойства виджета:
 
