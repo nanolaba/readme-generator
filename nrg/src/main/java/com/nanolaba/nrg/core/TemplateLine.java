@@ -18,6 +18,10 @@ public class TemplateLine {
 
     public static final Pattern WIDGET_TAG_PATTERN = Pattern.compile("\\$\\{ *widget:(\\w*)(\\(([^)]*)\\))? *}");
     private static final Pattern ENV_TAG_PATTERN = Pattern.compile("\\$\\{\\s*env\\.([A-Za-z_][A-Za-z0-9_]*)(?::([^}]*))?\\s*}");
+    private static final Pattern POM_TAG_PATTERN = Pattern.compile("\\$\\{\\s*pom\\.([A-Za-z_][A-Za-z0-9_.\\-]*?)(?::([^}]*))?\\s*}");
+    private static final Pattern POM_INTERNAL_REF = Pattern.compile("\\$\\{\\s*([A-Za-z_][A-Za-z0-9_.\\-]*)(?::([^}]*))?\\s*}");
+    private static final java.util.Set<String> POM_INHERITED_FIELDS =
+            new java.util.HashSet<>(java.util.Arrays.asList("groupId", "version", "name"));
 
     private final GeneratorConfig config;
     private final String line;
@@ -55,6 +59,7 @@ public class TemplateLine {
                         String key = trimToEmpty(substringBefore(s, "="));
                         String value = trimToEmpty(substringAfter(s, "="));
                         value = renderEnvProperties(value);
+                        value = renderPomProperties(value);
                         value = renderProperties(value);
                         value = renderLanguageProperties(value, language);
                         NRGUtil.mergeProperty(key, value, config.getProperties());
@@ -146,6 +151,89 @@ public class TemplateLine {
         return result.toString();
     }
 
+    protected String renderPomProperties(String line) {
+        Matcher m = POM_TAG_PATTERN.matcher(line);
+        StringBuilder result = new StringBuilder();
+        int last = 0;
+        while (m.find()) {
+            if (!isNotEscaped(line, m.start())) {
+                continue;
+            }
+            String path = m.group(1);
+            String fallback = m.group(2);
+            String value = resolvePomPath(path);
+            String replacement;
+            if (value != null) {
+                replacement = value;
+            } else if (fallback != null) {
+                replacement = fallback;
+            } else {
+                if (config.getWarnedMissingPomPaths().add(path)) {
+                    LOG.warn("POM path '{}' is not present; rendering empty", path);
+                }
+                replacement = "";
+            }
+            result.append(line, last, m.start()).append(replacement);
+            last = m.end();
+        }
+        result.append(line, last, line.length());
+        return result.toString();
+    }
+
+    private String resolvePomPath(String path) {
+        PomReader reader = config.getPomReader();
+        if (reader == null) {
+            return null;
+        }
+        java.util.Optional<String> raw = reader.read(path);
+        if (!raw.isPresent() && POM_INHERITED_FIELDS.contains(path)) {
+            raw = reader.read("parent." + path);
+        }
+        return raw.map(s -> resolvePomInternalReferences(s, reader)).orElse(null);
+    }
+
+    private String resolvePomInternalReferences(String value, PomReader reader) {
+        Matcher m = POM_INTERNAL_REF.matcher(value);
+        StringBuilder result = new StringBuilder();
+        int last = 0;
+        while (m.find()) {
+            if (!isNotEscaped(value, m.start())) {
+                continue;
+            }
+            String name = m.group(1);
+            String fallback = m.group(2);
+            String resolved = resolvePomInternalName(name, reader);
+            if (resolved == null && fallback != null) {
+                resolved = fallback;
+            }
+            if (resolved == null) {
+                continue;
+            }
+            result.append(value, last, m.start()).append(resolved);
+            last = m.end();
+        }
+        result.append(value, last, value.length());
+        return result.toString();
+    }
+
+    private String resolvePomInternalName(String name, PomReader reader) {
+        if (name.startsWith("env.")) {
+            String envName = name.substring("env.".length());
+            String envValue = config.getEnvProvider().apply(envName);
+            return envValue;
+        }
+        if (name.startsWith("project.")) {
+            String sub = name.substring("project.".length());
+            java.util.Optional<String> v = reader.read(sub);
+            if (!v.isPresent() && POM_INHERITED_FIELDS.contains(sub)) {
+                v = reader.read("parent." + sub);
+            }
+            return v.orElse(null);
+        }
+        java.util.Optional<String> v = reader.read("properties." + name);
+        return v.orElse(null);
+    }
+
     protected String renderProperties(String line) {
         Pattern pattern = Pattern.compile("\\$\\{\\s*([\\p{Alnum}-_.]+)\\s*}");
         Matcher m = pattern.matcher(line);
@@ -211,6 +299,7 @@ public class TemplateLine {
             String result = line;
             if (substituteEnv) {
                 result = renderEnvProperties(result);
+                result = renderPomProperties(result);
             }
             result = renderLanguageProperties(result, language);
             result = renderProperties(result);

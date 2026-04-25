@@ -54,9 +54,10 @@ The current development version is **0.4-SNAPSHOT**.
 	1. [Variables](#variables)
 	2. [Properties](#properties)
 	3. [Environment variables](#environment-variables)
-	4. [Multilanguage support](#multilanguage-support)
-	5. [Ignoring content](#ignoring-content)
-	6. [Widgets](#widgets)
+	4. [Maven POM values](#maven-pom-values)
+	5. [Multilanguage support](#multilanguage-support)
+	6. [Ignoring content](#ignoring-content)
+	7. [Widgets](#widgets)
 		1. [Widget 'languages'](#widget-languages)
 		2. [Widget 'import'](#widget-import)
 		1. [Widget 'tableOfContents'](#widget-tableofcontents)
@@ -483,6 +484,35 @@ Behaviour:
 > variable it references — do not template `${env.AWS_SECRET_…}` into a
 > public document.
 
+### Maven POM values
+
+The reserved `pom.` namespace inside `${…}` reads values directly from
+the project's `pom.xml`. Resolution happens after env substitution but
+before language and property substitution, so the same `${pom.…}`
+reference works in body text, in `<!--@key=value-->` declaration values,
+and inside widget parameters.
+
+```markdown
+${pom.version}
+${pom.groupId}:${pom.artifactId}:${pom.version}
+${pom.scm.url}
+${pom.parent.version}
+${pom.properties.java.version}
+${pom.version:0.0.0-SNAPSHOT}
+<!--@coords=${pom.groupId}:${pom.artifactId}-->
+```
+
+Behaviour:
+
+- The path is interpreted as a walk from the implicit `<project>` root: `pom.X` reads `<X>`, `pom.X.Y` reads `<X><Y>`, and so on.
+- `pom.properties.KEY` is a flat-map lookup: the remainder of the path is used verbatim as the `<properties>` child element name (so dotted keys like `java.version` work).
+- `pom.parent.X` reads the local `<parent>` block as written. Cross-file parent POM traversal is out of scope.
+- For unqualified `pom.groupId`, `pom.version`, and `pom.name`: if the element is absent under `<project>`, the value is taken from `<project><parent>` (Maven's standard inheritance rules).
+- POM values may themselves reference `${prop}`, `${project.X}`, and `${env.NAME}` / `${env.NAME:default}` — NRG resolves a single pass against the same POM and the template-level env provider.
+- `${pom.path:default}` substitutes the literal default after the first `:` when the path is missing. Without a default, the substitution renders empty and one warning per distinct path is logged.
+- Backslash escapes work as for any other `${…}` reference: `\\${pom.version}` renders as the literal text.
+- The `pom.xml` location defaults to the source-file directory; override with `<!--\@nrg.pom.path=relative/or/absolute/pom.xml-->`.
+
 ### Multilanguage support
 
 To write text in different languages, there are two methods available.
@@ -767,7 +797,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 25.04.2026 10:22:08
+Last updated: 25.04.2026 12:46:24
 ```
 
 </td></tr>
@@ -1195,6 +1225,7 @@ This section summarises the main user-visible changes in each release. For full 
 - **`math` widget**: renders LaTeX formulas via GitHub's native `$…$` / `$$…$$` delimiters or as `![alt](…)` images through a LaTeX-to-SVG service (default: `latex.codecogs.com`).
 - **`exec` widget (opt-in)**: runs an external command and embeds its stdout. Disabled by default; enable with `--allow-exec` (CLI) or `<allowExec>true</allowExec>` (Maven plugin). Supports `cwd`, `timeout`, `trim`, and `codeblock` parameters.
 - **`${env.NAME}` substitution**: read environment variables directly from any template position with shell-style defaults (`${env.NAME:fallback}`). Works in body text, `<!--@key=value-->` declaration values, and widget parameter values. Missing variables log a warning and render empty.
+- **`${pom.NAME}` substitution**: read values from the project `pom.xml` via a Maven-style dotted path (`${pom.version}`, `${pom.groupId}:${pom.artifactId}`, `${pom.parent.version}`, `${pom.properties.java.version}`). Supports shell-style defaults, parent inheritance for `groupId` / `version` / `name`, and one-level POM-internal interpolation for `${prop}`, `${project.*}`, and `${env.NAME}`. POM path defaults to the source-file directory; override via `<!--\@nrg.pom.path=...-->`.
 - Widget parameters may now contain `{` and `}` (LaTeX-friendly); the tag regex now delimits parameters by `(` / `)` instead of `}`.
 - Fixed: the `languages` widget now produces correct link targets when rendered inside an imported fragment.
 
