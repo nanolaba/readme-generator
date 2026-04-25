@@ -1,0 +1,78 @@
+name: 'Nanolaba Readme Generator'
+description: 'Generate multi-language README/Markdown files from a single .src.md template.'
+author: 'nanolaba'
+branding:
+  icon: 'file-text'
+  color: 'purple'
+
+inputs:
+  file:
+    description: 'Path to the .src.md template (relative to working-directory). Use "files" for multiple.'
+    required: false
+  files:
+    description: 'Multi-line list of .src.md templates (one per line). Mutually exclusive with "file".'
+    required: false
+  charset:
+    description: 'Source file encoding.'
+    required: false
+    default: 'UTF-8'
+  mode:
+    description: 'Operation mode: generate | check | validate.'
+    required: false
+    default: 'generate'
+  nrg-version:
+    description: 'NRG release tag (e.g. v1.0) or "latest".'
+    required: false
+    default: 'latest'
+  java-version:
+    description: 'JDK version for actions/setup-java. Ignored when setup-java=false.'
+    required: false
+    default: '17'
+  java-distribution:
+    description: 'JDK distribution for actions/setup-java.'
+    required: false
+    default: 'temurin'
+  setup-java:
+    description: 'Whether the action should install Java itself. Set to "false" if you set up Java in a previous step.'
+    required: false
+    default: 'true'
+  log-level:
+    description: 'NRG log verbosity: trace | debug | info | warn | error.'
+    required: false
+    default: 'info'
+  working-directory:
+    description: 'Directory in which NRG runs.'
+    required: false
+    default: '.'
+
+outputs:
+  version:
+    description: 'Resolved NRG version (e.g. v1.0). Useful when nrg-version=latest.'
+    value: ${{ steps.run.outputs.version }}
+  changed-files:
+    description: 'Newline-separated list of files written or modified by NRG.'
+    value: ${{ steps.run.outputs.changed-files }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Set up Java
+      if: inputs.setup-java == 'true'
+      uses: actions/setup-java@v4
+      with:
+        distribution: ${{ inputs.java-distribution }}
+        java-version: ${{ inputs.java-version }}
+
+    - name: Run NRG
+      id: run
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      env:
+        INPUT_FILE: ${{ inputs.file }}
+        INPUT_FILES: ${{ inputs.files }}
+        INPUT_CHARSET: ${{ inputs.charset }}
+        INPUT_MODE: ${{ inputs.mode }}
+        INPUT_NRG_VERSION: ${{ inputs.nrg-version }}
+        INPUT_LOG_LEVEL: ${{ inputs.log-level }}
+        GH_TOKEN: ${{ github.token }}
+      run: ${{ github.action_path }}/run.sh

@@ -1,0 +1,14 @@
+name: Regenerate README
+on:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  regenerate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: nanolaba/nrg-action@v1
+        with:
+          file: README.src.md

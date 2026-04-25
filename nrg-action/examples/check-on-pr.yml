@@ -1,0 +1,15 @@
+name: README drift check
+on:
+  pull_request:
+    paths: ['**/*.src.md', '**/*.md']
+permissions:
+  contents: read
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: nanolaba/nrg-action@v1
+        with:
+          file: README.src.md
+          mode: check

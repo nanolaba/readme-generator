@@ -1,0 +1,26 @@
+name: Regenerate README and open PR
+on:
+  push:
+    branches: [main]
+    paths: ['**/*.src.md']
+permissions:
+  contents: write
+  pull-requests: write
+jobs:
+  regenerate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - id: nrg
+        uses: nanolaba/nrg-action@v1
+        with:
+          file: README.src.md
+      - uses: peter-evans/create-pull-request@v6
+        with:
+          commit-message: 'docs: regenerate README from src'
+          title: 'docs: regenerate README'
+          branch: nrg/regenerate-readme
+          delete-branch: true
+          add-paths: |
+            README.md
+            README.*.md

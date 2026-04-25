@@ -223,6 +223,8 @@ To use SNAPSHOT versions, you also need to add the following code to your `pom.x
 </pluginRepositories>
 ```
 
+${widget:import(path='GitHubAction.src.md')}
+
 ### ${en:'Use as a java-library', ru:'Использование в качестве java-библиотеки'}
 
 **Maven (pom.xml)**

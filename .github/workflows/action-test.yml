@@ -1,0 +1,63 @@
+name: Action self-test
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'nrg-action/**'
+      - '.github/workflows/action-test.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'nrg-action/**'
+      - '.github/workflows/action-test.yml'
+  schedule:
+    - cron: '0 6 * * 1'   # weekly Monday 06:00 UTC — catches drift in `latest` API / release format
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  matrix:
+    name: ${{ matrix.os }} / ${{ matrix.mode }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        mode: [generate, check, validate]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run action against fixture
+        uses: ./nrg-action
+        with:
+          file: nrg-action/test-fixtures/sample.src.md
+          mode: ${{ matrix.mode }}
+          nrg-version: v1.0
+
+      - name: Verify generate output
+        if: matrix.mode == 'generate'
+        shell: bash
+        run: |
+          diff -u nrg-action/test-fixtures/expected/sample.md    nrg-action/test-fixtures/sample.md
+          diff -u nrg-action/test-fixtures/expected/sample.ru.md nrg-action/test-fixtures/sample.ru.md
+
+  dogfood:
+    name: Dogfood — validate repo's own README.src.md
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./nrg-action
+        with:
+          file: README.src.md
+          mode: validate
+          nrg-version: v1.0
+          # NOTE: cannot use `mode: check` here because docs/widgets/WidgetDate.src.md
+          # renders ${widget:date} live — every regeneration produces a new timestamp,
+          # which would make the check job permanently red. validate is the strongest
+          # gate that's still deterministic.
