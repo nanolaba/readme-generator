@@ -14,7 +14,7 @@
 
 ![Демо NRG: генерация README.md и README.ru.md из одного .src.md-шаблона](assets/demo.gif)
 
-**NRG** — это **генератор README** и **шаблонизатор Markdown**, который собирает **многоязычные** README-файлы из одного `.src.md`-исходника. Open-source Java 8+, поставляется как [CLI](#nrg-as-a-cli-tool), [Maven-плагин](#nrg-as-a-maven-plugin), [GitHub Action](https://github.com/nanolaba/nrg-action) и [Java-библиотека](#nrg-as-a-library).
+**NRG** — это **генератор README** и **шаблонизатор Markdown**, который собирает **многоязычные** README-файлы из одного `.src.md`-исходника. Open-source Java 8+, поставляется как [CLI](#запуск-из-командной-строки), [Maven-плагин](#использование-как-плагина-для-maven), [GitHub Action](#использование-в-качестве-github-action) и [Java-библиотека](#использование-в-качестве-java-библиотеки).
 
 ## Краткое описание
 
@@ -996,7 +996,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 26.04.2026 02:23:49
+Last updated: 26.04.2026 02:27:26
 ```
 
 </td></tr>
