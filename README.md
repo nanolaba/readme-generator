@@ -848,7 +848,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 25.04.2026 15:11:35
+Last updated: 25.04.2026 15:16:43
 ```
 
 </td></tr>
@@ -1177,9 +1177,7 @@ between them appear in the generated output. When the condition is false
 the entire block — including any inner widgets — is dropped before the
 per-line pipeline runs, so widgets in dead branches never execute.
 
-<table>
-<tr><th>Usage example</th><th>Behaviour</th></tr>
-<tr><td>
+The block is kept when `${devVersion}` ends with `-SNAPSHOT`; otherwise the entire block (the markers and the body) is removed:
 
 ```markdown
 ${widget:if(cond='endsWith(${devVersion}, -SNAPSHOT)')}
@@ -1187,12 +1185,7 @@ ${widget:if(cond='endsWith(${devVersion}, -SNAPSHOT)')}
 ${widget:endIf}
 ```
 
-</td><td>
-
-The block is kept when `${devVersion}` ends with `-SNAPSHOT`; otherwise the entire block (the markers and the body) is removed.
-
-</td></tr>
-<tr><td>
+Combines short-circuit `&&` with `!=` and `!` — the right side is not even resolved when the left is false:
 
 ```markdown
 ${widget:if(cond='${env.CI}!=true && !${dryRun}')}
@@ -1200,25 +1193,13 @@ This message only appears outside CI and outside dry runs.
 ${widget:endIf}
 ```
 
-</td><td>
-
-Combines short-circuit `&&` with `!=` and `!` — the right side is not even resolved when the left is false.
-
-</td></tr>
-<tr><td>
+`startsWith` / `endsWith` are case-sensitive; an empty needle is always true:
 
 ```markdown
 ${widget:if(cond='startsWith(${repoUrl}, https://github.com/) || startsWith(${repoUrl}, git@github.com:)')}
 Hosted on GitHub.
 ${widget:endIf}
 ```
-
-</td><td>
-
-`startsWith` / `endsWith` are case-sensitive; an empty needle is always true.
-
-</td></tr>
-</table>
 
 Condition grammar (precedence low → high):
 

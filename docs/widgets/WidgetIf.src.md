@@ -11,9 +11,8 @@ per-line pipeline runs, so widgets in dead branches never execute.<!--en-->
 отбрасывается до запуска per-line-конвейера, поэтому виджеты в мёртвой<!--ru-->
 ветке не выполняются никогда.<!--ru-->
 
-<table>
-<tr><th>${en:'Usage example', ru:'Пример использования'}</th><th>${en:'Behaviour', ru:'Поведение'}</th></tr>
-<tr><td>
+The block is kept when `\${devVersion}` ends with `-SNAPSHOT`; otherwise the entire block (the markers and the body) is removed:<!--en-->
+Блок остаётся, если `\${devVersion}` оканчивается на `-SNAPSHOT`; иначе блок полностью удаляется вместе с маркерами:<!--ru-->
 
 ```markdown
 \${widget:if(cond='endsWith(\${devVersion}, -SNAPSHOT)')}
@@ -21,13 +20,7 @@ per-line pipeline runs, so widgets in dead branches never execute.<!--en-->
 \${widget:endIf}
 ```
 
-</td><td>
-
-The block is kept when `\${devVersion}` ends with `-SNAPSHOT`; otherwise the entire block (the markers and the body) is removed.<!--en-->
-Блок остаётся, если `\${devVersion}` оканчивается на `-SNAPSHOT`; иначе блок полностью удаляется вместе с маркерами.<!--ru-->
-
-</td></tr>
-<tr><td>
+${en:'Combines short-circuit `&&` with `!=` and `!` — the right side is not even resolved when the left is false:', ru:'Комбинирует short-circuit `&&` с `!=` и `!` — правая часть даже не резолвится, если левая — false:'}
 
 ```markdown
 \${widget:if(cond='\${env.CI}!=true && !\${dryRun}')}
@@ -35,25 +28,13 @@ This message only appears outside CI and outside dry runs.
 \${widget:endIf}
 ```
 
-</td><td>
-
-${en:'Combines short-circuit `&&` with `!=` and `!` — the right side is not even resolved when the left is false.', ru:'Комбинирует short-circuit `&&` с `!=` и `!` — правая часть даже не резолвится, если левая — false.'}
-
-</td></tr>
-<tr><td>
+${en:'`startsWith` / `endsWith` are case-sensitive; an empty needle is always true:', ru:'`startsWith` / `endsWith` — case-sensitive; пустой needle всегда истинен:'}
 
 ```markdown
 \${widget:if(cond='startsWith(\${repoUrl}, https://github.com/) || startsWith(\${repoUrl}, git@github.com:)')}
 Hosted on GitHub.
 \${widget:endIf}
 ```
-
-</td><td>
-
-${en:'`startsWith` / `endsWith` are case-sensitive; an empty needle is always true.', ru:'`startsWith` / `endsWith` — case-sensitive; пустой needle всегда истинен.'}
-
-</td></tr>
-</table>
 
 ${en:'Condition grammar (precedence low → high)', ru:'Грамматика условия (приоритет от низкого к высокому)'}:
 

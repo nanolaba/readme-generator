@@ -851,7 +851,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 25.04.2026 15:11:36
+Last updated: 25.04.2026 15:16:43
 ```
 
 </td></tr>
@@ -1181,9 +1181,7 @@ ${widget:exec(cmd = './scripts/list-langs.sh', cwd = 'docs', timeout = '5')}
 отбрасывается до запуска per-line-конвейера, поэтому виджеты в мёртвой
 ветке не выполняются никогда.
 
-<table>
-<tr><th>Пример использования</th><th>Поведение</th></tr>
-<tr><td>
+Блок остаётся, если `${devVersion}` оканчивается на `-SNAPSHOT`; иначе блок полностью удаляется вместе с маркерами:
 
 ```markdown
 ${widget:if(cond='endsWith(${devVersion}, -SNAPSHOT)')}
@@ -1191,12 +1189,7 @@ ${widget:if(cond='endsWith(${devVersion}, -SNAPSHOT)')}
 ${widget:endIf}
 ```
 
-</td><td>
-
-Блок остаётся, если `${devVersion}` оканчивается на `-SNAPSHOT`; иначе блок полностью удаляется вместе с маркерами.
-
-</td></tr>
-<tr><td>
+Комбинирует short-circuit `&&` с `!=` и `!` — правая часть даже не резолвится, если левая — false:
 
 ```markdown
 ${widget:if(cond='${env.CI}!=true && !${dryRun}')}
@@ -1204,25 +1197,13 @@ This message only appears outside CI and outside dry runs.
 ${widget:endIf}
 ```
 
-</td><td>
-
-Комбинирует short-circuit `&&` с `!=` и `!` — правая часть даже не резолвится, если левая — false.
-
-</td></tr>
-<tr><td>
+`startsWith` / `endsWith` — case-sensitive; пустой needle всегда истинен:
 
 ```markdown
 ${widget:if(cond='startsWith(${repoUrl}, https://github.com/) || startsWith(${repoUrl}, git@github.com:)')}
 Hosted on GitHub.
 ${widget:endIf}
 ```
-
-</td><td>
-
-`startsWith` / `endsWith` — case-sensitive; пустой needle всегда истинен.
-
-</td></tr>
-</table>
 
 Грамматика условия (приоритет от низкого к высокому):
 
