@@ -18,8 +18,8 @@ ${widget:badge(type='custom', label='Java', message='8+', color='orange')}
 
 ![${en:'NRG demo: generating README.md and README.ru.md from a single .src.md template', ru:'Демо NRG: генерация README.md и README.ru.md из одного .src.md-шаблона'}](assets/demo.gif)
 
-**NRG** is a **README generator** and **Markdown template engine** that builds **multi-language** README files from a single `.src.md` source. Open-source Java 8+, ships as a CLI, a Maven plugin, and a library.<!--en-->
-**NRG** — это **генератор README** и **шаблонизатор Markdown**, который собирает **многоязычные** README-файлы из одного `.src.md`-исходника. Open-source Java 8+, поставляется как CLI, Maven-плагин и библиотека.<!--ru-->
+**NRG** is a **README generator** and **Markdown template engine** that builds **multi-language** README files from a single `.src.md` source. Open-source Java 8+, ships as a [CLI](#nrg-as-a-cli-tool), a [Maven plugin](#nrg-as-a-maven-plugin), a [GitHub Action](https://github.com/nanolaba/nrg-action), and a [Java library](#nrg-as-a-library).<!--en-->
+**NRG** — это **генератор README** и **шаблонизатор Markdown**, который собирает **многоязычные** README-файлы из одного `.src.md`-исходника. Open-source Java 8+, поставляется как [CLI](#nrg-as-a-cli-tool), [Maven-плагин](#nrg-as-a-maven-plugin), [GitHub Action](https://github.com/nanolaba/nrg-action) и [Java-библиотека](#nrg-as-a-library).<!--ru-->
 
 ${widget:import(path='docs/Overview.src.md')}
 
