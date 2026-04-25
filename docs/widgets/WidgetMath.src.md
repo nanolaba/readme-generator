@@ -41,18 +41,18 @@ ${widget:math(expr = '\\sum_{i=0}^{n} x_i', display = 'block')}
 ${en:'SVG fallback (`renderer = ''svg''`) for cases where GitHub''s native MathJax mis-parses the formula. The full time-dependent Schrödinger equation, with nested fractions, partial derivatives, and Greek letters, renders as a single image that GitHub displays inline:', ru:'SVG-фолбэк (`renderer = ''svg''`) для случаев, когда встроенный GitHub MathJax неправильно разбирает формулу. Полное нестационарное уравнение Шрёдингера со вложенными дробями, частными производными и греческими буквами рендерится как одна картинка, которую GitHub показывает прямо в тексте:'}
 
 ```markdown
-\${widget:math(expr = 'i\\hbar\\,\\frac{\\partial \\Psi}{\\partial t} = -\\frac{\\hbar^2}{2m}\\,\\nabla^2 \\Psi + V \\Psi', renderer = 'svg', display = 'block')}
+\${widget:math(expr = 'i\\hbar\\,\\frac{\\partial\\Psi}{\\partial t}=-\\frac{\\hbar^2}{2m}\\,\\nabla^2\\Psi+V\\Psi', renderer = 'svg', display = 'block')}
 ```
 
 ${en:'Generated Markdown:', ru:'Сгенерированный Markdown:'}
 
 ```markdown
-${widget:math(expr = 'i\\hbar\\,\\frac{\\partial \\Psi}{\\partial t} = -\\frac{\\hbar^2}{2m}\\,\\nabla^2 \\Psi + V \\Psi', renderer = 'svg', display = 'block')}
+${widget:math(expr = 'i\\hbar\\,\\frac{\\partial\\Psi}{\\partial t}=-\\frac{\\hbar^2}{2m}\\,\\nabla^2\\Psi+V\\Psi', renderer = 'svg', display = 'block')}
 ```
 
 ${en:'Rendered result:', ru:'Отображение:'}
 
-${widget:math(expr = 'i\\hbar\\,\\frac{\\partial \\Psi}{\\partial t} = -\\frac{\\hbar^2}{2m}\\,\\nabla^2 \\Psi + V \\Psi', renderer = 'svg', display = 'block')}
+${widget:math(expr = 'i\\hbar\\,\\frac{\\partial\\Psi}{\\partial t}=-\\frac{\\hbar^2}{2m}\\,\\nabla^2\\Psi+V\\Psi', renderer = 'svg', display = 'block')}
 
 ${en:'Widget parameters', ru:'Свойства виджета'}:
 

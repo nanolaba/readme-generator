@@ -848,7 +848,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 25.04.2026 15:39:42
+Last updated: 25.04.2026 15:45:52
 ```
 
 </td></tr>
@@ -1039,18 +1039,18 @@ $$\sum_{i=0}^{n} x_i$$
 SVG fallback (`renderer = 'svg'`) for cases where GitHub's native MathJax mis-parses the formula. The full time-dependent Schrödinger equation, with nested fractions, partial derivatives, and Greek letters, renders as a single image that GitHub displays inline:
 
 ```markdown
-${widget:math(expr = 'i\\hbar\\,\\frac{\\partial \\Psi}{\\partial t} = -\\frac{\\hbar^2}{2m}\\,\\nabla^2 \\Psi + V \\Psi', renderer = 'svg', display = 'block')}
+${widget:math(expr = 'i\\hbar\\,\\frac{\\partial\\Psi}{\\partial t}=-\\frac{\\hbar^2}{2m}\\,\\nabla^2\\Psi+V\\Psi', renderer = 'svg', display = 'block')}
 ```
 
 Generated Markdown:
 
 ```markdown
-![i\hbar\,\frac{\partial \Psi}{\partial t} = -\frac{\hbar^2}{2m}\,\nabla^2 \Psi + V \Psi](https://latex.codecogs.com/svg.image?%5Cdisplaystyle+i%5Chbar%5C%2C%5Cfrac%7B%5Cpartial+%5CPsi%7D%7B%5Cpartial+t%7D+%3D+-%5Cfrac%7B%5Chbar%5E2%7D%7B2m%7D%5C%2C%5Cnabla%5E2+%5CPsi+%2B+V+%5CPsi)
+![i\hbar\,\frac{\partial\Psi}{\partial t}=-\frac{\hbar^2}{2m}\,\nabla^2\Psi+V\Psi](https://latex.codecogs.com/svg.image?%5Cdisplaystyle+i%5Chbar%5C%2C%5Cfrac%7B%5Cpartial%5CPsi%7D%7B%5Cpartial+t%7D%3D-%5Cfrac%7B%5Chbar%5E2%7D%7B2m%7D%5C%2C%5Cnabla%5E2%5CPsi%2BV%5CPsi)
 ```
 
 Rendered result:
 
-![i\hbar\,\frac{\partial \Psi}{\partial t} = -\frac{\hbar^2}{2m}\,\nabla^2 \Psi + V \Psi](https://latex.codecogs.com/svg.image?%5Cdisplaystyle+i%5Chbar%5C%2C%5Cfrac%7B%5Cpartial+%5CPsi%7D%7B%5Cpartial+t%7D+%3D+-%5Cfrac%7B%5Chbar%5E2%7D%7B2m%7D%5C%2C%5Cnabla%5E2+%5CPsi+%2B+V+%5CPsi)
+![i\hbar\,\frac{\partial\Psi}{\partial t}=-\frac{\hbar^2}{2m}\,\nabla^2\Psi+V\Psi](https://latex.codecogs.com/svg.image?%5Cdisplaystyle+i%5Chbar%5C%2C%5Cfrac%7B%5Cpartial%5CPsi%7D%7B%5Cpartial+t%7D%3D-%5Cfrac%7B%5Chbar%5E2%7D%7B2m%7D%5C%2C%5Cnabla%5E2%5CPsi%2BV%5CPsi)
 
 Widget parameters:
 
