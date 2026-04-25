@@ -86,7 +86,7 @@
                         <configuration>
                             <archive>
                                 <manifest>
-                                    <mainClass>org.nanolaba.nrg.NRG</mainClass>
+                                    <mainClass>com.nanolaba.nrg.NRG</mainClass>
                                 </manifest>
                             </archive>
                             <descriptorRefs>
