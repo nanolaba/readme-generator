@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>NRG — Social Preview 1280×640</title>
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            background: #1a1a1a;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        .card {
+            width: 1280px;
+            height: 640px;
+            box-sizing: border-box;
+            padding: 80px 96px;
+            background: radial-gradient(ellipse at 80% 20%, rgba(88, 166, 255, 0.12) 0%, transparent 50%),
+            radial-gradient(ellipse at 20% 90%, rgba(163, 113, 247, 0.10) 0%, transparent 50%),
+            linear-gradient(135deg, #0d1117 0%, #161b22 100%);
+            color: #e6edf3;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .grid {
+            position: absolute;
+            inset: 0;
+            background-image: linear-gradient(rgba(88, 166, 255, 0.04) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(88, 166, 255, 0.04) 1px, transparent 1px);
+            background-size: 40px 40px;
+            pointer-events: none;
+        }
+
+        .top {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            z-index: 1;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 6px 14px;
+            border: 1px solid rgba(88, 166, 255, 0.4);
+            border-radius: 20px;
+            font-size: 18px;
+            color: #58a6ff;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .center {
+            z-index: 1;
+        }
+
+        .name {
+            font-size: 112px;
+            font-weight: 800;
+            line-height: 1;
+            margin: 0 0 24px 0;
+            letter-spacing: -3px;
+            background: linear-gradient(135deg, #ffffff 0%, #58a6ff 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .name-full {
+            font-size: 36px;
+            font-weight: 500;
+            color: #8b949e;
+            margin: 0 0 32px 0;
+            letter-spacing: 0.5px;
+        }
+
+        .tagline {
+            font-size: 38px;
+            font-weight: 400;
+            line-height: 1.35;
+            color: #e6edf3;
+            margin: 0;
+            max-width: 950px;
+        }
+
+        .tagline code {
+            font-family: "JetBrains Mono", "Fira Code", Consolas, monospace;
+            font-size: 32px;
+            padding: 4px 12px;
+            border-radius: 6px;
+            background: rgba(88, 166, 255, 0.12);
+            color: #79c0ff;
+            border: 1px solid rgba(88, 166, 255, 0.25);
+        }
+
+        .bottom {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            z-index: 1;
+        }
+
+        .channels {
+            display: flex;
+            gap: 28px;
+            font-size: 24px;
+            color: #8b949e;
+            letter-spacing: 0.5px;
+        }
+
+        .channels span strong {
+            color: #e6edf3;
+            font-weight: 600;
+        }
+
+        .repo {
+            font-family: "JetBrains Mono", "Fira Code", Consolas, monospace;
+            font-size: 22px;
+            color: #6e7681;
+        }
+
+        .repo .at {
+            color: #58a6ff;
+        }
+    </style>
+</head>
+<body>
+<div class="card">
+    <div class="grid"></div>
+
+    <div class="top">
+        <span class="badge">Open Source · Java 8+</span>
+    </div>
+
+    <div class="center">
+        <h1 class="name">NRG</h1>
+        <p class="name-full">Nanolaba Readme Generator</p>
+        <p class="tagline">
+            Generate <strong>multi-language</strong> READMEs from a single
+            <code>.src.md</code> template.
+        </p>
+    </div>
+
+    <div class="bottom">
+        <div class="channels">
+            <span><strong>CLI</strong></span>
+            <span>·</span>
+            <span><strong>Maven plugin</strong></span>
+            <span>·</span>
+            <span><strong>Java library</strong></span>
+        </div>
+        <div class="repo">
+            github.com<span class="at">/</span>nanolaba<span class="at">/</span>readme-generator
+        </div>
+    </div>
+</div>
+</body>
+</html>
