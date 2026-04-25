@@ -837,7 +837,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 25.04.2026 14:36:54
+Last updated: 25.04.2026 14:38:55
 ```
 
 </td></tr>
@@ -1250,42 +1250,23 @@ ${widget:endIf}
 Unicode-символами рамок. Удобно встроить в README актуальную
 структуру папок, не поддерживая ASCII-арт вручную.
 
-<table>
-<tr><th>Пример использования</th><th>Поведение</th></tr>
-<tr><td>
+Выводит содержимое каталога на один уровень, обёрнутое в fenced-блок:
 
 ```markdown
 ${widget:fileTree(path = 'nrg/src/main/java/com/nanolaba/nrg/widgets', depth = '1')}
 ```
 
-</td><td>
-
-Выводит содержимое каталога на один уровень, обёрнутое в fenced-блок.
-
-</td></tr>
-<tr><td>
+Двухуровневый листинг с исключением build-артефактов и IDE-каталогов через comma-separated глоб-шаблоны:
 
 ```markdown
 ${widget:fileTree(path = '.', depth = '2', exclude = 'target,.idea,.git,*.class')}
 ```
 
-</td><td>
-
-Двухуровневый листинг с исключением build-артефактов и IDE-каталогов через comma-separated глоб-шаблоны.
-
-</td></tr>
-<tr><td>
+Трёхуровневая структура только из каталогов, без code-fence:
 
 ```markdown
 ${widget:fileTree(path = 'nrg/src', depth = '3', dirsOnly = 'true', codeblock = 'false')}
 ```
-
-</td><td>
-
-Трёхуровневая структура только из каталогов, без code-fence.
-
-</td></tr>
-</table>
 
 Живой пример — `${widget:fileTree(path='../../nrg/src/', dirsOnly = 'true', depth='3')}`:
 
