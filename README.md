@@ -371,9 +371,9 @@ To use SNAPSHOT versions, you also need to add the following code to your `pom.x
 
 NRG ships as a composite GitHub Action so any repository can regenerate
 multi-language README files in CI without installing Maven or Java
-locally. The action sets up Java (optional), downloads the requested NRG
-release zip, extracts `nrg.jar`, and invokes it against the templates
-you list — turning README maintenance into a one-step workflow.
+locally. The action optionally sets up Java, downloads the requested NRG
+release zip, extracts `nrg.jar`, and runs it against the templates you
+list — README maintenance becomes a single workflow step.
 
 #### Quickstart
 
@@ -388,24 +388,28 @@ you list — turning README maintenance into a one-step workflow.
 
 | Name | Description | Default |
 |---|---|---|
-| `file` | Path to the .src.md template (relative to working-directory). Use `files` for multiple. | — |
+| `file` | Path to the `.src.md` template (relative to `working-directory`). Use `files` for multiple. | — |
 | `files` | Multi-line list of templates (one per line). Mutually exclusive with `file`. | — |
 | `charset` | Source file encoding. | `UTF-8` |
-| `mode` | Operation mode: generate, check, or validate. | `generate` |
-| `nrg-version` | NRG release tag (e.g. v1.0) or `latest`. | `latest` |
-| `java-version` | JDK version for actions/setup-java. Ignored when setup-java=false. | `17` |
-| `java-distribution` | JDK distribution for actions/setup-java. | `temurin` |
-| `setup-java` | Whether the action installs Java itself. Set to "false" if Java is set up earlier. | `true` |
-| `log-level` | NRG log verbosity: trace, debug, info, warn, or error. | `info` |
+| `mode` | Operation mode: `generate`, `check`, or `validate`. | `generate` |
+| `nrg-version` | NRG release tag (e.g. `v1.0`) or `latest`. | `latest` |
+| `java-version` | JDK version for `actions/setup-java`. Ignored when `setup-java=false`. | `17` |
+| `java-distribution` | JDK distribution for `actions/setup-java`. | `temurin` |
+| `setup-java` | Whether the action should install Java itself. Set to `"false"` if Java is already set up earlier in the job. | `true` |
+| `log-level` | NRG log verbosity: `trace`, `debug`, `info`, `warn`, or `error`. | `info` |
 | `working-directory` | Directory in which NRG runs. | `.` |
 
-`mode` semantics: `generate` writes files to disk; `check` is a read-only verification that exits non-zero with a unified diff if disk content drifts from what NRG would generate; `validate` scans templates for authoring mistakes (unknown widgets, undeclared language markers, missing imports, unbalanced ignore-blocks) without writing files.
+`mode` semantics:
+
+- `generate` writes `README.md`, `README.ru.md`, … to disk (default).
+- `check` is a read-only verification: if files on disk differ from what NRG would generate, it exits with a non-zero status and prints a unified diff. Use this on pull requests.
+- `validate` scans the template for authoring mistakes (unknown widgets, undeclared language markers, missing imports, unbalanced ignore-blocks). No files are written.
 
 #### Outputs
 
 | Name | Description |
 |---|---|
-| `version` | Resolved NRG version (e.g. v1.0). Useful when nrg-version=latest. |
+| `version` | Resolved NRG version (e.g. `v1.0`). Useful with `nrg-version=latest`. |
 | `changed-files` | Newline-separated list of files written or modified by NRG. |
 
 #### Examples
@@ -433,7 +437,7 @@ jobs:
 
 ##### Drift check on PR
 
-Fail the build when a contributor edits `README.md` directly instead of regenerating from `README.src.md`:
+Fail the build when a contributor edits `README.md` directly instead of regenerating it from `README.src.md`:
 
 ```yaml
 name: README drift check
@@ -453,11 +457,11 @@ jobs:
           mode: check
 ```
 
-Validate-only and auto-commit (open a pull request via `peter-evans/create-pull-request`) recipes are available in the action repository — see [examples](https://github.com/nanolaba/nrg-action/tree/main/examples). Note: that link is forward-looking until the standalone repo is published.
+Validate-only and auto-commit-via-PR recipes are in the [`nrg-action/examples`](https://github.com/nanolaba/readme-generator/tree/main/nrg-action/examples) directory of this repository.
 
 #### Multi-file projects
 
-Pass a heredoc list to the `files:` input (one path per line). All files are processed in a single action invocation; the jar is downloaded once. `file` and `files` are mutually exclusive — set exactly one.
+Pass a multi-line list to the `files:` input (one path per line). All files are processed in a single action invocation; the jar is downloaded only once. `file` and `files` are mutually exclusive — set exactly one.
 
 ```yaml
 - uses: nanolaba/nrg-action@v1
@@ -469,7 +473,7 @@ Pass a heredoc list to the `files:` input (one path per line). All files are pro
 
 #### Skipping the built-in setup-java
 
-If the surrounding workflow already installs Java (for example, for a Maven build), you can opt out of the built-in `actions/setup-java@v4` step. Composite-action inputs are strings, so use the quoted `"false"`, not the YAML boolean:
+If the surrounding workflow already installs Java (for example, for a Maven build), opt out of the built-in `actions/setup-java@v4` step. Composite-action inputs are strings, so use the quoted `"false"`, not the YAML boolean:
 
 ```yaml
 - uses: actions/setup-java@v4
@@ -488,12 +492,12 @@ Use `@v1` for auto-updates within the v1 major (recommended), `@v1.0` to lock to
 
 #### Troubleshooting
 
-Most CI failures fall into three buckets: download issues (verify the `nrg-version` exists at the [Releases](https://github.com/nanolaba/readme-generator/releases) page), zip-layout regressions (file an issue if `nrg.jar not found inside …` appears), and platform quirks. The most common quirk is line-ending drift on `windows-latest` — `mode: check` reports diffs that do not exist locally.
+Most CI failures fall into three buckets: download issues (verify the `nrg-version` exists on the [Releases](https://github.com/nanolaba/readme-generator/releases) page), zip-layout regressions (file an issue if `nrg.jar not found inside …` appears), and platform quirks. The most common quirk is line-ending drift on `windows-latest` — `mode: check` reports diffs that do not appear locally.
 
-- **Line-ending drift on Windows runners** — add a `.gitattributes` with `* text=auto eol=lf` and re-commit the regenerated files.
-- **Windows: `unzip: command not found`** — git-bash on `windows-latest` normally ships `unzip`; in rare images install it via `choco install unzip` in a preceding step.
+- **Line-ending drift on Windows runners** — add a `.gitattributes` line `* text=auto eol=lf` and re-commit the regenerated files.
+- **Windows: `unzip: command not found`** — git-bash on `windows-latest` normally ships `unzip`; on rare images install it via `choco install unzip` in a preceding step.
 
-See the standalone repo for the full Marketplace listing. Source: [`nanolaba/nrg-action`](https://github.com/nanolaba/nrg-action) (forward-looking).
+A standalone repository (`nanolaba/nrg-action`) with the Marketplace listing is planned; until then, this directory is the source of truth.
 
 
 ### Use as a java-library
@@ -989,7 +993,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 26.04.2026 00:58:41
+Last updated: 26.04.2026 01:15:58
 ```
 
 </td></tr>

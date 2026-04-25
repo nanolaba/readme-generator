@@ -2,7 +2,10 @@
 
 Generate multi-language README/Markdown files from a single `.src.md` template, in CI, with one workflow step.
 
-[![Marketplace](https://img.shields.io/badge/marketplace-nrg--action-blue?logo=github)](https://github.com/marketplace/actions/nanolaba-readme-generator)
+<!-- Marketplace badge omitted until the action is published.
+     Re-add after publication:
+     [![Marketplace](https://img.shields.io/badge/marketplace-nrg--action-blue?logo=github)](https://github.com/marketplace/actions/nanolaba-readme-generator)
+-->
 [![Latest NRG release](https://img.shields.io/github/v/release/nanolaba/readme-generator)](https://github.com/nanolaba/readme-generator/releases)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue)](./LICENSE)
 
