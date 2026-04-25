@@ -228,6 +228,43 @@ class TemplateLineTest extends DefaultNRGTest {
     }
 
     @Test
+    public void testRenderLanguagePropertiesWithNestedPropertyReference() {
+        // Single nested property reference inside both language variants (issue #28).
+        assertEquals("Project Sample info",
+                line("<!--@projectName=Sample-->${en:'Project ${projectName} info', ru:'Проект ${projectName}'}",
+                        "en", "ru").generateLine("en"));
+        assertEquals("Проект Sample",
+                line("<!--@projectName=Sample-->${en:'Project ${projectName} info', ru:'Проект ${projectName}'}",
+                        "en", "ru").generateLine("ru"));
+    }
+
+    @Test
+    public void testRenderLanguagePropertiesWithMultipleNestedPropertyReferences() {
+        assertEquals("A X B Y C",
+                line("<!--@var=X--><!--@var2=Y-->${en:'A ${var} B ${var2} C', ru:'А ${var} Б ${var2} В'}",
+                        "en", "ru").generateLine("en"));
+        assertEquals("А X Б Y В",
+                line("<!--@var=X--><!--@var2=Y-->${en:'A ${var} B ${var2} C', ru:'А ${var} Б ${var2} В'}",
+                        "en", "ru").generateLine("ru"));
+    }
+
+    @Test
+    public void testRenderLanguagePropertiesWithNestedEnvDefault() {
+        // ${env.X:default} is resolved before language substitution; the nested ref must not break parsing.
+        assertEquals("Build dev",
+                line("${en:'Build ${env.NRG_TEST_UNDEFINED_VAR_28:dev}', ru:'Сборка ${env.NRG_TEST_UNDEFINED_VAR_28:dev}'}",
+                        "en", "ru").generateLine("en"));
+    }
+
+    @Test
+    public void testRenderLanguagePropertiesWithEscapedNestedReference() {
+        // Backslash-escaped ${...} inside the language quotes must remain literal in the output.
+        assertEquals("Project ${projectName} stays",
+                line("<!--@projectName=Sample-->${en:'Project \\${projectName} stays', ru:'Проект \\${projectName} остаётся'}",
+                        "en", "ru").generateLine("en"));
+    }
+
+    @Test
     public void testRenderManyWidgetsInOneLine() {
         String yyyyMM = new SimpleDateFormat("yyyyMM").format(new Date());
         assertEquals(yyyyMM, line("${widget:date(pattern='yyyy')}${widget:date(pattern='MM')}", "en", "ru").generateLine("en"));

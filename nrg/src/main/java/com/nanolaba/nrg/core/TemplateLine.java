@@ -263,8 +263,13 @@ public class TemplateLine {
             return line;
         }
 
-        String langs = config.getLanguages().stream().map(s -> "(\\s*" + Pattern.quote(s) + ")").collect(Collectors.joining("|"));
-        String regex = "\\$\\{\\s*((" + langs + "):[^}]*)}";
+        String langAlt = config.getLanguages().stream().map(Pattern::quote).collect(Collectors.joining("|"));
+        if (langAlt.isEmpty()) {
+            return line;
+        }
+        String quoted = "(?:'(?:[^']|'')*'|\"(?:[^\"]|\"\")*\")";
+        String entry = "\\s*(?:" + langAlt + ")\\s*:\\s*" + quoted + "\\s*";
+        String regex = "\\$\\{(" + entry + "(?:," + entry + ")*)}";
 
         StringBuilder result = new StringBuilder(line);
         int shift = 0;
