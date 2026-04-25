@@ -121,6 +121,7 @@ public class GeneratorConfig {
         widgets.add(new BadgeWidget());
         widgets.add(new MathWidget());
         widgets.add(new ExecWidget());
+        widgets.add(new FileTreeWidget());
     }
 
     private void printConfiguration() {

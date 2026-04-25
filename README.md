@@ -72,6 +72,7 @@ The current development version is **0.4-SNAPSHOT**.
 		5. [Widget 'math'](#widget-math)
 		6. [Widget 'exec'](#widget-exec)
 		7. [Widget 'if'](#widget-if)
+		8. [Widget 'fileTree'](#widget-filetree)
 1. [Advanced features](#advanced-features)
 	1. [Creating a widget](#creating-a-widget)
 2. [Related projects](#related-projects)
@@ -833,7 +834,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 25.04.2026 13:39:03
+Last updated: 25.04.2026 14:16:24
 ```
 
 </td></tr>
@@ -1207,17 +1208,17 @@ ${widget:endIf}
 
 Condition grammar (precedence low → high):
 
-| Form               | Meaning                                                       |
-|--------------------|---------------------------------------------------------------|
-| `X`                | truthy — true iff `X.trim()` is non-empty                     |
-| `!X`               | falsy — true iff `X.trim()` is empty                          |
-| `X == Y`           | equality (trim each side; quoted strings preserve whitespace) |
-| `X != Y`           | inequality                                                    |
-| `A && B`           | and (short-circuit)                                           |
-| `A \|\| B`         | or (short-circuit)                                            |
-| `(expr)`           | grouping                                                      |
-| `startsWith(h, n)` | true iff `h.startsWith(n)`; case-sensitive                    |
-| `endsWith(h, n)`   | true iff `h.endsWith(n)`; case-sensitive                      |
+| Form | Meaning                                                                                                                    |
+|--------------------------|------------------------------------------------------------------------------------------------------------------------------------------------|
+| `X`                      | truthy — true iff `X.trim()` is non-empty                                               |
+| `!X`                     | falsy — true iff `X.trim()` is empty                                                        |
+| `X == Y`                 | equality (trim each side; quoted strings preserve whitespace) |
+| `X != Y`                 | inequality                                                                                                           |
+| `A && B`                 | and (short-circuit)                                                                                            |
+| `A \|\| B`               | or (short-circuit)                                                                                           |
+| `(expr)`                 | grouping                                                                                                             |
+| `startsWith(h, n)`       | true iff `h.startsWith(n)`; case-sensitive                                        |
+| `endsWith(h, n)`         | true iff `h.endsWith(n)`; case-sensitive                                            |
 
 `), quoted strings (`\'…\'` or `"…"` with doubled-quote escape), or bare strings. Quoted strings preserve whitespace and protect operator characters; placeholders inside quoted strings are still resolved.', ru:'Операнды — это плейсхолдеры (`${…}`), quoted-строки (`\'…\'` или `"…"` с удвоением кавычки) или bare-строки. Quoted-строки сохраняют пробелы и защищают operator-символы; плейсхолдеры внутри quoted-строк всё равно разрешаются.'}
 
@@ -1226,6 +1227,8 @@ Type rules:
 - Every value is a string; there are no numbers, booleans, or null.
 - ` resolving to `a && b` is treated as opaque text — operators inside placeholder values are *not* reinterpreted as boolean operators.', ru:'`${msg}`, резолвящийся в `a && b`, остаётся opaque-текстом — операторы внутри значений *не* трактуются как булевы.'}
 - ==True` does not match the env value `true`. Normalise upstream.', ru:'Никакого implicit case folding или числового приведения: `${env.CI}==True` не совпадёт с env-значением `true`. Нормализуйте на стороне источника.'}
+
+
 
 Errors:
 
@@ -1237,6 +1240,70 @@ Errors:
 Out of scope (v1): ` resolution inside the *default* of `${env.X:default}` references on the right-hand side of an `==`.', ru:'численные сравнения (`>`, `<`, …), regex-сопоставление, `else`/`elif`, scripting-engine, разрешение `${…}` внутри *default*-части `${env.X:default}` на правой стороне `==`.'}
 
 ---
+
+#### Widget 'fileTree'
+
+This component renders a `tree -L`-style directory listing with Unicode
+box-drawing characters. Use it to embed an always-current view of a
+folder's structure into the README without hand-maintaining ASCII art.
+
+<table>
+<tr><th>Usage example</th><th>Behaviour</th></tr>
+<tr><td>
+
+```markdown
+${widget:fileTree(path = 'nrg/src/main/java/com/nanolaba/nrg/widgets', depth = '1')}
+```
+
+</td><td>
+
+Lists the directory contents one level deep, wrapped in a fenced code block.
+
+</td></tr>
+<tr><td>
+
+```markdown
+${widget:fileTree(path = '.', depth = '2', exclude = 'target,.idea,.git,*.class')}
+```
+
+</td><td>
+
+Two-level listing with build artefacts and IDE folders excluded via comma-separated globs.
+
+</td></tr>
+<tr><td>
+
+```markdown
+${widget:fileTree(path = 'nrg/src', depth = '3', dirsOnly = 'true', codeblock = 'false')}
+```
+
+</td><td>
+
+Three-level directory-only outline, emitted raw without a code fence.
+
+</td></tr>
+</table>
+
+Widget parameters:
+
+| Name | Description                                                                                                                                                                                                                                                                                                                                                          | Default value |
+|:-------------------------------:|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:-------------------------------------------------:|
+|              path               | Directory to list. Relative paths are resolved against the source-file directory; absolute paths are used as-is. Missing or non-directory paths log an error and produce no output. |                                                   |
+|              depth              | Recursion limit (positive integer). `1` lists only direct children; `2` descends one level deeper, and so on.                                                                                                                                                  |                       `2`                         |
+|             exclude             | Comma-separated glob patterns. Each pattern is matched against both the entry name and the entry's path relative to `path` — so `target` skips a folder named `target` anywhere, and `sub/drop.txt` targets one specific file. |                  (none)      |
+|            dirsOnly             | `true` lists directories only; files are hidden.                                                                                                                                                                                                                                                                          |                     `false`                       |
+|            codeblock            | `true` wraps the output in a fenced code block; `false` emits raw text.                                                                                                                                                                                                                                          |                      `true`                       |
+
+Behaviour:
+
+- Entries are sorted directories-first, then alphabetically within each group, for stable byte-exact output that survives `--check`.
+- `, `[abc]`).', ru:'Синтаксис glob — `java.nio.file.PathMatcher` (`*`, `?`, `**`, `{a,b}`, `[abc]`).'}
+- Symbolic links are followed as regular directories or files; cycles are not detected — keep `depth` finite.
+
+
+
+---
+
 
 ## Advanced features
 
@@ -1353,6 +1420,7 @@ This section summarises the main user-visible changes in each release. For full 
 - **`${pom.NAME}` substitution**: read values from the project `pom.xml` via a Maven-style dotted path (`${pom.version}`, `${pom.groupId}:${pom.artifactId}`, `${pom.parent.version}`, `${pom.properties.java.version}`). Supports shell-style defaults, parent inheritance for `groupId` / `version` / `name`, and one-level POM-internal interpolation for `${prop}`, `${project.*}`, and `${env.NAME}`. POM path defaults to the source-file directory; override via `<!--@nrg.pom.path=...-->`.
 - **`if` block widget**: `${widget:if(cond='…')}` … `${widget:endIf}` conditionally drops a block of lines from the output. Supports a small string-only DSL: truthy / falsy, `==` / `!=`, `&&` / `||`, `!`, parentheses, and `startsWith` / `endsWith`. Two-phase evaluation (parse-then-resolve) keeps `${…}`-resolved values opaque, preventing operator injection. Inner widgets in dropped branches never execute.
 - **`--validate` flag**: scans the source template and every reachable `${widget:import}`-imported file for authoring mistakes (unknown widgets, undeclared language markers, missing import paths, unbalanced `<!--nrg.ignore.begin-->` / `<!--nrg.ignore.end-->` pairs) without generating any output. Exits `0` silently on a clean template, `1` with a `file:line: message` list otherwise. Mutually exclusive with `--check` and `--stdout`. The Maven plugin exposes it as `<validate>true</validate>` and fails the build with a `MojoExecutionException`.
+- **`fileTree` widget**: renders a `tree -L`-style directory listing with Unicode box-drawing characters. Supports `depth`, comma-separated `exclude` globs (matched against entry name and relative path), `dirsOnly`, and `codeblock` parameters. Entries are sorted directories-first then alphabetically for stable byte-exact output.
 - Widget parameters may now contain `{` and `}` (LaTeX-friendly); the tag regex now delimits parameters by `(` / `)` instead of `}`.
 - Fixed: the `languages` widget now produces correct link targets when rendered inside an imported fragment.
 
