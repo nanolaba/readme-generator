@@ -11,6 +11,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -30,12 +31,22 @@ public class GeneratorConfig {
     private String widgetsProperty;
     private boolean rootGenerator = true;
     private boolean execAllowed = false;
+    private Function<String, String> envProvider = System::getenv;
+    private final Set<String> warnedMissingEnvVars = new HashSet<>();
 
 
     public GeneratorConfig(File sourceFile, String templateText, List<NRGWidget> widgets) {
+        this(sourceFile, templateText, widgets, null);
+    }
+
+    public GeneratorConfig(File sourceFile, String templateText, List<NRGWidget> widgets,
+                           Function<String, String> envProvider) {
         this.sourceFile = sourceFile;
         this.sourceFileBody = IgnoreBlockStripper.strip(templateText);
         this.rootSourceFile = sourceFile;
+        if (envProvider != null) {
+            this.envProvider = envProvider;
+        }
 
         getSourceLinesStream().forEach(this::readLanguagesPropertiesFromLine);
 
@@ -68,16 +79,17 @@ public class GeneratorConfig {
     }
 
     private void readLanguagesPropertiesFromLine(TemplateLine line) {
+        Map<String, String> raw = NRGUtil.extractRawPropertyMarkers(line.getLine());
 
-        String lang = line.getProperty(PROPERTY_LANGUAGES, null);
+        String lang = raw.get(PROPERTY_LANGUAGES);
         if (lang != null && !lang.isEmpty()) {
             languages = Arrays.stream(lang.split(",")).map(String::trim).collect(Collectors.toList());
         }
-        String defaultLang = line.getProperty(PROPERTY_DEFAULT_LANGUAGE, null);
+        String defaultLang = raw.get(PROPERTY_DEFAULT_LANGUAGE);
         if (defaultLang != null && !defaultLang.isEmpty()) {
             defaultLanguage = defaultLang;
         }
-        String widgetsProp = line.getProperty(PROPERTY_WIDGETS, null);
+        String widgetsProp = raw.get(PROPERTY_WIDGETS);
         if (widgetsProp != null && !widgetsProp.isEmpty()) {
             widgetsProperty = widgetsProp;
         }
@@ -176,5 +188,17 @@ public class GeneratorConfig {
 
     public void setExecAllowed(boolean execAllowed) {
         this.execAllowed = execAllowed;
+    }
+
+    public Function<String, String> getEnvProvider() {
+        return envProvider;
+    }
+
+    public void setEnvProvider(Function<String, String> envProvider) {
+        this.envProvider = envProvider == null ? System::getenv : envProvider;
+    }
+
+    public Set<String> getWarnedMissingEnvVars() {
+        return warnedMissingEnvVars;
     }
 }

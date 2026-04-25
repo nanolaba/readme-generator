@@ -78,7 +78,7 @@ public class TableOfContentsWidget extends DefaultWidget {
             List<String> items = reader.lines()
                     .skip(indexOfTOC)
                     .filter(line -> !line.contains(IGNORE_ATTR))
-                    .map(s -> new TemplateLine(config, s, 0).fillLineWithProperties(language))
+                    .map(s -> new TemplateLine(config, s, 0).fillLineWithProperties(language, false))
                     .filter(Objects::nonNull)
                     .map(line -> new Header(line, tocConfig, allHeaders))
                     .filter(header -> header.level >= minLevel && header.level <= maxLevel)

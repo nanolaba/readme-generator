@@ -20,6 +20,7 @@ This section summarises the main user-visible changes in each release. For full 
 - **`badge` widget**: renders shields.io badges for `maven-central`, `license`, `github-release`, `github-stars`, and a free-form `custom` variant — no more hand-crafted URLs.<!--en-->
 - **`math` widget**: renders LaTeX formulas via GitHub's native `$…$` / `$$…$$` delimiters or as `![alt](…)` images through a LaTeX-to-SVG service (default: `latex.codecogs.com`).<!--en-->
 - **`exec` widget (opt-in)**: runs an external command and embeds its stdout. Disabled by default; enable with `--allow-exec` (CLI) or `<allowExec>true</allowExec>` (Maven plugin). Supports `cwd`, `timeout`, `trim`, and `codeblock` parameters.<!--en-->
+- **`\${env.NAME}` substitution**: read environment variables directly from any template position with shell-style defaults (`\${env.NAME:fallback}`). Works in body text, `<\!--@key=value-->` declaration values, and widget parameter values. Missing variables log a warning and render empty.<!--en-->
 - Widget parameters may now contain `{` and `}` (LaTeX-friendly); the tag regex now delimits parameters by `(` / `)` instead of `}`.<!--en-->
 - Fixed: the `languages` widget now produces correct link targets when rendered inside an imported fragment.<!--en-->
 - **Виджет `import`**: добавлены параметры `lines`, `region`, `wrap`, `lang` и `dedent` для точного включения фрагментов файлов.<!--ru-->
@@ -37,6 +38,7 @@ This section summarises the main user-visible changes in each release. For full 
 - **Виджет `badge`**: формирует shields.io-бейджи для `maven-central`, `license`, `github-release`, `github-stars` и свободного `custom`-варианта — URL-адреса больше не нужно собирать вручную.<!--ru-->
 - **Виджет `math`**: рендерит формулы LaTeX через встроенные разделители GitHub `$…$` / `$$…$$` либо как `![alt](…)`-картинку через LaTeX-to-SVG сервис (по умолчанию `latex.codecogs.com`).<!--ru-->
 - **Виджет `exec` (opt-in)**: выполняет внешнюю команду и вставляет её stdout. По умолчанию выключен; включается через `--allow-exec` (CLI) или `<allowExec>true</allowExec>` (Maven-плагин). Поддерживает параметры `cwd`, `timeout`, `trim` и `codeblock`.<!--ru-->
+- **Подстановка `\${env.NAME}`**: чтение переменных окружения из любой позиции в шаблоне, со shell-стилем умолчаний (`\${env.NAME:fallback}`). Работает в основном тексте, в значениях `<\!--@key=value-->` и в параметрах виджетов. Отсутствующие переменные логируются как warning и подставляют пустую строку.<!--ru-->
 - В параметрах виджетов теперь разрешены `{` и `}` (удобно для LaTeX); регулярка тега разделяет параметры скобками `(` / `)` вместо `}`.<!--ru-->
 - Исправлено: виджет `languages` теперь правильно формирует ссылки при использовании внутри импортированного фрагмента.<!--ru-->
 

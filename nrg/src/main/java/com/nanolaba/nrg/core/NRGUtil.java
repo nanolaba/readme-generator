@@ -64,6 +64,33 @@ public class NRGUtil {
         properties.setProperty(key.toString(), String.valueOf(value));
     }
 
+    /**
+     * Parses raw {@code <!--@key=value-->} markers from a single line without any substitution
+     * (no env / language / property rendering) and without mutating any caller state.
+     * Returns a key→value map preserving insertion order.
+     */
+    public static Map<String, String> extractRawPropertyMarkers(String line) {
+        Map<String, String> map = new LinkedHashMap<>();
+        String[] strings = StringUtils.substringsBetween(line, "<!--", "-->");
+        if (strings == null) {
+            return map;
+        }
+        for (String comment : strings) {
+            String s = StringUtils.trimToEmpty(comment);
+            if (!s.contains("@")) {
+                continue;
+            }
+            s = StringUtils.substringAfter(s, "@");
+            if (!s.contains("=")) {
+                continue;
+            }
+            String key = StringUtils.trimToEmpty(StringUtils.substringBefore(s, "="));
+            String value = StringUtils.trimToEmpty(StringUtils.substringAfter(s, "="));
+            map.put(key, value);
+        }
+        return map;
+    }
+
     public static Map<String, String> parseParametersLine(String parameters) {
         Map<String, String> map = new HashMap<>();
         if (StringUtils.isNotEmpty(parameters)) {
