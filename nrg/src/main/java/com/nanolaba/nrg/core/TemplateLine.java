@@ -17,6 +17,7 @@ import static org.apache.commons.lang3.StringUtils.*;
 public class TemplateLine {
 
     public static final Pattern WIDGET_TAG_PATTERN = Pattern.compile("\\$\\{ *widget:(\\w*)(\\(([^)]*)\\))? *}");
+    private static final Pattern ENV_TAG_PATTERN = Pattern.compile("\\$\\{\\s*env\\.([A-Za-z_][A-Za-z0-9_]*)(?::([^}]*))?\\s*}");
 
     private final GeneratorConfig config;
     private final String line;
@@ -53,6 +54,7 @@ public class TemplateLine {
                     if (s.contains("=")) {
                         String key = trimToEmpty(substringBefore(s, "="));
                         String value = trimToEmpty(substringAfter(s, "="));
+                        value = renderEnvProperties(value);
                         value = renderProperties(value);
                         value = renderLanguageProperties(value, language);
                         NRGUtil.mergeProperty(key, value, config.getProperties());
@@ -115,6 +117,35 @@ public class TemplateLine {
         return res;
     }
 
+    protected String renderEnvProperties(String line) {
+        Matcher m = ENV_TAG_PATTERN.matcher(line);
+        StringBuilder result = new StringBuilder();
+        int last = 0;
+        while (m.find()) {
+            if (!isNotEscaped(line, m.start())) {
+                continue;
+            }
+            String name = m.group(1);
+            String fallback = m.group(2);
+            String value = config.getEnvProvider().apply(name);
+            String replacement;
+            if (value != null) {
+                replacement = value;
+            } else if (fallback != null) {
+                replacement = fallback;
+            } else {
+                if (config.getWarnedMissingEnvVars().add(name)) {
+                    LOG.warn("Environment variable '{}' is not set; rendering empty", name);
+                }
+                replacement = "";
+            }
+            result.append(line, last, m.start()).append(replacement);
+            last = m.end();
+        }
+        result.append(line, last, line.length());
+        return result.toString();
+    }
+
     protected String renderProperties(String line) {
         Pattern pattern = Pattern.compile("\\$\\{\\s*([\\p{Alnum}-_.]+)\\s*}");
         Matcher m = pattern.matcher(line);
@@ -172,8 +203,15 @@ public class TemplateLine {
 
 
     public String fillLineWithProperties(String language) {
+        return fillLineWithProperties(language, true);
+    }
+
+    public String fillLineWithProperties(String language, boolean substituteEnv) {
         if (isLineVisible(language)) {
             String result = line;
+            if (substituteEnv) {
+                result = renderEnvProperties(result);
+            }
             result = renderLanguageProperties(result, language);
             result = renderProperties(result);
             return result;

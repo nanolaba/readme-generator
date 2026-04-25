@@ -53,9 +53,10 @@ The current development version is **0.4-SNAPSHOT**.
 2. [Template syntax](#template-syntax)
 	1. [Variables](#variables)
 	2. [Properties](#properties)
-	3. [Multilanguage support](#multilanguage-support)
-	4. [Ignoring content](#ignoring-content)
-	5. [Widgets](#widgets)
+	3. [Environment variables](#environment-variables)
+	4. [Multilanguage support](#multilanguage-support)
+	5. [Ignoring content](#ignoring-content)
+	6. [Widgets](#widgets)
 		1. [Widget 'languages'](#widget-languages)
 		2. [Widget 'import'](#widget-import)
 		1. [Widget 'tableOfContents'](#widget-tableofcontents)
@@ -455,6 +456,33 @@ The language in which the main documentation file will be generated. The languag
 included in the list defined by the property *nrg.languages*. The default value of this property is
 the first element in the *nrg.languages* list.
 
+### Environment variables
+
+Inside any `${…}` reference, the reserved `env.` namespace pulls a value
+from the process environment. Resolution happens before language and
+property substitution, so `${env.NAME}` works in raw body text, inside
+`<!--@key=value-->` declaration values, and inside widget parameters.
+
+```markdown
+${env.BUILD_NUMBER}
+${env.RELEASE_URL:https://github.com/nanolaba/readme-generator/releases}
+<!--@buildNumber=${env.BUILD}-->
+${widget:badge(type='custom', label='build', message='${env.BUILD_NUMBER:unknown}', color='blue')}
+```
+
+Behaviour:
+
+- `${env.NAME}` — substitutes the value of `NAME` from the environment. If unset, logs one warning per distinct name per generation and renders an empty string.
+- `${env.NAME:default}` — substitutes the env value when set (even if empty), otherwise the literal default after the first `:`.
+- Names must match the POSIX identifier pattern `[A-Za-z_][A-Za-z0-9_]*`. Dotted names like `${app.version}` fall through to the regular property resolver.
+- Backslash escapes work as for any other `${…}` reference: `\\${env.NAME}` renders as the literal text.
+
+> [!WARNING]
+> The substitution reads whatever `System.getenv()` exposes. On shared CI
+> machines, treat the generated README as exposing every environment
+> variable it references — do not template `${env.AWS_SECRET_…}` into a
+> public document.
+
 ### Multilanguage support
 
 To write text in different languages, there are two methods available.
@@ -739,7 +767,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 25.04.2026 01:18:55
+Last updated: 25.04.2026 10:22:08
 ```
 
 </td></tr>
@@ -1054,6 +1082,7 @@ Error handling:
 
 ---
 
+
 ## Advanced features
 
 ### Creating a widget
@@ -1165,6 +1194,7 @@ This section summarises the main user-visible changes in each release. For full 
 - **`badge` widget**: renders shields.io badges for `maven-central`, `license`, `github-release`, `github-stars`, and a free-form `custom` variant — no more hand-crafted URLs.
 - **`math` widget**: renders LaTeX formulas via GitHub's native `$…$` / `$$…$$` delimiters or as `![alt](…)` images through a LaTeX-to-SVG service (default: `latex.codecogs.com`).
 - **`exec` widget (opt-in)**: runs an external command and embeds its stdout. Disabled by default; enable with `--allow-exec` (CLI) or `<allowExec>true</allowExec>` (Maven plugin). Supports `cwd`, `timeout`, `trim`, and `codeblock` parameters.
+- **`${env.NAME}` substitution**: read environment variables directly from any template position with shell-style defaults (`${env.NAME:fallback}`). Works in body text, `<!--@key=value-->` declaration values, and widget parameter values. Missing variables log a warning and render empty.
 - Widget parameters may now contain `{` and `}` (LaTeX-friendly); the tag regex now delimits parameters by `(` / `)` instead of `}`.
 - Fixed: the `languages` widget now produces correct link targets when rendered inside an imported fragment.
 

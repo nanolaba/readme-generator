@@ -11,6 +11,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
 public class Generator {
 
@@ -31,6 +32,11 @@ public class Generator {
 
     public Generator(File sourceFile, String sourceBody, List<NRGWidget> widgets) {
         config = new GeneratorConfig(sourceFile, sourceBody, widgets);
+    }
+
+    public Generator(File sourceFile, String sourceBody, List<NRGWidget> widgets,
+                     Function<String, String> envProvider) {
+        config = new GeneratorConfig(sourceFile, sourceBody, widgets, envProvider);
     }
 
     protected void generateContents() {

@@ -85,6 +85,50 @@ the first element in the *nrg.languages* list.<!--en-->
 Название языка должно содержаться в перечне, определенным в свойстве *nrg.languages*.<!--ru-->
 Значение этого свойства по умолчанию - первый элемент списка из свойства *nrg.languages*.<!--ru-->
 
+### ${en:'Environment variables', ru:'Переменные окружения'}
+
+Inside any `\${…}` reference, the reserved `env.` namespace pulls a value<!--en-->
+from the process environment. Resolution happens before language and<!--en-->
+property substitution, so `\${env.NAME}` works in raw body text, inside<!--en-->
+`<\!--@key=value-->` declaration values, and inside widget parameters.<!--en-->
+Внутри любой ссылки `\${…}` зарезервированное пространство имён `env.` подставляет<!--ru-->
+значение из переменных окружения процесса. Разрешение происходит до языковой<!--ru-->
+и обычной property-подстановки, поэтому `\${env.NAME}` работает и в обычном тексте,<!--ru-->
+и в значениях `<\!--@key=value-->`, и в параметрах виджетов.<!--ru-->
+
+```markdown
+\${env.BUILD_NUMBER}
+\${env.RELEASE_URL:https://github.com/nanolaba/readme-generator/releases}
+<!--\@buildNumber=\${env.BUILD}-->
+\${widget:badge(type='custom', label='build', message='\${env.BUILD_NUMBER:unknown}', color='blue')}
+```
+
+Behaviour:<!--en-->
+
+- `\${env.NAME}` — substitutes the value of `NAME` from the environment. If unset, logs one warning per distinct name per generation and renders an empty string.<!--en-->
+- `\${env.NAME:default}` — substitutes the env value when set (even if empty), otherwise the literal default after the first `:`.<!--en-->
+- Names must match the POSIX identifier pattern `[A-Za-z_][A-Za-z0-9_]*`. Dotted names like `\${app.version}` fall through to the regular property resolver.<!--en-->
+- Backslash escapes work as for any other `\${…}` reference: `\\\${env.NAME}` renders as the literal text.<!--en-->
+
+Поведение:<!--ru-->
+
+- `\${env.NAME}` — подставляет значение переменной `NAME`. Если переменная не задана, выводит одно предупреждение на каждое уникальное имя за прогон и подставляет пустую строку.<!--ru-->
+- `\${env.NAME:default}` — подставляет значение из окружения, если переменная задана (даже пустой строкой), иначе — литерал после первого `:`.<!--ru-->
+- Имена должны соответствовать POSIX-идентификатору `[A-Za-z_][A-Za-z0-9_]*`. Имена с точкой, например `\${app.version}`, обрабатываются обычным property-резолвером.<!--ru-->
+- Эскейп обратным слэшем работает как для любой другой `\${…}`-конструкции: `\\\${env.NAME}` выводится как литерал.<!--ru-->
+
+> [!WARNING]<!--en-->
+> The substitution reads whatever `System.getenv()` exposes. On shared CI<!--en-->
+> machines, treat the generated README as exposing every environment<!--en-->
+> variable it references — do not template `\${env.AWS_SECRET_…}` into a<!--en-->
+> public document.<!--en-->
+
+> [!WARNING]<!--ru-->
+> Подстановка читает то, что отдаёт `System.getenv()`. На общих CI-машинах<!--ru-->
+> считайте, что сгенерированный README раскрывает любую переменную, на<!--ru-->
+> которую он ссылается — не вставляйте `\${env.AWS_SECRET_…}` в публичные<!--ru-->
+> документы.<!--ru-->
+
 ### Multilanguage support
 
 To write text in different languages, there are two methods available.<!--en-->
