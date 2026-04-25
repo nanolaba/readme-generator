@@ -7,42 +7,23 @@ folder's structure into the README without hand-maintaining ASCII art.<!--en-->
 Unicode-символами рамок. Удобно встроить в README актуальную<!--ru-->
 структуру папок, не поддерживая ASCII-арт вручную.<!--ru-->
 
-<table>
-<tr><th>${en:'Usage example', ru:'Пример использования'}</th><th>${en:'Behaviour', ru:'Поведение'}</th></tr>
-<tr><td>
+${en:'Lists the directory contents one level deep, wrapped in a fenced code block:', ru:'Выводит содержимое каталога на один уровень, обёрнутое в fenced-блок:'}
 
 ```markdown
 \${widget:fileTree(path = 'nrg/src/main/java/com/nanolaba/nrg/widgets', depth = '1')}
 ```
 
-</td><td>
-
-${en:'Lists the directory contents one level deep, wrapped in a fenced code block.', ru:'Выводит содержимое каталога на один уровень, обёрнутое в fenced-блок.'}
-
-</td></tr>
-<tr><td>
+${en:'Two-level listing with build artefacts and IDE folders excluded via comma-separated globs:', ru:'Двухуровневый листинг с исключением build-артефактов и IDE-каталогов через comma-separated глоб-шаблоны:'}
 
 ```markdown
 \${widget:fileTree(path = '.', depth = '2', exclude = 'target,.idea,.git,*.class')}
 ```
 
-</td><td>
-
-${en:'Two-level listing with build artefacts and IDE folders excluded via comma-separated globs.', ru:'Двухуровневый листинг с исключением build-артефактов и IDE-каталогов через comma-separated глоб-шаблоны.'}
-
-</td></tr>
-<tr><td>
+${en:'Three-level directory-only outline, emitted raw without a code fence:', ru:'Трёхуровневая структура только из каталогов, без code-fence:'}
 
 ```markdown
 \${widget:fileTree(path = 'nrg/src', depth = '3', dirsOnly = 'true', codeblock = 'false')}
 ```
-
-</td><td>
-
-${en:'Three-level directory-only outline, emitted raw without a code fence.', ru:'Трёхуровневая структура только из каталогов, без code-fence.'}
-
-</td></tr>
-</table>
 
 ${en:"Live example", ru:"Живой пример"} — `\${widget:fileTree(path='../../nrg/src/', dirsOnly = 'true', depth='3')}`:
 

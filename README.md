@@ -834,7 +834,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 25.04.2026 14:36:54
+Last updated: 25.04.2026 14:38:55
 ```
 
 </td></tr>
@@ -1247,42 +1247,23 @@ This component renders a `tree -L`-style directory listing with Unicode
 box-drawing characters. Use it to embed an always-current view of a
 folder's structure into the README without hand-maintaining ASCII art.
 
-<table>
-<tr><th>Usage example</th><th>Behaviour</th></tr>
-<tr><td>
+Lists the directory contents one level deep, wrapped in a fenced code block:
 
 ```markdown
 ${widget:fileTree(path = 'nrg/src/main/java/com/nanolaba/nrg/widgets', depth = '1')}
 ```
 
-</td><td>
-
-Lists the directory contents one level deep, wrapped in a fenced code block.
-
-</td></tr>
-<tr><td>
+Two-level listing with build artefacts and IDE folders excluded via comma-separated globs:
 
 ```markdown
 ${widget:fileTree(path = '.', depth = '2', exclude = 'target,.idea,.git,*.class')}
 ```
 
-</td><td>
-
-Two-level listing with build artefacts and IDE folders excluded via comma-separated globs.
-
-</td></tr>
-<tr><td>
+Three-level directory-only outline, emitted raw without a code fence:
 
 ```markdown
 ${widget:fileTree(path = 'nrg/src', depth = '3', dirsOnly = 'true', codeblock = 'false')}
 ```
-
-</td><td>
-
-Three-level directory-only outline, emitted raw without a code fence.
-
-</td></tr>
-</table>
 
 Live example — `${widget:fileTree(path='../../nrg/src/', dirsOnly = 'true', depth='3')}`:
 
