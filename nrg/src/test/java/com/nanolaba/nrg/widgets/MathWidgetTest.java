@@ -86,7 +86,7 @@ class MathWidgetTest extends DefaultNRGTest {
                 "${widget:math(expr='x^2', renderer='svg', display='block')}");
 
         String body = generator.getResult("en").getContent().toString();
-        assertTrue(body.contains("https://latex.codecogs.com/svg.image?%5Cdisplaystyle+x%5E2"), body);
+        assertTrue(body.contains("https://latex.codecogs.com/svg.image?%5Cdisplaystyle%20x%5E2"), body);
         assertTrue(body.contains("![x^2]"), body);
     }
 

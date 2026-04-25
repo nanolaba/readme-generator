@@ -74,7 +74,11 @@ public class MathWidget extends DefaultWidget {
 
     private static String urlEncode(String s) {
         try {
-            return URLEncoder.encode(s, "UTF-8");
+            // URLEncoder uses '+' for spaces (form-encoded). Convert to '%20' so URLs in the
+            // generated Markdown don't visually look like they contain literal plus signs.
+            // Literal '+' in the input is already encoded as %2B by URLEncoder, so this
+            // replacement only affects original spaces.
+            return URLEncoder.encode(s, "UTF-8").replace("+", "%20");
         } catch (UnsupportedEncodingException e) {
             throw new IllegalStateException(e);
         }
