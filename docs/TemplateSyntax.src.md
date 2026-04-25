@@ -129,6 +129,51 @@ Behaviour:<!--en-->
 > которую он ссылается — не вставляйте `\${env.AWS_SECRET_…}` в публичные<!--ru-->
 > документы.<!--ru-->
 
+### ${en:'Maven POM values', ru:'Значения из Maven POM'}
+
+The reserved `pom.` namespace inside `\${…}` reads values directly from<!--en-->
+the project's `pom.xml`. Resolution happens after env substitution but<!--en-->
+before language and property substitution, so the same `\${pom.…}`<!--en-->
+reference works in body text, in `<\!--@key=value-->` declaration values,<!--en-->
+and inside widget parameters.<!--en-->
+Зарезервированное пространство имён `pom.` внутри `\${…}` читает<!--ru-->
+значения непосредственно из `pom.xml` проекта. Разрешение происходит<!--ru-->
+после env-подстановки, но до языковой и обычной property-подстановки,<!--ru-->
+поэтому одна и та же `\${pom.…}`-ссылка работает и в основном тексте,<!--ru-->
+и в значениях `<\!--@key=value-->`, и в параметрах виджетов.<!--ru-->
+
+```markdown
+\${pom.version}
+\${pom.groupId}:\${pom.artifactId}:\${pom.version}
+\${pom.scm.url}
+\${pom.parent.version}
+\${pom.properties.java.version}
+\${pom.version:0.0.0-SNAPSHOT}
+<!--\@coords=\${pom.groupId}:\${pom.artifactId}-->
+```
+
+Behaviour:<!--en-->
+
+- The path is interpreted as a walk from the implicit `<project>` root: `pom.X` reads `<X>`, `pom.X.Y` reads `<X><Y>`, and so on.<!--en-->
+- `pom.properties.KEY` is a flat-map lookup: the remainder of the path is used verbatim as the `<properties>` child element name (so dotted keys like `java.version` work).<!--en-->
+- `pom.parent.X` reads the local `<parent>` block as written. Cross-file parent POM traversal is out of scope.<!--en-->
+- For unqualified `pom.groupId`, `pom.version`, and `pom.name`: if the element is absent under `<project>`, the value is taken from `<project><parent>` (Maven's standard inheritance rules).<!--en-->
+- POM values may themselves reference `\${prop}`, `\${project.X}`, and `\${env.NAME}` / `\${env.NAME:default}` — NRG resolves a single pass against the same POM and the template-level env provider.<!--en-->
+- `\${pom.path:default}` substitutes the literal default after the first `:` when the path is missing. Without a default, the substitution renders empty and one warning per distinct path is logged.<!--en-->
+- Backslash escapes work as for any other `\${…}` reference: `\\\${pom.version}` renders as the literal text.<!--en-->
+- The `pom.xml` location defaults to the source-file directory; override with `<\!--\@nrg.pom.path=relative/or/absolute/pom.xml-->`.<!--en-->
+
+Поведение:<!--ru-->
+
+- Путь интерпретируется как обход дерева от неявного корня `<project>`: `pom.X` — `<X>`, `pom.X.Y` — `<X><Y>` и так далее.<!--ru-->
+- `pom.properties.KEY` — плоский lookup: остаток пути после `properties.` используется как имя дочернего элемента `<properties>` (поэтому ключи с точками вроде `java.version` работают).<!--ru-->
+- `pom.parent.X` читает локальный блок `<parent>`. Чтение parent-POM из других файлов — за рамками v1.<!--ru-->
+- Для безпрефиксных `pom.groupId`, `pom.version` и `pom.name`: если элемент отсутствует в `<project>`, значение берётся из `<project><parent>` (стандартное Maven-наследование).<!--ru-->
+- Значения POM сами могут содержать `\${prop}`, `\${project.X}` и `\${env.NAME}` / `\${env.NAME:default}` — NRG разрешает их одним проходом по тому же POM и через тот же env-провайдер.<!--ru-->
+- `\${pom.path:default}` подставляет литерал после первого `:`, если путь отсутствует. Без default подставляется пустая строка и логируется по одному предупреждению на каждый уникальный путь.<!--ru-->
+- Эскейп обратным слэшем работает как для любой другой `\${…}`-конструкции: `\\\${pom.version}` выводится как литерал.<!--ru-->
+- Расположение `pom.xml` по умолчанию — каталог исходного файла; переопределяется через `<\!--\@nrg.pom.path=relative/or/absolute/pom.xml-->`.<!--ru-->
+
 ### Multilanguage support
 
 To write text in different languages, there are two methods available.<!--en-->

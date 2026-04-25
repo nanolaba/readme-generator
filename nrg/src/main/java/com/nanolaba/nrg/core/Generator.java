@@ -39,6 +39,11 @@ public class Generator {
         config = new GeneratorConfig(sourceFile, sourceBody, widgets, envProvider);
     }
 
+    public Generator(File sourceFile, String sourceBody, List<NRGWidget> widgets,
+                     Function<String, String> envProvider, PomReader pomReader) {
+        config = new GeneratorConfig(sourceFile, sourceBody, widgets, envProvider, pomReader);
+    }
+
     protected void generateContents() {
         for (String language : config.getLanguages()) {
             results.put(language, generateContent(language));

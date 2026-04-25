@@ -33,19 +33,31 @@ public class GeneratorConfig {
     private boolean execAllowed = false;
     private Function<String, String> envProvider = System::getenv;
     private final Set<String> warnedMissingEnvVars = new HashSet<>();
+    private PomReader pomReader;
+    private boolean pomReaderInitialised = false;
+    private final Set<String> warnedMissingPomPaths = new HashSet<>();
 
 
     public GeneratorConfig(File sourceFile, String templateText, List<NRGWidget> widgets) {
-        this(sourceFile, templateText, widgets, null);
+        this(sourceFile, templateText, widgets, null, null);
     }
 
     public GeneratorConfig(File sourceFile, String templateText, List<NRGWidget> widgets,
                            Function<String, String> envProvider) {
+        this(sourceFile, templateText, widgets, envProvider, null);
+    }
+
+    public GeneratorConfig(File sourceFile, String templateText, List<NRGWidget> widgets,
+                           Function<String, String> envProvider, PomReader pomReader) {
         this.sourceFile = sourceFile;
         this.sourceFileBody = IgnoreBlockStripper.strip(templateText);
         this.rootSourceFile = sourceFile;
         if (envProvider != null) {
             this.envProvider = envProvider;
+        }
+        if (pomReader != null) {
+            this.pomReader = pomReader;
+            this.pomReaderInitialised = true;
         }
 
         getSourceLinesStream().forEach(this::readLanguagesPropertiesFromLine);
@@ -200,5 +212,34 @@ public class GeneratorConfig {
 
     public Set<String> getWarnedMissingEnvVars() {
         return warnedMissingEnvVars;
+    }
+
+    public PomReader getPomReader() {
+        if (!pomReaderInitialised) {
+            pomReaderInitialised = true;
+            if (pomReader == null) {
+                pomReader = new DomPomReader(resolvePomFile());
+            }
+        }
+        return pomReader;
+    }
+
+    public void setPomReader(PomReader pomReader) {
+        this.pomReader = pomReader;
+        this.pomReaderInitialised = true;
+    }
+
+    public Set<String> getWarnedMissingPomPaths() {
+        return warnedMissingPomPaths;
+    }
+
+    private File resolvePomFile() {
+        String configured = getProperties().getProperty(NRGConstants.PROPERTY_POM_PATH);
+        File base = sourceFile == null ? new File(".").getAbsoluteFile() : sourceFile.getAbsoluteFile().getParentFile();
+        if (configured == null || configured.isEmpty()) {
+            return new File(base, "pom.xml");
+        }
+        File requested = new File(configured);
+        return requested.isAbsolute() ? requested : new File(base, configured);
     }
 }
