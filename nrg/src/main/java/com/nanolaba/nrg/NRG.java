@@ -107,6 +107,9 @@ public class NRG {
         Option allowExec = new Option(null, "allow-exec", false,
                 "allow the 'exec' widget to run external commands (disabled by default)");
         options.addOption(allowExec);
+        Option validate = new Option(null, "validate", false,
+                "validate the source template and imports without generating output; exit 1 on errors");
+        options.addOption(validate);
 
         CommandLineParser parser = new DefaultParser();
         CommandLine cmd = parser.parse(options, args);
@@ -134,8 +137,12 @@ public class NRG {
 
         boolean toStdout = cmd.hasOption(stdout);
         boolean checkMode = cmd.hasOption(check);
+        boolean validateMode = cmd.hasOption(validate);
         if (toStdout && checkMode) {
             throw new ParseException("--stdout and --check are mutually exclusive");
+        }
+        if (validateMode && (toStdout || checkMode)) {
+            throw new ParseException("--validate is mutually exclusive with --stdout and --check");
         }
         String langValue = cmd.getOptionValue(language);
         if (langValue != null && !toStdout) {
@@ -144,10 +151,32 @@ public class NRG {
         }
 
         if (cmd.hasOption(file)) {
-            return generate(cmd.getParsedOptionValue(file), sourceCharset, toStdout, langValue, cliWidgets, checkMode,
+            File sourceFile = cmd.getParsedOptionValue(file);
+            if (validateMode) {
+                return runValidation(sourceFile);
+            }
+            return generate(sourceFile, sourceCharset, toStdout, langValue, cliWidgets, checkMode,
                     cmd.hasOption(allowExec));
         }
         return 0;
+    }
+
+    private static int runValidation(File sourceFile) {
+        if (!sourceFile.exists()) {
+            LOG.error("Source file does not exist: {}", sourceFile.getAbsolutePath());
+            return 1;
+        }
+        java.util.List<com.nanolaba.nrg.core.Validator.Diagnostic> diagnostics =
+                new com.nanolaba.nrg.core.Validator(sourceFile).validate();
+        if (diagnostics.isEmpty()) {
+            return 0;
+        }
+        boolean anyError = false;
+        for (com.nanolaba.nrg.core.Validator.Diagnostic d : diagnostics) {
+            System.err.println(d.toString());
+            if (d.isError()) anyError = true;
+        }
+        return anyError ? 1 : 0;
     }
 
     private static ClassLoader buildExtraClassLoader(String classpathValue) {

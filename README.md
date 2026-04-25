@@ -49,8 +49,9 @@ The current development version is **0.4-SNAPSHOT**.
 1. [Usage](#usage)
 	1. [Using the Command Line Interface](#using-the-command-line-interface)
 		1. [Verifying generated files (CI mode)](#verifying-generated-files-ci-mode)
-		2. [Print to stdout](#print-to-stdout)
-		3. [Logging verbosity](#logging-verbosity)
+		2. [Validating source templates](#validating-source-templates)
+		3. [Print to stdout](#print-to-stdout)
+		4. [Logging verbosity](#logging-verbosity)
 	2. [Use as maven plugin](#use-as-maven-plugin)
 	3. [Use as a java-library](#use-as-a-java-library)
 2. [Template syntax](#template-syntax)
@@ -224,6 +225,26 @@ nrg --check -f README.src.md && echo "README is up to date"
 `--check` validates every language configured via `nrg.languages`
 and is mutually exclusive with `--stdout`.
 
+#### Validating source templates
+
+Use `--validate` to scan the template (and every reachable
+`${widget:import}`-imported file) for authoring mistakes without
+generating any output. v1 covers four classes of error:
+
+- `),', ru:'незарегистрированные имена виджетов (`${widget:doesNotExist}`),'}
+- language markers `<!--xx-->` whose code is not in `nrg.languages`,
+- `${widget:import(path=\` paths that do not exist on disk,', ru:'пути в `${widget:import(path=\'...\')}`, которых нет на диске,'}
+- unbalanced `<!--nrg.ignore.begin-->` / `<!--nrg.ignore.end-->` pairs.
+
+```bash
+nrg --validate -f README.src.md && echo "Template is clean"
+```
+
+Each diagnostic is printed as `ERROR: file.src.md:LINE: message`. With
+no errors, NRG exits silently with status `0`. With at least one error,
+all diagnostics are printed to stderr and the process exits with status
+`1`. `--validate` is mutually exclusive with `--check` and `--stdout`.
+
 #### Print to stdout
 
 Use `--stdout` to stream generated output to standard output instead
@@ -307,6 +328,12 @@ to run the plugin in verification mode: no files are written, and the
 build fails with a `MojoExecutionException` and a diff in the log when
 the generated output diverges from the committed files. Handy for a
 `mvn verify` step in CI to guard against stale READMEs.
+
+Set `<validate>true</validate>` (or pass `-Dvalidate=true`) to scan
+the templates for authoring mistakes (unknown widgets, missing imports,
+undeclared language markers, unbalanced ignore-blocks) without
+generating any output. The build fails with a `MojoExecutionException`
+when diagnostics are reported. Mutually exclusive with `<check>`.
 
 To use SNAPSHOT versions, you also need to add the following code to your `pom.xml`:
 
@@ -806,7 +833,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 25.04.2026 13:22:14
+Last updated: 25.04.2026 13:39:03
 ```
 
 </td></tr>
@@ -1187,7 +1214,7 @@ Condition grammar (precedence low → high):
 | `X == Y`           | equality (trim each side; quoted strings preserve whitespace) |
 | `X != Y`           | inequality                                                    |
 | `A && B`           | and (short-circuit)                                           |
-| `A                 |                                                               | B`                 | or (short-circuit) |
+| `A \|\| B`         | or (short-circuit)                                            |
 | `(expr)`           | grouping                                                      |
 | `startsWith(h, n)` | true iff `h.startsWith(n)`; case-sensitive                    |
 | `endsWith(h, n)`   | true iff `h.endsWith(n)`; case-sensitive                      |
@@ -1205,6 +1232,7 @@ Errors:
 - ` block is reported via `LOG.error` and everything from the outermost open marker to EOF is dropped from the output.', ru:'Незакрытый блок `${widget:if}` сообщается через `LOG.error`, а всё от внешнего открывающего маркера до EOF выбрасывается из вывода.'}
 - ` (no matching open) is reported via `LOG.error` and the marker line is dropped.', ru:'Одиночный `${widget:endIf}` (без пары) сообщается через `LOG.error`, строка-маркер выбрасывается.'}
 - A malformed condition (unbalanced parens, trailing operators, unknown function names) is reported via `LOG.error` and the block is treated as if the condition were false.
+
 
 Out of scope (v1): ` resolution inside the *default* of `${env.X:default}` references on the right-hand side of an `==`.', ru:'численные сравнения (`>`, `<`, …), regex-сопоставление, `else`/`elif`, scripting-engine, разрешение `${…}` внутри *default*-части `${env.X:default}` на правой стороне `==`.'}
 
@@ -1324,6 +1352,7 @@ This section summarises the main user-visible changes in each release. For full 
 - **`${env.NAME}` substitution**: read environment variables directly from any template position with shell-style defaults (`${env.NAME:fallback}`). Works in body text, `<!--@key=value-->` declaration values, and widget parameter values. Missing variables log a warning and render empty.
 - **`${pom.NAME}` substitution**: read values from the project `pom.xml` via a Maven-style dotted path (`${pom.version}`, `${pom.groupId}:${pom.artifactId}`, `${pom.parent.version}`, `${pom.properties.java.version}`). Supports shell-style defaults, parent inheritance for `groupId` / `version` / `name`, and one-level POM-internal interpolation for `${prop}`, `${project.*}`, and `${env.NAME}`. POM path defaults to the source-file directory; override via `<!--@nrg.pom.path=...-->`.
 - **`if` block widget**: `${widget:if(cond='…')}` … `${widget:endIf}` conditionally drops a block of lines from the output. Supports a small string-only DSL: truthy / falsy, `==` / `!=`, `&&` / `||`, `!`, parentheses, and `startsWith` / `endsWith`. Two-phase evaluation (parse-then-resolve) keeps `${…}`-resolved values opaque, preventing operator injection. Inner widgets in dropped branches never execute.
+- **`--validate` flag**: scans the source template and every reachable `${widget:import}`-imported file for authoring mistakes (unknown widgets, undeclared language markers, missing import paths, unbalanced `<!--nrg.ignore.begin-->` / `<!--nrg.ignore.end-->` pairs) without generating any output. Exits `0` silently on a clean template, `1` with a `file:line: message` list otherwise. Mutually exclusive with `--check` and `--stdout`. The Maven plugin exposes it as `<validate>true</validate>` and fails the build with a `MojoExecutionException`.
 - Widget parameters may now contain `{` and `}` (LaTeX-friendly); the tag regex now delimits parameters by `(` / `)` instead of `}`.
 - Fixed: the `languages` widget now produces correct link targets when rendered inside an imported fragment.
 

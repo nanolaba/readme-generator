@@ -54,6 +54,33 @@ and is mutually exclusive with `--stdout`.<!--en-->
 `--check` проверяет все языки, заявленные в `nrg.languages`, и<!--ru-->
 несовместим с флагом `--stdout`.<!--ru-->
 
+#### ${en:'Validating source templates', ru:'Валидация исходных шаблонов'}
+
+Use `--validate` to scan the template (and every reachable<!--en-->
+`\${widget:import}`-imported file) for authoring mistakes without<!--en-->
+generating any output. v1 covers four classes of error:<!--en-->
+Флаг `--validate` сканирует шаблон (и все импортируемые через<!--ru-->
+`\${widget:import}` файлы) на типичные ошибки авторов, ничего не<!--ru-->
+генерируя. В v1 проверяются четыре класса ошибок:<!--ru-->
+
+- ${en:'unregistered widget names (`\${widget:doesNotExist}`),', ru:'незарегистрированные имена виджетов (`\${widget:doesNotExist}`),'}
+- ${en:'language markers `<\!--xx-->` whose code is not in `nrg.languages`,', ru:'языковые маркеры `<\!--xx-->`, чей код отсутствует в `nrg.languages`,'}
+- ${en:'`\${widget:import(path=\'...\')}` paths that do not exist on disk,', ru:'пути в `\${widget:import(path=\'...\')}`, которых нет на диске,'}
+- ${en:'unbalanced `<\!--nrg.ignore.begin-->` / `<\!--nrg.ignore.end-->` pairs.', ru:'несбалансированные пары `<\!--nrg.ignore.begin-->` / `<\!--nrg.ignore.end-->`.'}
+
+```bash
+nrg --validate -f README.src.md && echo "Template is clean"
+```
+
+Each diagnostic is printed as `ERROR: file.src.md:LINE: message`. With<!--en-->
+no errors, NRG exits silently with status `0`. With at least one error,<!--en-->
+all diagnostics are printed to stderr and the process exits with status<!--en-->
+`1`. `--validate` is mutually exclusive with `--check` and `--stdout`.<!--en-->
+Каждое сообщение печатается в формате `ERROR: file.src.md:LINE: text`.<!--ru-->
+Без ошибок NRG молча завершается с кодом `0`. При наличии хотя бы одной<!--ru-->
+ошибки все сообщения печатаются в stderr, процесс завершается с кодом<!--ru-->
+`1`. `--validate` несовместим с `--check` и `--stdout`.<!--ru-->
+
 #### ${en:'Print to stdout', ru:'Вывод в stdout'}
 
 Use `--stdout` to stream generated output to standard output instead<!--en-->
@@ -160,6 +187,17 @@ the generated output diverges from the committed files. Handy for a<!--en-->
 расхождении сборка падает с `MojoExecutionException` и выводом diff<!--ru-->
 в лог. Удобно для шага `mvn verify` в CI, чтобы не пропустить устаревший<!--ru-->
 README.<!--ru-->
+
+Set `<validate>true</validate>` (or pass `-Dvalidate=true`) to scan<!--en-->
+the templates for authoring mistakes (unknown widgets, missing imports,<!--en-->
+undeclared language markers, unbalanced ignore-blocks) without<!--en-->
+generating any output. The build fails with a `MojoExecutionException`<!--en-->
+when diagnostics are reported. Mutually exclusive with `<check>`.<!--en-->
+Параметр `<validate>true</validate>` (или `-Dvalidate=true`) сканирует<!--ru-->
+шаблоны на типичные ошибки авторов (неизвестные виджеты, отсутствующие<!--ru-->
+импорты, незаявленные языковые маркеры, несбалансированные ignore-блоки)<!--ru-->
+без генерации файлов. Сборка падает с `MojoExecutionException` при<!--ru-->
+наличии диагностик. Несовместим с `<check>`.<!--ru-->
 
 Для использования SNAPSHOT-версий также необходимо добавить в `pom.xml` следующий код:<!--ru-->
 To use SNAPSHOT versions, you also need to add the following code to your `pom.xml`:<!--en-->

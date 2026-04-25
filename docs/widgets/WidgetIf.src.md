@@ -63,7 +63,7 @@ ${en:'Condition grammar (precedence low → high)', ru:'Грамматика у�
 | `X == Y`                 | ${en:'equality (trim each side; quoted strings preserve whitespace)', ru:'равенство (тримит каждую сторону; quoted-строки сохраняют пробелы)'} |
 | `X != Y`                 | ${en:'inequality', ru:'неравенство'}                                                                                                           |
 | `A && B`                 | ${en:'and (short-circuit)', ru:'и (short-circuit)'}                                                                                            |
-| `A                       |                                                                                                                                                | B`                 | ${en:'or (short-circuit)', ru:'или (short-circuit)'} |
+| `A \|\| B`               | ${en:'or (short-circuit)', ru:'или (short-circuit)'}                                                                                           |
 | `(expr)`                 | ${en:'grouping', ru:'группировка'}                                                                                                             |
 | `startsWith(h, n)`       | ${en:'true iff `h.startsWith(n)`; case-sensitive', ru:'истина, если `h.startsWith(n)`; case-sensitive'}                                        |
 | `endsWith(h, n)`         | ${en:'true iff `h.endsWith(n)`; case-sensitive', ru:'истина, если `h.endsWith(n)`; case-sensitive'}                                            |
