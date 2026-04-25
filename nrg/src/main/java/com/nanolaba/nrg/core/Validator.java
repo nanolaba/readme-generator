@@ -44,7 +44,8 @@ public final class Validator {
             return diagnostics;
         }
         Set<String> knownWidgets = collectKnownWidgets();
-        validateFile(rootSourceFile, diagnostics, knownWidgets, visited);
+        List<String> rootLanguages = readDeclaredLanguages(readSafe(rootSourceFile));
+        validateFile(rootSourceFile, diagnostics, knownWidgets, visited, rootLanguages);
         return diagnostics;
     }
 
@@ -63,7 +64,7 @@ public final class Validator {
     }
 
     private void validateFile(File file, List<Diagnostic> diagnostics, Set<String> knownWidgets,
-                              Set<File> visited) {
+                              Set<File> visited, List<String> inheritedLanguages) {
         File canonical;
         try {
             canonical = file.getCanonicalFile();
@@ -76,7 +77,10 @@ public final class Validator {
         String body = readSafe(file);
         if (body == null) return;
 
-        List<String> declaredLanguages = readDeclaredLanguages(body);
+        // A file declaring its own nrg.languages overrides what was inherited; otherwise the
+        // imported file uses the parent's declaration (imports don't have to repeat it).
+        List<String> ownDeclaration = readOwnDeclaredLanguages(body);
+        List<String> declaredLanguages = ownDeclaration != null ? ownDeclaration : inheritedLanguages;
         String[] lines = body.split("\\R", -1);
 
         int ignoreBeginLine = -1;
@@ -105,7 +109,7 @@ public final class Validator {
                             diagnostics.add(new Diagnostic(file, lineNo,
                                     "import path not found: '" + path + "'", Severity.ERROR));
                         } else {
-                            validateFile(importedFile, diagnostics, knownWidgets, visited);
+                            validateFile(importedFile, diagnostics, knownWidgets, visited, declaredLanguages);
                         }
                     }
                 }
@@ -151,7 +155,15 @@ public final class Validator {
         }
     }
 
+    /** Root-level lookup: returns the declared languages or the {@code ["en"]} default if none found. */
     private static List<String> readDeclaredLanguages(String body) {
+        List<String> own = readOwnDeclaredLanguages(body);
+        return own != null ? own : Collections.singletonList("en");
+    }
+
+    /** Returns the {@code nrg.languages} declared in this file, or {@code null} if absent. */
+    private static List<String> readOwnDeclaredLanguages(String body) {
+        if (body == null) return null;
         for (String line : body.split("\\R", -1)) {
             Map<String, String> raw = NRGUtil.extractRawPropertyMarkers(line);
             String langs = raw.get(NRGConstants.PROPERTY_LANGUAGES);
@@ -163,8 +175,7 @@ public final class Validator {
                 return result;
             }
         }
-        // No declaration → defaults to ["en"].
-        return java.util.Collections.singletonList("en");
+        return null;
     }
 
     private static String extractImportPath(String params) {

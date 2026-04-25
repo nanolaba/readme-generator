@@ -182,6 +182,18 @@ class ValidatorTest extends DefaultNRGTest {
     }
 
     @Test
+    public void testImportedFileInheritsLanguagesFromRoot() throws IOException {
+        // The imported file does NOT declare nrg.languages itself but uses <!--ru--> markers;
+        // it must inherit the languages declared in the root template.
+        Path inc = writeSource("inc.src.md", "Hello<!--en-->\nПривет<!--ru-->\n");
+        Path src = writeSource("README.src.md",
+                "<!--@nrg.languages=en,ru-->\n" +
+                        "${widget:import(path='inc.src.md')}\n");
+
+        assertTrue(validate(src).isEmpty(), "imported file must inherit nrg.languages from root");
+    }
+
+    @Test
     public void testEscapedWidgetMarkerNotFlagged() throws IOException {
         Path src = writeSource("README.src.md",
                 "<!--@nrg.languages=en-->\n" +
