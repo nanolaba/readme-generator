@@ -851,7 +851,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 25.04.2026 15:35:45
+Last updated: 25.04.2026 15:39:42
 ```
 
 </td></tr>
@@ -1024,8 +1024,6 @@ ${widget:math(expr = '\\pi r^2')}
 $\pi r^2$
 ```
 
-Отображение: $\pi r^2$
-
 ---
 
 Блочная формула LaTeX (`display = 'block'` оборачивает в `$$…$$`):
@@ -1040,25 +1038,23 @@ ${widget:math(expr = '\\sum_{i=0}^{n} x_i', display = 'block')}
 $$\sum_{i=0}^{n} x_i$$
 ```
 
-Отображение:
-
-$$\sum_{i=0}^{n} x_i$$
-
 ---
 
-SVG-фолбэк (`renderer = 'svg'`) для случаев, когда встроенный GitHub MathJax неправильно разбирает формулу:
+SVG-фолбэк (`renderer = 'svg'`) для случаев, когда встроенный GitHub MathJax неправильно разбирает формулу. Полное нестационарное уравнение Шрёдингера со вложенными дробями, частными производными и греческими буквами рендерится как одна картинка, которую GitHub показывает прямо в тексте:
 
 ```markdown
-${widget:math(expr = '\\Phi_{\\text{org}}', renderer = 'svg')}
+${widget:math(expr = 'i\\hbar\\,\\frac{\\partial \\Psi}{\\partial t} = -\\frac{\\hbar^2}{2m}\\,\\nabla^2 \\Psi + V \\Psi', renderer = 'svg', display = 'block')}
 ```
 
 Сгенерированный Markdown:
 
 ```markdown
-![\Phi_{\text{org}}](https://latex.codecogs.com/svg.image?%5CPhi_%7B%5Ctext%7Borg%7D%7D)
+![i\hbar\,\frac{\partial \Psi}{\partial t} = -\frac{\hbar^2}{2m}\,\nabla^2 \Psi + V \Psi](https://latex.codecogs.com/svg.image?%5Cdisplaystyle+i%5Chbar%5C%2C%5Cfrac%7B%5Cpartial+%5CPsi%7D%7B%5Cpartial+t%7D+%3D+-%5Cfrac%7B%5Chbar%5E2%7D%7B2m%7D%5C%2C%5Cnabla%5E2+%5CPsi+%2B+V+%5CPsi)
 ```
 
-Отображение: ![\Phi_{\text{org}}](https://latex.codecogs.com/svg.image?%5CPhi_%7B%5Ctext%7Borg%7D%7D)
+Отображение:
+
+![i\hbar\,\frac{\partial \Psi}{\partial t} = -\frac{\hbar^2}{2m}\,\nabla^2 \Psi + V \Psi](https://latex.codecogs.com/svg.image?%5Cdisplaystyle+i%5Chbar%5C%2C%5Cfrac%7B%5Cpartial+%5CPsi%7D%7B%5Cpartial+t%7D+%3D+-%5Cfrac%7B%5Chbar%5E2%7D%7B2m%7D%5C%2C%5Cnabla%5E2+%5CPsi+%2B+V+%5CPsi)
 
 Свойства виджета:
 
