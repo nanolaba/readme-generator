@@ -851,7 +851,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 25.04.2026 15:33:38
+Last updated: 25.04.2026 15:35:45
 ```
 
 </td></tr>
@@ -1012,64 +1012,53 @@ ${widget:badge(type = 'maven-central', coordinates = 'com.nanolaba:readme-genera
 переключайтесь на SVG-рендерер, который возвращает готовую
 картинку через LaTeX-to-SVG сервис.
 
-<table>
-<tr>
-<th>Пример использования</th>
-<th>Сгенерированный Markdown</th>
-<th>Отображение</th>
-</tr>
-<tr><td>
+Инлайновая формула LaTeX через стандартный native-рендерер:
 
 ```markdown
 ${widget:math(expr = '\\pi r^2')}
 ```
 
-</td><td>
+Сгенерированный Markdown:
 
 ```markdown
 $\pi r^2$
 ```
 
-</td><td>
+Отображение: $\pi r^2$
 
-$\pi r^2$
+---
 
-</td></tr>
-<tr><td>
+Блочная формула LaTeX (`display = 'block'` оборачивает в `$$…$$`):
 
 ```markdown
 ${widget:math(expr = '\\sum_{i=0}^{n} x_i', display = 'block')}
 ```
 
-</td><td>
+Сгенерированный Markdown:
 
 ```markdown
 $$\sum_{i=0}^{n} x_i$$
 ```
 
-</td><td>
+Отображение:
 
 $$\sum_{i=0}^{n} x_i$$
 
-</td></tr>
-<tr><td>
+---
+
+SVG-фолбэк (`renderer = 'svg'`) для случаев, когда встроенный GitHub MathJax неправильно разбирает формулу:
 
 ```markdown
 ${widget:math(expr = '\\Phi_{\\text{org}}', renderer = 'svg')}
 ```
 
-</td><td>
+Сгенерированный Markdown:
 
 ```markdown
 ![\Phi_{\text{org}}](https://latex.codecogs.com/svg.image?%5CPhi_%7B%5Ctext%7Borg%7D%7D)
 ```
 
-</td><td>
-
-![\Phi_{\text{org}}](https://latex.codecogs.com/svg.image?%5CPhi_%7B%5Ctext%7Borg%7D%7D)
-
-</td></tr>
-</table>
+Отображение: ![\Phi_{\text{org}}](https://latex.codecogs.com/svg.image?%5CPhi_%7B%5Ctext%7Borg%7D%7D)
 
 Свойства виджета:
 

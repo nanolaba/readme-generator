@@ -848,7 +848,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 25.04.2026 15:33:38
+Last updated: 25.04.2026 15:35:44
 ```
 
 </td></tr>
@@ -1008,64 +1008,53 @@ block `$$…$$` support can be flaky around `\text`, punctuation, or
 table cells — when that bites, switch to the SVG renderer to get a
 pre-rendered image via a LaTeX-to-SVG endpoint.
 
-<table>
-<tr>
-<th>Usage example</th>
-<th>Generated Markdown</th>
-<th>Rendered result</th>
-</tr>
-<tr><td>
+Inline LaTeX with the default native renderer:
 
 ```markdown
 ${widget:math(expr = '\\pi r^2')}
 ```
 
-</td><td>
+Generated Markdown:
 
 ```markdown
 $\pi r^2$
 ```
 
-</td><td>
+Rendered result: $\pi r^2$
 
-$\pi r^2$
+---
 
-</td></tr>
-<tr><td>
+Block-level LaTeX (use `display = 'block'` to wrap with `$$…$$`):
 
 ```markdown
 ${widget:math(expr = '\\sum_{i=0}^{n} x_i', display = 'block')}
 ```
 
-</td><td>
+Generated Markdown:
 
 ```markdown
 $$\sum_{i=0}^{n} x_i$$
 ```
 
-</td><td>
+Rendered result:
 
 $$\sum_{i=0}^{n} x_i$$
 
-</td></tr>
-<tr><td>
+---
+
+SVG fallback (`renderer = 'svg'`) for cases where GitHub's native MathJax mis-parses the formula:
 
 ```markdown
 ${widget:math(expr = '\\Phi_{\\text{org}}', renderer = 'svg')}
 ```
 
-</td><td>
+Generated Markdown:
 
 ```markdown
 ![\Phi_{\text{org}}](https://latex.codecogs.com/svg.image?%5CPhi_%7B%5Ctext%7Borg%7D%7D)
 ```
 
-</td><td>
-
-![\Phi_{\text{org}}](https://latex.codecogs.com/svg.image?%5CPhi_%7B%5Ctext%7Borg%7D%7D)
-
-</td></tr>
-</table>
+Rendered result: ![\Phi_{\text{org}}](https://latex.codecogs.com/svg.image?%5CPhi_%7B%5Ctext%7Borg%7D%7D)
 
 Widget parameters:
 

@@ -10,64 +10,53 @@ pre-rendered image via a LaTeX-to-SVG endpoint.<!--en-->
 переключайтесь на SVG-рендерер, который возвращает готовую<!--ru-->
 картинку через LaTeX-to-SVG сервис.<!--ru-->
 
-<table>
-<tr>
-<th>${en:'Usage example', ru:'Пример использования'}</th>
-<th>${en:'Generated Markdown', ru:'Сгенерированный Markdown'}</th>
-<th>${en:'Rendered result', ru:'Отображение'}</th>
-</tr>
-<tr><td>
+${en:'Inline LaTeX with the default native renderer:', ru:'Инлайновая формула LaTeX через стандартный native-рендерер:'}
 
 ```markdown
 \${widget:math(expr = '\\pi r^2')}
 ```
 
-</td><td>
+${en:'Generated Markdown:', ru:'Сгенерированный Markdown:'}
 
 ```markdown
 ${widget:math(expr = '\\pi r^2')}
 ```
 
-</td><td>
+${en:'Rendered result:', ru:'Отображение:'} ${widget:math(expr = '\\pi r^2')}
 
-${widget:math(expr = '\\pi r^2')}
+---
 
-</td></tr>
-<tr><td>
+${en:'Block-level LaTeX (use `display = ''block''` to wrap with `$$…$$`):', ru:'Блочная формула LaTeX (`display = ''block''` оборачивает в `$$…$$`):'}
 
 ```markdown
 \${widget:math(expr = '\\sum_{i=0}^{n} x_i', display = 'block')}
 ```
 
-</td><td>
+${en:'Generated Markdown:', ru:'Сгенерированный Markdown:'}
 
 ```markdown
 ${widget:math(expr = '\\sum_{i=0}^{n} x_i', display = 'block')}
 ```
 
-</td><td>
+${en:'Rendered result:', ru:'Отображение:'}
 
 ${widget:math(expr = '\\sum_{i=0}^{n} x_i', display = 'block')}
 
-</td></tr>
-<tr><td>
+---
+
+${en:'SVG fallback (`renderer = ''svg''`) for cases where GitHub''s native MathJax mis-parses the formula:', ru:'SVG-фолбэк (`renderer = ''svg''`) для случаев, когда встроенный GitHub MathJax неправильно разбирает формулу:'}
 
 ```markdown
 \${widget:math(expr = '\\Phi_{\\text{org}}', renderer = 'svg')}
 ```
 
-</td><td>
+${en:'Generated Markdown:', ru:'Сгенерированный Markdown:'}
 
 ```markdown
 ${widget:math(expr = '\\Phi_{\\text{org}}', renderer = 'svg')}
 ```
 
-</td><td>
-
-${widget:math(expr = '\\Phi_{\\text{org}}', renderer = 'svg')}
-
-</td></tr>
-</table>
+${en:'Rendered result:', ru:'Отображение:'} ${widget:math(expr = '\\Phi_{\\text{org}}', renderer = 'svg')}
 
 ${en:'Widget parameters', ru:'Свойства виджета'}:
 
