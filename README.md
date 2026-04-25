@@ -12,8 +12,7 @@
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
 ![Java](https://img.shields.io/badge/Java-8+-orange.svg)
 
-**Nanolaba Readme Generator (NRG)** — is an open-source Java tool for automating Markdown documentation with multi-language 
-support, dynamic variables, and custom widgets.
+**NRG** is a **README generator** and **Markdown template engine** that builds **multi-language** README files from a single `.src.md` source. Open-source Java 8+, ships as a CLI, a Maven plugin, and a library.
 
 ## Overview
 
@@ -583,8 +582,8 @@ ${en:'Some text', ru:'Некоторый текст'}
 
 To escape quotes, use character doubling, for example:
 
-- `${en:'It''s working', ru:'It''s working'}` → `It's working`
-- `${en:"Text with ""quotes""", ru:"Text with ""quotes"""}` → `Text with "quotes"`
+- `${en:'It''s working'}` → `It's working`
+- `${en:"Text with ""quotes"""}` → `Text with "quotes"`
 
 ### Ignoring content
 
@@ -848,7 +847,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 25.04.2026 15:51:44
+Last updated: 25.04.2026 16:42:38
 ```
 
 </td></tr>
