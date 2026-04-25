@@ -16,6 +16,8 @@ ${widget:badge(type='maven-central', coordinates='com.nanolaba:readme-generator'
 ${widget:badge(type='license', value='Apache 2.0', url='https://www.apache.org/licenses/LICENSE-2.0')}
 ${widget:badge(type='custom', label='Java', message='8+', color='orange')}
 
+![${en:'NRG demo: generating README.md and README.ru.md from a single .src.md template', ru:'Демо NRG: генерация README.md и README.ru.md из одного .src.md-шаблона'}](assets/demo.gif)
+
 **NRG** is a **README generator** and **Markdown template engine** that builds **multi-language** README files from a single `.src.md` source. Open-source Java 8+, ships as a CLI, a Maven plugin, and a library.<!--en-->
 **NRG** — это **генератор README** и **шаблонизатор Markdown**, который собирает **многоязычные** README-файлы из одного `.src.md`-исходника. Open-source Java 8+, поставляется как CLI, Maven-плагин и библиотека.<!--ru-->
 

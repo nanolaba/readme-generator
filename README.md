@@ -12,6 +12,8 @@
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
 ![Java](https://img.shields.io/badge/Java-8+-orange.svg)
 
+![NRG demo: generating README.md and README.ru.md from a single .src.md template](assets/demo.gif)
+
 **NRG** is a **README generator** and **Markdown template engine** that builds **multi-language** README files from a single `.src.md` source. Open-source Java 8+, ships as a CLI, a Maven plugin, and a library.
 
 ## Overview
@@ -847,7 +849,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 25.04.2026 16:42:38
+Last updated: 25.04.2026 21:01:11
 ```
 
 </td></tr>
