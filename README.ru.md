@@ -852,7 +852,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 25.04.2026 21:01:12
+Last updated: 25.04.2026 21:19:43
 ```
 
 </td></tr>
@@ -972,22 +972,15 @@ ${widget:alert(type = 'warning', text = 'Line 1\nLine 2')}
 shields.io-бейджей типовых назначений (Maven Central, лицензия,
 GitHub релиз / звёзды / workflow) и произвольного `custom`.
 
-<table>
-<tr><th>Пример использования</th><th>Результат</th></tr>
-<tr><td>
+Пример использования:
 
 ```markdown
 ${widget:badge(type = 'maven-central', coordinates = 'com.nanolaba:readme-generator')}
 ```
 
-</td><td>
+Результат:
 
-```markdown
 [![Maven Central](https://img.shields.io/maven-central/v/com.nanolaba/readme-generator?label=Maven%20Central)](https://central.sonatype.com/artifact/com.nanolaba/readme-generator)
-```
-
-</td></tr>
-</table>
 
 Поддерживаемые типы и их параметры:
 

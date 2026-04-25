@@ -7,22 +7,15 @@ GitHub release / stars / workflow) and a free-form `custom` variant.<!--en-->
 shields.io-бейджей типовых назначений (Maven Central, лицензия,<!--ru-->
 GitHub релиз / звёзды / workflow) и произвольного `custom`.<!--ru-->
 
-<table>
-<tr><th>${en:'Usage example', ru:'Пример использования'}</th><th>${en:'Result', ru:'Результат'}</th></tr>
-<tr><td>
+${en:'Usage example', ru:'Пример использования'}:
 
 ```markdown
 \${widget:badge(type = 'maven-central', coordinates = 'com.nanolaba:readme-generator')}
 ```
 
-</td><td>
+${en:'Result', ru:'Результат'}:
 
-```markdown
 ${widget:badge(type = 'maven-central', coordinates = 'com.nanolaba:readme-generator')}
-```
-
-</td></tr>
-</table>
 
 ${en:'Supported types and their parameters', ru:'Поддерживаемые типы и их параметры'}:
 

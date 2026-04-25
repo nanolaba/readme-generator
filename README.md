@@ -849,7 +849,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 25.04.2026 21:01:11
+Last updated: 25.04.2026 21:19:43
 ```
 
 </td></tr>
@@ -969,22 +969,15 @@ This component generates Markdown image links for shields.io badges
 of common project-status flavors (Maven Central version, license,
 GitHub release / stars / workflow) and a free-form `custom` variant.
 
-<table>
-<tr><th>Usage example</th><th>Result</th></tr>
-<tr><td>
+Usage example:
 
 ```markdown
 ${widget:badge(type = 'maven-central', coordinates = 'com.nanolaba:readme-generator')}
 ```
 
-</td><td>
+Result:
 
-```markdown
 [![Maven Central](https://img.shields.io/maven-central/v/com.nanolaba/readme-generator?label=Maven%20Central)](https://central.sonatype.com/artifact/com.nanolaba/readme-generator)
-```
-
-</td></tr>
-</table>
 
 Supported types and their parameters:
 
