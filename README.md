@@ -848,7 +848,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 25.04.2026 15:01:43
+Last updated: 25.04.2026 15:11:35
 ```
 
 </td></tr>
@@ -1189,7 +1189,7 @@ ${widget:endIf}
 
 </td><td>
 
-` ends with `-SNAPSHOT`; otherwise the entire block (the markers and the body) is removed.', ru:'Блок остаётся, если `${devVersion}` оканчивается на `-SNAPSHOT`; иначе блок полностью удаляется вместе с маркерами.'}
+The block is kept when `${devVersion}` ends with `-SNAPSHOT`; otherwise the entire block (the markers and the body) is removed.
 
 </td></tr>
 <tr><td>
@@ -1234,24 +1234,25 @@ Condition grammar (precedence low → high):
 | `startsWith(h, n)`       | true iff `h.startsWith(n)`; case-sensitive                                        |
 | `endsWith(h, n)`         | true iff `h.endsWith(n)`; case-sensitive                                            |
 
-`), quoted strings (`\'…\'` or `"…"` with doubled-quote escape), or bare strings. Quoted strings preserve whitespace and protect operator characters; placeholders inside quoted strings are still resolved.', ru:'Операнды — это плейсхолдеры (`${…}`), quoted-строки (`\'…\'` или `"…"` с удвоением кавычки) или bare-строки. Quoted-строки сохраняют пробелы и защищают operator-символы; плейсхолдеры внутри quoted-строк всё равно разрешаются.'}
+Operands are placeholders (`${…}`), quoted strings (`'…'` or `"…"` with doubled-quote escape), or bare strings. Quoted strings preserve whitespace and protect operator characters; placeholders inside quoted strings are still resolved.
 
 Type rules:
 
 - Every value is a string; there are no numbers, booleans, or null.
-- ` resolving to `a && b` is treated as opaque text — operators inside placeholder values are *not* reinterpreted as boolean operators.', ru:'`${msg}`, резолвящийся в `a && b`, остаётся opaque-текстом — операторы внутри значений *не* трактуются как булевы.'}
-- ==True` does not match the env value `true`. Normalise upstream.', ru:'Никакого implicit case folding или числового приведения: `${env.CI}==True` не совпадёт с env-значением `true`. Нормализуйте на стороне источника.'}
+- A `${msg}` resolving to `a && b` is treated as opaque text — operators inside placeholder values are *not* reinterpreted as boolean operators.
+- No implicit case folding or numeric coercion: `${env.CI}==True` does not match the env value `true`. Normalise upstream.
 
 
 
 Errors:
 
-- ` block is reported via `LOG.error` and everything from the outermost open marker to EOF is dropped from the output.', ru:'Незакрытый блок `${widget:if}` сообщается через `LOG.error`, а всё от внешнего открывающего маркера до EOF выбрасывается из вывода.'}
-- ` (no matching open) is reported via `LOG.error` and the marker line is dropped.', ru:'Одиночный `${widget:endIf}` (без пары) сообщается через `LOG.error`, строка-маркер выбрасывается.'}
+- An unclosed `${widget:if}` block is reported via `LOG.error` and everything from the outermost open marker to EOF is dropped from the output.
+- A stray `${widget:endIf}` (no matching open) is reported via `LOG.error` and the marker line is dropped.
 - A malformed condition (unbalanced parens, trailing operators, unknown function names) is reported via `LOG.error` and the block is treated as if the condition were false.
 
 
-Out of scope (v1): ` resolution inside the *default* of `${env.X:default}` references on the right-hand side of an `==`.', ru:'численные сравнения (`>`, `<`, …), regex-сопоставление, `else`/`elif`, scripting-engine, разрешение `${…}` внутри *default*-части `${env.X:default}` на правой стороне `==`.'}
+
+Out of scope (v1): numeric comparisons (`>`, `<`, …), regex matching, `else`/`elif`, scripting engine integration, `${…}` resolution inside the *default* of `${env.X:default}` references on the right-hand side of an `==`.
 
 ---
 
