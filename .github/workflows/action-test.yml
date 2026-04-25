@@ -33,6 +33,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Pre-stage golden files for check mode
+        # check mode compares files-on-disk against what NRG would generate;
+        # on a fresh checkout there are no *.md files next to sample.src.md, so
+        # NRG would fail with "Missing file". Copy the goldens into place so
+        # check has something to compare against and exits 0 cleanly.
+        if: matrix.mode == 'check'
+        shell: bash
+        run: |
+          cp nrg-action/test-fixtures/expected/sample.md    nrg-action/test-fixtures/sample.md
+          cp nrg-action/test-fixtures/expected/sample.ru.md nrg-action/test-fixtures/sample.ru.md
+
       - name: Run action against fixture
         uses: ./nrg-action
         with:

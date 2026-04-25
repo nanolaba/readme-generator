@@ -75,4 +75,7 @@ runs:
         INPUT_NRG_VERSION: ${{ inputs.nrg-version }}
         INPUT_LOG_LEVEL: ${{ inputs.log-level }}
         GH_TOKEN: ${{ github.token }}
-      run: ${{ github.action_path }}/run.sh
+      # Use $GITHUB_ACTION_PATH env var (pre-translated to MSYS2 format on Windows
+      # runners) instead of ${{ github.action_path }} (Windows-style backslashes
+      # that bash interprets as escape sequences: \a → a, \r → r, etc.).
+      run: bash "$GITHUB_ACTION_PATH/run.sh"
