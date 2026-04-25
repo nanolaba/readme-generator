@@ -1,9 +1,11 @@
 <!--@nrg.languages=en,ru-->
 <!--@nrg.defaultLanguage=en-->
 
+<!--@nrg.pom.path=pom.xml-->
+
 <!--@name=**Nanolaba Readme Generator (NRG)**-->
-<!--@stableVersion=0.3-->
-<!--@devVersion=0.4-SNAPSHOT-->
+<!--@stableVersion=${pom.properties.stableVersion}-->
+<!--@devVersion=${pom.version}-->
 
 ${widget:languages}
 

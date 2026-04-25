@@ -16,6 +16,9 @@
 
     <properties>
 
+        <!-- Latest released version — referenced from README.src.md via ${pom.properties.stableVersion}. -->
+        <stableVersion>0.3</stableVersion>
+
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <github.global.server>github</github.global.server>
         <maven.compiler.target>8</maven.compiler.target>
