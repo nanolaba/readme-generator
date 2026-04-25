@@ -32,6 +32,9 @@ public class NRGMojo extends AbstractMojo {
     @Parameter(property = "allowExec", defaultValue = "false")
     private boolean allowExec;
 
+    @Parameter(property = "validate", defaultValue = "false")
+    private boolean validate;
+
     @Parameter(property = "file")
     public void setFile(String[] files) {
         this.files = files;
@@ -49,6 +52,10 @@ public class NRGMojo extends AbstractMojo {
         this.allowExec = allowExec;
     }
 
+    public void setValidate(boolean validate) {
+        this.validate = validate;
+    }
+
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         if (files == null || files.length == 0) {
@@ -59,6 +66,7 @@ public class NRGMojo extends AbstractMojo {
         String widgetsArg = validateAndJoinWidgets();
 
         boolean anyCheckFailure = false;
+        boolean anyValidateFailure = false;
         for (String file : files) {
             List<String> args = new ArrayList<>();
             args.add("-f");
@@ -73,18 +81,27 @@ public class NRGMojo extends AbstractMojo {
                 args.add("--widgets");
                 args.add(widgetsArg);
             }
-            if (check) {
+            if (validate) {
+                args.add("--validate");
+            } else if (check) {
                 args.add("--check");
             }
             if (allowExec) {
                 args.add("--allow-exec");
             }
             int code = NRG.run(args.toArray(new String[0]));
-            if (check && code != 0) {
+            if (validate && code != 0) {
+                anyValidateFailure = true;
+            } else if (check && code != 0) {
                 anyCheckFailure = true;
             }
         }
 
+        if (anyValidateFailure) {
+            throw new MojoExecutionException(
+                    "Template validation reported errors (see diagnostics above). " +
+                            "Fix the source templates or remove <validate>.");
+        }
         if (anyCheckFailure) {
             throw new MojoExecutionException(
                     "Generated output differs from files on disk (see diff above). " +
