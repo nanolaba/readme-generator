@@ -63,10 +63,14 @@ generating any output. v1 covers four classes of error:<!--en-->
 `\${widget:import}` файлы) на типичные ошибки авторов, ничего не<!--ru-->
 генерируя. В v1 проверяются четыре класса ошибок:<!--ru-->
 
-- ${en:'unregistered widget names (`\${widget:doesNotExist}`),', ru:'незарегистрированные имена виджетов (`\${widget:doesNotExist}`),'}
-- ${en:'language markers `<\!--xx-->` whose code is not in `nrg.languages`,', ru:'языковые маркеры `<\!--xx-->`, чей код отсутствует в `nrg.languages`,'}
-- ${en:'`\${widget:import(path=\'...\')}` paths that do not exist on disk,', ru:'пути в `\${widget:import(path=\'...\')}`, которых нет на диске,'}
-- ${en:'unbalanced `<\!--nrg.ignore.begin-->` / `<\!--nrg.ignore.end-->` pairs.', ru:'несбалансированные пары `<\!--nrg.ignore.begin-->` / `<\!--nrg.ignore.end-->`.'}
+- unregistered widget names (`\${widget:doesNotExist}`),<!--en-->
+- language markers `<\!--xx-->` whose code is not in `nrg.languages`,<!--en-->
+- `\${widget:import(path='...')}` paths that do not exist on disk,<!--en-->
+- unbalanced `<\!--nrg.ignore.begin-->` / `<\!--nrg.ignore.end-->` pairs.<!--en-->
+- незарегистрированные имена виджетов (`\${widget:doesNotExist}`),<!--ru-->
+- языковые маркеры `<\!--xx-->`, чей код отсутствует в `nrg.languages`,<!--ru-->
+- пути в `\${widget:import(path='...')}`, которых нет на диске,<!--ru-->
+- несбалансированные пары `<\!--nrg.ignore.begin-->` / `<\!--nrg.ignore.end-->`.<!--ru-->
 
 ```bash
 nrg --validate -f README.src.md && echo "Template is clean"

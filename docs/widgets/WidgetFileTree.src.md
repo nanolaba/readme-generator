@@ -39,17 +39,17 @@ ${en:'Widget parameters', ru:'Свойства виджета'}:
 |            dirsOnly             | ${en:'`true` lists directories only; files are hidden.', ru:'`true` показывает только каталоги; файлы скрываются.'}                                                                                                                                                                                                                                                                          |                     `false`                       |
 |            codeblock            | ${en:'`true` wraps the output in a fenced code block; `false` emits raw text.', ru:'`true` оборачивает вывод в fenced-блок; `false` — без обёртки.'}                                                                                                                                                                                                                                          |                      `true`                       |
 
-${en:'Behaviour', ru:'Поведение'}:<!--en-->
+Behaviour:<!--en-->
 
-- ${en:'Entries are sorted directories-first, then alphabetically within each group, for stable byte-exact output that survives `--check`.', ru:'Записи сортируются: сначала каталоги, потом файлы; внутри групп — по алфавиту. Это даёт стабильный byte-exact вывод, переживающий `--check`.'}<!--en-->
-- ${en:'Glob syntax follows `java.nio.file.PathMatcher` (`*`, `?`, `**`, `{a,b}`, `[abc]`).', ru:'Синтаксис glob — `java.nio.file.PathMatcher` (`*`, `?`, `**`, `{a,b}`, `[abc]`).'}<!--en-->
-- ${en:'Symbolic links are followed as regular directories or files; cycles are not detected — keep `depth` finite.', ru:'Символические ссылки трактуются как обычные каталоги или файлы; циклы не отслеживаются — задавайте конечный `depth`.'}<!--en-->
+- Entries are sorted directories-first, then alphabetically within each group, for stable byte-exact output that survives `--check`.<!--en-->
+- Glob syntax follows `java.nio.file.PathMatcher` (`*`, `?`, `**`, `{a,b}`, `[abc]`).<!--en-->
+- Symbolic links are followed as regular directories or files; cycles are not detected — keep `depth` finite.<!--en-->
 
-${en:'Поведение', ru:''}:<!--ru-->
+Поведение:<!--ru-->
 
-- ${en:'', ru:'Записи сортируются: сначала каталоги, потом файлы; внутри групп — по алфавиту. Это даёт стабильный byte-exact вывод, переживающий `--check`.'}<!--ru-->
-- ${en:'', ru:'Синтаксис glob — `java.nio.file.PathMatcher` (`*`, `?`, `**`, `{a,b}`, `[abc]`).'}<!--ru-->
-- ${en:'', ru:'Символические ссылки трактуются как обычные каталоги или файлы; циклы не отслеживаются — задавайте конечный `depth`.'}<!--ru-->
+- Записи сортируются: сначала каталоги, потом файлы; внутри групп — по алфавиту. Это даёт стабильный byte-exact вывод, переживающий `--check`.<!--ru-->
+- Синтаксис glob — `java.nio.file.PathMatcher` (`*`, `?`, `**`, `{a,b}`, `[abc]`).<!--ru-->
+- Символические ссылки трактуются как обычные каталоги или файлы; циклы не отслеживаются — задавайте конечный `depth`.<!--ru-->
 
 ---
 

@@ -232,9 +232,9 @@ Use `--validate` to scan the template (and every reachable
 `${widget:import}`-imported file) for authoring mistakes without
 generating any output. v1 covers four classes of error:
 
-- `),', ru:'незарегистрированные имена виджетов (`${widget:doesNotExist}`),'}
+- unregistered widget names (`${widget:doesNotExist}`),
 - language markers `<!--xx-->` whose code is not in `nrg.languages`,
-- `${widget:import(path=\` paths that do not exist on disk,', ru:'пути в `${widget:import(path=\'...\')}`, которых нет на диске,'}
+- `${widget:import(path='...')}` paths that do not exist on disk,
 - unbalanced `<!--nrg.ignore.begin-->` / `<!--nrg.ignore.end-->` pairs.
 
 ```bash
@@ -848,7 +848,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 25.04.2026 15:16:43
+Last updated: 25.04.2026 15:24:42
 ```
 
 </td></tr>
@@ -1291,7 +1291,7 @@ Widget parameters:
 Behaviour:
 
 - Entries are sorted directories-first, then alphabetically within each group, for stable byte-exact output that survives `--check`.
-- `, `[abc]`).', ru:'Синтаксис glob — `java.nio.file.PathMatcher` (`*`, `?`, `**`, `{a,b}`, `[abc]`).'}
+- Glob syntax follows `java.nio.file.PathMatcher` (`*`, `?`, `**`, `{a,b}`, `[abc]`).
 - Symbolic links are followed as regular directories or files; cycles are not detected — keep `depth` finite.
 
 
