@@ -127,6 +127,32 @@ nrg --log-level warn -f /path/to/README.src.md
 NRG_LOG_LEVEL=warn nrg -f /path/to/README.src.md
 ```
 
+#### ${en:'Customising output filenames', ru:'Настройка имён выходных файлов'}
+
+Use `--file-name-pattern <PATTERN>` to override the output filename layout.<!--en-->
+Placeholders: `<base>` (source filename without `.src.md`), `<lang>` (language<!--en-->
+code as written), `<LANG>` (uppercased). Patterns may contain `/` separators —<!--en-->
+intermediate directories are created on demand. Equivalent to setting<!--en-->
+`<\!--\@nrg.fileNamePattern=PATTERN-->` in the template; the CLI flag wins.<!--en-->
+Use `--default-language-file-name-pattern <PATTERN>` to override the default<!--en-->
+language only (mirrors `<\!--\@nrg.defaultLanguageFileNamePattern=PATTERN-->`).<!--en-->
+Per-language overrides (`<\!--\@nrg.fileNamePattern.<lang>=...-->`) are<!--en-->
+template-only and have no CLI counterpart.<!--en-->
+Флаг `--file-name-pattern <PATTERN>` переопределяет схему имени выходного<!--ru-->
+файла. Плейсхолдеры: `<base>` (имя исходного файла без `.src.md`), `<lang>`<!--ru-->
+(код языка как есть), `<LANG>` (в верхнем регистре). Паттерн может содержать<!--ru-->
+`/` — недостающие каталоги создаются автоматически. Эквивалент свойства<!--ru-->
+`<\!--\@nrg.fileNamePattern=PATTERN-->`; CLI-флаг побеждает шаблон.<!--ru-->
+Флаг `--default-language-file-name-pattern <PATTERN>` переопределяет только<!--ru-->
+язык по умолчанию (зеркало `<\!--\@nrg.defaultLanguageFileNamePattern=PATTERN-->`).<!--ru-->
+Пер-языковые переопределения (`<\!--\@nrg.fileNamePattern.<lang>=...-->`)<!--ru-->
+доступны только в шаблоне и CLI-аналога не имеют.<!--ru-->
+
+```bash
+nrg --file-name-pattern '<base>_<LANG>.md' -f README.src.md
+nrg --file-name-pattern 'docs/<lang>/<base>.md' --default-language-file-name-pattern '<base>.md' -f README.src.md
+```
+
 ### ${en:'Use as maven plugin', ru:'Использование как плагина для maven'}
 
 Добавьте следующий код в ваш `pom.xml`:<!--ru-->
@@ -202,6 +228,17 @@ when diagnostics are reported. Mutually exclusive with `<check>`.<!--en-->
 импорты, незаявленные языковые маркеры, несбалансированные ignore-блоки)<!--ru-->
 без генерации файлов. Сборка падает с `MojoExecutionException` при<!--ru-->
 наличии диагностик. Несовместим с `<check>`.<!--ru-->
+
+`<fileNamePattern>` and `<defaultLanguageFileNamePattern>` (or<!--en-->
+`-DfileNamePattern=...` / `-DdefaultLanguageFileNamePattern=...`) mirror<!--en-->
+the `--file-name-pattern` / `--default-language-file-name-pattern` CLI flags<!--en-->
+and override `nrg.fileNamePattern` / `nrg.defaultLanguageFileNamePattern`<!--en-->
+template properties when set.<!--en-->
+Параметры `<fileNamePattern>` и `<defaultLanguageFileNamePattern>` (либо<!--ru-->
+`-DfileNamePattern=...` / `-DdefaultLanguageFileNamePattern=...`) дублируют<!--ru-->
+CLI-флаги `--file-name-pattern` / `--default-language-file-name-pattern` и<!--ru-->
+переопределяют свойства шаблона `nrg.fileNamePattern` /<!--ru-->
+`nrg.defaultLanguageFileNamePattern`, если заданы.<!--ru-->
 
 Для использования SNAPSHOT-версий также необходимо добавить в `pom.xml` следующий код:<!--ru-->
 To use SNAPSHOT versions, you also need to add the following code to your `pom.xml`:<!--en-->

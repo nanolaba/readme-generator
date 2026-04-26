@@ -53,6 +53,7 @@
 		2. [Валидация исходных шаблонов](#валидация-исходных-шаблонов)
 		3. [Вывод в stdout](#вывод-в-stdout)
 		4. [Уровень логирования](#уровень-логирования)
+		5. [Настройка имён выходных файлов](#настройка-имён-выходных-файлов)
 	2. [Использование как плагина для maven](#использование-как-плагина-для-maven)
 	3. [Использование в качестве GitHub Action](#использование-в-качестве-github-action)
 		1. [Быстрый старт](#быстрый-старт)
@@ -290,6 +291,23 @@ nrg --log-level warn -f /path/to/README.src.md
 NRG_LOG_LEVEL=warn nrg -f /path/to/README.src.md
 ```
 
+#### Настройка имён выходных файлов
+
+Флаг `--file-name-pattern <PATTERN>` переопределяет схему имени выходного
+файла. Плейсхолдеры: `<base>` (имя исходного файла без `.src.md`), `<lang>`
+(код языка как есть), `<LANG>` (в верхнем регистре). Паттерн может содержать
+`/` — недостающие каталоги создаются автоматически. Эквивалент свойства
+`<!--@nrg.fileNamePattern=PATTERN-->`; CLI-флаг побеждает шаблон.
+Флаг `--default-language-file-name-pattern <PATTERN>` переопределяет только
+язык по умолчанию (зеркало `<!--@nrg.defaultLanguageFileNamePattern=PATTERN-->`).
+Пер-языковые переопределения (`<!--@nrg.fileNamePattern.<lang>=...-->`)
+доступны только в шаблоне и CLI-аналога не имеют.
+
+```bash
+nrg --file-name-pattern '<base>_<LANG>.md' -f README.src.md
+nrg --file-name-pattern 'docs/<lang>/<base>.md' --default-language-file-name-pattern '<base>.md' -f README.src.md
+```
+
 ### Использование как плагина для maven
 
 Добавьте следующий код в ваш `pom.xml`:
@@ -349,6 +367,12 @@ README.
 импорты, незаявленные языковые маркеры, несбалансированные ignore-блоки)
 без генерации файлов. Сборка падает с `MojoExecutionException` при
 наличии диагностик. Несовместим с `<check>`.
+
+Параметры `<fileNamePattern>` и `<defaultLanguageFileNamePattern>` (либо
+`-DfileNamePattern=...` / `-DdefaultLanguageFileNamePattern=...`) дублируют
+CLI-флаги `--file-name-pattern` / `--default-language-file-name-pattern` и
+переопределяют свойства шаблона `nrg.fileNamePattern` /
+`nrg.defaultLanguageFileNamePattern`, если заданы.
 
 Для использования SNAPSHOT-версий также необходимо добавить в `pom.xml` следующий код:
 
@@ -665,6 +689,27 @@ Comma-separated полные имена классов реализаций `NRG
 либо на конкретный build-скрипт. Относительные пути разрешаются относительно
 каталога исходного файла; абсолютные используются как есть. По умолчанию —
 каталог исходного файла. Учитывается только когда в шаблоне есть ссылки `${gradle.…}`.
+
+***nrg.fileNamePattern***
+
+Шаблон имени выходного файла для всех языков. Плейсхолдеры: `<base>` (имя исходного
+файла без `.src.md`), `<lang>` (код языка как есть), `<LANG>` (код языка в верхнем
+регистре). Может содержать `/` — недостающие каталоги создаются автоматически.
+По умолчанию — `<base>.md` для языка по умолчанию и `<base>.<lang>.md` для остальных.
+Примеры: `<base>_<LANG>.md`, `<base>-<lang>.md`, `docs/<lang>/<base>.md`.
+
+***nrg.defaultLanguageFileNamePattern***
+
+Переопределяет `nrg.fileNamePattern` только для языка по умолчанию. Удобно когда
+основной язык должен лежать как `README.md`, а остальные — с суффиксом:
+`nrg.fileNamePattern=<base>_<LANG>.md` + `nrg.defaultLanguageFileNamePattern=<base>.md`.
+
+***nrg.fileNamePattern.&lt;lang&gt;***
+
+Переопределение для конкретного языка (например `nrg.fileNamePattern.zh-CN=README_<LANG>.md`).
+Имеет приоритет и над `nrg.fileNamePattern`, и над `nrg.defaultLanguageFileNamePattern`
+для указанного языка. Порядок разрешения: per-language → default-language → global → встроенный.
+Если два сконфигурированных языка попадают в один и тот же файл, генерация прерывается.
 
 ### Переменные окружения
 
@@ -1063,7 +1108,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 26.04.2026 03:25:27
+Last updated: 26.04.2026 09:40:38
 ```
 
 </td></tr>
@@ -1572,6 +1617,7 @@ nrg --classpath my-widgets.jar --widgets com.acme.widgets.Tag,com.acme.widgets.B
 ### В разработке (1.1-SNAPSHOT)
 
 - **Подстановки `${npm.NAME}` / `${gradle.NAME}`**: чтение значений непосредственно из `package.json` (dotted-path, например `${npm.version}` или `${npm.dependencies.lodash}`) и из `gradle.properties` + `build.gradle{,.kts}` (`${gradle.version}`, `${gradle.group}`, плюс произвольные ключи из `gradle.properties`). Семантика повторяет `${pom.NAME}`: shell-стиль умолчаний, warn-once-per-missing-path, эскейп обратным слэшем. Расположение файлов по умолчанию — каталог исходного файла; переопределяется через `<!--@nrg.npm.path=...-->` / `<!--@nrg.gradle.path=...-->`.
+- **Настраиваемые имена выходных файлов**: `<!--@nrg.fileNamePattern=PATTERN-->` управляет схемой имени через плейсхолдеры `<base>`, `<lang>`, `<LANG>`. Паттерны могут содержать `/` (`docs/<lang>/<base>.md`) — недостающие каталоги создаются автоматически. `<!--@nrg.defaultLanguageFileNamePattern=PATTERN-->` переопределяет только язык по умолчанию; пер-языковые переопределения `<!--@nrg.fileNamePattern.<lang>=PATTERN-->` имеют наивысший приоритет. Дублируются CLI-флагами `--file-name-pattern` / `--default-language-file-name-pattern` и параметрами `<fileNamePattern>` / `<defaultLanguageFileNamePattern>` Maven-плагина. Генерация прерывается, если два языка попадают в один и тот же файл. Виджет `languages` теперь формирует относительные ссылки, так что cross-directory раскладки работают.
 
 ### 1.0
 

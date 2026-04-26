@@ -53,6 +53,7 @@ The current development version is **1.1-SNAPSHOT**.
 		2. [Validating source templates](#validating-source-templates)
 		3. [Print to stdout](#print-to-stdout)
 		4. [Logging verbosity](#logging-verbosity)
+		5. [Customising output filenames](#customising-output-filenames)
 	2. [Use as maven plugin](#use-as-maven-plugin)
 	3. [Use as a GitHub Action](#use-as-a-github-action)
 		1. [Quickstart](#quickstart)
@@ -290,6 +291,23 @@ nrg --log-level warn -f /path/to/README.src.md
 NRG_LOG_LEVEL=warn nrg -f /path/to/README.src.md
 ```
 
+#### Customising output filenames
+
+Use `--file-name-pattern <PATTERN>` to override the output filename layout.
+Placeholders: `<base>` (source filename without `.src.md`), `<lang>` (language
+code as written), `<LANG>` (uppercased). Patterns may contain `/` separators —
+intermediate directories are created on demand. Equivalent to setting
+`<!--@nrg.fileNamePattern=PATTERN-->` in the template; the CLI flag wins.
+Use `--default-language-file-name-pattern <PATTERN>` to override the default
+language only (mirrors `<!--@nrg.defaultLanguageFileNamePattern=PATTERN-->`).
+Per-language overrides (`<!--@nrg.fileNamePattern.<lang>=...-->`) are
+template-only and have no CLI counterpart.
+
+```bash
+nrg --file-name-pattern '<base>_<LANG>.md' -f README.src.md
+nrg --file-name-pattern 'docs/<lang>/<base>.md' --default-language-file-name-pattern '<base>.md' -f README.src.md
+```
+
 ### Use as maven plugin
 
 Add the following code to your `pom.xml`:
@@ -349,6 +367,12 @@ the templates for authoring mistakes (unknown widgets, missing imports,
 undeclared language markers, unbalanced ignore-blocks) without
 generating any output. The build fails with a `MojoExecutionException`
 when diagnostics are reported. Mutually exclusive with `<check>`.
+
+`<fileNamePattern>` and `<defaultLanguageFileNamePattern>` (or
+`-DfileNamePattern=...` / `-DdefaultLanguageFileNamePattern=...`) mirror
+the `--file-name-pattern` / `--default-language-file-name-pattern` CLI flags
+and override `nrg.fileNamePattern` / `nrg.defaultLanguageFileNamePattern`
+template properties when set.
 
 To use SNAPSHOT versions, you also need to add the following code to your `pom.xml`:
 
@@ -664,6 +688,27 @@ either a directory (containing `gradle.properties` and/or `build.gradle{,.kts}`)
 or an explicit build script file. Relative paths are resolved against the
 source-file directory; absolute paths are used as-is. Defaults to the source-file
 directory. Only consulted when the template uses `${gradle.…}` references.
+
+***nrg.fileNamePattern***
+
+Output filename pattern applied to all languages. Placeholders: `<base>` (source
+filename without `.src.md`), `<lang>` (language code as written), `<LANG>` (language
+code upper-cased). May include `/` separators — intermediate directories are created
+on demand. Defaults to `<base>.md` for the default language and `<base>.<lang>.md`
+for the others. Examples: `<base>_<LANG>.md`, `<base>-<lang>.md`, `docs/<lang>/<base>.md`.
+
+***nrg.defaultLanguageFileNamePattern***
+
+Override `nrg.fileNamePattern` for the default language only. Useful when the
+default language should keep the bare `README.md` while other languages get a
+suffix: `nrg.fileNamePattern=<base>_<LANG>.md` plus `nrg.defaultLanguageFileNamePattern=<base>.md`.
+
+***nrg.fileNamePattern.&lt;lang&gt;***
+
+Per-language override (e.g. `nrg.fileNamePattern.zh-CN=README_<LANG>.md`). Beats both
+`nrg.fileNamePattern` and `nrg.defaultLanguageFileNamePattern` for that exact language.
+Most-specific-first resolution: per-language → default-language → global → built-in.
+If two configured languages would resolve to the same output path, generation aborts.
 
 ### Environment variables
 
@@ -1060,7 +1105,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 26.04.2026 03:25:27
+Last updated: 26.04.2026 09:40:37
 ```
 
 </td></tr>
@@ -1569,6 +1614,7 @@ This section summarises the main user-visible changes in each release. For full 
 ### Unreleased (1.1-SNAPSHOT)
 
 - **`${npm.NAME}` / `${gradle.NAME}` substitution**: read values directly from `package.json` (dotted-path lookup like `${npm.version}` or `${npm.dependencies.lodash}`) and from `gradle.properties` + `build.gradle{,.kts}` (`${gradle.version}`, `${gradle.group}`, plus arbitrary keys from `gradle.properties`). Mirrors `${pom.NAME}` semantics: shell-style defaults, warn-once-per-missing-path, backslash escapes. File locations default to the source-file directory and are configurable via `<!--@nrg.npm.path=...-->` / `<!--@nrg.gradle.path=...-->`.
+- **Configurable output filenames**: `<!--@nrg.fileNamePattern=PATTERN-->` controls the output filename layout via the placeholders `<base>`, `<lang>`, `<LANG>`. Patterns may contain `/` separators (`docs/<lang>/<base>.md`) — intermediate directories are created on demand. `<!--@nrg.defaultLanguageFileNamePattern=PATTERN-->` overrides the default language only; per-language `<!--@nrg.fileNamePattern.<lang>=PATTERN-->` overrides win for the matching language. Mirrored by `--file-name-pattern` / `--default-language-file-name-pattern` CLI flags and `<fileNamePattern>` / `<defaultLanguageFileNamePattern>` Maven plugin parameters. Generation aborts when two languages collide on the same output path. The `languages` widget now emits relative links so cross-directory layouts work.
 
 ### 1.0
 

@@ -131,6 +131,39 @@ directory. Only consulted when the template uses `\${gradle.…}` references.<!-
 каталога исходного файла; абсолютные используются как есть. По умолчанию —<!--ru-->
 каталог исходного файла. Учитывается только когда в шаблоне есть ссылки `\${gradle.…}`.<!--ru-->
 
+***nrg.fileNamePattern***
+
+Output filename pattern applied to all languages. Placeholders: `<base>` (source<!--en-->
+filename without `.src.md`), `<lang>` (language code as written), `<LANG>` (language<!--en-->
+code upper-cased). May include `/` separators — intermediate directories are created<!--en-->
+on demand. Defaults to `<base>.md` for the default language and `<base>.<lang>.md`<!--en-->
+for the others. Examples: `<base>_<LANG>.md`, `<base>-<lang>.md`, `docs/<lang>/<base>.md`.<!--en-->
+Шаблон имени выходного файла для всех языков. Плейсхолдеры: `<base>` (имя исходного<!--ru-->
+файла без `.src.md`), `<lang>` (код языка как есть), `<LANG>` (код языка в верхнем<!--ru-->
+регистре). Может содержать `/` — недостающие каталоги создаются автоматически.<!--ru-->
+По умолчанию — `<base>.md` для языка по умолчанию и `<base>.<lang>.md` для остальных.<!--ru-->
+Примеры: `<base>_<LANG>.md`, `<base>-<lang>.md`, `docs/<lang>/<base>.md`.<!--ru-->
+
+***nrg.defaultLanguageFileNamePattern***
+
+Override `nrg.fileNamePattern` for the default language only. Useful when the<!--en-->
+default language should keep the bare `README.md` while other languages get a<!--en-->
+suffix: `nrg.fileNamePattern=<base>_<LANG>.md` plus `nrg.defaultLanguageFileNamePattern=<base>.md`.<!--en-->
+Переопределяет `nrg.fileNamePattern` только для языка по умолчанию. Удобно когда<!--ru-->
+основной язык должен лежать как `README.md`, а остальные — с суффиксом:<!--ru-->
+`nrg.fileNamePattern=<base>_<LANG>.md` + `nrg.defaultLanguageFileNamePattern=<base>.md`.<!--ru-->
+
+***nrg.fileNamePattern.&lt;lang&gt;***
+
+Per-language override (e.g. `nrg.fileNamePattern.zh-CN=README_<LANG>.md`). Beats both<!--en-->
+`nrg.fileNamePattern` and `nrg.defaultLanguageFileNamePattern` for that exact language.<!--en-->
+Most-specific-first resolution: per-language → default-language → global → built-in.<!--en-->
+If two configured languages would resolve to the same output path, generation aborts.<!--en-->
+Переопределение для конкретного языка (например `nrg.fileNamePattern.zh-CN=README_<LANG>.md`).<!--ru-->
+Имеет приоритет и над `nrg.fileNamePattern`, и над `nrg.defaultLanguageFileNamePattern`<!--ru-->
+для указанного языка. Порядок разрешения: per-language → default-language → global → встроенный.<!--ru-->
+Если два сконфигурированных языка попадают в один и тот же файл, генерация прерывается.<!--ru-->
+
 ### ${en:'Environment variables', ru:'Переменные окружения'}
 
 Inside any `\${…}` reference, the reserved `env.` namespace pulls a value<!--en-->

@@ -4,14 +4,13 @@ import com.nanolaba.logging.ConsoleLogger;
 import com.nanolaba.logging.LOG;
 import com.nanolaba.nrg.core.Generator;
 import com.nanolaba.nrg.core.GeneratorConfig;
-import com.nanolaba.nrg.core.NRGConstants;
 import com.nanolaba.nrg.core.NRGUtil;
+import com.nanolaba.nrg.core.OutputFileNameResolver;
 import com.nanolaba.nrg.widgets.NRGWidget;
 import com.nanolaba.sugar.Code;
 import org.apache.commons.cli.*;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -110,6 +109,14 @@ public class NRG {
         Option validate = new Option(null, "validate", false,
                 "validate the source template and imports without generating output; exit 1 on errors");
         options.addOption(validate);
+        Option fileNamePattern = new Option(null, "file-name-pattern", true,
+                "output filename pattern with placeholders <base>, <lang>, <LANG> (overrides nrg.fileNamePattern)");
+        fileNamePattern.setArgName("pattern");
+        options.addOption(fileNamePattern);
+        Option defaultLangFileNamePattern = new Option(null, "default-language-file-name-pattern", true,
+                "output filename pattern for the default language (overrides nrg.defaultLanguageFileNamePattern)");
+        defaultLangFileNamePattern.setArgName("pattern");
+        options.addOption(defaultLangFileNamePattern);
 
         CommandLineParser parser = new DefaultParser();
         CommandLine cmd = parser.parse(options, args);
@@ -149,6 +156,8 @@ public class NRG {
             LOG.warn("--language has no effect without --stdout; ignoring");
             langValue = null;
         }
+        String fileNamePatternValue = cmd.getOptionValue(fileNamePattern);
+        String defaultLangFileNamePatternValue = cmd.getOptionValue(defaultLangFileNamePattern);
 
         if (cmd.hasOption(file)) {
             File sourceFile = cmd.getParsedOptionValue(file);
@@ -156,7 +165,7 @@ public class NRG {
                 return runValidation(sourceFile);
             }
             return generate(sourceFile, sourceCharset, toStdout, langValue, cliWidgets, checkMode,
-                    cmd.hasOption(allowExec));
+                    cmd.hasOption(allowExec), fileNamePatternValue, defaultLangFileNamePatternValue);
         }
         return 0;
     }
@@ -233,7 +242,8 @@ public class NRG {
     }
 
     private static int generate(File sourceFile, Charset charset, boolean toStdout, String languageFilter,
-                                List<NRGWidget> cliWidgets, boolean checkMode, boolean allowExec) {
+                                List<NRGWidget> cliWidgets, boolean checkMode, boolean allowExec,
+                                String fileNamePatternOverride, String defaultLangFileNamePatternOverride) {
         if (!sourceFile.exists()) {
             LOG.error("Source file does not exist: {}", sourceFile.getAbsolutePath());
             return 1;
@@ -245,6 +255,22 @@ public class NRG {
             }
             widgets.addAll(additionalWidgets);
             Generator generator = new Generator(sourceFile, charset, widgets);
+            if (fileNamePatternOverride != null) {
+                generator.getConfig().getProperties().setProperty(
+                        com.nanolaba.nrg.core.NRGConstants.PROPERTY_FILE_NAME_PATTERN, fileNamePatternOverride);
+            }
+            if (defaultLangFileNamePatternOverride != null) {
+                generator.getConfig().getProperties().setProperty(
+                        com.nanolaba.nrg.core.NRGConstants.PROPERTY_DEFAULT_LANGUAGE_FILE_NAME_PATTERN,
+                        defaultLangFileNamePatternOverride);
+            }
+            java.util.Optional<String> patternError = com.nanolaba.nrg.core.OutputFileNameValidator.findError(
+                    sourceFile, generator.getConfig().getDefaultLanguage(),
+                    generator.getConfig().getLanguages(), generator.getConfig().getProperties());
+            if (patternError.isPresent()) {
+                LOG.error("File name pattern error: {}", patternError.get());
+                return 1;
+            }
             generator.getConfig().setExecAllowed(allowExec);
             if (checkMode) {
                 return performCheck(generator);
@@ -334,6 +360,13 @@ public class NRG {
         for (String language : generator.getConfig().getLanguages()) {
             File readmeFile = getReadmeFile(language, generator.getConfig());
             LOG.debug("Generating file for language \"{}\" - {}", language, readmeFile.getAbsolutePath());
+            File parent = readmeFile.getParentFile();
+            if (parent != null && !parent.exists()) {
+                if (!parent.mkdirs() && !parent.isDirectory()) {
+                    LOG.error("Cannot create directory for output file: {}", parent.getAbsolutePath());
+                    continue;
+                }
+            }
             FileUtils.write(readmeFile, generator.getResult(language).getContent(), StandardCharsets.UTF_8);
             LOG.info("File \"{}\" created, total size {}", readmeFile.getName(), FileUtils.byteCountToDisplaySize(readmeFile.length()));
         }
@@ -363,14 +396,17 @@ public class NRG {
     }
 
     public static File getReadmeFile(String language, GeneratorConfig config) {
-        return getReadmeFile(language, config.getSourceFile(), config.getDefaultLanguage());
+        return OutputFileNameResolver.resolve(
+                config.getSourceFile(), config.getDefaultLanguage(), language, config.getProperties());
     }
 
+    /**
+     * @deprecated use {@link #getReadmeFile(String, GeneratorConfig)}; this overload uses
+     * built-in default naming only and ignores any configured filename patterns.
+     */
+    @Deprecated
     public static File getReadmeFile(String language, File sourceFile, String defaultLanguage) {
-        String path = StringUtils.substringBeforeLast(sourceFile.getAbsolutePath(), "." + NRGConstants.DEFAULT_SOURCE_EXTENSION) +
-                (language.equals(defaultLanguage) ? ".md" : "." + language + ".md");
-
-        return new File(path);
+        return OutputFileNameResolver.resolve(sourceFile, defaultLanguage, language, new java.util.Properties());
     }
 
     private static void printHelp(Options options) {

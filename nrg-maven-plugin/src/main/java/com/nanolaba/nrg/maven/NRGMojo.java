@@ -35,6 +35,20 @@ public class NRGMojo extends AbstractMojo {
     @Parameter(property = "validate", defaultValue = "false")
     private boolean validate;
 
+    @Parameter(property = "fileNamePattern")
+    private String fileNamePattern;
+
+    @Parameter(property = "defaultLanguageFileNamePattern")
+    private String defaultLanguageFileNamePattern;
+
+    public void setFileNamePattern(String fileNamePattern) {
+        this.fileNamePattern = fileNamePattern;
+    }
+
+    public void setDefaultLanguageFileNamePattern(String defaultLanguageFileNamePattern) {
+        this.defaultLanguageFileNamePattern = defaultLanguageFileNamePattern;
+    }
+
     @Parameter(property = "file")
     public void setFile(String[] files) {
         this.files = files;
@@ -88,6 +102,14 @@ public class NRGMojo extends AbstractMojo {
             }
             if (allowExec) {
                 args.add("--allow-exec");
+            }
+            if (fileNamePattern != null && !fileNamePattern.isEmpty()) {
+                args.add("--file-name-pattern");
+                args.add(fileNamePattern);
+            }
+            if (defaultLanguageFileNamePattern != null && !defaultLanguageFileNamePattern.isEmpty()) {
+                args.add("--default-language-file-name-pattern");
+                args.add(defaultLanguageFileNamePattern);
             }
             int code = NRG.run(args.toArray(new String[0]));
             if (validate && code != 0) {
