@@ -107,6 +107,30 @@ template uses `\${pom.…}` references.<!--en-->
 используются как есть. По умолчанию — `pom.xml` рядом с исходным файлом.<!--ru-->
 Учитывается только когда в шаблоне есть ссылки `\${pom.…}`.<!--ru-->
 
+***nrg.npm.path***
+
+Override the `package.json` location used by `\${npm.NAME}` substitution. Relative<!--en-->
+paths are resolved against the source-file directory; absolute paths are used<!--en-->
+as-is. Defaults to `package.json` next to the source file. Only consulted when<!--en-->
+the template uses `\${npm.…}` references.<!--en-->
+Переопределяет путь к `package.json`, используемый подстановкой `\${npm.NAME}`.<!--ru-->
+Относительные пути разрешаются относительно каталога исходного файла; абсолютные<!--ru-->
+используются как есть. По умолчанию — `package.json` рядом с исходным файлом.<!--ru-->
+Учитывается только когда в шаблоне есть ссылки `\${npm.…}`.<!--ru-->
+
+***nrg.gradle.path***
+
+Override the Gradle location used by `\${gradle.NAME}` substitution. May point at<!--en-->
+either a directory (containing `gradle.properties` and/or `build.gradle{,.kts}`)<!--en-->
+or an explicit build script file. Relative paths are resolved against the<!--en-->
+source-file directory; absolute paths are used as-is. Defaults to the source-file<!--en-->
+directory. Only consulted when the template uses `\${gradle.…}` references.<!--en-->
+Переопределяет расположение Gradle, используемое подстановкой `\${gradle.NAME}`.<!--ru-->
+Может указывать либо на каталог (с `gradle.properties` и/или `build.gradle{,.kts}`),<!--ru-->
+либо на конкретный build-скрипт. Относительные пути разрешаются относительно<!--ru-->
+каталога исходного файла; абсолютные используются как есть. По умолчанию —<!--ru-->
+каталог исходного файла. Учитывается только когда в шаблоне есть ссылки `\${gradle.…}`.<!--ru-->
+
 ### ${en:'Environment variables', ru:'Переменные окружения'}
 
 Inside any `\${…}` reference, the reserved `env.` namespace pulls a value<!--en-->
@@ -195,6 +219,77 @@ Behaviour:<!--en-->
 - `\${pom.path:default}` подставляет литерал после первого `:`, если путь отсутствует. Без default подставляется пустая строка и логируется по одному предупреждению на каждый уникальный путь.<!--ru-->
 - Эскейп обратным слэшем работает как для любой другой `\${…}`-конструкции: `\\\${pom.version}` выводится как литерал.<!--ru-->
 - Расположение `pom.xml` по умолчанию — каталог исходного файла; переопределяется через `<\!--\@nrg.pom.path=relative/or/absolute/pom.xml-->`.<!--ru-->
+
+### ${en:'npm package values', ru:'Значения из package.json'}
+
+The reserved `npm.` namespace inside `\${…}` reads values directly from<!--en-->
+the project's `package.json`. Resolution happens after pom substitution but<!--en-->
+before language and property substitution, so the same `\${npm.…}` reference<!--en-->
+works in body text, in `<\!--@key=value-->` declaration values, and inside<!--en-->
+widget parameters.<!--en-->
+Зарезервированное пространство имён `npm.` внутри `\${…}` читает значения<!--ru-->
+непосредственно из `package.json` проекта. Разрешение происходит после<!--ru-->
+pom-подстановки, но до языковой и обычной property-подстановки, поэтому<!--ru-->
+одна и та же `\${npm.…}`-ссылка работает и в основном тексте, и в значениях<!--ru-->
+`<\!--@key=value-->`, и в параметрах виджетов.<!--ru-->
+
+```markdown
+\${npm.version}
+\${npm.name}
+\${npm.dependencies.lodash}
+\${npm.version:0.0.0-SNAPSHOT}
+<!--\@coords=\${npm.name}@\${npm.version}-->
+```
+
+Behaviour:<!--en-->
+
+- The path is interpreted as a walk from the JSON root: `npm.X` reads the top-level field, `npm.X.Y` walks into the nested object, and so on.<!--en-->
+- String, number, and boolean leaves are stringified. Object, array, and `null` leaves render empty (with a warning).<!--en-->
+- `\${npm.path:default}` substitutes the literal default after the first `:` when the path is missing. Without a default, the substitution renders empty and one warning per distinct path is logged.<!--en-->
+- Backslash escapes work as for any other `\${…}` reference: `\\\${npm.version}` renders as the literal text.<!--en-->
+- The `package.json` location defaults to the source-file directory; override with `<\!--\@nrg.npm.path=relative/or/absolute/package.json-->`.<!--en-->
+
+Поведение:<!--ru-->
+
+- Путь интерпретируется как обход JSON-дерева: `npm.X` читает поле верхнего уровня, `npm.X.Y` спускается во вложенный объект и так далее.<!--ru-->
+- Строковые, числовые и булевы значения приводятся к строке. Объекты, массивы и `null` подставляются как пустая строка (с предупреждением).<!--ru-->
+- `\${npm.path:default}` подставляет литерал после первого `:`, если путь отсутствует. Без default подставляется пустая строка и логируется по одному предупреждению на каждый уникальный путь.<!--ru-->
+- Эскейп обратным слэшем работает как для любой другой `\${…}`-конструкции: `\\\${npm.version}` выводится как литерал.<!--ru-->
+- Расположение `package.json` по умолчанию — каталог исходного файла; переопределяется через `<\!--\@nrg.npm.path=relative/or/absolute/package.json-->`.<!--ru-->
+
+### ${en:'Gradle values', ru:'Значения из Gradle'}
+
+The reserved `gradle.` namespace inside `\${…}` reads values from the project's<!--en-->
+`gradle.properties` (flat key=value lookup) and falls back to regex extraction<!--en-->
+of `version` / `group` from `build.gradle` or `build.gradle.kts`. Resolution<!--en-->
+happens after npm substitution but before language and property substitution.<!--en-->
+Зарезервированное пространство имён `gradle.` внутри `\${…}` читает значения<!--ru-->
+из `gradle.properties` (плоский lookup по ключу) с fallback на regex-извлечение<!--ru-->
+`version` / `group` из `build.gradle` или `build.gradle.kts`. Разрешение<!--ru-->
+происходит после npm-подстановки, но до языковой и обычной property-подстановки.<!--ru-->
+
+```markdown
+\${gradle.version}
+\${gradle.group}
+\${gradle.kotlin.version}
+\${gradle.version:0.0.0-SNAPSHOT}
+```
+
+Behaviour:<!--en-->
+
+- `gradle.X` first looks up the verbatim key `X` in `gradle.properties`. If not found and `X` is `version` or `group`, NRG regex-extracts `X = '...'` from the build script (works for both Groovy and Kotlin DSLs).<!--en-->
+- `gradle.properties` always wins over the build script when the same key is defined in both places.<!--en-->
+- Other Gradle DSL constructs are intentionally not parsed — define values in `gradle.properties` if you need them in the README.<!--en-->
+- `\${gradle.path:default}`, backslash escapes, and warn-once-per-missing-path semantics match `\${pom.…}` and `\${npm.…}`.<!--en-->
+- Override the Gradle location with `<\!--\@nrg.gradle.path=core/-->` (a directory) or `<\!--\@nrg.gradle.path=core/build.gradle.kts-->` (an explicit file).<!--en-->
+
+Поведение:<!--ru-->
+
+- `gradle.X` сначала ищет ключ `X` в `gradle.properties`. Если ключ не найден и `X` — это `version` или `group`, NRG извлекает `X = '...'` из build-скрипта регулярным выражением (работает и для Groovy DSL, и для Kotlin DSL).<!--ru-->
+- `gradle.properties` всегда побеждает build-скрипт, если ключ определён в обоих местах.<!--ru-->
+- Прочие конструкции Gradle DSL намеренно не парсятся — определяйте значения в `gradle.properties`, если они нужны в README.<!--ru-->
+- `\${gradle.path:default}`, эскейп обратным слэшем и семантика «warn-once-per-missing-path» совпадают с `\${pom.…}` и `\${npm.…}`.<!--ru-->
+- Переопределяйте расположение Gradle через `<\!--\@nrg.gradle.path=core/-->` (каталог) или `<\!--\@nrg.gradle.path=core/build.gradle.kts-->` (конкретный файл).<!--ru-->
 
 ### Multilanguage support
 

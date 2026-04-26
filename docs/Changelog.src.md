@@ -5,7 +5,8 @@ This section summarises the main user-visible changes in each release. For full 
 
 ### ${en:'Unreleased', ru:'В разработке'} (${devVersion})<!--toc.ignore-->
 
-- ${en:'Nothing user-visible yet.', ru:'Пока без видимых пользователю изменений.'}
+- **`\${npm.NAME}` / `\${gradle.NAME}` substitution**: read values directly from `package.json` (dotted-path lookup like `\${npm.version}` or `\${npm.dependencies.lodash}`) and from `gradle.properties` + `build.gradle{,.kts}` (`\${gradle.version}`, `\${gradle.group}`, plus arbitrary keys from `gradle.properties`). Mirrors `\${pom.NAME}` semantics: shell-style defaults, warn-once-per-missing-path, backslash escapes. File locations default to the source-file directory and are configurable via `<\!--\@nrg.npm.path=...-->` / `<\!--\@nrg.gradle.path=...-->`.<!--en-->
+- **Подстановки `\${npm.NAME}` / `\${gradle.NAME}`**: чтение значений непосредственно из `package.json` (dotted-path, например `\${npm.version}` или `\${npm.dependencies.lodash}`) и из `gradle.properties` + `build.gradle{,.kts}` (`\${gradle.version}`, `\${gradle.group}`, плюс произвольные ключи из `gradle.properties`). Семантика повторяет `\${pom.NAME}`: shell-стиль умолчаний, warn-once-per-missing-path, эскейп обратным слэшем. Расположение файлов по умолчанию — каталог исходного файла; переопределяется через `<\!--\@nrg.npm.path=...-->` / `<\!--\@nrg.gradle.path=...-->`.<!--ru-->
 
 ### 1.0<!--toc.ignore-->
 

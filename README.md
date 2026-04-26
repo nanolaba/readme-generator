@@ -71,9 +71,11 @@ The current development version is **1.1-SNAPSHOT**.
 	2. [Properties](#properties)
 	3. [Environment variables](#environment-variables)
 	4. [Maven POM values](#maven-pom-values)
-	5. [Multilanguage support](#multilanguage-support)
-	6. [Ignoring content](#ignoring-content)
-	7. [Widgets](#widgets)
+	5. [npm package values](#npm-package-values)
+	6. [Gradle values](#gradle-values)
+	7. [Multilanguage support](#multilanguage-support)
+	8. [Ignoring content](#ignoring-content)
+	9. [Widgets](#widgets)
 		1. [Widget 'languages'](#widget-languages)
 		2. [Widget 'import'](#widget-import)
 		1. [Widget 'tableOfContents'](#widget-tableofcontents)
@@ -648,6 +650,21 @@ paths are resolved against the source-file directory; absolute paths are used
 as-is. Defaults to `pom.xml` next to the source file. Only consulted when the
 template uses `${pom.…}` references.
 
+***nrg.npm.path***
+
+Override the `package.json` location used by `${npm.NAME}` substitution. Relative
+paths are resolved against the source-file directory; absolute paths are used
+as-is. Defaults to `package.json` next to the source file. Only consulted when
+the template uses `${npm.…}` references.
+
+***nrg.gradle.path***
+
+Override the Gradle location used by `${gradle.NAME}` substitution. May point at
+either a directory (containing `gradle.properties` and/or `build.gradle{,.kts}`)
+or an explicit build script file. Relative paths are resolved against the
+source-file directory; absolute paths are used as-is. Defaults to the source-file
+directory. Only consulted when the template uses `${gradle.…}` references.
+
 ### Environment variables
 
 Inside any `${…}` reference, the reserved `env.` namespace pulls a value
@@ -706,6 +723,56 @@ Behaviour:
 - `${pom.path:default}` substitutes the literal default after the first `:` when the path is missing. Without a default, the substitution renders empty and one warning per distinct path is logged.
 - Backslash escapes work as for any other `${…}` reference: `\\${pom.version}` renders as the literal text.
 - The `pom.xml` location defaults to the source-file directory; override with `<!--@nrg.pom.path=relative/or/absolute/pom.xml-->`.
+
+
+
+### npm package values
+
+The reserved `npm.` namespace inside `${…}` reads values directly from
+the project's `package.json`. Resolution happens after pom substitution but
+before language and property substitution, so the same `${npm.…}` reference
+works in body text, in `<!--@key=value-->` declaration values, and inside
+widget parameters.
+
+```markdown
+${npm.version}
+${npm.name}
+${npm.dependencies.lodash}
+${npm.version:0.0.0-SNAPSHOT}
+<!--@coords=${npm.name}@${npm.version}-->
+```
+
+Behaviour:
+
+- The path is interpreted as a walk from the JSON root: `npm.X` reads the top-level field, `npm.X.Y` walks into the nested object, and so on.
+- String, number, and boolean leaves are stringified. Object, array, and `null` leaves render empty (with a warning).
+- `${npm.path:default}` substitutes the literal default after the first `:` when the path is missing. Without a default, the substitution renders empty and one warning per distinct path is logged.
+- Backslash escapes work as for any other `${…}` reference: `\\${npm.version}` renders as the literal text.
+- The `package.json` location defaults to the source-file directory; override with `<!--@nrg.npm.path=relative/or/absolute/package.json-->`.
+
+
+
+### Gradle values
+
+The reserved `gradle.` namespace inside `${…}` reads values from the project's
+`gradle.properties` (flat key=value lookup) and falls back to regex extraction
+of `version` / `group` from `build.gradle` or `build.gradle.kts`. Resolution
+happens after npm substitution but before language and property substitution.
+
+```markdown
+${gradle.version}
+${gradle.group}
+${gradle.kotlin.version}
+${gradle.version:0.0.0-SNAPSHOT}
+```
+
+Behaviour:
+
+- `gradle.X` first looks up the verbatim key `X` in `gradle.properties`. If not found and `X` is `version` or `group`, NRG regex-extracts `X = '...'` from the build script (works for both Groovy and Kotlin DSLs).
+- `gradle.properties` always wins over the build script when the same key is defined in both places.
+- Other Gradle DSL constructs are intentionally not parsed — define values in `gradle.properties` if you need them in the README.
+- `${gradle.path:default}`, backslash escapes, and warn-once-per-missing-path semantics match `${pom.…}` and `${npm.…}`.
+- Override the Gradle location with `<!--@nrg.gradle.path=core/-->` (a directory) or `<!--@nrg.gradle.path=core/build.gradle.kts-->` (an explicit file).
 
 
 
@@ -993,7 +1060,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 26.04.2026 02:27:25
+Last updated: 26.04.2026 03:25:27
 ```
 
 </td></tr>
@@ -1380,7 +1447,8 @@ src
     │   └── com
     └── resources
         ├── ImportWidgetTest
-        └── LanguagesWidgetTest
+        ├── LanguagesWidgetTest
+        └── fixtures
 ```
 
 Widget parameters:
@@ -1500,7 +1568,7 @@ This section summarises the main user-visible changes in each release. For full 
 
 ### Unreleased (1.1-SNAPSHOT)
 
-- Nothing user-visible yet.
+- **`${npm.NAME}` / `${gradle.NAME}` substitution**: read values directly from `package.json` (dotted-path lookup like `${npm.version}` or `${npm.dependencies.lodash}`) and from `gradle.properties` + `build.gradle{,.kts}` (`${gradle.version}`, `${gradle.group}`, plus arbitrary keys from `gradle.properties`). Mirrors `${pom.NAME}` semantics: shell-style defaults, warn-once-per-missing-path, backslash escapes. File locations default to the source-file directory and are configurable via `<!--@nrg.npm.path=...-->` / `<!--@nrg.gradle.path=...-->`.
 
 ### 1.0
 

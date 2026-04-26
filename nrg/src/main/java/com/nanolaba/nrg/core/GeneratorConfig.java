@@ -37,18 +37,32 @@ public class GeneratorConfig {
     private boolean pomReaderInitialised = false;
     private final Set<String> warnedMissingPomPaths = new HashSet<>();
 
+    private NpmReader npmReader;
+    private boolean npmReaderInitialised = false;
+    private final Set<String> warnedMissingNpmPaths = new HashSet<>();
+
+    private GradleReader gradleReader;
+    private boolean gradleReaderInitialised = false;
+    private final Set<String> warnedMissingGradlePaths = new HashSet<>();
+
 
     public GeneratorConfig(File sourceFile, String templateText, List<NRGWidget> widgets) {
-        this(sourceFile, templateText, widgets, null, null);
+        this(sourceFile, templateText, widgets, null, null, null, null);
     }
 
     public GeneratorConfig(File sourceFile, String templateText, List<NRGWidget> widgets,
                            Function<String, String> envProvider) {
-        this(sourceFile, templateText, widgets, envProvider, null);
+        this(sourceFile, templateText, widgets, envProvider, null, null, null);
     }
 
     public GeneratorConfig(File sourceFile, String templateText, List<NRGWidget> widgets,
                            Function<String, String> envProvider, PomReader pomReader) {
+        this(sourceFile, templateText, widgets, envProvider, pomReader, null, null);
+    }
+
+    public GeneratorConfig(File sourceFile, String templateText, List<NRGWidget> widgets,
+                           Function<String, String> envProvider, PomReader pomReader,
+                           NpmReader npmReader, GradleReader gradleReader) {
         this.sourceFile = sourceFile;
         this.sourceFileBody = IgnoreBlockStripper.strip(templateText);
         this.rootSourceFile = sourceFile;
@@ -58,6 +72,14 @@ public class GeneratorConfig {
         if (pomReader != null) {
             this.pomReader = pomReader;
             this.pomReaderInitialised = true;
+        }
+        if (npmReader != null) {
+            this.npmReader = npmReader;
+            this.npmReaderInitialised = true;
+        }
+        if (gradleReader != null) {
+            this.gradleReader = gradleReader;
+            this.gradleReaderInitialised = true;
         }
 
         getSourceLinesStream().forEach(this::readLanguagesPropertiesFromLine);
@@ -242,5 +264,85 @@ public class GeneratorConfig {
         }
         File requested = new File(configured);
         return requested.isAbsolute() ? requested : new File(base, configured);
+    }
+
+    public NpmReader getNpmReader() {
+        if (!npmReaderInitialised) {
+            npmReaderInitialised = true;
+            if (npmReader == null) {
+                npmReader = new JsonNpmReader(resolveNpmFile());
+            }
+        }
+        return npmReader;
+    }
+
+    public void setNpmReader(NpmReader npmReader) {
+        this.npmReader = npmReader;
+        this.npmReaderInitialised = true;
+    }
+
+    public Set<String> getWarnedMissingNpmPaths() {
+        return warnedMissingNpmPaths;
+    }
+
+    private File resolveNpmFile() {
+        String configured = getProperties().getProperty(NRGConstants.PROPERTY_NPM_PATH);
+        File base = sourceFile == null
+                ? new File(".").getAbsoluteFile()
+                : sourceFile.getAbsoluteFile().getParentFile();
+        if (configured == null || configured.isEmpty()) {
+            return new File(base, "package.json");
+        }
+        File requested = new File(configured);
+        return requested.isAbsolute() ? requested : new File(base, configured);
+    }
+
+    public GradleReader getGradleReader() {
+        if (!gradleReaderInitialised) {
+            gradleReaderInitialised = true;
+            if (gradleReader == null) {
+                File[] files = resolveGradleLocation();
+                gradleReader = new RegexGradleReader(files[0], files[1]);
+            }
+        }
+        return gradleReader;
+    }
+
+    public void setGradleReader(GradleReader gradleReader) {
+        this.gradleReader = gradleReader;
+        this.gradleReaderInitialised = true;
+    }
+
+    public Set<String> getWarnedMissingGradlePaths() {
+        return warnedMissingGradlePaths;
+    }
+
+    /**
+     * Resolves the configured gradle location into a [propertiesFile, buildScriptFile] pair.
+     * The configured value may be a directory (resolves both inside it) or an explicit file
+     * (used as build script; sibling gradle.properties is included automatically).
+     */
+    private File[] resolveGradleLocation() {
+        String configured = getProperties().getProperty(NRGConstants.PROPERTY_GRADLE_PATH);
+        File base = sourceFile == null
+                ? new File(".").getAbsoluteFile()
+                : sourceFile.getAbsoluteFile().getParentFile();
+        File anchor;
+        if (configured == null || configured.isEmpty()) {
+            anchor = base;
+        } else {
+            File requested = new File(configured);
+            anchor = requested.isAbsolute() ? requested : new File(base, configured);
+        }
+        if (anchor.isDirectory()) {
+            File props = new File(anchor, "gradle.properties");
+            File groovy = new File(anchor, "build.gradle");
+            File kotlin = new File(anchor, "build.gradle.kts");
+            File buildScript = groovy.isFile() ? groovy : (kotlin.isFile() ? kotlin : null);
+            return new File[] { props.isFile() ? props : null, buildScript };
+        }
+        File parent = anchor.getParentFile();
+        File props = parent == null ? null : new File(parent, "gradle.properties");
+        return new File[] { props != null && props.isFile() ? props : null, anchor.isFile() ? anchor : null };
     }
 }

@@ -20,6 +20,10 @@ public class TemplateLine {
     private static final Pattern ENV_TAG_PATTERN = Pattern.compile("\\$\\{\\s*env\\.([A-Za-z_][A-Za-z0-9_]*)(?::([^}]*))?\\s*}");
     private static final Pattern POM_TAG_PATTERN = Pattern.compile("\\$\\{\\s*pom\\.([A-Za-z_][A-Za-z0-9_.\\-]*?)(?::([^}]*))?\\s*}");
     private static final Pattern POM_INTERNAL_REF = Pattern.compile("\\$\\{\\s*([A-Za-z_][A-Za-z0-9_.\\-]*)(?::([^}]*))?\\s*}");
+    private static final Pattern NPM_TAG_PATTERN =
+            Pattern.compile("\\$\\{\\s*npm\\.([A-Za-z_][A-Za-z0-9_.\\-@/]*?)(?::([^}]*))?\\s*}");
+    private static final Pattern GRADLE_TAG_PATTERN =
+            Pattern.compile("\\$\\{\\s*gradle\\.([A-Za-z_][A-Za-z0-9_.\\-]*?)(?::([^}]*))?\\s*}");
     private static final java.util.Set<String> POM_INHERITED_FIELDS =
             new java.util.HashSet<>(java.util.Arrays.asList("groupId", "version", "name"));
 
@@ -60,6 +64,8 @@ public class TemplateLine {
                         String value = trimToEmpty(substringAfter(s, "="));
                         value = renderEnvProperties(value);
                         value = renderPomProperties(value);
+                        value = renderNpmProperties(value);
+                        value = renderGradleProperties(value);
                         value = renderProperties(value);
                         value = renderLanguageProperties(value, language);
                         NRGUtil.mergeProperty(key, value, config.getProperties());
@@ -192,6 +198,80 @@ public class TemplateLine {
         return raw.map(s -> resolvePomInternalReferences(s, reader)).orElse(null);
     }
 
+    protected String renderNpmProperties(String line) {
+        Matcher m = NPM_TAG_PATTERN.matcher(line);
+        StringBuilder result = new StringBuilder();
+        int last = 0;
+        while (m.find()) {
+            if (!isNotEscaped(line, m.start())) {
+                continue;
+            }
+            String path = m.group(1);
+            String fallback = m.group(2);
+            String value = resolveNpmPath(path);
+            String replacement;
+            if (value != null) {
+                replacement = value;
+            } else if (fallback != null) {
+                replacement = fallback;
+            } else {
+                if (config.getWarnedMissingNpmPaths().add(path)) {
+                    LOG.warn("npm path '{}' is not present; rendering empty", path);
+                }
+                replacement = "";
+            }
+            result.append(line, last, m.start()).append(replacement);
+            last = m.end();
+        }
+        result.append(line, last, line.length());
+        return result.toString();
+    }
+
+    private String resolveNpmPath(String path) {
+        NpmReader reader = config.getNpmReader();
+        if (reader == null) {
+            return null;
+        }
+        return reader.read(path).orElse(null);
+    }
+
+    protected String renderGradleProperties(String line) {
+        Matcher m = GRADLE_TAG_PATTERN.matcher(line);
+        StringBuilder result = new StringBuilder();
+        int last = 0;
+        while (m.find()) {
+            if (!isNotEscaped(line, m.start())) {
+                continue;
+            }
+            String path = m.group(1);
+            String fallback = m.group(2);
+            String value = resolveGradlePath(path);
+            String replacement;
+            if (value != null) {
+                replacement = value;
+            } else if (fallback != null) {
+                replacement = fallback;
+            } else {
+                if (config.getWarnedMissingGradlePaths().add(path)) {
+                    LOG.warn("gradle path '{}' is not present; rendering empty", path);
+                }
+                replacement = "";
+            }
+            result.append(line, last, m.start()).append(replacement);
+            last = m.end();
+        }
+        result.append(line, last, line.length());
+        return result.toString();
+    }
+
+    private String resolveGradlePath(String path) {
+        GradleReader reader = config.getGradleReader();
+        if (reader == null) {
+            return null;
+        }
+        return reader.read(path).orElse(null);
+    }
+
     private String resolvePomInternalReferences(String value, PomReader reader) {
         Matcher m = POM_INTERNAL_REF.matcher(value);
         StringBuilder result = new StringBuilder();
@@ -305,6 +385,8 @@ public class TemplateLine {
             if (substituteEnv) {
                 result = renderEnvProperties(result);
                 result = renderPomProperties(result);
+                result = renderNpmProperties(result);
+                result = renderGradleProperties(result);
             }
             result = renderLanguageProperties(result, language);
             result = renderProperties(result);
