@@ -46,9 +46,11 @@ public final class OutputFileNameResolver {
     }
 
     private static String pickPattern(String defaultLanguage, String language, Properties properties) {
-        String perLang = properties.getProperty(NRGConstants.PROPERTY_FILE_NAME_PATTERN_PER_LANGUAGE_PREFIX + language);
-        if (perLang != null) {
-            return perLang;
+        if (language != null) {
+            String perLang = properties.getProperty(NRGConstants.PROPERTY_FILE_NAME_PATTERN + "." + language);
+            if (perLang != null) {
+                return perLang;
+            }
         }
         if (language != null && language.equals(defaultLanguage)) {
             String defaultLangPattern = properties.getProperty(NRGConstants.PROPERTY_DEFAULT_LANGUAGE_FILE_NAME_PATTERN);

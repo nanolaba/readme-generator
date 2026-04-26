@@ -164,6 +164,31 @@ If two configured languages would resolve to the same output path, generation ab
 для указанного языка. Порядок разрешения: per-language → default-language → global → встроенный.<!--ru-->
 Если два сконфигурированных языка попадают в один и тот же файл, генерация прерывается.<!--ru-->
 
+### ${en:'Per-language overrides', ru:'Переопределения для разных языков'}
+
+Any property may declare a per-language override by suffixing its name with `.<lang>`.<!--en-->
+When the template is rendered for a specific language, `\${name}` first resolves to the value of `name.<lang>` if defined,<!--en-->
+otherwise it falls back to the bare `name`. If neither is defined, the literal `\${name}` is left in the output.<!--en-->
+Любое свойство может объявить переопределение для конкретного языка с помощью суффикса `.<lang>`.<!--ru-->
+При рендере шаблона на конкретный язык `\${name}` сначала ищет значение `name.<lang>`,<!--ru-->
+а при его отсутствии — голый ключ `name`. Если ни то, ни другое не задано, в выводе остаётся литерал `\${name}`.<!--ru-->
+
+```markdown
+<!--\@nrg.languages=en,ru,ja-->
+<!--\@screenshot.en=./public/show-en.png-->
+<!--\@screenshot.ru=./public/show-ru.png-->
+<!--\@screenshot=./public/show.png-->
+
+<img src="\${screenshot}" />
+```
+
+${en:'Result for `en`', ru:'Результат для `en`'}: `<img src="./public/show-en.png" />`<br>
+${en:'Result for `ru`', ru:'Результат для `ru`'}: `<img src="./public/show-ru.png" />`<br>
+${en:'Result for `ja` (no per-language override)', ru:'Результат для `ja` (нет переопределения)'}: `<img src="./public/show.png" />`
+
+The same convention is also used by built-in NRG properties such as `nrg.fileNamePattern.<lang>`.<!--en-->
+Эта же конвенция используется встроенными свойствами NRG, например `nrg.fileNamePattern.<lang>`.<!--ru-->
+
 ### ${en:'Environment variables', ru:'Переменные окружения'}
 
 Inside any `\${…}` reference, the reserved `env.` namespace pulls a value<!--en-->

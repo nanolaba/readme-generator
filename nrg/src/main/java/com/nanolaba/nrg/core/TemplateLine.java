@@ -66,7 +66,7 @@ public class TemplateLine {
                         value = renderPomProperties(value);
                         value = renderNpmProperties(value);
                         value = renderGradleProperties(value);
-                        value = renderProperties(value);
+                        value = renderProperties(value, language);
                         value = renderLanguageProperties(value, language);
                         NRGUtil.mergeProperty(key, value, config.getProperties());
                     } else {
@@ -319,14 +319,14 @@ public class TemplateLine {
         return v.orElse(null);
     }
 
-    protected String renderProperties(String line) {
+    protected String renderProperties(String line, String language) {
         Pattern pattern = Pattern.compile("\\$\\{\\s*([\\p{Alnum}-_.]+)\\s*}");
         Matcher m = pattern.matcher(line);
         while (m.find()) {
             if (isNotEscaped(line, m.start())) {
                 String propertyName = m.group(1);
-                if (config.getProperties().containsKey(propertyName)) {
-                    String value = config.getProperties().getProperty(propertyName);
+                String value = NRGUtil.getLanguageScopedProperty(config.getProperties(), propertyName, language);
+                if (value != null) {
                     line = (m.start() > 0 ? line.substring(0, m.start()) : "") +
                             value +
                             (m.end() < line.length() ? line.substring(m.end()) : "");
@@ -394,7 +394,7 @@ public class TemplateLine {
                 result = renderGradleProperties(result);
             }
             result = renderLanguageProperties(result, language);
-            result = renderProperties(result);
+            result = renderProperties(result, language);
             return result;
         } else {
             return null;

@@ -65,6 +65,28 @@ public class NRGUtil {
     }
 
     /**
+     * Returns the value of a property, preferring a language-scoped variant if defined.
+     *
+     * <p>Lookup order, most-specific first:
+     * <ol>
+     *   <li>{@code name + "." + language} — when {@code language} is non-null and the key exists.</li>
+     *   <li>{@code name} — bare key as cross-language fallback.</li>
+     *   <li>{@code null} — neither key is defined.</li>
+     * </ol>
+     *
+     * <p>An explicitly defined empty per-language value wins over the bare key.
+     */
+    public static String getLanguageScopedProperty(Properties properties, String name, String language) {
+        if (language != null) {
+            String langScoped = properties.getProperty(name + "." + language);
+            if (langScoped != null) {
+                return langScoped;
+            }
+        }
+        return properties.getProperty(name);
+    }
+
+    /**
      * Parses raw {@code <!--@key=value-->} markers from a single line without any substitution
      * (no env / language / property rendering) and without mutating any caller state.
      * Returns a key→value map preserving insertion order.

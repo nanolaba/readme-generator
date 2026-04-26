@@ -70,13 +70,14 @@ The current development version is **1.1-SNAPSHOT**.
 2. [Template syntax](#template-syntax)
 	1. [Variables](#variables)
 	2. [Properties](#properties)
-	3. [Environment variables](#environment-variables)
-	4. [Maven POM values](#maven-pom-values)
-	5. [npm package values](#npm-package-values)
-	6. [Gradle values](#gradle-values)
-	7. [Multilanguage support](#multilanguage-support)
-	8. [Ignoring content](#ignoring-content)
-	9. [Widgets](#widgets)
+	3. [Per-language overrides](#per-language-overrides)
+	4. [Environment variables](#environment-variables)
+	5. [Maven POM values](#maven-pom-values)
+	6. [npm package values](#npm-package-values)
+	7. [Gradle values](#gradle-values)
+	8. [Multilanguage support](#multilanguage-support)
+	9. [Ignoring content](#ignoring-content)
+	10. [Widgets](#widgets)
 		1. [Widget 'languages'](#widget-languages)
 		2. [Widget 'import'](#widget-import)
 		1. [Widget 'tableOfContents'](#widget-tableofcontents)
@@ -92,7 +93,7 @@ The current development version is **1.1-SNAPSHOT**.
 	1. [Creating a widget](#creating-a-widget)
 2. [Related projects](#related-projects)
 3. [Changelog](#changelog)
-4. [Feedback & Support](#feedback-support)
+1. [Feedback & Support](#feedback-support)
 	1. [Community Support](#community-support)
 	2. [Direct Communication](#direct-communication)
 	3. [Contribution Guide](#contribution-guide)
@@ -710,6 +711,27 @@ Per-language override (e.g. `nrg.fileNamePattern.zh-CN=README_<LANG>.md`). Beats
 Most-specific-first resolution: per-language → default-language → global → built-in.
 If two configured languages would resolve to the same output path, generation aborts.
 
+### Per-language overrides
+
+Any property may declare a per-language override by suffixing its name with `.<lang>`.
+When the template is rendered for a specific language, `${name}` first resolves to the value of `name.<lang>` if defined,
+otherwise it falls back to the bare `name`. If neither is defined, the literal `${name}` is left in the output.
+
+```markdown
+<!--@nrg.languages=en,ru,ja-->
+<!--@screenshot.en=./public/show-en.png-->
+<!--@screenshot.ru=./public/show-ru.png-->
+<!--@screenshot=./public/show.png-->
+
+<img src="${screenshot}" />
+```
+
+Result for `en`: `<img src="./public/show-en.png" />`<br>
+Result for `ru`: `<img src="./public/show-ru.png" />`<br>
+Result for `ja` (no per-language override): `<img src="./public/show.png" />`
+
+The same convention is also used by built-in NRG properties such as `nrg.fileNamePattern.<lang>`.
+
 ### Environment variables
 
 Inside any `${…}` reference, the reserved `env.` namespace pulls a value
@@ -1142,7 +1164,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 26.04.2026 18:20:16
+Last updated: 26.04.2026 22:21:21
 ```
 
 </td></tr>
@@ -1650,6 +1672,7 @@ This section summarises the main user-visible changes in each release. For full 
 
 ### Unreleased (1.1-SNAPSHOT)
 
+- **Per-language variable overrides**: any `<!--@name=value-->` property can now declare a per-language sibling `<!--@name.<lang>=value-->`, and `${name}` rendered for that language picks the language-specific value first, falling back to the bare key. Closes the use case behind issue #42 (per-language image paths) without introducing a new widget. Soft-breaking only for templates that intentionally relied on `name` and `name.<lang>` being independent properties.
 - **`${npm.NAME}` / `${gradle.NAME}` substitution**: read values directly from `package.json` (dotted-path lookup like `${npm.version}` or `${npm.dependencies.lodash}`) and from `gradle.properties` + `build.gradle{,.kts}` (`${gradle.version}`, `${gradle.group}`, plus arbitrary keys from `gradle.properties`). Mirrors `${pom.NAME}` semantics: shell-style defaults, warn-once-per-missing-path, backslash escapes. File locations default to the source-file directory and are configurable via `<!--@nrg.npm.path=...-->` / `<!--@nrg.gradle.path=...-->`.
 - **Configurable output filenames**: `<!--@nrg.fileNamePattern=PATTERN-->` controls the output filename layout via the placeholders `<base>`, `<lang>`, `<LANG>`. Patterns may contain `/` separators (`docs/<lang>/<base>.md`) — intermediate directories are created on demand. `<!--@nrg.defaultLanguageFileNamePattern=PATTERN-->` overrides the default language only; per-language `<!--@nrg.fileNamePattern.<lang>=PATTERN-->` overrides win for the matching language. Mirrored by `--file-name-pattern` / `--default-language-file-name-pattern` CLI flags and `<fileNamePattern>` / `<defaultLanguageFileNamePattern>` Maven plugin parameters. Generation aborts when two languages collide on the same output path. The `languages` widget now emits relative links so cross-directory layouts work.
 

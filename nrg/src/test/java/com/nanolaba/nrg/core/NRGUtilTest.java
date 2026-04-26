@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.Properties;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class NRGUtilTest extends DefaultNRGTest {
@@ -110,5 +111,49 @@ class NRGUtilTest extends DefaultNRGTest {
 
         String text5 = "${widget:tableOfContents\nLine 2";
         assertEquals(0, NRGUtil.findFirstUnescapedOccurrenceLine(text5, "${widget:tableOfContents"));
+    }
+
+    @Test
+    public void testGetLanguageScopedProperty_returnsLangScopedWhenDefined() {
+        Properties p = new Properties();
+        p.setProperty("greeting", "Hi");
+        p.setProperty("greeting.ru", "Привет");
+        assertEquals("Привет", NRGUtil.getLanguageScopedProperty(p, "greeting", "ru"));
+    }
+
+    @Test
+    public void testGetLanguageScopedProperty_fallsBackToBareWhenLangScopedMissing() {
+        Properties p = new Properties();
+        p.setProperty("greeting", "Hi");
+        p.setProperty("greeting.ru", "Привет");
+        assertEquals("Hi", NRGUtil.getLanguageScopedProperty(p, "greeting", "en"));
+    }
+
+    @Test
+    public void testGetLanguageScopedProperty_returnsNullWhenNeitherDefined() {
+        Properties p = new Properties();
+        assertNull(NRGUtil.getLanguageScopedProperty(p, "missing", "en"));
+    }
+
+    @Test
+    public void testGetLanguageScopedProperty_returnsBareWhenLanguageNull() {
+        Properties p = new Properties();
+        p.setProperty("greeting", "Hi");
+        assertEquals("Hi", NRGUtil.getLanguageScopedProperty(p, "greeting", null));
+    }
+
+    @Test
+    public void testGetLanguageScopedProperty_emptyLangScopedValueIsHonored() {
+        Properties p = new Properties();
+        p.setProperty("foo", "bar");
+        p.setProperty("foo.en", "");
+        assertEquals("", NRGUtil.getLanguageScopedProperty(p, "foo", "en"));
+    }
+
+    @Test
+    public void testGetLanguageScopedProperty_emptyBareValueIsHonored() {
+        Properties p = new Properties();
+        p.setProperty("foo", "");
+        assertEquals("", NRGUtil.getLanguageScopedProperty(p, "foo", "en"));
     }
 }
