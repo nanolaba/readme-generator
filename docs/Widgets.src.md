@@ -18,4 +18,3 @@ ${widget:import(path='widgets/WidgetMath.src.md')}
 ${widget:import(path='widgets/WidgetExec.src.md')}
 ${widget:import(path='widgets/WidgetIf.src.md')}
 ${widget:import(path='widgets/WidgetFileTree.src.md')}
-${widget:import(path='widgets/WidgetAsset.src.md')}
