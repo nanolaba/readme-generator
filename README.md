@@ -88,6 +88,7 @@ The current development version is **1.1-SNAPSHOT**.
 		6. [Widget 'exec'](#widget-exec)
 		7. [Widget 'if'](#widget-if)
 		8. [Widget 'fileTree'](#widget-filetree)
+		9. [Widget 'asset'](#widget-asset)
 1. [Advanced features](#advanced-features)
 	1. [Creating a widget](#creating-a-widget)
 2. [Related projects](#related-projects)
@@ -1142,7 +1143,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 26.04.2026 18:20:16
+Last updated: 26.04.2026 20:36:44
 ```
 
 </td></tr>
@@ -1553,6 +1554,65 @@ Behaviour:
 
 ---
 
+#### Widget 'asset'
+
+This component resolves to a per-language asset path (image, file, URL, etc.),
+falling back to a shared default when no language-specific value is configured.
+Avoids the noisy `...` form when the same asset is referenced from many places.
+
+Configure asset values via standard NRG property markers:
+`asset.<name>.<lang>` defines a value for a specific language;
+`asset.<name>` (without a language suffix) is used as a fallback when no per-language override exists.
+
+<table>
+<tr><th>Usage example</th></tr>
+<tr><td>
+
+```markdown
+<!--@asset.screenshot.en=./public/show-en.png-->
+<!--@asset.screenshot.zh=./public/show-zh.png-->
+<!--@asset.screenshot=./public/show.png-->
+
+<img src="${widget:asset(name='screenshot')}" alt="screenshot" />
+```
+
+</td></tr>
+<tr><th>Result for en</th></tr>
+<tr><td>
+
+```markdown
+<img src="./public/show-en.png" alt="screenshot" />
+```
+
+</td></tr>
+<tr><th>Result for zh</th></tr>
+<tr><td>
+
+```markdown
+<img src="./public/show-zh.png" alt="screenshot" />
+```
+
+</td></tr>
+<tr><th>Result for any other language</th></tr>
+<tr><td>
+
+```markdown
+<img src="./public/show.png" alt="screenshot" />
+```
+
+</td></tr>
+</table>
+
+Widget parameters:
+
+| Name | Description                                                                                                       | Default value |
+|:-------------------------------:|------------------------------------------------------------------------------------------------------------------------------------------|:-------------------------------------------------:|
+|              name               | Asset identifier (matches the suffix in `asset.<name>` and `asset.<name>.<lang>`) |       —       |
+
+If neither `asset.<name>.<lang>` nor `asset.<name>` is defined, the widget logs an error and emits an empty string.
+
+---
+
 
 ## Advanced features
 
@@ -1650,6 +1710,7 @@ This section summarises the main user-visible changes in each release. For full 
 
 ### Unreleased (1.1-SNAPSHOT)
 
+- **`asset` widget**: resolves to a per-language asset path (image, file, URL) configured via `<!--@asset.NAME.LANG=...-->` markers, with fallback to a shared `<!--@asset.NAME=...-->` value when no language-specific override exists. Replaces the noisy inline `${en:'./en.png', ru:'./ru.png'}` form when the same asset is referenced from many places.
 - **`${npm.NAME}` / `${gradle.NAME}` substitution**: read values directly from `package.json` (dotted-path lookup like `${npm.version}` or `${npm.dependencies.lodash}`) and from `gradle.properties` + `build.gradle{,.kts}` (`${gradle.version}`, `${gradle.group}`, plus arbitrary keys from `gradle.properties`). Mirrors `${pom.NAME}` semantics: shell-style defaults, warn-once-per-missing-path, backslash escapes. File locations default to the source-file directory and are configurable via `<!--@nrg.npm.path=...-->` / `<!--@nrg.gradle.path=...-->`.
 - **Configurable output filenames**: `<!--@nrg.fileNamePattern=PATTERN-->` controls the output filename layout via the placeholders `<base>`, `<lang>`, `<LANG>`. Patterns may contain `/` separators (`docs/<lang>/<base>.md`) — intermediate directories are created on demand. `<!--@nrg.defaultLanguageFileNamePattern=PATTERN-->` overrides the default language only; per-language `<!--@nrg.fileNamePattern.<lang>=PATTERN-->` overrides win for the matching language. Mirrored by `--file-name-pattern` / `--default-language-file-name-pattern` CLI flags and `<fileNamePattern>` / `<defaultLanguageFileNamePattern>` Maven plugin parameters. Generation aborts when two languages collide on the same output path. The `languages` widget now emits relative links so cross-directory layouts work.
 
