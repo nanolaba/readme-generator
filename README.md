@@ -965,6 +965,10 @@ Widget parameters:
 |              wrap               | Wrap output in a code fence: `true`, `false`                                                               |                      `false`                      |
 |              lang               | Language tag for the fence; `auto` detects from file extension                                       |                      `auto`                       |
 |             dedent              | Strip common leading whitespace: `auto`, `true`, `false`                                                          |                      `auto`                       |
+|               url               | HTTP(S) URL to fetch (mutually exclusive with `path`); requires `nrg.allowRemoteImports=true` |                                                   |
+|              cache              | Cache TTL: `<int>{s,m,h,d}` or `none` (e.g. `1h`, `7d`)                                             |                      `none`                       |
+|             timeout             | HTTP timeout: `<int>{s,m,h,d}` (cannot be `none`)                                                        |                      `60s`                        |
+|             sha256              | 64 hex chars; verifies fetched bytes; recommended for reproducibility |                                                   |
 
 When importing a template file, generation is performed using variables declared in the parent file.
 This allows defining global variables in the root file and reusing them across all imported templates.
@@ -1001,6 +1005,39 @@ The matching is language-agnostic — the widget recognizes the markers regardle
 
 Region names match the pattern `[A-Za-z0-9_-]+`. Region markers are stripped from the output.
 Nested regions are supported — when extracting an outer region, inner region markers are also stripped from the output.
+
+**Remote imports**
+
+The `url` parameter fetches content over HTTP(S) and is mutually exclusive with `path`.
+Remote imports are opt-in: the template must set `nrg.allowRemoteImports=true` as a standard NRG property marker, otherwise any `url=` invocation fails the build with a clear error.
+
+The cache directory defaults to `~/.nrg/cache` and can be overridden by setting the `nrg.cacheDir` template property to the desired path.
+The `cache` parameter sets the TTL using the grammar `<int>{s,m,h,d}` (or `none` to disable caching), and `timeout` accepts the same grammar but cannot be `none` (default `60s`).
+
+The `sha256` parameter (64 hex chars) is strongly recommended — it pins the fetched bytes for reproducible builds and supply-chain safety.
+When `sha256` is omitted, NRG logs an INFO line with the actual hash so it can be copied back into the widget call.
+For CI gates, set the system property `-Dnrg.requireSha256ForRemote=true` (default `false`) — remote imports without `sha256` will then fail the build.
+
+If the network is unreachable but a cached response exists, NRG uses it (even if stale relative to `cache` TTL) and logs a warning; without any cache entry the build fails.
+
+<table>
+<tr><th>Secure remote import example</th></tr>
+<tr><td>
+
+```
+${widget:import(url='https://raw.githubusercontent.com/myorg/shared-docs/main/CONTRIBUTING.md',
+                 cache='1h',
+                 sha256='abc123...')}
+```
+
+</td></tr>
+</table>
+
+**Error semantics**
+
+All import errors — both local and remote — now fail the build with a non-zero exit code.
+This is a behavior change from earlier NRG versions, where local-import errors silently produced empty content.
+The only non-throw cases are stale-cache fallback when the network is unreachable (warn-only) and cache filesystem hiccups (cache is skipped, fetch continues).
 
 ---
 
@@ -1105,7 +1142,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 26.04.2026 09:40:37
+Last updated: 26.04.2026 18:20:16
 ```
 
 </td></tr>

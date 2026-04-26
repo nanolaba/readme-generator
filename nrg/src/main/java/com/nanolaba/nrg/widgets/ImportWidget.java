@@ -1,11 +1,9 @@
 package com.nanolaba.nrg.widgets;
 
-import com.nanolaba.logging.LOG;
 import com.nanolaba.nrg.core.GenerationResult;
 import com.nanolaba.nrg.core.Generator;
 import com.nanolaba.nrg.core.GeneratorConfig;
 import com.nanolaba.nrg.core.NRGUtil;
-import com.nanolaba.sugar.Code;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
@@ -18,6 +16,16 @@ import java.util.Map;
 
 public class ImportWidget extends DefaultWidget {
 
+    private final RemoteFetcher fetcher;
+
+    public ImportWidget() {
+        this(new RemoteFetcher(new HttpUrlOpener(), java.time.Clock.systemUTC()));
+    }
+
+    ImportWidget(RemoteFetcher fetcher) {
+        this.fetcher = fetcher;
+    }
+
     @Override
     public String getName() {
         return "import";
@@ -26,44 +34,95 @@ public class ImportWidget extends DefaultWidget {
     @Override
     public String getBody(WidgetTag widgetTag, GeneratorConfig config, String language) {
         Config widgetConfig = getConfig(widgetTag.getParameters());
-        return Code.run(() -> render(config, widgetConfig, language));
+        try {
+            return render(config, widgetConfig, language);
+        } catch (IOException e) {
+            throw new RuntimeException("import: I/O error reading "
+                    + (widgetConfig.getPath() != null ? widgetConfig.getPath() : widgetConfig.getUrl())
+                    + ": " + e.getMessage(), e);
+        }
     }
 
     private String render(GeneratorConfig config, Config widgetConfig, String language) throws IOException {
         // 1. Validate parameter combinations
         if (widgetConfig.getLines() != null && widgetConfig.getRegion() != null) {
-            LOG.error("import widget: 'lines' and 'region' are mutually exclusive (path={})", widgetConfig.getPath());
-            return "";
+            throw new RuntimeException("import: 'lines' and 'region' are mutually exclusive (path=" + widgetConfig.getPath() + ")");
         }
         if (!isValidBool(widgetConfig.getWrap())) {
-            LOG.error("import widget: invalid 'wrap' value '{}' (expected true|false)", widgetConfig.getWrap());
-            return "";
+            throw new RuntimeException("import: invalid 'wrap' value '" + widgetConfig.getWrap() + "' (expected true|false)");
         }
         if (!isValidTriState(widgetConfig.getDedent())) {
-            LOG.error("import widget: invalid 'dedent' value '{}' (expected auto|true|false)", widgetConfig.getDedent());
-            return "";
+            throw new RuntimeException("import: invalid 'dedent' value '" + widgetConfig.getDedent() + "' (expected auto|true|false)");
         }
         if (widgetConfig.getRegion() != null && !widgetConfig.getRegion().matches("[A-Za-z0-9_-]+")) {
-            LOG.error("import widget: invalid region name '{}'", widgetConfig.getRegion());
-            return "";
+            throw new RuntimeException("import: invalid region name '" + widgetConfig.getRegion() + "'");
         }
 
-        File sourceFile = new File(config.getSourceFile().getParentFile(), widgetConfig.getPath());
-        if (!sourceFile.exists()) {
-            LOG.error("import widget: file not found: {}", sourceFile.getAbsolutePath());
-            return "";
+        // Validate that path and url are not both set, and at least one is set.
+        if (widgetConfig.getPath() != null && widgetConfig.getUrl() != null) {
+            throw new RuntimeException("import: 'path' and 'url' are mutually exclusive");
+        }
+        if (widgetConfig.getPath() == null && widgetConfig.getUrl() == null) {
+            throw new RuntimeException("import: either 'path' or 'url' is required");
         }
 
-        // 2. Read raw lines
+        // 2. Read raw bytes
         Charset charset;
         try {
             charset = Charset.forName(widgetConfig.getCharset());
         } catch (Exception e) {
-            LOG.error(e, "import widget: invalid charset '" + widgetConfig.getCharset() + "'");
-            return "";
+            throw new RuntimeException("import: invalid charset '" + widgetConfig.getCharset() + "'", e);
         }
-        List<String> rawLines = new ArrayList<>(Arrays.asList(
-                FileUtils.readFileToString(sourceFile, charset).split("\\R", -1)));
+
+        File sourceFile;
+        byte[] rawBytes;
+        if (widgetConfig.getPath() != null) {
+            sourceFile = new File(config.getSourceFile().getParentFile(), widgetConfig.getPath());
+            if (!sourceFile.exists()) {
+                throw new RuntimeException("import: file not found: " + sourceFile.getAbsolutePath());
+            }
+            rawBytes = FileUtils.readFileToByteArray(sourceFile);
+        } else {
+            if (!config.isAllowRemoteImports()) {
+                throw new RuntimeException("import: remote URLs disabled — set <!--@nrg.allowRemoteImports=true--> to enable (url=" + widgetConfig.getUrl() + ")");
+            }
+            if (config.isRequireSha256ForRemote() && widgetConfig.getSha256() == null) {
+                throw new RuntimeException("import: sha256 is required for remote imports under nrg.requireSha256ForRemote=true (url=" + widgetConfig.getUrl() + ")");
+            }
+            if (widgetConfig.getSha256() != null && !widgetConfig.getSha256().matches("[0-9a-f]{64}")) {
+                throw new RuntimeException("import: sha256 must be 64 lowercase hex chars (got '" + widgetConfig.getSha256() + "')");
+            }
+            long timeoutMs;
+            long cacheTtlMs;
+            try {
+                timeoutMs = DurationParser.parseMillis(widgetConfig.getTimeout());
+                cacheTtlMs = DurationParser.parseMillis(widgetConfig.getCache());
+            } catch (IllegalArgumentException e) {
+                throw new RuntimeException("import: " + e.getMessage(), e);
+            }
+            if (timeoutMs == DurationParser.DISABLED) {
+                throw new RuntimeException("import: timeout cannot be 'none'");
+            }
+
+            RemoteFetchSpec spec = new RemoteFetchSpec(
+                    widgetConfig.getUrl(), timeoutMs, cacheTtlMs, widgetConfig.getSha256());
+            try {
+                rawBytes = fetcher.fetch(spec, config.getCacheDir());
+            } catch (IOException e) {
+                throw new RuntimeException("import: " + e.getMessage(), e);
+            }
+            // Synthesize a file for downstream code (sub-Generator, ImportLanguageDetector, region not-found message).
+            String urlPath;
+            try {
+                urlPath = new java.net.URI(widgetConfig.getUrl()).getPath();
+                if (urlPath == null || urlPath.isEmpty()) urlPath = "remote";
+            } catch (java.net.URISyntaxException e) {
+                urlPath = "remote";
+            }
+            sourceFile = new File(config.getSourceFile().getParentFile(), new File(urlPath).getName());
+        }
+
+        List<String> rawLines = new ArrayList<>(Arrays.asList(new String(rawBytes, charset).split("\\R", -1)));
         // split with limit -1 preserves trailing empty strings; trim trailing empty if file ends with newline
         if (!rawLines.isEmpty() && rawLines.get(rawLines.size() - 1).isEmpty()) {
             rawLines.remove(rawLines.size() - 1);
@@ -76,16 +135,15 @@ public class ImportWidget extends DefaultWidget {
             try {
                 spec = ImportLinesSpec.parse(widgetConfig.getLines());
             } catch (IllegalArgumentException e) {
-                LOG.error("import widget: " + e.getMessage());
-                return "";
+                throw new RuntimeException("import: " + e.getMessage(), e);
             }
             selected = spec.apply(rawLines);
         } else if (widgetConfig.getRegion() != null) {
             selected = ImportRegionExtractor.extract(rawLines, widgetConfig.getRegion());
             if (selected == null) {
-                LOG.error("import widget: region '{}' not found or unclosed in {}",
-                        widgetConfig.getRegion(), widgetConfig.getPath());
-                return "";
+                String sourceLabel = widgetConfig.getPath() != null ? widgetConfig.getPath() : widgetConfig.getUrl();
+                throw new RuntimeException("import: region '" + widgetConfig.getRegion()
+                        + "' not found or unclosed in " + sourceLabel);
             }
         } else {
             selected = rawLines;
@@ -165,8 +223,35 @@ public class ImportWidget extends DefaultWidget {
         if (map.containsKey("dedent")) {
             config.setDedent(map.get("dedent"));
         }
+        if (map.containsKey("url")) {
+            config.setUrl(map.get("url"));
+        }
+        if (map.containsKey("cache")) {
+            config.setCache(map.get("cache"));
+        }
+        if (map.containsKey("timeout")) {
+            config.setTimeout(map.get("timeout"));
+        }
+        if (map.containsKey("sha256")) {
+            config.setSha256(map.get("sha256"));
+        }
+
+        if (map.containsKey("url") && !map.containsKey("run-generator")) {
+            String urlValue = map.get("url");
+            boolean isSrcMd = urlValue != null && extractUrlPath(urlValue).endsWith(".src.md");
+            config.setRunGenerator(isSrcMd);
+        }
 
         return config;
+    }
+
+    private static String extractUrlPath(String url) {
+        try {
+            String p = new java.net.URI(url).getPath();
+            return p == null ? "" : p;
+        } catch (java.net.URISyntaxException e) {
+            return "";
+        }
     }
 
     /// ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -181,6 +266,10 @@ public class ImportWidget extends DefaultWidget {
         private String wrap = "false";   // "true" | "false"
         private String lang = "auto";    // "auto" | explicit language string
         private String dedent = "auto";  // "auto" | "true" | "false"
+        private String url;              // null if not set
+        private String cache = "none";   // "<int>{s,m,h,d}" or "none"
+        private String timeout = "60s";
+        private String sha256;           // null if not set
 
         public String getPath() {
             return path;
@@ -244,6 +333,38 @@ public class ImportWidget extends DefaultWidget {
 
         public void setDedent(String dedent) {
             this.dedent = dedent;
+        }
+
+        public String getUrl() {
+            return url;
+        }
+
+        public void setUrl(String url) {
+            this.url = url;
+        }
+
+        public String getCache() {
+            return cache;
+        }
+
+        public void setCache(String cache) {
+            this.cache = cache;
+        }
+
+        public String getTimeout() {
+            return timeout;
+        }
+
+        public void setTimeout(String timeout) {
+            this.timeout = timeout;
+        }
+
+        public String getSha256() {
+            return sha256;
+        }
+
+        public void setSha256(String sha256) {
+            this.sha256 = sha256;
         }
     }
 

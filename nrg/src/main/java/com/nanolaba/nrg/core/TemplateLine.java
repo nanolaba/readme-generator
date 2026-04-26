@@ -99,6 +99,11 @@ public class TemplateLine {
                         String body = widget.getBody(tag, config, language);
                         result.replace(shift + tag.getStart(), shift + tag.getEnd(), body);
                         shift += body.length() - (tag.getEnd() - tag.getStart());
+                    }
+                    // Unchecked exceptions from widgets must propagate to the user; only the catch-all
+                    // below should swallow truly unexpected Throwables (Errors, Throwables, etc).
+                    catch (RuntimeException e) {
+                        throw e;
                     } catch (Throwable e) {
                         LOG.error(e, "Can't render widget '" + tag.getName() + "' at the line #" + lineNumber + " (" + this.line + ")");
                     }

@@ -46,6 +46,10 @@ ${en:'Widget parameters', ru:'Свойства виджета'}:
 |              wrap               | ${en:'Wrap output in a code fence: `true`, `false`', ru:'Оборачивать ли вывод в кодовый блок: `true`, `false`'}                                                               |                      `false`                      |
 |              lang               | ${en:'Language tag for the fence; `auto` detects from file extension', ru:'Язык кодового блока; `auto` определяет по расширению файла'}                                       |                      `auto`                       |
 |             dedent              | ${en:'Strip common leading whitespace: `auto`, `true`, `false`', ru:'Удалять общий отступ: `auto`, `true`, `false`'}                                                          |                      `auto`                       |
+|               url               | ${en:'HTTP(S) URL to fetch (mutually exclusive with `path`); requires `nrg.allowRemoteImports=true`', ru:'HTTP(S) URL для загрузки (взаимоисключим с `path`); требуется `nrg.allowRemoteImports=true`'} |                                                   |
+|              cache              | ${en:'Cache TTL: `<int>{s,m,h,d}` or `none` (e.g. `1h`, `7d`)', ru:'TTL кэша: `<int>{s,m,h,d}` или `none` (например `1h`, `7d`)'}                                             |                      `none`                       |
+|             timeout             | ${en:'HTTP timeout: `<int>{s,m,h,d}` (cannot be `none`)', ru:'HTTP-тайм-аут: `<int>{s,m,h,d}` (не может быть `none`)'}                                                        |                      `60s`                        |
+|             sha256              | ${en:'64 hex chars; verifies fetched bytes; recommended for reproducibility', ru:'64 шестнадцатеричных символа; проверяет загруженные данные; рекомендуется для воспроизводимости'} |                                                   |
 
 When importing a template file, generation is performed using variables declared in the parent file.<!--en-->
 This allows defining global variables in the root file and reusing them across all imported templates.<!--en-->
@@ -93,5 +97,49 @@ Region names match the pattern `[A-Za-z0-9_-]+`. Region markers are stripped fro
 Nested regions are supported — when extracting an outer region, inner region markers are also stripped from the output.<!--en-->
 Имена регионов соответствуют шаблону `[A-Za-z0-9_-]+`. Строки-маркеры регионов исключаются из вывода.<!--ru-->
 Вложенные регионы поддерживаются — при извлечении внешнего региона маркеры внутренних регионов также удаляются из вывода.<!--ru-->
+
+${en:'**Remote imports**', ru:'**Удалённый импорт**'}
+
+The `url` parameter fetches content over HTTP(S) and is mutually exclusive with `path`.<!--en-->
+Remote imports are opt-in: the template must set `nrg.allowRemoteImports=true` as a standard NRG property marker, otherwise any `url=` invocation fails the build with a clear error.<!--en-->
+Параметр `url` загружает содержимое по HTTP(S) и взаимоисключим с `path`.<!--ru-->
+Удалённый импорт включается явно: в шаблоне должно быть задано свойство `nrg.allowRemoteImports=true` (как стандартный маркер свойства NRG), иначе любой вызов с `url=` завершит сборку с понятной ошибкой.<!--ru-->
+
+The cache directory defaults to `~/.nrg/cache` and can be overridden by setting the `nrg.cacheDir` template property to the desired path.<!--en-->
+The `cache` parameter sets the TTL using the grammar `<int>{s,m,h,d}` (or `none` to disable caching), and `timeout` accepts the same grammar but cannot be `none` (default `60s`).<!--en-->
+Каталог кэша по умолчанию `~/.nrg/cache` и может быть переопределён через свойство шаблона `nrg.cacheDir` со значением нужного пути.<!--ru-->
+Параметр `cache` задаёт TTL по грамматике `<int>{s,m,h,d}` (или `none` для отключения кэша), а `timeout` принимает ту же грамматику, но не может быть `none` (по умолчанию `60s`).<!--ru-->
+
+The `sha256` parameter (64 hex chars) is strongly recommended — it pins the fetched bytes for reproducible builds and supply-chain safety.<!--en-->
+When `sha256` is omitted, NRG logs an INFO line with the actual hash so it can be copied back into the widget call.<!--en-->
+For CI gates, set the system property `-Dnrg.requireSha256ForRemote=true` (default `false`) — remote imports without `sha256` will then fail the build.<!--en-->
+Параметр `sha256` (64 шестнадцатеричных символа) настоятельно рекомендуется — он фиксирует загруженные данные для воспроизводимых сборок и безопасности цепочки поставок.<!--ru-->
+Если `sha256` не указан, NRG выводит в журнал INFO-строку с фактическим хэшем, чтобы её можно было скопировать обратно в вызов виджета.<!--ru-->
+Для CI-проверок задайте системное свойство `-Dnrg.requireSha256ForRemote=true` (по умолчанию `false`) — после этого удалённые импорты без `sha256` будут завершать сборку с ошибкой.<!--ru-->
+
+If the network is unreachable but a cached response exists, NRG uses it (even if stale relative to `cache` TTL) and logs a warning; without any cache entry the build fails.<!--en-->
+Если сеть недоступна, но в кэше есть запись, NRG использует её (даже если она устарела относительно `cache` TTL) и выводит предупреждение; при отсутствии записи в кэше сборка завершится с ошибкой.<!--ru-->
+
+<table>
+<tr><th>${en:'Secure remote import example', ru:'Пример безопасного удалённого импорта'}</th></tr>
+<tr><td>
+
+```
+\${widget:import(url='https://raw.githubusercontent.com/myorg/shared-docs/main/CONTRIBUTING.md',
+                 cache='1h',
+                 sha256='abc123...')}
+```
+
+</td></tr>
+</table>
+
+${en:'**Error semantics**', ru:'**Семантика ошибок**'}
+
+All import errors — both local and remote — now fail the build with a non-zero exit code.<!--en-->
+This is a behavior change from earlier NRG versions, where local-import errors silently produced empty content.<!--en-->
+The only non-throw cases are stale-cache fallback when the network is unreachable (warn-only) and cache filesystem hiccups (cache is skipped, fetch continues).<!--en-->
+Все ошибки импорта — как локального, так и удалённого — теперь приводят к завершению сборки с ненулевым кодом возврата.<!--ru-->
+Это изменение поведения по сравнению с предыдущими версиями NRG, где ошибки локального импорта молча давали пустое содержимое.<!--ru-->
+Исключения составляют только использование устаревшего кэша при недоступной сети (только предупреждение) и сбои файловой системы кэша (кэш пропускается, загрузка продолжается).<!--ru-->
 
 ---

@@ -7,6 +7,8 @@ import com.nanolaba.sugar.Code;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.StringReader;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.*;
@@ -207,6 +209,22 @@ public class GeneratorConfig {
 
     public Properties getProperties() {
         return properties;
+    }
+
+    public boolean isAllowRemoteImports() {
+        return Boolean.parseBoolean(properties.getProperty(PROPERTY_ALLOW_REMOTE_IMPORTS, "false"));
+    }
+
+    public Path getCacheDir() {
+        String configured = properties.getProperty(PROPERTY_CACHE_DIR);
+        if (configured == null || configured.isEmpty()) {
+            return Paths.get(System.getProperty("user.home"), ".nrg", "cache");
+        }
+        return Paths.get(configured);
+    }
+
+    public boolean isRequireSha256ForRemote() {
+        return Boolean.parseBoolean(System.getProperty(PROPERTY_REQUIRE_SHA256_FOR_REMOTE, "false"));
     }
 
     public boolean isRootGenerator() {

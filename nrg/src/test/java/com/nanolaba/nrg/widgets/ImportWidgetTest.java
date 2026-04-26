@@ -2,12 +2,18 @@ package com.nanolaba.nrg.widgets;
 
 import com.nanolaba.logging.LOG;
 import com.nanolaba.nrg.core.Generator;
+import com.nanolaba.nrg.core.NRGConstants;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
+import java.time.Clock;
+import java.util.Arrays;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -173,17 +179,19 @@ class ImportWidgetTest {
     }
 
     @Test
-    public void conflictingLinesAndRegionLogsErrorAndProducesEmpty() throws IOException {
-        String body = render("ImportWidgetTest/extension/README-conflict-lines-region.src.md");
-        // Widget output is empty; surrounding shell should not contain class content
-        assertFalse(body.contains("public void greet()"));
-        assertFalse(body.contains("public class WithRegion"));
+    public void conflictingLinesAndRegionThrows() {
+        RuntimeException ex = assertThrows(RuntimeException.class,
+                () -> render("ImportWidgetTest/extension/README-conflict-lines-region.src.md"));
+        assertTrue(ex.getMessage().contains("'lines' and 'region' are mutually exclusive"),
+                () -> "unexpected: " + ex.getMessage());
     }
 
     @Test
-    public void regionNotFoundLogsErrorAndProducesEmpty() throws IOException {
-        String body = render("ImportWidgetTest/extension/README-region-not-found.src.md");
-        assertFalse(body.contains("public void greet()"));
+    public void regionNotFoundThrows() {
+        RuntimeException ex = assertThrows(RuntimeException.class,
+                () -> render("ImportWidgetTest/extension/README-region-not-found.src.md"));
+        assertTrue(ex.getMessage().contains("region"),
+                () -> "unexpected: " + ex.getMessage());
     }
 
     @Test
@@ -196,5 +204,94 @@ class ImportWidgetTest {
         String body = render("ImportWidgetTest/extension/README-two-imports.src.md");
         String sep = System.lineSeparator();
         assertTrue(body.contains("FIRST" + sep + sep + "SECOND"), body);
+    }
+
+    @Test
+    void remoteImportFetchesAndRenders(@TempDir Path tmp) throws IOException {
+        File src = writeFixture(tmp, "<!--@nrg.allowRemoteImports=true-->\n${widget:import(url='https://example.com/x')}\n");
+        Generator g = new Generator(src, StandardCharsets.UTF_8, withCustomImport("REMOTE_BODY".getBytes(StandardCharsets.UTF_8)));
+        assertTrue(g.getResult("en").getContent().toString().contains("REMOTE_BODY"));
+    }
+
+    @Test
+    void remoteImportWithoutAllowFlagThrows(@TempDir Path tmp) throws IOException {
+        File src = writeFixture(tmp, "${widget:import(url='https://example.com/x')}\n");
+        Generator g = new Generator(src, StandardCharsets.UTF_8, withCustomImport("X".getBytes(StandardCharsets.UTF_8)));
+        RuntimeException ex = assertThrows(RuntimeException.class, () -> g.getResult("en"));
+        assertTrue(ex.getMessage().contains("nrg.allowRemoteImports") || (ex.getCause() != null && ex.getCause().getMessage().contains("nrg.allowRemoteImports")),
+                () -> "unexpected: " + ex.getMessage());
+    }
+
+    @Test
+    void remoteImportWithSha256Verifies(@TempDir Path tmp) throws IOException {
+        String body = "REMOTE";
+        String sha = Sha256Hex.hexOf(body.getBytes(StandardCharsets.UTF_8));
+        File src = writeFixture(tmp,
+                "<!--@nrg.allowRemoteImports=true-->\n${widget:import(url='https://example.com/x', sha256='" + sha + "')}\n");
+        Generator g = new Generator(src, StandardCharsets.UTF_8, withCustomImport(body.getBytes(StandardCharsets.UTF_8)));
+        assertTrue(g.getResult("en").getContent().toString().contains("REMOTE"));
+    }
+
+    @Test
+    void remoteImportWithBadSha256Throws(@TempDir Path tmp) throws IOException {
+        File src = writeFixture(tmp,
+                "<!--@nrg.allowRemoteImports=true-->\n${widget:import(url='https://example.com/x', sha256='0000000000000000000000000000000000000000000000000000000000000000')}\n");
+        Generator g = new Generator(src, StandardCharsets.UTF_8, withCustomImport("REMOTE".getBytes(StandardCharsets.UTF_8)));
+        assertThrows(RuntimeException.class, () -> g.getResult("en"));
+    }
+
+    @Test
+    void remoteImportRequireSha256AndNoHashThrows(@TempDir Path tmp) throws IOException {
+        String prop = NRGConstants.PROPERTY_REQUIRE_SHA256_FOR_REMOTE;
+        String old = System.getProperty(prop);
+        System.setProperty(prop, "true");
+        try {
+            File src = writeFixture(tmp, "<!--@nrg.allowRemoteImports=true-->\n${widget:import(url='https://example.com/x')}\n");
+            Generator g = new Generator(src, StandardCharsets.UTF_8, withCustomImport("X".getBytes(StandardCharsets.UTF_8)));
+            assertThrows(RuntimeException.class, () -> g.getResult("en"));
+        } finally {
+            if (old == null) System.clearProperty(prop); else System.setProperty(prop, old);
+        }
+    }
+
+    @Test
+    void remoteImportPathAndUrlConflictThrows(@TempDir Path tmp) throws IOException {
+        File src = writeFixture(tmp, "<!--@nrg.allowRemoteImports=true-->\n${widget:import(path='x.txt', url='https://example.com/x')}\n");
+        Generator g = new Generator(src, StandardCharsets.UTF_8, withCustomImport("X".getBytes(StandardCharsets.UTF_8)));
+        assertThrows(RuntimeException.class, () -> g.getResult("en"));
+    }
+
+    @Test
+    void remoteSrcMdRunsGenerator(@TempDir Path tmp) throws IOException {
+        String body = "<!--@unprocessedParameter=foo-->\nresult: ${unprocessedParameter}";
+        File src = writeFixture(tmp, "<!--@nrg.allowRemoteImports=true-->\n${widget:import(url='https://example.com/x.src.md')}\n");
+        Generator g = new Generator(src, StandardCharsets.UTF_8, withCustomImport(body.getBytes(StandardCharsets.UTF_8)));
+        String out = g.getResult("en").getContent().toString();
+        assertTrue(out.contains("result: foo"), () -> "unexpected: " + out);
+    }
+
+    @Test
+    void remoteNonSrcMdDoesNotRunGenerator(@TempDir Path tmp) throws IOException {
+        // For a .txt URL, run-generator defaults to false — variable substitution should NOT happen.
+        String body = "result: ${someVar}";
+        File src = writeFixture(tmp,
+                "<!--@nrg.allowRemoteImports=true-->\n<!--@someVar=foo-->\n${widget:import(url='https://example.com/x.txt')}\n");
+        Generator g = new Generator(src, StandardCharsets.UTF_8, withCustomImport(body.getBytes(StandardCharsets.UTF_8)));
+        String out = g.getResult("en").getContent().toString();
+        assertTrue(out.contains("result: ${someVar}"), () -> "unexpected (substitution should NOT have happened): " + out);
+    }
+
+    private static File writeFixture(Path tmp, String body) throws IOException {
+        File f = tmp.resolve("test.src.md").toFile();
+        org.apache.commons.io.FileUtils.writeStringToFile(f, body, StandardCharsets.UTF_8);
+        return f;
+    }
+
+    private static UrlOpener stubOpener(byte[] body) {
+        return (url, timeout, redirects) -> new UrlOpener.Response(body);
+    }
+
+    private static List<NRGWidget> withCustomImport(byte[] remoteBody) {
+        return Arrays.asList(new ImportWidget(new RemoteFetcher(stubOpener(remoteBody), Clock.systemUTC())));
     }
 }
