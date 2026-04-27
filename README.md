@@ -77,7 +77,8 @@ The current development version is **1.1-SNAPSHOT**.
 	7. [Gradle values](#gradle-values)
 	8. [Multilanguage support](#multilanguage-support)
 	9. [Ignoring content](#ignoring-content)
-	10. [Widgets](#widgets)
+	10. [Frozen regions](#frozen-regions)
+	11. [Widgets](#widgets)
 		1. [Widget 'languages'](#widget-languages)
 		2. [Widget 'import'](#widget-import)
 		3. [Widget 'tableOfContents'](#widget-tableofcontents)
@@ -902,6 +903,106 @@ Another visible line.
 </td></tr>
 </table>
 
+### Frozen regions
+
+Frozen regions let NRG-generated files coexist with third-party tools that
+mutate the **generated** file directly — for example
+[`akhilmhdh/contributors-readme-action`](https://github.com/akhilmhdh/contributors-readme-action),
+GitHub Sponsors widgets, or RSS embedders. On regeneration, NRG copies the
+**current on-disk** content between the freeze markers into the freshly-generated
+output instead of materialising whatever the template contains in the same span.
+
+```markdown
+## Contributors
+
+<!--nrg.freeze id="contributors"-->
+<!-- readme: contributors -start -->
+<!-- contents managed by akhilmhdh/contributors-readme-action -->
+<!-- readme: contributors -end -->
+<!--/nrg.freeze-->
+```
+
+The block content in the template is a **bootstrap placeholder**: it lands in the
+output only the first time the file is generated (when no on-disk version exists).
+On every subsequent run, NRG reads the existing output file, finds the matching
+`id`, and splices its current content into the new output — so any external
+edits inside the block survive regeneration. Edits *outside* the block are still
+overwritten as usual.
+
+**Attributes:**
+
+***id*** — required, non-empty, must be unique within a template.
+
+***source-lang*** — ${en:'optional. Names a single language declared in `nrg.languages`. When present, the block content for *every* language is sourced from that one language\\'s output file.', ru:'опциональный. Указывает один язык из `nrg.languages`. Когда указан, содержимое блока для *каждого* языка берётся из выходного файла этого одного языка.'}
+
+The `source-lang` mode covers the common case where an external tool only
+writes to one language's output (e.g. contributors-action only knows about
+`README.md`), but the resulting content (an HTML table of avatars, etc.) is
+language-agnostic and should appear in every language file:
+
+```markdown
+<!--nrg.freeze id="contributors" source-lang="en"-->
+placeholder
+<!--/nrg.freeze-->
+```
+
+**Modes:**
+
+| Attributes              | Behaviour |
+|------------------------------------------------|----------------------------------|
+| `id="X"`                                       | Each language file is independent: when generating `README.md` NRG reads the freeze content from `README.md`, when generating `README.ru.md` from `README.ru.md`. |
+| `id="X" source-lang="en"`                      | The block appears in **every** language file, but the content for **all** of them is sourced from the `en` output (`README.md`). |
+
+**Restricting a freeze to one language:**
+
+`<!--nrg.freeze-->` itself has no `lang` attribute. To make a freeze block
+appear only in one language, wrap it in a `${widget:if}` block driven by a
+per-language property:
+
+```markdown
+<!--@onlyEn.en=1-->
+
+${widget:if(cond='${onlyEn}')}
+<!--nrg.freeze id="ru-only-block"-->
+placeholder
+<!--/nrg.freeze-->
+${widget:endIf}
+```
+
+When generating `README.md` (`en`), `${onlyEn}` resolves to `1` (truthy) and
+the block stays. When generating `README.ru.md`, `${onlyEn}` resolves to the
+empty string (falsy) and the entire block is dropped before NRG even sees the
+freeze markers.
+
+**Important properties:**
+
+- Open and close markers must each be on their own line.
+- Markers must not nest. Nesting is a validation error.
+- Disk content is opaque to NRG: `${...}` references and `<!--@key=value-->` declarations *inside* the freeze block content from disk are **not** interpreted. Only the bootstrap placeholder in the template goes through the rendering pipeline (once, at first generation).
+- Markers themselves are written to the output verbatim, including original whitespace — they have to be there for the next regeneration to find the block.
+- Freeze blocks work transparently across `${widget:import(...)}` — markers in imported files bubble up to the root output and are resolved against the root output file.
+
+**Validation:**
+
+The following are **template authoring errors** — they fail generation with
+exit 1 and are reported by `--validate`:
+
+- missing or empty `id`;
+- duplicate `id` within the same template;
+- unbalanced markers (open without close, or stray close);
+- nested freeze blocks;
+- `source-lang` referencing a language not declared in `nrg.languages`;
+- unknown attributes (only `id` and `source-lang` are allowed).
+
+The following are **on-disk anomalies** caused by the external tool or manual
+edits — they emit `LOG.warn` once and fall back to the bootstrap placeholder,
+without aborting generation:
+
+- `id` declared in the template not found in the on-disk file;
+- malformed disk block (e.g. missing close);
+- duplicate `id` on disk — the first occurrence wins;
+- `source-lang` file does not exist on disk yet (treated as bootstrap).
+
 ### Widgets
 
 Widgets allow you to insert programmatically generated text into a document.
@@ -1175,7 +1276,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 27.04.2026 10:19:21
+Last updated: 27.04.2026 13:00:52
 ```
 
 </td></tr>

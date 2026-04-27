@@ -1,6 +1,7 @@
 package com.nanolaba.nrg.core;
 
 import com.nanolaba.logging.LOG;
+import com.nanolaba.nrg.core.freeze.DiskFreezeIndex;
 import com.nanolaba.nrg.widgets.*;
 import com.nanolaba.sugar.Code;
 
@@ -62,6 +63,9 @@ public class GeneratorConfig {
     private GradleReader gradleReader;
     private boolean gradleReaderInitialised = false;
     private final Set<String> warnedMissingGradlePaths = new HashSet<>();
+
+    private final Map<File, DiskFreezeIndex> diskFreezeIndexCache = new HashMap<>();
+    private final Set<String> warnedMissingFreezeIds = new HashSet<>();
 
 
     public GeneratorConfig(File sourceFile, String templateText, List<NRGWidget> widgets) {
@@ -378,5 +382,31 @@ public class GeneratorConfig {
         File parent = anchor.getParentFile();
         File props = parent == null ? null : new File(parent, "gradle.properties");
         return new File[] { props != null && props.isFile() ? props : null, anchor.isFile() ? anchor : null };
+    }
+
+    /**
+     * Returns the {@link DiskFreezeIndex} for the given on-disk file, caching the result so
+     * subsequent lookups for the same file (e.g. when regenerating multiple language variants)
+     * reuse the parsed index instead of re-reading and re-parsing the file.
+     *
+     * <p>A {@code null} file is treated as "no on-disk source": the call delegates to
+     * {@link DiskFreezeIndex#read(File)} and is not cached, so callers always get a fresh
+     * empty index for the null case.
+     */
+    public DiskFreezeIndex getDiskFreezeIndex(File file) {
+        if (file == null) {
+            return DiskFreezeIndex.read(null);
+        }
+        DiskFreezeIndex existing = diskFreezeIndexCache.get(file);
+        if (existing != null) {
+            return existing;
+        }
+        DiskFreezeIndex fresh = DiskFreezeIndex.read(file);
+        diskFreezeIndexCache.put(file, fresh);
+        return fresh;
+    }
+
+    public Set<String> getWarnedMissingFreezeIds() {
+        return warnedMissingFreezeIds;
     }
 }

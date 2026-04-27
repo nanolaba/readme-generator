@@ -9,6 +9,7 @@ import com.nanolaba.nrg.core.NRGUtil;
 import com.nanolaba.nrg.core.OutputFileNameResolver;
 import com.nanolaba.nrg.core.OutputFileNameValidator;
 import com.nanolaba.nrg.core.Validator;
+import com.nanolaba.nrg.core.freeze.FreezeValidator;
 import com.nanolaba.nrg.widgets.NRGWidget;
 import com.nanolaba.sugar.Code;
 import org.apache.commons.cli.*;
@@ -285,6 +286,20 @@ public class NRG {
                     generator.getConfig().getLanguages(), generator.getConfig().getProperties());
             if (patternError.isPresent()) {
                 LOG.error("File name pattern error: {}", patternError.get());
+                return 1;
+            }
+            List<Validator.Diagnostic> freezeDiags = FreezeValidator.validate(
+                    sourceFile,
+                    FileUtils.readFileToString(sourceFile, charset),
+                    generator.getConfig().getLanguages());
+            boolean hasFreezeError = false;
+            for (Validator.Diagnostic d : freezeDiags) {
+                if (d.isError()) {
+                    System.err.println(d);
+                    hasFreezeError = true;
+                }
+            }
+            if (hasFreezeError) {
                 return 1;
             }
             generator.getConfig().setExecAllowed(allowExec);

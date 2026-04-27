@@ -1,6 +1,7 @@
 package com.nanolaba.nrg.core;
 
 import com.nanolaba.nrg.NRG;
+import com.nanolaba.nrg.core.freeze.FreezeBlockProcessor;
 import com.nanolaba.nrg.widgets.NRGWidget;
 import org.apache.commons.io.FileUtils;
 
@@ -91,6 +92,16 @@ public class Generator {
                 .filter(t -> t.isLineVisible(language))
                 .map(t -> t.generateLine(language))
                 .forEachOrdered(line -> result.getContent().append(line).append(System.lineSeparator()));
+
+        if (config.isRootGenerator()) {
+            String resolved = FreezeBlockProcessor.resolve(result.getContent().toString(), config, language);
+            resolved = resolved
+                    .replace("\\$", "$")
+                    .replace("<\\!--", "<!--")
+                    .replace("<!--\\@", "<!--@");
+            result.getContent().setLength(0);
+            result.getContent().append(resolved);
+        }
 
         return result;
     }

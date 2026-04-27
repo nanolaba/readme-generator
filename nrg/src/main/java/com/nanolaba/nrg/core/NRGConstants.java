@@ -25,6 +25,11 @@ public class NRGConstants {
     public static final String PROPERTY_CACHE_DIR = "nrg.cacheDir";
     public static final String PROPERTY_REQUIRE_SHA256_FOR_REMOTE = "nrg.requireSha256ForRemote";
 
+    public static final String FREEZE_OPEN_MARKER_NAME = "nrg.freeze";
+    public static final String FREEZE_CLOSE_MARKER_NAME = "/nrg.freeze";
+    public static final String FREEZE_ATTR_ID = "id";
+    public static final String FREEZE_ATTR_SOURCE_LANG = "source-lang";
+
     public static final Charset DEFAULT_CHARSET = StandardCharsets.UTF_8;
     public static final String DEFAULT_SOURCE_EXTENSION = "src.md";
 

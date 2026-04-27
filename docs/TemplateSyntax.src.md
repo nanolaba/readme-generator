@@ -418,3 +418,131 @@ Another visible line.
 
 </td></tr>
 </table>
+
+### ${en:'Frozen regions', ru:'Замороженные области'}
+
+Frozen regions let NRG-generated files coexist with third-party tools that<!--en-->
+mutate the **generated** file directly — for example<!--en-->
+[`akhilmhdh/contributors-readme-action`](https://github.com/akhilmhdh/contributors-readme-action),<!--en-->
+GitHub Sponsors widgets, or RSS embedders. On regeneration, NRG copies the<!--en-->
+**current on-disk** content between the freeze markers into the freshly-generated<!--en-->
+output instead of materialising whatever the template contains in the same span.<!--en-->
+Замороженные области позволяют файлам, сгенерированным NRG, сосуществовать со<!--ru-->
+сторонними инструментами, которые правят **сгенерированный** файл напрямую — например,<!--ru-->
+[`akhilmhdh/contributors-readme-action`](https://github.com/akhilmhdh/contributors-readme-action),<!--ru-->
+виджетами GitHub Sponsors или RSS-эмбеддерами. При перегенерации NRG копирует<!--ru-->
+**текущее содержимое с диска** между маркерами заморозки в свежесгенерированный<!--ru-->
+вывод вместо того, чтобы материализовать туда то, что находится в шаблоне.<!--ru-->
+
+```markdown
+## Contributors
+
+<\!--nrg.freeze id="contributors"-->
+<\!-- readme: contributors -start -->
+<\!-- contents managed by akhilmhdh/contributors-readme-action -->
+<\!-- readme: contributors -end -->
+<\!--/nrg.freeze-->
+```
+
+The block content in the template is a **bootstrap placeholder**: it lands in the<!--en-->
+output only the first time the file is generated (when no on-disk version exists).<!--en-->
+On every subsequent run, NRG reads the existing output file, finds the matching<!--en-->
+`id`, and splices its current content into the new output — so any external<!--en-->
+edits inside the block survive regeneration. Edits *outside* the block are still<!--en-->
+overwritten as usual.<!--en-->
+Содержимое блока в шаблоне — это **bootstrap-плейсхолдер**: оно попадает в вывод<!--ru-->
+только при первой генерации (когда выходного файла ещё нет на диске). При каждом<!--ru-->
+следующем запуске NRG читает существующий выходной файл, находит совпадающий<!--ru-->
+`id` и подставляет его текущее содержимое в новый вывод — поэтому любые<!--ru-->
+правки внешнего инструмента внутри блока переживают перегенерацию. Правки<!--ru-->
+*вне* блока всё так же перетираются.<!--ru-->
+
+**${en:'Attributes', ru:'Атрибуты'}:**
+
+***id*** — ${en:'required, non-empty, must be unique within a template.', ru:'обязательный, непустой, должен быть уникален в пределах шаблона.'}
+
+***source-lang*** — ${en:'optional. Names a single language declared in `nrg.languages`. When present, the block content for *every* language is sourced from that one language\\'s output file.', ru:'опциональный. Указывает один язык из `nrg.languages`. Когда указан, содержимое блока для *каждого* языка берётся из выходного файла этого одного языка.'}
+
+The `source-lang` mode covers the common case where an external tool only<!--en-->
+writes to one language's output (e.g. contributors-action only knows about<!--en-->
+`README.md`), but the resulting content (an HTML table of avatars, etc.) is<!--en-->
+language-agnostic and should appear in every language file:<!--en-->
+Режим `source-lang` покрывает типовой кейс, когда внешний инструмент пишет<!--ru-->
+только в один языковой файл (например, contributors-action знает только про<!--ru-->
+`README.md`), но получившееся содержимое (HTML-таблица аватарок и т.п.)<!--ru-->
+language-agnostic и должно появиться во всех языковых файлах:<!--ru-->
+
+```markdown
+<\!--nrg.freeze id="contributors" source-lang="en"-->
+placeholder
+<\!--/nrg.freeze-->
+```
+
+**${en:'Modes', ru:'Режимы'}:**
+
+| ${en:'Attributes', ru:'Атрибуты'}              | ${en:'Behaviour', ru:'Поведение'} |
+|------------------------------------------------|----------------------------------|
+| `id="X"`                                       | ${en:'Each language file is independent: when generating `README.md` NRG reads the freeze content from `README.md`, when generating `README.ru.md` from `README.ru.md`.', ru:'Каждый языковой файл независим: при сборке `README.md` NRG читает содержимое заморозки из `README.md`, при сборке `README.ru.md` — из `README.ru.md`.'} |
+| `id="X" source-lang="en"`                      | ${en:'The block appears in **every** language file, but the content for **all** of them is sourced from the `en` output (`README.md`).', ru:'Блок появляется в **каждом** языковом файле, но содержимое **для всех** берётся из вывода языка `en` (`README.md`).'} |
+
+**${en:'Restricting a freeze to one language', ru:'Ограничение заморозки одним языком'}:**
+
+`<\!--nrg.freeze-->` itself has no `lang` attribute. To make a freeze block<!--en-->
+appear only in one language, wrap it in a `\${widget:if}` block driven by a<!--en-->
+per-language property:<!--en-->
+У `<\!--nrg.freeze-->` нет атрибута `lang`. Чтобы заморозка появлялась только<!--ru-->
+в одном языке, оберните её в `\${widget:if}`-блок, управляемый per-language<!--ru-->
+свойством:<!--ru-->
+
+```markdown
+<\!--\@onlyEn.en=1-->
+
+\${widget:if(cond='\${onlyEn}')}
+<\!--nrg.freeze id="ru-only-block"-->
+placeholder
+<\!--/nrg.freeze-->
+\${widget:endIf}
+```
+
+When generating `README.md` (`en`), `\${onlyEn}` resolves to `1` (truthy) and<!--en-->
+the block stays. When generating `README.ru.md`, `\${onlyEn}` resolves to the<!--en-->
+empty string (falsy) and the entire block is dropped before NRG even sees the<!--en-->
+freeze markers.<!--en-->
+При сборке `README.md` (`en`) `\${onlyEn}` резолвится в `1` (truthy), блок<!--ru-->
+остаётся. При сборке `README.ru.md` `\${onlyEn}` резолвится в пустую строку<!--ru-->
+(falsy), и весь блок выбрасывается ещё до того, как NRG видит маркеры<!--ru-->
+заморозки.<!--ru-->
+
+**${en:'Important properties', ru:'Важные свойства'}:**
+
+- ${en:'Open and close markers must each be on their own line.', ru:'Открывающий и закрывающий маркеры должны быть каждый на своей строке.'}
+- ${en:'Markers must not nest. Nesting is a validation error.', ru:'Маркеры нельзя вкладывать друг в друга. Вложенность — ошибка валидации.'}
+- ${en:'Disk content is opaque to NRG: `\${...}` references and `<\!--\@key=value-->` declarations *inside* the freeze block content from disk are **not** interpreted. Only the bootstrap placeholder in the template goes through the rendering pipeline (once, at first generation).', ru:'Содержимое с диска для NRG непрозрачно: ссылки `\${...}` и декларации `<\!--\@key=value-->` *внутри* содержимого блока, прочитанного с диска, **не** интерпретируются. Через рендеринг проходит только bootstrap-плейсхолдер в шаблоне (один раз, при первой генерации).'}
+- ${en:'Markers themselves are written to the output verbatim, including original whitespace — they have to be there for the next regeneration to find the block.', ru:'Сами маркеры выводятся в файл verbatim, с оригинальными пробелами — они должны там быть, чтобы следующая перегенерация нашла блок.'}
+- ${en:'Freeze blocks work transparently across `\${widget:import(...)}` — markers in imported files bubble up to the root output and are resolved against the root output file.', ru:'Заморозки работают прозрачно через `\${widget:import(...)}` — маркеры из импортированных файлов всплывают в корневой вывод и резолвятся по корневому выходному файлу.'}
+
+**${en:'Validation', ru:'Валидация'}:**
+
+The following are **template authoring errors** — they fail generation with<!--en-->
+exit 1 and are reported by `--validate`:<!--en-->
+Это **ошибки авторинга шаблона** — они валят генерацию с exit 1 и сообщаются<!--ru-->
+через `--validate`:<!--ru-->
+
+- ${en:'missing or empty `id`;', ru:'отсутствующий или пустой `id`;'}
+- ${en:'duplicate `id` within the same template;', ru:'дубль `id` в одном шаблоне;'}
+- ${en:'unbalanced markers (open without close, or stray close);', ru:'несбалансированные маркеры (открытие без закрытия или одиночное закрытие);'}
+- ${en:'nested freeze blocks;', ru:'вложенные блоки заморозки;'}
+- ${en:'`source-lang` referencing a language not declared in `nrg.languages`;', ru:'`source-lang` ссылается на язык, не объявленный в `nrg.languages`;'}
+- ${en:'unknown attributes (only `id` and `source-lang` are allowed).', ru:'неизвестные атрибуты (разрешены только `id` и `source-lang`).'}
+
+The following are **on-disk anomalies** caused by the external tool or manual<!--en-->
+edits — they emit `LOG.warn` once and fall back to the bootstrap placeholder,<!--en-->
+without aborting generation:<!--en-->
+Это **on-disk-аномалии**, вызванные внешним инструментом или ручными правками —<!--ru-->
+они логируются `LOG.warn` один раз и откатываются на bootstrap-плейсхолдер<!--ru-->
+без прерывания генерации:<!--ru-->
+
+- ${en:'`id` declared in the template not found in the on-disk file;', ru:'`id`, объявленный в шаблоне, не найден в файле на диске;'}
+- ${en:'malformed disk block (e.g. missing close);', ru:'битый блок на диске (например, отсутствует закрытие);'}
+- ${en:'duplicate `id` on disk — the first occurrence wins;', ru:'дубль `id` на диске — побеждает первое вхождение;'}
+- ${en:'`source-lang` file does not exist on disk yet (treated as bootstrap).', ru:'файл, на который указывает `source-lang`, ещё не существует на диске (трактуется как bootstrap).'}

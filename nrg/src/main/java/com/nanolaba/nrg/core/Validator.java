@@ -1,5 +1,6 @@
 package com.nanolaba.nrg.core;
 
+import com.nanolaba.nrg.core.freeze.FreezeValidator;
 import com.nanolaba.nrg.widgets.NRGWidget;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -147,6 +148,8 @@ public final class Validator {
                 }
             }
         }
+
+        diagnostics.addAll(FreezeValidator.validate(file, body, declaredLanguages));
 
         if (ignoreBeginLine >= 0) {
             diagnostics.add(new Diagnostic(file, ignoreBeginLine,

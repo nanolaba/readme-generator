@@ -124,7 +124,7 @@ class TemplateLineTest extends DefaultNRGTest {
             return l.generateLine(lang);
         };
 
-        assertEquals("${widget:test}", action.apply("\\${widget:test}", "ru"));
+        assertEquals("\\${widget:test}", action.apply("\\${widget:test}", "ru"));
         assertEquals("test widget body null", action.apply("${widget:test}", "ru"));
         assertEquals("test widget body null", action.apply("${widget:test}", "ru"));
         assertEquals("test widget body ", action.apply("${ widget:test() }", "ru"));
@@ -224,7 +224,7 @@ class TemplateLineTest extends DefaultNRGTest {
         assertEquals("Table of contents", line("${en:'Table of contents', ru:'Содержание'}", "en", "ru").generateLine("en"));
         assertEquals("Table of contents", line("${en:\"Table of contents\", ru:'Содержание'}", "en", "ru").generateLine("en"));
         assertEquals("Table of contents", line("${en:\"Table of contents\", ru:\"Содержание\"}", "en", "ru").generateLine("en"));
-        assertEquals("${en:'Table of contents', ru:'Содержание'}", line("\\${en:'Table of contents', ru:'Содержание'}", "en", "ru").generateLine("en"));
+        assertEquals("\\${en:'Table of contents', ru:'Содержание'}", line("\\${en:'Table of contents', ru:'Содержание'}", "en", "ru").generateLine("en"));
     }
 
     @Test
@@ -259,7 +259,7 @@ class TemplateLineTest extends DefaultNRGTest {
     @Test
     public void testRenderLanguagePropertiesWithEscapedNestedReference() {
         // Backslash-escaped ${...} inside the language quotes must remain literal in the output.
-        assertEquals("Project ${projectName} stays",
+        assertEquals("Project \\${projectName} stays",
                 line("<!--@projectName=Sample-->${en:'Project \\${projectName} stays', ru:'Проект \\${projectName} остаётся'}",
                         "en", "ru").generateLine("en"));
     }
@@ -292,7 +292,7 @@ class TemplateLineTest extends DefaultNRGTest {
 
     @Test
     public void testEscapeCharacters() {
-        assertEquals("${A}", line("<!--@A=B-->\\${A}").generateLine("ru"));
+        assertEquals("\\${A}", line("<!--@A=B-->\\${A}").generateLine("ru"));
     }
 
     @Test
@@ -301,16 +301,33 @@ class TemplateLineTest extends DefaultNRGTest {
 
         assertEquals("BB", line.getProperty("AA", "ru"));
         assertEquals("\\${AA}", line.getProperty("CC", "ru"));
-        assertEquals("${AA}", line.generateLine("ru"));
+        assertEquals("\\${AA}", line.generateLine("ru"));
     }
 
     @Test
     public void testEscapeCharacters3() {
-        assertEquals("<!--@A=B-->", line("<!--\\@A=B-->").generateLine("ru"));
+        assertEquals("<!--\\@A=B-->", line("<!--\\@A=B-->").generateLine("ru"));
     }
 
     @Test
     public void testEscapeCharacters4() {
-        assertEquals("AA<!--ru-->", line("AA<\\!--ru-->").generateLine("ru"));
+        assertEquals("AA<\\!--ru-->", line("AA<\\!--ru-->").generateLine("ru"));
+    }
+
+    @Test
+    public void testEscapeReplacementHappensAtGeneratorLevel() {
+        // Regression: per-line generateLine no longer unescapes; that's the Generator post-pass's job.
+        String body = String.join("\n",
+                "<!--@nrg.languages=en-->",
+                "\\${A}",
+                "<!--\\@key=value-->",
+                "<\\!--ru-->",
+                "");
+        com.nanolaba.nrg.core.Generator g = new com.nanolaba.nrg.core.Generator(
+                new java.io.File("README.src.md"), body, null);
+        String out = g.getResult("en").getContent().toString();
+        assertTrue(out.contains("${A}"), "expected ${A} after generator-level unescape, got: " + out);
+        assertTrue(out.contains("<!--@key=value-->"), "expected <!--@key=value--> after unescape");
+        assertTrue(out.contains("<!--ru-->"), "expected <!--ru--> after unescape");
     }
 }

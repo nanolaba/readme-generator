@@ -77,6 +77,7 @@ public class TableOfContentsWidget extends DefaultWidget {
         List<Header> allHeaders = new ArrayList<>();
 
         Generator generator = new Generator(config.getSourceFile(), config.getSourceFileBody());
+        generator.getConfig().setRootGenerator(false);
         generator.getConfig().getWidgets().stream()
                 .filter(widget -> widget instanceof TableOfContentsWidget)
                 .forEach(widget -> widget.setEnabled(false));

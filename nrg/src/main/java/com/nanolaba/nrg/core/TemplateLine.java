@@ -430,7 +430,6 @@ public class TemplateLine {
             result = renderWidgets(result, language);
             if (config.isRootGenerator()) {
                 result = removeNrgDataFromText(result);
-                result = replaceEscapedCharacters(result);
             }
             return result;
         } else {
@@ -448,12 +447,5 @@ public class TemplateLine {
 
     public int getLineNumber() {
         return lineNumber;
-    }
-
-    private String replaceEscapedCharacters(String line) {
-        return line
-                .replace("\\$", "$")
-                .replace("<\\!--", "<!--")
-                .replace("<!--\\@", "<!--@");
     }
 }
