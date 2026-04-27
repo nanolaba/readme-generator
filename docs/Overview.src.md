@@ -43,3 +43,8 @@ The current development version is **${devVersion}**.<!--en-->
 Последняя стабильная версия — **${stableVersion}**.<!--ru-->
 Текущая версия разработки — **${devVersion}**.<!--ru-->
 
+### ${en:'Used by', ru:'Используется в'}<!--toc.ignore-->
+
+This very README is generated with NRG — see [`README.src.md`](README.src.md). The same template is also used to keep `README.ru.md` in sync.<!--en-->
+Этот README сгенерирован самим NRG — см. [`README.src.md`](README.src.md). Тот же шаблон поддерживает в синхроне `README.ru.md`.<!--ru-->
+
