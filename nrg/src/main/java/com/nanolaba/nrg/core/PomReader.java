@@ -16,6 +16,10 @@ public interface PomReader {
     /**
      * Returns the resolved value for the given Maven-style path, or {@link Optional#empty()}
      * if no such element / property is present.
+     *
+     * @param path Maven-style dotted path (e.g. {@code "version"}, {@code "scm.url"},
+     *             {@code "properties.<key>"}); never {@code null}.
+     * @return the resolved value, or {@link Optional#empty()} if absent.
      */
     Optional<String> read(String path);
 }

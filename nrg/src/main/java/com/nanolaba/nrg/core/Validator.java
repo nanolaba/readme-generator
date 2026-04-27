@@ -249,6 +249,10 @@ public final class Validator {
 
     /**
      * Format diagnostics into a single multi-line string, one per line.
+     *
+     * @param diagnostics the diagnostics to format; never {@code null}.
+     * @return a newline-joined rendering of each diagnostic's {@link Diagnostic#toString()};
+     *         empty string if the list is empty.
      */
     public static String format(List<Diagnostic> diagnostics) {
         StringBuilder sb = new StringBuilder();

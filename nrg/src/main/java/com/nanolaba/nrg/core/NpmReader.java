@@ -15,6 +15,10 @@ public interface NpmReader {
     /**
      * Returns the resolved value for the given dotted path, or {@link Optional#empty()}
      * if the path is missing or terminates at a non-leaf value.
+     *
+     * @param path dotted path from the JSON root (e.g. {@code "version"},
+     *             {@code "dependencies.lodash"}); never {@code null}.
+     * @return the resolved value, or {@link Optional#empty()} if absent / non-leaf.
      */
     Optional<String> read(String path);
 }

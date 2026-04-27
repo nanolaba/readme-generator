@@ -392,6 +392,10 @@ public class GeneratorConfig {
      * <p>A {@code null} file is treated as "no on-disk source": the call delegates to
      * {@link DiskFreezeIndex#read(File)} and is not cached, so callers always get a fresh
      * empty index for the null case.
+     *
+     * @param file the on-disk file whose freeze index should be returned, or {@code null}
+     *             to get a fresh empty index without caching.
+     * @return the cached or freshly parsed {@link DiskFreezeIndex} for the file.
      */
     public DiskFreezeIndex getDiskFreezeIndex(File file) {
         if (file == null) {

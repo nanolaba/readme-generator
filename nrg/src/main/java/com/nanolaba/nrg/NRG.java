@@ -588,6 +588,12 @@ public class NRG {
     }
 
     /**
+     * Returns the output file for the given language using built-in default naming only.
+     *
+     * @param language        the target language code, or {@code null} for the default language.
+     * @param sourceFile      the {@code *.src.md} source file.
+     * @param defaultLanguage the configured default language code.
+     * @return the resolved output {@link File} (e.g. {@code README.md} or {@code README.<lang>.md}).
      * @deprecated use {@link #getReadmeFile(String, GeneratorConfig)}; this overload uses
      * built-in default naming only and ignores any configured filename patterns.
      */

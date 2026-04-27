@@ -370,6 +370,8 @@ public class TableOfContentsWidget extends DefaultWidget {
          * raw HTML tags, bare URLs) is stripped before slugification. The three styles diverge
          * in how punctuation, casing, and the {@code markdown-header-} prefix are handled —
          * matched against each platform's known anchor algorithm.
+         *
+         * @return the anchor slug for this header; empty string if the title is blank.
          */
         public String getAnchor() {
             if (title == null || title.trim().isEmpty()) {

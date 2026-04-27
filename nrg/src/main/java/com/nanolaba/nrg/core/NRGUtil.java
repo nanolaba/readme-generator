@@ -90,6 +90,11 @@ public class NRGUtil {
      * </ol>
      *
      * <p>An explicitly defined empty per-language value wins over the bare key.
+     *
+     * @param properties the property bag to query.
+     * @param name       the property name (without language suffix).
+     * @param language   the target language code, or {@code null} to skip the scoped lookup.
+     * @return the resolved value, or {@code null} if neither the scoped nor the bare key is defined.
      */
     public static String getLanguageScopedProperty(Properties properties, String name, String language) {
         if (language != null) {
@@ -105,6 +110,9 @@ public class NRGUtil {
      * Parses raw {@code <!--@key=value-->} markers from a single line without any substitution
      * (no env / language / property rendering) and without mutating any caller state.
      * Returns a key→value map preserving insertion order.
+     *
+     * @param line the source line to scan; never {@code null}.
+     * @return an insertion-ordered map of declared key/value pairs (empty if none found).
      */
     public static Map<String, String> extractRawPropertyMarkers(String line) {
         Map<String, String> map = new LinkedHashMap<>();

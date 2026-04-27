@@ -20,9 +20,9 @@ import java.util.stream.Stream;
 /**
  * Expands a list of CLI-supplied path patterns into a concrete, deduplicated list of source files.
  *
- * <p>Each input is treated as a {@code glob:} pattern (per {@link FileSystems#getPathMatcher}) so
- * the same syntax behaves identically across Windows, Linux, and macOS without relying on shell
- * expansion. A pattern with no glob characters is resolved as a literal file path. The longest
+ * <p>Each input is treated as a {@code glob:} pattern (per
+ * {@link java.nio.file.FileSystem#getPathMatcher(String)}) so the same syntax behaves identically
+ * across Windows, Linux, and macOS without relying on shell expansion. A pattern with no glob characters is resolved as a literal file path. The longest
  * leading non-glob path segment is used as the walk root; if the root does not exist or no file
  * underneath it matches, the pattern is reported in {@link Result#getEmptyPatterns()} so callers
  * can warn — emptiness is never an exception. Matches are returned in lexicographic order within
