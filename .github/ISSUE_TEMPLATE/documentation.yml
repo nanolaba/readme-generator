@@ -1,0 +1,33 @@
+name: Documentation issue
+description: Report unclear, missing, incorrect, or outdated documentation (README, docs/*.src.md, Javadoc, examples).
+title: "docs: <one-line summary>"
+labels: ["documentation"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        The top-level `README.md` and `README.ru.md` are **generated** from `README.src.md` (which imports fragments under `docs/`). When in doubt, point at the source template — that's where any fix would land.
+
+  - type: input
+    id: location
+    attributes:
+      label: Where in the docs?
+      description: File path and section heading (e.g. `docs/Widgets.src.md` → "Widget 'tableOfContents'"), or the rendered page URL.
+      placeholder: "docs/Widgets.src.md → Widget 'import'"
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What's wrong?
+      description: Is the docs unclear, contradicted by behaviour, missing entirely, or out of date?
+    validations:
+      required: true
+
+  - type: textarea
+    id: suggestion
+    attributes:
+      label: Suggested wording (optional)
+      description: A draft of what the docs should say, if you have one. Doesn't have to be polished.
+      render: markdown

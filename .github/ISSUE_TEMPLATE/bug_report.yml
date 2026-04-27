@@ -1,0 +1,106 @@
+name: Bug report
+description: Report unexpected behaviour, an error, or output that differs from what NRG documents.
+title: "bug: <one-line summary>"
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to file a report. Please fill in as much as you can — the more reproducible the issue, the faster we can fix it.
+
+        Before submitting, please:
+        - Search [existing issues](https://github.com/nanolaba/readme-generator/issues?q=is%3Aissue) to avoid duplicates.
+        - Confirm the bug reproduces against the latest release (or `main`).
+        - **Do NOT use this form for security vulnerabilities** — see [SECURITY.md](https://github.com/nanolaba/readme-generator/blob/main/SECURITY.md) instead.
+
+  - type: input
+    id: nrg-version
+    attributes:
+      label: NRG version
+      description: Output of `nrg --version`, or the version pinned in your POM / GitHub workflow.
+      placeholder: "1.0"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: distribution
+    attributes:
+      label: Distribution
+      description: How are you running NRG?
+      multiple: true
+      options:
+        - CLI (standalone jar)
+        - Maven plugin (nrg-maven-plugin)
+        - GitHub Action (nanolaba/readme-generator/nrg-action)
+        - Java library (com.nanolaba:readme-generator)
+    validations:
+      required: true
+
+  - type: input
+    id: java-version
+    attributes:
+      label: Java version
+      description: Output of `java -version`.
+      placeholder: "Temurin 17.0.10"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: os
+    attributes:
+      label: Operating system
+      options:
+        - Linux
+        - macOS
+        - Windows
+        - Other (please describe in "Additional context")
+    validations:
+      required: true
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: A clear and concise description of the bug. What did you do, what did you see?
+      placeholder: |
+        I ran `nrg -f README.src.md` and ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behaviour
+      description: What did you expect to happen instead?
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to reproduce
+      description: A minimal `.src.md` template (or code snippet) plus the exact command. Copy-paste the smallest input that still demonstrates the issue — please don't paraphrase.
+      placeholder: |
+        1. Save the following as `repro.src.md`:
+           ```markdown
+           <!--@nrg.languages=en-->
+           # Hello
+           ```
+        2. Run: `nrg -f repro.src.md`
+        3. Observe: ...
+      render: markdown
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs / stack trace
+      description: Output captured with `--log-level debug` (or `NRG_LOG_LEVEL=debug`). Wrapped in a code block automatically.
+      render: shell
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional context
+      description: Anything else that might help — workarounds tried, related issues, screenshots, etc.

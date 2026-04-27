@@ -1,0 +1,61 @@
+name: Feature request
+description: Propose a new feature, widget, or improvement to NRG.
+title: "feat: <one-line summary>"
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for thinking about how to make NRG better!
+
+        For larger ideas, [GitHub Discussions](https://github.com/nanolaba/readme-generator/discussions) is often a better starting point than an issue — let's shape the design together before committing to it.
+
+        Before submitting, please [search existing issues](https://github.com/nanolaba/readme-generator/issues?q=is%3Aissue) to avoid duplicates.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What concrete problem does this feature solve? Whose workflow does it improve, and how?
+      placeholder: |
+        When I do X, Y happens. I would like Z because ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: A short proposal of the template syntax / CLI flag / API surface. Concrete examples beat abstract descriptions — show what the input and the rendered output would look like.
+      placeholder: |
+        Add `${widget:foo(bar='baz')}` which renders to ...
+        CLI: `nrg --foo` → ...
+      render: markdown
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: What other approaches did you think about, and why did you settle on this one?
+
+  - type: dropdown
+    id: distribution-impact
+    attributes:
+      label: Which distributions does this affect?
+      multiple: true
+      options:
+        - CLI (standalone jar)
+        - Maven plugin (nrg-maven-plugin)
+        - GitHub Action (nanolaba/readme-generator/nrg-action)
+        - Java library (com.nanolaba:readme-generator)
+        - Documentation / docs only
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional context
+      description: Links to related issues, prior art in similar tools, or anything else that helps frame the proposal.

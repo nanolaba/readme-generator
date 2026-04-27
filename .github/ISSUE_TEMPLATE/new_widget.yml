@@ -1,0 +1,61 @@
+name: New widget proposal
+description: Propose a new built-in widget for NRG (or argue for an existing third-party one to become built-in).
+title: "feat(widget): <name>"
+labels: ["enhancement", "New widget"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        New widgets become part of NRG's default toolbox, so the bar for inclusion is "would a typical README author reach for this?". Niche widgets are usually better as separate libraries that users opt into via `<!--@nrg.widgets=fqcn-->`.
+
+        Existing widgets for reference: `import`, `languages`, `tableOfContents`, `date`, `todo`, `alert`, `badge`, `math`, `exec`, `if`, `fileTree`.
+
+  - type: input
+    id: widget-name
+    attributes:
+      label: Widget name
+      description: The identifier authors will type, e.g. `${widget:fileTree(...)}` → name is `fileTree`. Stick to camelCase.
+      placeholder: "myWidget"
+    validations:
+      required: true
+
+  - type: textarea
+    id: motivation
+    attributes:
+      label: Motivation
+      description: What does the widget produce, and why is that worth a built-in (vs. a custom widget the user writes themselves, or vs. just typing the output by hand)?
+    validations:
+      required: true
+
+  - type: textarea
+    id: usage
+    attributes:
+      label: Proposed usage and parameters
+      description: Show the source-template invocation and the rendered output. Document each parameter (required vs. optional, default value, validation).
+      placeholder: |
+        Source:
+        ```markdown
+        ${widget:myWidget(foo='bar', count='3')}
+        ```
+        Rendered:
+        ```markdown
+        ...whatever the widget produces...
+        ```
+        Parameters:
+        - `foo` (required) — ...
+        - `count` (optional, default `1`) — ...
+      render: markdown
+    validations:
+      required: true
+
+  - type: textarea
+    id: edge-cases
+    attributes:
+      label: Edge cases and failure modes
+      description: How should the widget behave on invalid parameters, missing required values, or unusual input? Does it degrade to an empty string, log an error, or throw?
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Could this be done with existing widgets? With a third-party widget? Why is a built-in the right answer?
