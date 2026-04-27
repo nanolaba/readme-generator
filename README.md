@@ -47,7 +47,7 @@ The current development version is **1.1-SNAPSHOT**.
 
 ## Table of contents
 1. [Quick start](#quick-start)
-1. [Usage](#usage)
+2. [Usage](#usage)
 	1. [Using the Command Line Interface](#using-the-command-line-interface)
 		1. [Verifying generated files (CI mode)](#verifying-generated-files-ci-mode)
 		2. [Validating source templates](#validating-source-templates)
@@ -67,7 +67,7 @@ The current development version is **1.1-SNAPSHOT**.
 		7. [Pinning the action version](#pinning-the-action-version)
 		8. [Troubleshooting](#troubleshooting)
 	4. [Use as a java-library](#use-as-a-java-library)
-2. [Template syntax](#template-syntax)
+3. [Template syntax](#template-syntax)
 	1. [Variables](#variables)
 	2. [Properties](#properties)
 	3. [Per-language overrides](#per-language-overrides)
@@ -80,20 +80,20 @@ The current development version is **1.1-SNAPSHOT**.
 	10. [Widgets](#widgets)
 		1. [Widget 'languages'](#widget-languages)
 		2. [Widget 'import'](#widget-import)
-		1. [Widget 'tableOfContents'](#widget-tableofcontents)
-		1. [Widget 'date'](#widget-date)
-		2. [Widget 'todo'](#widget-todo)
-		3. [Widget 'alert'](#widget-alert)
-		4. [Widget 'badge'](#widget-badge)
-		5. [Widget 'math'](#widget-math)
-		6. [Widget 'exec'](#widget-exec)
-		7. [Widget 'if'](#widget-if)
-		8. [Widget 'fileTree'](#widget-filetree)
-1. [Advanced features](#advanced-features)
+		3. [Widget 'tableOfContents'](#widget-tableofcontents)
+		4. [Widget 'date'](#widget-date)
+		5. [Widget 'todo'](#widget-todo)
+		6. [Widget 'alert'](#widget-alert)
+		7. [Widget 'badge'](#widget-badge)
+		8. [Widget 'math'](#widget-math)
+		9. [Widget 'exec'](#widget-exec)
+		10. [Widget 'if'](#widget-if)
+		11. [Widget 'fileTree'](#widget-filetree)
+4. [Advanced features](#advanced-features)
 	1. [Creating a widget](#creating-a-widget)
-2. [Related projects](#related-projects)
-3. [Changelog](#changelog)
-1. [Feedback & Support](#feedback-support)
+5. [Related projects](#related-projects)
+6. [Changelog](#changelog)
+7. [Feedback & Support](#feedback-support)
 	1. [Community Support](#community-support)
 	2. [Direct Communication](#direct-communication)
 	3. [Contribution Guide](#contribution-guide)
@@ -1081,6 +1081,8 @@ Headers located above the widget in the text are ignored.
 If you need to exclude a header from the table of contents, you should
 mark it with a comment `<!--toc.ignore-->`.
 
+Lines that look like headings but are part of a fenced code block (opened with three or more backticks or tildes), of an indented code block (4+ leading spaces), of an inline code span, or of a backslash-escaped heading are not treated as headings and do not appear in the table of contents.
+
 <table>
 <tr><th>Usage example (README.src.md)</th></tr>
 <tr><td>
@@ -1173,7 +1175,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 27.04.2026 00:46:14
+Last updated: 27.04.2026 10:19:21
 ```
 
 </td></tr>

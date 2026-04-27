@@ -550,4 +550,164 @@ class TableOfContentsWidgetTest extends DefaultNRGTest {
         assertTrue(bodyEn.contains("1. [AAA](#aaa)"));
         assertTrue(bodyEn.contains("\t1. [aaa](#aaa)"));
     }
+
+    @Test
+    public void testTOCIgnoresHashLinesInsideFencedCodeBlocks() {
+        Generator generator = new NoHeadCommentGenerator(new File("README.src.md"),
+                "<!--@nrg.languages=en-->\n" +
+                        "${widget:tableOfContents(ordered = \"true\")}\n" +
+                        "## A\n" +
+                        "## B\n" +
+                        "## C\n" +
+                        "\n" +
+                        "```bash\n" +
+                        "# This is a bash comment, not a heading\n" +
+                        "ls\n" +
+                        "```\n" +
+                        "\n" +
+                        "## D\n" +
+                        "## E\n"
+        );
+
+        String bodyEn = generator.getResult("en").getContent().toString();
+        LOG.info(bodyEn);
+
+        assertTrue(bodyEn.contains("1. [A](#a)"));
+        assertTrue(bodyEn.contains("2. [B](#b)"));
+        assertTrue(bodyEn.contains("3. [C](#c)"));
+        assertTrue(bodyEn.contains("4. [D](#d)"));
+        assertTrue(bodyEn.contains("5. [E](#e)"));
+    }
+
+    @Test
+    public void testTOCIgnoresHashLinesInsideTildeFencedCodeBlocks() {
+        Generator generator = new NoHeadCommentGenerator(new File("README.src.md"),
+                "<!--@nrg.languages=en-->\n" +
+                        "${widget:tableOfContents(ordered = \"true\")}\n" +
+                        "## A\n" +
+                        "## B\n" +
+                        "\n" +
+                        "~~~\n" +
+                        "# Hash inside tilde fence\n" +
+                        "~~~\n" +
+                        "\n" +
+                        "## C\n"
+        );
+
+        String bodyEn = generator.getResult("en").getContent().toString();
+        LOG.info(bodyEn);
+
+        assertTrue(bodyEn.contains("1. [A](#a)"));
+        assertTrue(bodyEn.contains("2. [B](#b)"));
+        assertTrue(bodyEn.contains("3. [C](#c)"));
+    }
+
+    @Test
+    public void testTOCIgnoresNestedFences() {
+        Generator generator = new NoHeadCommentGenerator(new File("README.src.md"),
+                "<!--@nrg.languages=en-->\n" +
+                        "${widget:tableOfContents(ordered = \"true\")}\n" +
+                        "## A\n" +
+                        "\n" +
+                        "````markdown\n" +
+                        "```bash\n" +
+                        "# nested-but-still-inside\n" +
+                        "```\n" +
+                        "# also-still-inside\n" +
+                        "````\n" +
+                        "\n" +
+                        "## B\n"
+        );
+
+        String bodyEn = generator.getResult("en").getContent().toString();
+        LOG.info(bodyEn);
+
+        assertTrue(bodyEn.contains("1. [A](#a)"));
+        assertTrue(bodyEn.contains("2. [B](#b)"));
+    }
+
+    @Test
+    public void testTOCIgnoresHashLinesInsideIndentedCodeBlocks() {
+        Generator generator = new NoHeadCommentGenerator(new File("README.src.md"),
+                "<!--@nrg.languages=en-->\n" +
+                        "${widget:tableOfContents(ordered = \"true\")}\n" +
+                        "## A\n" +
+                        "## B\n" +
+                        "\n" +
+                        "    # this is indented code, not a heading\n" +
+                        "    ls\n" +
+                        "\n" +
+                        "## C\n"
+        );
+
+        String bodyEn = generator.getResult("en").getContent().toString();
+        LOG.info(bodyEn);
+
+        assertTrue(bodyEn.contains("1. [A](#a)"));
+        assertTrue(bodyEn.contains("2. [B](#b)"));
+        assertTrue(bodyEn.contains("3. [C](#c)"));
+    }
+
+    @Test
+    public void testTOCIgnoresHashLinesInsideInlineBackticks() {
+        Generator generator = new NoHeadCommentGenerator(new File("README.src.md"),
+                "<!--@nrg.languages=en-->\n" +
+                        "${widget:tableOfContents(ordered = \"true\")}\n" +
+                        "## A\n" +
+                        "## B\n" +
+                        "Use `# inline` to comment, not as a heading.\n" +
+                        "## C\n"
+        );
+
+        String bodyEn = generator.getResult("en").getContent().toString();
+        LOG.info(bodyEn);
+
+        assertTrue(bodyEn.contains("1. [A](#a)"));
+        assertTrue(bodyEn.contains("2. [B](#b)"));
+        assertTrue(bodyEn.contains("3. [C](#c)"));
+    }
+
+    @Test
+    public void testTOCIgnoresEscapedHeadings() {
+        Generator generator = new NoHeadCommentGenerator(new File("README.src.md"),
+                "<!--@nrg.languages=en-->\n" +
+                        "${widget:tableOfContents(ordered = \"true\")}\n" +
+                        "## A\n" +
+                        "## B\n" +
+                        "\\# Not a heading\n" +
+                        "## C\n"
+        );
+
+        String bodyEn = generator.getResult("en").getContent().toString();
+        LOG.info(bodyEn);
+
+        assertTrue(bodyEn.contains("1. [A](#a)"));
+        assertTrue(bodyEn.contains("2. [B](#b)"));
+        assertTrue(bodyEn.contains("3. [C](#c)"));
+        assertFalse(bodyEn.contains("[Not a heading]"));
+    }
+
+    @Test
+    public void testTOCNumberingMonotonicAcrossManyFences() {
+        Generator generator = new NoHeadCommentGenerator(new File("README.src.md"),
+                "<!--@nrg.languages=en-->\n" +
+                        "${widget:tableOfContents(ordered = \"true\")}\n" +
+                        "## H1\n" +
+                        "```\n" +
+                        "# c1\n" +
+                        "```\n" +
+                        "## H2\n" +
+                        "```\n" +
+                        "# c2\n" +
+                        "```\n" +
+                        "## H3\n"
+        );
+
+        String bodyEn = generator.getResult("en").getContent().toString();
+        LOG.info(bodyEn);
+
+        assertTrue(bodyEn.contains("1. [H1](#h1)"));
+        assertTrue(bodyEn.contains("2. [H2](#h2)"));
+        assertTrue(bodyEn.contains("3. [H3](#h3)"));
+    }
 }

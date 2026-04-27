@@ -12,6 +12,9 @@ mark it with a comment `<\!--toc.ignore-->`.<!--en-->
 Если вам необходимо исключить какой-либо заголовок из оглавления, то для этого<!--ru-->
 его необходимо пометить комментарием `<\!--toc.ignore-->`.<!--ru-->
 
+Lines that look like headings but are part of a fenced code block (opened with three or more backticks or tildes), of an indented code block (4+ leading spaces), of an inline code span, or of a backslash-escaped heading are not treated as headings and do not appear in the table of contents.<!--en-->
+Строки, выглядящие как заголовки, но входящие в огороженный блок кода (открываемый тремя или более обратными апострофами или тильдами), в блок кода с отступом (4+ ведущих пробела), во встроенный код или в экранированный обратной косой чертой заголовок, не считаются заголовками и не попадают в оглавление.<!--ru-->
+
 <table>
 <tr><th>${en:'Usage example', ru:'Пример использования'} (README.src.md)</th></tr>
 <tr><td>

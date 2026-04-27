@@ -14,10 +14,8 @@ import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 /**
  * {@code ${widget:tableOfContents(...)}} — generates a Markdown table of contents from
@@ -39,6 +37,9 @@ import java.util.stream.Collectors;
 public class TableOfContentsWidget extends DefaultWidget {
 
     public static final String IGNORE_ATTR = "<!--toc.ignore-->";
+
+    private static final Pattern FENCE_OPEN = Pattern.compile("^(`{3,}|~{3,}).*$");
+    private static final Pattern HEADING_LINE = Pattern.compile("^#+.*$");
 
     @Override
     public String getName() {
@@ -81,34 +82,99 @@ public class TableOfContentsWidget extends DefaultWidget {
                 .forEach(widget -> widget.setEnabled(false));
         String sourceFileBody = generator.getResult(language).getContent().toString();
 
+        int indexOfTOC = NRGUtil.findFirstUnescapedOccurrenceLine(sourceFileBody, "${widget:tableOfContents");
+        if (indexOfTOC < 0) {
+            return "";
+        }
+
+        int minLevel = tocConfig.getMinDepth() - 1;
+        int maxLevel = tocConfig.getMaxDepth() - 1;
+
+        List<String> items = new ArrayList<>();
+
         try (BufferedReader reader = new BufferedReader(new StringReader(sourceFileBody))) {
+            String rawLine;
+            int lineIndex = 0;
+            boolean insideFence = false;
+            char fenceChar = 0;
+            int fenceLen = 0;
 
-            int indexOfTOC = NRGUtil.findFirstUnescapedOccurrenceLine(sourceFileBody, "${widget:tableOfContents");
+            while ((rawLine = reader.readLine()) != null) {
+                int currentLine = lineIndex++;
 
-            int minLevel = tocConfig.getMinDepth() - 1;
-            int maxLevel = tocConfig.getMaxDepth() - 1;
+                // Fence state must be tracked from the first line so the body's overall
+                // fence layout is correct even when the TOC widget itself sits inside an
+                // earlier fence; otherwise we'd start mid-block with insideFence=false.
+                if (insideFence) {
+                    if (isFenceClose(rawLine, fenceChar, fenceLen)) {
+                        insideFence = false;
+                        fenceChar = 0;
+                        fenceLen = 0;
+                    }
+                    continue;
+                }
+                Matcher fenceOpen = FENCE_OPEN.matcher(rawLine);
+                if (fenceOpen.matches()) {
+                    insideFence = true;
+                    fenceChar = fenceOpen.group(1).charAt(0);
+                    fenceLen = fenceOpen.group(1).length();
+                    continue;
+                }
 
-            if (indexOfTOC < 0) {
-                return "";
+                if (currentLine < indexOfTOC) {
+                    continue;
+                }
+                if (rawLine.contains(IGNORE_ATTR)) {
+                    continue;
+                }
+
+                String rendered = new TemplateLine(config, rawLine, 0).fillLineWithProperties(language, false);
+                if (rendered == null) {
+                    continue;
+                }
+
+                // Anchored check: only treat lines that *start* with `#` as headings.
+                // This filters out inline code spans (`# foo`), escaped headings (\# foo),
+                // and indented code blocks — none of which should poison the heading list,
+                // even though Header.HEADER_PATTERN below uses find() for lenient slug
+                // generation when the class is exercised in isolation.
+                if (!HEADING_LINE.matcher(rendered).matches()) {
+                    continue;
+                }
+
+                Header header = new Header(rendered, tocConfig, allHeaders);
+                if (header.level >= minLevel && header.level <= maxLevel) {
+                    items.add(header.toString());
+                }
             }
-
-            List<String> items = reader.lines()
-                    .skip(indexOfTOC)
-                    .filter(line -> !line.contains(IGNORE_ATTR))
-                    .map(s -> new TemplateLine(config, s, 0).fillLineWithProperties(language, false))
-                    .filter(Objects::nonNull)
-                    .map(line -> new Header(line, tocConfig, allHeaders))
-                    .filter(header -> header.level >= minLevel && header.level <= maxLevel)
-                    .map(Object::toString)
-                    .collect(Collectors.toList());
-
-            if (items.size() < tocConfig.getMinItems()) {
-                return "";
-            }
-            return String.join("", items);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+
+        if (items.size() < tocConfig.getMinItems()) {
+            return "";
+        }
+        return String.join("", items);
+    }
+
+    private static boolean isFenceClose(String line, char marker, int minLen) {
+        int i = 0;
+        int n = line.length();
+        int count = 0;
+        while (i < n && line.charAt(i) == marker) {
+            count++;
+            i++;
+        }
+        if (count < minLen) {
+            return false;
+        }
+        while (i < n) {
+            if (!Character.isWhitespace(line.charAt(i))) {
+                return false;
+            }
+            i++;
+        }
+        return true;
     }
 
     private Config getConfig(String parameters) {

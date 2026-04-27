@@ -16,12 +16,12 @@ Thanks for your interest in improving **NRG**! This document explains how to rep
 5. [Development setup](#development-setup)
 6. [Project layout](#project-layout)
 7. [Building and testing](#building-and-testing)
-1. [Coding conventions](#coding-conventions)
-2. [Documentation](#documentation)
-1. [Commit messages](#commit-messages)
-1. [Pull request checklist](#pull-request-checklist)
-1. [Release process](#release-process)
-2. [License](#license)
+8. [Coding conventions](#coding-conventions)
+9. [Documentation](#documentation)
+10. [Commit messages](#commit-messages)
+11. [Pull request checklist](#pull-request-checklist)
+12. [Release process](#release-process)
+13. [License](#license)
 
 
 ## Ways to contribute
