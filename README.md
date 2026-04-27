@@ -54,6 +54,7 @@ The current development version is **1.1-SNAPSHOT**.
 		3. [Print to stdout](#print-to-stdout)
 		4. [Logging verbosity](#logging-verbosity)
 		5. [Customising output filenames](#customising-output-filenames)
+		6. [Multiple files and glob patterns](#multiple-files-and-glob-patterns)
 	2. [Use as maven plugin](#use-as-maven-plugin)
 	3. [Use as a GitHub Action](#use-as-a-github-action)
 		1. [Quickstart](#quickstart)
@@ -310,6 +311,35 @@ nrg --file-name-pattern '<base>_<LANG>.md' -f README.src.md
 nrg --file-name-pattern 'docs/<lang>/<base>.md' --default-language-file-name-pattern '<base>.md' -f README.src.md
 ```
 
+#### Multiple files and glob patterns
+
+Pass several source files in one invocation, either as explicit positional
+arguments or as `glob:`-style patterns:
+
+```bash
+nrg README.src.md docs/Guide.src.md
+nrg "docs/**/*.src.md"
+```
+
+Glob expansion uses `java.nio.file.PathMatcher` with `glob:` syntax, so
+behavior is identical on Windows, Linux, and macOS regardless of the shell.
+Quote the pattern to keep it from being expanded by the shell first.
+The legacy `-f <file>` flag is still supported as a single-file alias and
+is mutually exclusive with positional arguments — passing both prints
+an error and exits with status `1`.
+
+By default each input is processed independently: an error on one file
+is logged but the rest still run, and the overall exit code is `1` if
+any file failed. Pass `--fail-fast` to stop on the first non-zero result.
+
+```bash
+nrg --fail-fast "docs/**/*.src.md"
+```
+
+A pattern that matches no files logs a warning. If the entire input set
+matches nothing, the run exits with status `1` and the message
+`No source files matched any of the supplied patterns`.
+
 ### Use as maven plugin
 
 Add the following code to your `pom.xml`:
@@ -332,6 +362,7 @@ Add the following code to your `pom.xml`:
                 <widget>com.example.OtherWidget</widget>
             </widgets>
             <check>false</check>
+            <failFast>false</failFast>
         </configuration>
         <dependencies>
             <dependency>
@@ -351,6 +382,13 @@ Add the following code to your `pom.xml`:
     </plugin>
 </plugins>
 ```
+
+Each `<file>` entry can be a literal path or a glob pattern (same `glob:`
+syntax as the CLI). Multi-doc projects can replace a long list with
+`<file>**/*.src.md</file>` and let NRG expand it. Set
+`<failFast>true</failFast>` (or `-DfailFast=true`) to abort on the first
+non-zero result; default `false` preserves today's behavior of aggregating
+diagnostics across every matched file.
 
 The `<widgets>` entries must name public classes that implement `NRGWidget`
 and declare a public no-argument constructor, and their artifact must be
@@ -1276,7 +1314,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 27.04.2026 13:00:52
+Last updated: 27.04.2026 14:24:31
 ```
 
 </td></tr>

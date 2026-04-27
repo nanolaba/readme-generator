@@ -153,6 +153,50 @@ nrg --file-name-pattern '<base>_<LANG>.md' -f README.src.md
 nrg --file-name-pattern 'docs/<lang>/<base>.md' --default-language-file-name-pattern '<base>.md' -f README.src.md
 ```
 
+#### ${en:'Multiple files and glob patterns', ru:'Несколько файлов и glob-паттерны'}
+
+Pass several source files in one invocation, either as explicit positional<!--en-->
+arguments or as `glob:`-style patterns:<!--en-->
+В одну команду можно передать несколько исходных файлов — либо явным<!--ru-->
+списком, либо glob-паттернами:<!--ru-->
+
+```bash
+nrg README.src.md docs/Guide.src.md
+nrg "docs/**/*.src.md"
+```
+
+Glob expansion uses `java.nio.file.PathMatcher` with `glob:` syntax, so<!--en-->
+behavior is identical on Windows, Linux, and macOS regardless of the shell.<!--en-->
+Quote the pattern to keep it from being expanded by the shell first.<!--en-->
+The legacy `-f <file>` flag is still supported as a single-file alias and<!--en-->
+is mutually exclusive with positional arguments — passing both prints<!--en-->
+an error and exits with status `1`.<!--en-->
+Раскрытие glob-паттерна выполняется через `java.nio.file.PathMatcher`<!--ru-->
+с синтаксисом `glob:` — поведение одинаково на Windows, Linux и macOS<!--ru-->
+независимо от командной оболочки. Заключайте паттерн в кавычки, чтобы<!--ru-->
+сначала его не раскрыл сам шелл. Старый флаг `-f <file>` остаётся как<!--ru-->
+алиас для единственного файла и несовместим с позиционными аргументами —<!--ru-->
+их совместная передача приводит к ошибке и коду возврата `1`.<!--ru-->
+
+By default each input is processed independently: an error on one file<!--en-->
+is logged but the rest still run, and the overall exit code is `1` if<!--en-->
+any file failed. Pass `--fail-fast` to stop on the first non-zero result.<!--en-->
+По умолчанию каждый файл обрабатывается независимо: ошибка на одном<!--ru-->
+логируется, но остальные продолжают выполняться, а общий код возврата<!--ru-->
+равен `1`, если упал хотя бы один. Флаг `--fail-fast` останавливает<!--ru-->
+обработку на первом ненулевом результате.<!--ru-->
+
+```bash
+nrg --fail-fast "docs/**/*.src.md"
+```
+
+A pattern that matches no files logs a warning. If the entire input set<!--en-->
+matches nothing, the run exits with status `1` and the message<!--en-->
+`No source files matched any of the supplied patterns`.<!--en-->
+Паттерн без совпадений логируется как предупреждение. Если ни один из<!--ru-->
+входов не нашёл файлов, программа завершается с кодом `1` и сообщением<!--ru-->
+`No source files matched any of the supplied patterns`.<!--ru-->
+
 ### ${en:'Use as maven plugin', ru:'Использование как плагина для maven'}
 
 Добавьте следующий код в ваш `pom.xml`:<!--ru-->
@@ -176,6 +220,7 @@ Add the following code to your `pom.xml`:<!--en-->
                 <widget>com.example.OtherWidget</widget>
             </widgets>
             <check>false</check>
+            <failFast>false</failFast>
         </configuration>
         <dependencies>
             <dependency>
@@ -195,6 +240,20 @@ Add the following code to your `pom.xml`:<!--en-->
     </plugin>
 </plugins>
 ```
+
+Each `<file>` entry can be a literal path or a glob pattern (same `glob:`<!--en-->
+syntax as the CLI). Multi-doc projects can replace a long list with<!--en-->
+`<file>**/*.src.md</file>` and let NRG expand it. Set<!--en-->
+`<failFast>true</failFast>` (or `-DfailFast=true`) to abort on the first<!--en-->
+non-zero result; default `false` preserves today's behavior of aggregating<!--en-->
+diagnostics across every matched file.<!--en-->
+Каждый элемент `<file>` может быть как явным путём, так и glob-паттерном<!--ru-->
+(тот же синтаксис `glob:`, что и в CLI). Многодокументные проекты могут<!--ru-->
+заменить длинный список одним `<file>**/*.src.md</file>`, NRG раскроет<!--ru-->
+паттерн сам. Параметр `<failFast>true</failFast>` (или `-DfailFast=true`)<!--ru-->
+прерывает обработку на первом ненулевом результате; по умолчанию `false` —<!--ru-->
+сохраняется сегодняшнее поведение с агрегированием диагностик по всем<!--ru-->
+найденным файлам.<!--ru-->
 
 The `<widgets>` entries must name public classes that implement `NRGWidget`<!--en-->
 and declare a public no-argument constructor, and their artifact must be<!--en-->
