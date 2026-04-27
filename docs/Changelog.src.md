@@ -3,6 +3,8 @@
 This section summarises the main user-visible changes in each release. For full details, see the git history.<!--en-->
 В разделе перечислены основные пользовательские изменения в каждой версии. Подробности — в истории коммитов.<!--ru-->
 
+### ${en:'Unreleased', ru:'В разработке'} (${devVersion})<!--toc.ignore-->
+
 ### 1.1<!--toc.ignore-->
 
 - **Multi-file source input**: the CLI now accepts multiple positional source files and `glob:` patterns (`nrg "docs/**/*.src.md" A.src.md B.src.md`); `-f` remains a single-file alias and is rejected when mixed with positional args. Each input gets its own `Generator`. New `--fail-fast` short-circuits on the first non-zero per-file result; the default aggregates so every file's diagnostics surface in one run. With `--stdout`, per-file separators are emitted whenever the total output count exceeds one. Empty per-pattern matches log a warning; an overall zero-match exits `1`. The Maven plugin's `<file>` entries accept the same glob syntax, and a new `<failFast>` parameter (default `false`) maps to `--fail-fast`. Closes [#32](https://github.com/nanolaba/readme-generator/issues/32).<!--en-->
