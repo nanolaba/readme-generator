@@ -1323,7 +1323,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 27.04.2026 23:29:22
+Last updated: 27.04.2026 23:41:10
 ```
 
 </td></tr>
@@ -1811,19 +1811,31 @@ nrg --classpath my-widgets.jar --widgets com.acme.widgets.Tag,com.acme.widgets.B
 
 ## Похожие проекты
 
-Другие инструменты в этой области — пригодятся, если **Nanolaba Readme Generator (NRG)** не подходит под ваш стек или рабочий процесс:
+Другие инструменты в этой области — пригодятся, если **Nanolaba Readme Generator (NRG)** не подходит под ваш стек или рабочий процесс. ✅ — поддерживается, ➖ — частично, ❌ — нет.
 
-- **[multilingual-markdown](https://github.com/ryul1206/multilingual-markdown)** (Python) — генерирует markdown-файлы на разных языках из одного базового документа,
-  аналогично многоязычному режиму NRG, но без виджетов и импортов шаблонов.
-- **[embedme](https://github.com/zakhenry/embedme)** (Node.js) — встраивает внешние фрагменты кода в markdown через аннотации code-блоков;
-  пересекается с виджетом `import` NRG (извлечение по регионам и диапазонам строк).
-- **[cog](https://github.com/nedbat/cog)** (Python) — исполняет встроенные Python-сниппеты прямо в исходных файлах для генерации текста;
-  другая философия (исполнение кода вместо декларативных виджетов), но та же цель — 
-  поддерживать сгенерированную документацию в актуальном состоянии.
-- **[doctoc](https://github.com/thlorenz/doctoc)** (Node.js) — автоматически генерирует и обновляет оглавление в существующем markdown-файле;
-  узконаправленная альтернатива виджету `tableOfContents` в NRG.
-- **[remark](https://github.com/remarkjs/remark)** (Node.js) — расширяемый markdown-процессор; с плагинами вроде `remark-toc` и `remark-include`
-  его можно собрать в конвейер, покрывающий по частям несколько возможностей NRG.
+| Возможность | **NRG** | [ml-md][ml-md] | [doctoc][doctoc] | [embedme][embedme] | [cog][cog] | [gitdown][gitdown] | [md-magic][md-magic] | [remark][remark] |
+|---|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
+| Стек | Java 8 | Python | Node | Node | Python | Node | Node | Node |
+| Многоязычный вывод¹ | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| Импорт файлов | ✅ | ❌ | ❌ | ✅ | ✅ | ✅ | ✅ | ➖ |
+| Авто-TOC | ✅ | ❌ | ✅ | ❌ | ❌ | ✅ | ✅ | ➖ |
+| Переменные | ✅ | ➖ | ❌ | ❌ | ✅ | ✅ | ✅ | ➖ |
+| Свои виджеты | ✅ | ❌ | ❌ | ❌ | ✅² | ✅ | ✅ | ✅ |
+| Maven-плагин | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| GitHub Action | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| Замороженные регионы³ | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ➖ | ❌ |
+
+¹ один исходник → несколько файлов на разных языках (`README.md`, `README.ru.md`, …).<br>
+² cog исполняет произвольный Python — расширяем по определению, но без widget-API.<br>
+³ сохранять содержимое, записанное внешними инструментами (contributors-readme-action, sponsors-виджеты, RSS), между перегенерациями.
+
+[ml-md]: https://github.com/ryul1206/multilingual-markdown "multilingual-markdown"
+[doctoc]: https://github.com/thlorenz/doctoc "doctoc"
+[embedme]: https://github.com/zakhenry/embedme "embedme"
+[cog]: https://github.com/nedbat/cog "cog"
+[gitdown]: https://github.com/gajus/gitdown "gitdown"
+[md-magic]: https://github.com/DavidWells/markdown-magic "markdown-magic"
+[remark]: https://github.com/remarkjs/remark "remark + remark-toc + remark-include"
 
 ## История изменений
 

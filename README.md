@@ -1318,7 +1318,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 27.04.2026 23:29:21
+Last updated: 27.04.2026 23:41:10
 ```
 
 </td></tr>
@@ -1806,19 +1806,31 @@ during instantiation.
 
 ## Related projects
 
-Other tools in the same space — useful if **Nanolaba Readme Generator (NRG)** does not fit your stack or workflow:
+Other tools in the same space — useful if **Nanolaba Readme Generator (NRG)** does not fit your stack or workflow. ✅ = supported, ➖ = partial, ❌ = not supported.
 
-- **[multilingual-markdown](https://github.com/ryul1206/multilingual-markdown)** (Python) — generates per-language markdown files from a single base document,
-  similar to NRG's multi-language flow but without widgets or template imports.
-- **[embedme](https://github.com/zakhenry/embedme)** (Node.js) — embeds external code snippets into markdown via fenced-block annotations;
-  overlaps with NRG's `import` widget (region / lines extraction).
-- **[cog](https://github.com/nedbat/cog)** (Python) — runs embedded Python snippets inside source files to generate text;
-  a different philosophy (code execution instead of declarative widgets) for the same goal of 
-  keeping generated documentation in sync with its source of truth.
-- **[doctoc](https://github.com/thlorenz/doctoc)** (Node.js) — auto-generates and updates the table of contents in an existing markdown file;
-  a focused alternative to NRG's `tableOfContents` widget.
-- **[remark](https://github.com/remarkjs/remark)** (Node.js) — pluggable markdown processor; with plugins such as `remark-toc` and `remark-include`
-  it can be composed into a pipeline that covers several NRG features separately.
+| Feature | **NRG** | [ml-md][ml-md] | [doctoc][doctoc] | [embedme][embedme] | [cog][cog] | [gitdown][gitdown] | [md-magic][md-magic] | [remark][remark] |
+|---|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
+| Stack | Java 8 | Python | Node | Node | Python | Node | Node | Node |
+| Multi-lang output¹ | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| File imports | ✅ | ❌ | ❌ | ✅ | ✅ | ✅ | ✅ | ➖ |
+| Auto TOC | ✅ | ❌ | ✅ | ❌ | ❌ | ✅ | ✅ | ➖ |
+| Variables | ✅ | ➖ | ❌ | ❌ | ✅ | ✅ | ✅ | ➖ |
+| Custom widgets | ✅ | ❌ | ❌ | ❌ | ✅² | ✅ | ✅ | ✅ |
+| Maven plugin | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| GitHub Action | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| Frozen regions³ | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ➖ | ❌ |
+
+¹ one source → many language files (`README.md`, `README.ru.md`, …).<br>
+² cog runs arbitrary Python — extensible by definition, but no widget API.<br>
+³ preserve content written by external tools (contributors-readme-action, sponsors widgets, RSS) across regenerations.
+
+[ml-md]: https://github.com/ryul1206/multilingual-markdown "multilingual-markdown"
+[doctoc]: https://github.com/thlorenz/doctoc "doctoc"
+[embedme]: https://github.com/zakhenry/embedme "embedme"
+[cog]: https://github.com/nedbat/cog "cog"
+[gitdown]: https://github.com/gajus/gitdown "gitdown"
+[md-magic]: https://github.com/DavidWells/markdown-magic "markdown-magic"
+[remark]: https://github.com/remarkjs/remark "remark + remark-toc + remark-include"
 
 ## Changelog
 
