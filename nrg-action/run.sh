@@ -109,8 +109,8 @@ PRE_HASHES_FILE="${RUNNER_TEMP:-/tmp}/nrg-pre-hashes.txt"
 snapshot_md_hashes > "$PRE_HASHES_FILE"
 
 # === 5. run NRG ===
-# NOTE: invoke main class explicitly via -cp because the v1.0 release jar's
-# manifest records the wrong Main-Class (org.nanolaba… instead of com.nanolaba…).
+# Invoke main class explicitly via -cp to remain compatible with older release
+# jars whose manifest may not advertise the correct Main-Class.
 ARGS=()
 case "$INPUT_MODE" in
   check)    ARGS+=(--check) ;;

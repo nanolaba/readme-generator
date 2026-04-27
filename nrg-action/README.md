@@ -30,7 +30,7 @@ Full example: [`examples/basic.yml`](./examples/basic.yml).
 | `files` | Multi-line list of `.src.md` templates (one per line). Mutually exclusive with `file`. | — |
 | `charset` | Source file encoding. | `UTF-8` |
 | `mode` | Operation mode: `generate`, `check`, or `validate`. | `generate` |
-| `nrg-version` | NRG release tag (e.g. `v1.0`) or `latest`. | `latest` |
+| `nrg-version` | NRG release tag (e.g. `v1.1`) or `latest`. | `latest` |
 | `java-version` | JDK version for `actions/setup-java`. Ignored when `setup-java=false`. | `17` |
 | `java-distribution` | JDK distribution for `actions/setup-java`. | `temurin` |
 | `setup-java` | Whether the action should install Java itself. Set to `'false'` if you set up Java in a previous step. | `true` |
@@ -47,7 +47,7 @@ Full example: [`examples/basic.yml`](./examples/basic.yml).
 
 | Name | Description |
 |---|---|
-| `version` | Resolved NRG version (e.g. `v1.0`). Useful when `nrg-version=latest`. |
+| `version` | Resolved NRG version (e.g. `v1.1`). Useful when `nrg-version=latest`. |
 | `changed-files` | Newline-separated list of files written or modified by NRG. |
 
 ## Examples

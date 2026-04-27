@@ -21,7 +21,7 @@ inputs:
     required: false
     default: 'generate'
   nrg-version:
-    description: 'NRG release tag (e.g. v1.0) or "latest".'
+    description: 'NRG release tag (e.g. v1.1) or "latest".'
     required: false
     default: 'latest'
   java-version:
@@ -47,7 +47,7 @@ inputs:
 
 outputs:
   version:
-    description: 'Resolved NRG version (e.g. v1.0). Useful when nrg-version=latest.'
+    description: 'Resolved NRG version (e.g. v1.1). Useful when nrg-version=latest.'
     value: ${{ steps.run.outputs.version }}
   changed-files:
     description: 'Newline-separated list of files written or modified by NRG.'
