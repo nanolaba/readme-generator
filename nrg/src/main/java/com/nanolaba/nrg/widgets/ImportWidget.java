@@ -1,5 +1,6 @@
 package com.nanolaba.nrg.widgets;
 
+import com.nanolaba.logging.LOG;
 import com.nanolaba.nrg.core.GenerationResult;
 import com.nanolaba.nrg.core.Generator;
 import com.nanolaba.nrg.core.GeneratorConfig;
@@ -56,6 +57,18 @@ public class ImportWidget extends DefaultWidget {
         }
         if (widgetConfig.getRegion() != null && !widgetConfig.getRegion().matches("[A-Za-z0-9_-]+")) {
             throw new RuntimeException("import: invalid region name '" + widgetConfig.getRegion() + "'");
+        }
+        int headingOffset = 0;
+        if (widgetConfig.getHeadingOffset() != null) {
+            try {
+                headingOffset = Integer.parseInt(widgetConfig.getHeadingOffset().trim());
+            } catch (NumberFormatException e) {
+                throw new RuntimeException("import: heading-offset must be an integer, got '"
+                        + widgetConfig.getHeadingOffset() + "'");
+            }
+            if (headingOffset != 0 && "true".equals(widgetConfig.getWrap())) {
+                throw new RuntimeException("import: heading-offset cannot be combined with wrap='true'");
+            }
         }
 
         // Validate that path and url are not both set, and at least one is set.
@@ -163,6 +176,19 @@ public class ImportWidget extends DefaultWidget {
             content = subResult == null ? "" : subResult.getContent().toString();
         }
 
+        // 5b. Apply heading-offset (post-sub-generator so chained imports / language blocks
+        //     / variable substitution all see the shift).
+        if (headingOffset != 0) {
+            ImportHeadingShifter.Result shifted = ImportHeadingShifter.shift(content, headingOffset);
+            content = shifted.content;
+            if (shifted.clampedCount > 0) {
+                String src = widgetConfig.getPath() != null ? widgetConfig.getPath() : widgetConfig.getUrl();
+                String signedOffset = headingOffset > 0 ? "+" + headingOffset : String.valueOf(headingOffset);
+                LOG.warn("import: heading-offset clamped {} heading(s) in {} (offset={}, e.g. '{}')",
+                        shifted.clampedCount, src, signedOffset, shifted.firstClampedLine);
+            }
+        }
+
         // 6. Wrap in fence (if enabled)
         if ("true".equals(widgetConfig.getWrap())) {
             // Strip any trailing newline so the closing fence hugs the content
@@ -223,6 +249,9 @@ public class ImportWidget extends DefaultWidget {
         if (map.containsKey("dedent")) {
             config.setDedent(map.get("dedent"));
         }
+        if (map.containsKey("heading-offset")) {
+            config.setHeadingOffset(map.get("heading-offset"));
+        }
         if (map.containsKey("url")) {
             config.setUrl(map.get("url"));
         }
@@ -266,6 +295,7 @@ public class ImportWidget extends DefaultWidget {
         private String wrap = "false";   // "true" | "false"
         private String lang = "auto";    // "auto" | explicit language string
         private String dedent = "auto";  // "auto" | "true" | "false"
+        private String headingOffset;    // null if not set (treated as 0)
         private String url;              // null if not set
         private String cache = "none";   // "<int>{s,m,h,d}" or "none"
         private String timeout = "60s";
@@ -333,6 +363,14 @@ public class ImportWidget extends DefaultWidget {
 
         public void setDedent(String dedent) {
             this.dedent = dedent;
+        }
+
+        public String getHeadingOffset() {
+            return headingOffset;
+        }
+
+        public void setHeadingOffset(String headingOffset) {
+            this.headingOffset = headingOffset;
         }
 
         public String getUrl() {

@@ -987,6 +987,7 @@ Widget parameters:
 |              wrap               | Wrap output in a code fence: `true`, `false`                                                               |                      `false`                      |
 |              lang               | Language tag for the fence; `auto` detects from file extension                                       |                      `auto`                       |
 |             dedent              | Strip common leading whitespace: `auto`, `true`, `false`                                                          |                      `auto`                       |
+|         heading-offset          | Shift ATX heading levels by an integer (clamped to 1..6); cannot combine with wrap='true' |                       `0`                         |
 |               url               | HTTP(S) URL to fetch (mutually exclusive with `path`); requires `nrg.allowRemoteImports=true` |                                                   |
 |              cache              | Cache TTL: `<int>{s,m,h,d}` or `none` (e.g. `1h`, `7d`)                                             |                      `none`                       |
 |             timeout             | HTTP timeout: `<int>{s,m,h,d}` (cannot be `none`)                                                        |                      `60s`                        |
@@ -1027,6 +1028,14 @@ The matching is language-agnostic — the widget recognizes the markers regardle
 
 Region names match the pattern `[A-Za-z0-9_-]+`. Region markers are stripped from the output.
 Nested regions are supported — when extracting an outer region, inner region markers are also stripped from the output.
+
+**Heading offset**
+
+`heading-offset='N'` shifts every ATX heading (`#`, `##`, …, `######`) in the imported content by `N` levels — useful when an imported `.src.md` owns its own heading hierarchy but is being included under a parent section.
+Levels are clamped to `[1, 6]`; clamped headings emit a single aggregated warning per import call.
+Lines inside fenced code blocks (```` ``` ```` or `~~~`) are not shifted, so a `# bash comment` inside a fence stays a `# bash comment`.
+Setext-style headings (`====` / `----`) and indented (4-space) code blocks are not detected — prefer ATX headings and fenced code blocks in imports that use this parameter.
+Combining `heading-offset` with a non-zero value and `wrap='true'` fails the build.
 
 **Remote imports**
 
@@ -1164,7 +1173,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 26.04.2026 22:21:21
+Last updated: 27.04.2026 00:46:14
 ```
 
 </td></tr>
@@ -1177,7 +1186,7 @@ ${widget:date(pattern = 'dd.MM.yyyy')}
 </td><td>
 
 ```markdown
-26.04.2026
+27.04.2026
 ```
 
 </td></tr>
@@ -1675,6 +1684,7 @@ This section summarises the main user-visible changes in each release. For full 
 - **Per-language variable overrides**: any `<!--@name=value-->` property can now declare a per-language sibling `<!--@name.<lang>=value-->`, and `${name}` rendered for that language picks the language-specific value first, falling back to the bare key. Closes the use case behind issue #42 (per-language image paths) without introducing a new widget. Soft-breaking only for templates that intentionally relied on `name` and `name.<lang>` being independent properties.
 - **`${npm.NAME}` / `${gradle.NAME}` substitution**: read values directly from `package.json` (dotted-path lookup like `${npm.version}` or `${npm.dependencies.lodash}`) and from `gradle.properties` + `build.gradle{,.kts}` (`${gradle.version}`, `${gradle.group}`, plus arbitrary keys from `gradle.properties`). Mirrors `${pom.NAME}` semantics: shell-style defaults, warn-once-per-missing-path, backslash escapes. File locations default to the source-file directory and are configurable via `<!--@nrg.npm.path=...-->` / `<!--@nrg.gradle.path=...-->`.
 - **Configurable output filenames**: `<!--@nrg.fileNamePattern=PATTERN-->` controls the output filename layout via the placeholders `<base>`, `<lang>`, `<LANG>`. Patterns may contain `/` separators (`docs/<lang>/<base>.md`) — intermediate directories are created on demand. `<!--@nrg.defaultLanguageFileNamePattern=PATTERN-->` overrides the default language only; per-language `<!--@nrg.fileNamePattern.<lang>=PATTERN-->` overrides win for the matching language. Mirrored by `--file-name-pattern` / `--default-language-file-name-pattern` CLI flags and `<fileNamePattern>` / `<defaultLanguageFileNamePattern>` Maven plugin parameters. Generation aborts when two languages collide on the same output path. The `languages` widget now emits relative links so cross-directory layouts work.
+- **`import` widget — `heading-offset` parameter**: shifts ATX heading levels in the imported content by an integer (clamped to `[1, 6]`), so an imported `.src.md` can nest cleanly under a parent section without editing its source. Skips fenced code blocks; cannot be combined with `wrap='true'`. Closes [#35](https://github.com/nanolaba/readme-generator/issues/35).
 
 ### 1.0
 
@@ -1753,4 +1763,4 @@ We welcome all constructive feedback to make **NRG** better!
 
 
 ---
-*Last updated: 26.04.2026*
+*Last updated: 27.04.2026*

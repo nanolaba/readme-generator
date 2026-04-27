@@ -294,4 +294,76 @@ class ImportWidgetTest {
     private static List<NRGWidget> withCustomImport(byte[] remoteBody) {
         return Arrays.asList(new ImportWidget(new RemoteFetcher(stubOpener(remoteBody), Clock.systemUTC())));
     }
+
+    @Test
+    public void importHeadingOffsetShiftsHeadings() throws IOException {
+        String body = render("ImportWidgetTest/heading-offset/README-basic.src.md");
+        // Imported H1 -> H2; imported H2 -> H3
+        assertTrue(body.contains("## Quick start"), body);
+        assertTrue(body.contains("### Installation"), body);
+        // Parent's own headings are unaffected
+        assertTrue(body.contains("# Project"), body);
+        assertTrue(body.contains("## Section A"), body);
+        assertTrue(body.contains("## Section B"), body);
+    }
+
+    @Test
+    public void invalidHeadingOffsetThrows() {
+        RuntimeException ex = assertThrows(RuntimeException.class,
+                () -> render("ImportWidgetTest/heading-offset/README-invalid.src.md"));
+        String msg = ex.getMessage() + " || cause: " + (ex.getCause() == null ? "<none>" : ex.getCause().getMessage());
+        assertTrue(msg.contains("heading-offset must be an integer"),
+                () -> "unexpected: " + msg);
+    }
+
+    @Test
+    public void headingOffsetWithWrapTrueThrows() {
+        RuntimeException ex = assertThrows(RuntimeException.class,
+                () -> render("ImportWidgetTest/heading-offset/README-wrap-conflict.src.md"));
+        String msg = ex.getMessage() + " || cause: " + (ex.getCause() == null ? "<none>" : ex.getCause().getMessage());
+        assertTrue(msg.contains("cannot be combined with wrap"),
+                () -> "unexpected: " + msg);
+    }
+
+    @Test
+    public void headingOffsetZeroIsNoOp() throws IOException {
+        String body = render("ImportWidgetTest/heading-offset/README-zero.src.md");
+        assertTrue(body.contains("# Quick start"), body);
+        assertTrue(body.contains("## Installation"), body);
+    }
+
+    @Test
+    public void headingOffsetAppliesAfterSubGeneratorIncludingNestedImports() throws IOException {
+        String body = render("ImportWidgetTest/heading-offset/README-nested.src.md");
+        assertTrue(body.contains("## Outer heading"), body);
+        assertTrue(body.contains("## Inner heading"), body);
+        // Original H1 levels should NOT remain. Note: `body.contains("# Outer heading")` would
+        // match `## Outer heading` as a substring, so check line-by-line instead.
+        for (String line : body.split("\\R", -1)) {
+            assertNotEquals("# Outer heading", line, body);
+            assertNotEquals("# Inner heading", line, body);
+        }
+    }
+
+    @Test
+    public void tocReflectsShiftedHeadingLevels() throws IOException {
+        String body = render("ImportWidgetTest/heading-offset/README-toc.src.md");
+        // The shifted "## Quick start" appears as a top-level entry in the TOC,
+        // and "### Installation" appears nested under it.
+        assertTrue(body.contains("[Quick start](#quick-start)"), body);
+        assertTrue(body.contains("[Installation](#installation)"), body);
+        int qsIdx = body.indexOf("[Quick start]");
+        int instIdx = body.indexOf("[Installation]");
+        assertTrue(qsIdx > 0 && instIdx > qsIdx, "TOC ordering looks off: " + body);
+    }
+
+    @Test
+    public void headingOffsetSkipsFencedCodeBlocksInImportedContent() throws IOException {
+        String body = render("ImportWidgetTest/heading-offset/README-fence.src.md");
+        assertTrue(body.contains("## Quick start"), body);
+        assertTrue(body.contains("### Next steps"), body);
+        // The bash comment must remain a single '#' (not shifted).
+        assertTrue(body.contains("# this is a shell comment, not a heading"), body);
+        assertFalse(body.contains("## this is a shell comment, not a heading"), body);
+    }
 }

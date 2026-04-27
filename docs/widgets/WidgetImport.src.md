@@ -46,6 +46,7 @@ ${en:'Widget parameters', ru:'Свойства виджета'}:
 |              wrap               | ${en:'Wrap output in a code fence: `true`, `false`', ru:'Оборачивать ли вывод в кодовый блок: `true`, `false`'}                                                               |                      `false`                      |
 |              lang               | ${en:'Language tag for the fence; `auto` detects from file extension', ru:'Язык кодового блока; `auto` определяет по расширению файла'}                                       |                      `auto`                       |
 |             dedent              | ${en:'Strip common leading whitespace: `auto`, `true`, `false`', ru:'Удалять общий отступ: `auto`, `true`, `false`'}                                                          |                      `auto`                       |
+|         heading-offset          | ${en:'Shift ATX heading levels by an integer (clamped to 1..6); cannot combine with wrap=''true''', ru:'Сдвинуть уровни ATX-заголовков на указанное число (с ограничением до 1..6); нельзя сочетать с wrap=''true'''} |                       `0`                         |
 |               url               | ${en:'HTTP(S) URL to fetch (mutually exclusive with `path`); requires `nrg.allowRemoteImports=true`', ru:'HTTP(S) URL для загрузки (взаимоисключим с `path`); требуется `nrg.allowRemoteImports=true`'} |                                                   |
 |              cache              | ${en:'Cache TTL: `<int>{s,m,h,d}` or `none` (e.g. `1h`, `7d`)', ru:'TTL кэша: `<int>{s,m,h,d}` или `none` (например `1h`, `7d`)'}                                             |                      `none`                       |
 |             timeout             | ${en:'HTTP timeout: `<int>{s,m,h,d}` (cannot be `none`)', ru:'HTTP-тайм-аут: `<int>{s,m,h,d}` (не может быть `none`)'}                                                        |                      `60s`                        |
@@ -97,6 +98,19 @@ Region names match the pattern `[A-Za-z0-9_-]+`. Region markers are stripped fro
 Nested regions are supported — when extracting an outer region, inner region markers are also stripped from the output.<!--en-->
 Имена регионов соответствуют шаблону `[A-Za-z0-9_-]+`. Строки-маркеры регионов исключаются из вывода.<!--ru-->
 Вложенные регионы поддерживаются — при извлечении внешнего региона маркеры внутренних регионов также удаляются из вывода.<!--ru-->
+
+${en:'**Heading offset**', ru:'**Сдвиг уровней заголовков**'}
+
+`heading-offset='N'` shifts every ATX heading (`#`, `##`, …, `######`) in the imported content by `N` levels — useful when an imported `.src.md` owns its own heading hierarchy but is being included under a parent section.<!--en-->
+Levels are clamped to `[1, 6]`; clamped headings emit a single aggregated warning per import call.<!--en-->
+Lines inside fenced code blocks (```` ``` ```` or `~~~`) are not shifted, so a `# bash comment` inside a fence stays a `# bash comment`.<!--en-->
+Setext-style headings (`====` / `----`) and indented (4-space) code blocks are not detected — prefer ATX headings and fenced code blocks in imports that use this parameter.<!--en-->
+Combining `heading-offset` with a non-zero value and `wrap='true'` fails the build.<!--en-->
+`heading-offset='N'` сдвигает каждый ATX-заголовок (`#`, `##`, …, `######`) в импортируемом содержимом на `N` уровней — это полезно, когда у импортируемого `.src.md` собственная иерархия заголовков, но он включается в раздел родителя.<!--ru-->
+Уровни ограничиваются диапазоном `[1, 6]`; усечённые заголовки приводят к одному сводному предупреждению на вызов импорта.<!--ru-->
+Строки внутри блоков кода (```` ``` ```` или `~~~`) не сдвигаются, поэтому `# bash-комментарий` внутри блока кода остаётся `# bash-комментарием`.<!--ru-->
+Setext-заголовки (`====` / `----`) и блоки кода с отступом 4 пробела не распознаются — в импортах с этим параметром используйте ATX-заголовки и ограждённые кодовые блоки.<!--ru-->
+Сочетание `heading-offset` с ненулевым значением и `wrap='true'` приводит к ошибке сборки.<!--ru-->
 
 ${en:'**Remote imports**', ru:'**Удалённый импорт**'}
 
