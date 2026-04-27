@@ -87,7 +87,8 @@ public class StdoutCliTest extends DefaultNRGTest {
         String err = getErrAndClear();
 
         assertFalse(out.contains("Hello"), "Nothing should be printed for unknown language");
-        assertTrue(err.contains("Unknown language 'xx'"), "Expected error about unknown language, got: " + err);
+        assertTrue(err.contains("--language 'xx' not declared"),
+                "Expected stderr warning about not-declared language, got: " + err);
         assertFalse(Files.exists(tempDir.resolve("README.md")));
     }
 

@@ -8,6 +8,7 @@ import com.nanolaba.nrg.core.NRGConstants;
 import com.nanolaba.nrg.core.NRGUtil;
 import com.nanolaba.nrg.core.OutputFileNameResolver;
 import com.nanolaba.nrg.core.OutputFileNameValidator;
+import com.nanolaba.nrg.core.SourceFileResolver;
 import com.nanolaba.nrg.core.Validator;
 import com.nanolaba.nrg.core.freeze.FreezeValidator;
 import com.nanolaba.nrg.widgets.NRGWidget;
@@ -26,6 +27,7 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -43,6 +45,12 @@ import static com.nanolaba.nrg.core.NRGConstants.DEFAULT_CHARSET;
  * Library users can also call {@link #addWidget(NRGWidget)} before {@link #main(String...)}
  * to register custom widgets globally, or invoke {@link #run(String...)} directly to capture
  * the exit code without the {@link System#exit(int)} call.
+ *
+ * <p>Multiple source files may be passed positionally; {@code -f} remains a single-file alias
+ * and is mutually exclusive with positional arguments. Patterns use {@code glob:} syntax
+ * (see {@link com.nanolaba.nrg.core.SourceFileResolver}). With {@code --fail-fast}, the batch
+ * stops at the first non-zero result; the default aggregates so every file's diagnostics
+ * surface in a single run.
  */
 public class NRG {
 
@@ -135,6 +143,9 @@ public class NRG {
                 "output filename pattern for the default language (overrides nrg.defaultLanguageFileNamePattern)");
         defaultLangFileNamePattern.setArgName("pattern");
         options.addOption(defaultLangFileNamePattern);
+        Option failFast = new Option(null, "fail-fast", false,
+                "stop on the first non-zero result instead of aggregating across all files");
+        options.addOption(failFast);
 
         CommandLineParser parser = new DefaultParser();
         CommandLine cmd = parser.parse(options, args);
@@ -177,15 +188,135 @@ public class NRG {
         String fileNamePatternValue = cmd.getOptionValue(fileNamePattern);
         String defaultLangFileNamePatternValue = cmd.getOptionValue(defaultLangFileNamePattern);
 
-        if (cmd.hasOption(file)) {
-            File sourceFile = cmd.getParsedOptionValue(file);
-            if (validateMode) {
-                return runValidation(sourceFile);
-            }
-            return generate(sourceFile, sourceCharset, toStdout, langValue, cliWidgets, checkMode,
-                    cmd.hasOption(allowExec), fileNamePatternValue, defaultLangFileNamePatternValue);
+        List<File> sources = collectSourceFiles(cmd, file);
+        if (sources == null) {
+            return 1;
         }
-        return 0;
+        if (sources.isEmpty()) {
+            return 0;
+        }
+
+        boolean failFastFlag = cmd.hasOption(failFast);
+        int totalOutputs = 0;
+        if (toStdout) {
+            totalOutputs = countTotalOutputs(sources, sourceCharset, cliWidgets, langValue);
+        }
+        int aggregateCode = 0;
+        for (File sourceFile : sources) {
+            int code;
+            if (validateMode) {
+                code = runValidation(sourceFile);
+            } else {
+                code = generate(sourceFile, sourceCharset, toStdout, langValue, cliWidgets,
+                        checkMode, cmd.hasOption(allowExec),
+                        fileNamePatternValue, defaultLangFileNamePatternValue,
+                        totalOutputs > 1);
+            }
+            if (code != 0) {
+                aggregateCode = 1;
+                if (failFastFlag) {
+                    return 1;
+                }
+            }
+        }
+        return aggregateCode;
+    }
+
+    /**
+     * Combines the legacy single {@code -f} flag and the new positional source-file arguments
+     * into one ordered, deduplicated list. Rejects mixing the two and rejects an overall
+     * zero-match outcome. Returns {@code null} when an error has already been logged so the
+     * caller can short-circuit with exit code 1; an empty list means "no -f and no positional
+     * arguments — the CLI was invoked with only flags, exit cleanly".
+     *
+     * <p>The {@code -f} alias is treated as a literal single-file reference (no glob expansion),
+     * so the historical {@code Source file does not exist:} error from {@link #generate} still
+     * surfaces unchanged when a missing path is passed via {@code -f}.
+     */
+    private static List<File> collectSourceFiles(CommandLine cmd, Option fileOpt) throws ParseException {
+        // Declared 'throws ParseException' because cmd.getParsedOptionValue(fileOpt) is declared
+        // to throw it; in practice the value was already validated by the parser above.
+        boolean hasFlag = cmd.hasOption(fileOpt);
+        String[] positional = cmd.getArgs();
+        boolean hasPositional = positional != null && positional.length > 0;
+        if (hasFlag && hasPositional) {
+            System.err.println("Incorrect command line arguments: -f and positional file arguments are mutually exclusive");
+            System.err.println("To view help, run with the -h option");
+            return null;
+        }
+        if (hasFlag) {
+            // Preserve legacy semantics: -f points at exactly one file, no glob expansion.
+            // The generate()/runValidation() helpers already emit "Source file does not exist:"
+            // for missing paths, so we keep that diagnostic verbatim by skipping the resolver.
+            File singleFile = (File) cmd.getParsedOptionValue(fileOpt);
+            return Collections.singletonList(singleFile);
+        }
+        if (!hasPositional) {
+            return Collections.emptyList();
+        }
+        List<String> patterns = new ArrayList<>();
+        for (String p : positional) {
+            if (p != null && !p.isEmpty()) {
+                patterns.add(p);
+            }
+        }
+        if (patterns.isEmpty()) {
+            return Collections.emptyList();
+        }
+        SourceFileResolver.Result r = SourceFileResolver.resolve(patterns);
+        // LOG.warn writes to stdout in the in-house logger; routing per-pattern empty warnings
+        // straight to stderr keeps them close to the eventual "No source files matched" error
+        // and matches what users expect from a warning of this kind.
+        for (String p : r.getEmptyPatterns()) {
+            System.err.println("WARN: No source files matched pattern: " + p);
+        }
+        if (r.getFiles().isEmpty()) {
+            System.err.println("No source files matched any of the supplied patterns");
+            return null;
+        }
+        return r.getFiles();
+    }
+
+    /**
+     * Pre-walks every source file's {@link GeneratorConfig} once to count the total number of
+     * (file, language) outputs the batch will produce. Used by {@code --stdout} to decide whether
+     * per-file separator headers are needed when the batch is reduced to a single language each
+     * (e.g. two single-language files = 2 outputs => headers).
+     *
+     * <p>{@code languageFilter}, when non-null, restricts the count to files that actually
+     * declare it — matching the runtime behaviour where filtered-out files are skipped with a
+     * warning. This keeps the historical "no header for single-language single-file output"
+     * behaviour intact when {@code -f --language X} is used on a multi-language source.
+     *
+     * <p>Cheap: {@link Generator}'s constructor only reads config; full rendering is deferred to
+     * {@link Generator#getResult(String)} and is performed exactly once per language.
+     */
+    private static int countTotalOutputs(List<File> sources, Charset charset, List<NRGWidget> cliWidgets,
+                                         String languageFilter) {
+        int total = 0;
+        for (File f : sources) {
+            try {
+                List<NRGWidget> widgets = new ArrayList<>();
+                if (cliWidgets != null) {
+                    widgets.addAll(cliWidgets);
+                }
+                widgets.addAll(additionalWidgets);
+                Generator probe = new Generator(f, charset, widgets);
+                List<String> declared = probe.getConfig().getLanguages();
+                if (languageFilter != null) {
+                    if (declared.contains(languageFilter)) {
+                        total += 1;
+                    }
+                } else {
+                    total += declared.size();
+                }
+            } catch (Exception e) {
+                // Counting is best-effort; if the source can't even be parsed, assume 1 output.
+                LOG.debug("countTotalOutputs probe failed for {}: {}", f, e.getMessage());
+                total += 1;
+            }
+        }
+        return total;
     }
 
     private static int runValidation(File sourceFile) {
@@ -260,7 +391,8 @@ public class NRG {
 
     private static int generate(File sourceFile, Charset charset, boolean toStdout, String languageFilter,
                                 List<NRGWidget> cliWidgets, boolean checkMode, boolean allowExec,
-                                String fileNamePatternOverride, String defaultLangFileNamePatternOverride) {
+                                String fileNamePatternOverride, String defaultLangFileNamePatternOverride,
+                                boolean perFileStdoutHeader) {
         if (!sourceFile.exists()) {
             LOG.error("Source file does not exist: {}", sourceFile.getAbsolutePath());
             return 1;
@@ -307,7 +439,7 @@ public class NRG {
                 return performCheck(generator);
             }
             if (toStdout) {
-                printToStdout(generator, languageFilter);
+                printToStdout(generator, languageFilter, perFileStdoutHeader);
                 return 0;
             }
             createFiles(generator);
@@ -408,17 +540,36 @@ public class NRG {
         }
     }
 
-    private static void printToStdout(Generator generator, String languageFilter) {
+    /**
+     * Streams the generator's rendered output to stdout. The behavior depends on whether a
+     * single-language filter is requested and whether the multi-file caller has signalled that
+     * separators should be forced even for single-language files (i.e. multiple sources in one
+     * batch).
+     *
+     * <p>When {@code languageFilter} is non-null but the file does not declare it, this is a
+     * <em>skip</em> rather than an error: in a multi-file batch other files may declare it, so
+     * we log a warning and move on instead of failing the whole run.
+     */
+    private static void printToStdout(Generator generator, String languageFilter, boolean forceHeader) {
         List<String> languages = generator.getConfig().getLanguages();
         if (languageFilter != null) {
             if (!languages.contains(languageFilter)) {
-                LOG.error("Unknown language '{}'; available: {}", languageFilter, languages);
+                System.err.println("WARN: --language '" + languageFilter
+                        + "' not declared in " + generator.getConfig().getSourceFile().getName()
+                        + " (available: " + languages + "); skipping");
                 return;
             }
+            if (forceHeader) {
+                File readmeFile = getReadmeFile(languageFilter, generator.getConfig());
+                System.out.println("=== " + readmeFile.getName() + " ===");
+            }
             System.out.print(generator.getResult(languageFilter).getContent());
+            if (forceHeader) {
+                System.out.println();
+            }
             return;
         }
-        boolean multiple = languages.size() > 1;
+        boolean multiple = languages.size() > 1 || forceHeader;
         for (String lang : languages) {
             if (multiple) {
                 File readmeFile = getReadmeFile(lang, generator.getConfig());
