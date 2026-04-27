@@ -5,6 +5,14 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
+/**
+ * Maps a filename's extension to a Markdown fenced-code language identifier — used by
+ * {@code ImportWidget} when {@code wrap='true'} and {@code lang='auto'}, so authors don't
+ * have to specify the highlight tag for every imported snippet.
+ *
+ * <p>Returns the empty string for unknown extensions or filenames without one (so the
+ * generated fence stays valid: <code>```\n...\n```</code>).
+ */
 final class ImportLanguageDetector {
 
     private static final Map<String, String> EXTENSION_TO_LANG;

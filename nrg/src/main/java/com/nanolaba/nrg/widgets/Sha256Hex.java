@@ -3,6 +3,13 @@ package com.nanolaba.nrg.widgets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
+/**
+ * Computes the lowercase-hex SHA-256 of a byte array.
+ *
+ * <p>Used by the remote-import path to verify {@code sha256='…'} pins and to log the
+ * actual hash of newly fetched payloads so authors can paste the value back into the
+ * source for reproducible downloads.
+ */
 final class Sha256Hex {
 
     private Sha256Hex() {

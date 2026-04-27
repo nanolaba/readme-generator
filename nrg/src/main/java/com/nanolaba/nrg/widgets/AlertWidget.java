@@ -6,6 +6,14 @@ import com.nanolaba.nrg.core.NRGUtil;
 
 import java.util.*;
 
+/**
+ * {@code ${widget:alert(type='note|tip|important|warning|caution', text='...')}} — emits
+ * GitHub-flavoured alert/admonition blockquotes ({@code > [!NOTE]} et al.).
+ *
+ * <p>Multi-line text is supported via literal {@code \n} escapes inside the {@code text}
+ * parameter. Unknown {@code type} values are rejected with an error and the widget renders
+ * an empty string; valid types are normalised to upper case for the marker line.
+ */
 public class AlertWidget extends DefaultWidget {
 
     static final Set<String> VALID_TYPES = Collections.unmodifiableSet(

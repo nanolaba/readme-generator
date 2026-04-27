@@ -6,6 +6,15 @@ import com.nanolaba.nrg.core.NRGUtil;
 
 import java.util.Map;
 
+/**
+ * {@code ${widget:badge(type='...', ...)}} — renders shields.io-backed status badges as
+ * Markdown image links.
+ *
+ * <p>Six pre-canned types share the widget: {@code maven-central}, {@code license},
+ * {@code github-release}, {@code github-stars}, {@code github-workflow}, and
+ * {@code custom}. Each type validates its own required parameters; missing or malformed
+ * values are logged as errors and the widget renders an empty string.
+ */
 public class BadgeWidget extends DefaultWidget {
 
     @Override
@@ -145,6 +154,11 @@ public class BadgeWidget extends DefaultWidget {
         return v;
     }
 
+    /**
+     * Encodes a label fragment for shields.io path-segment style: dashes are doubled,
+     * underscores are doubled, and spaces become underscores — mirroring the rules at
+     * <a href="https://shields.io/badges/static-badge">shields.io static-badge</a>.
+     */
     static String shieldsEscape(String s) {
         return s.replace("-", "--").replace("_", "__").replace(" ", "_");
     }

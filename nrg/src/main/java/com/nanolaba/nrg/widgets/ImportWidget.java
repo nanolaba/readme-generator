@@ -9,18 +9,36 @@ import org.apache.commons.io.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.charset.Charset;
+import java.time.Clock;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * {@code ${widget:import(path='...' | url='...', ...)}} — embeds another file (local or
+ * remote) into the current source body, with optional sub-region selection, dedent,
+ * heading-offset shift, recursive sub-generation, and code-fence wrapping.
+ *
+ * <p>The pipeline is fixed: validate → read raw bytes → apply {@code lines}/{@code region}
+ * selection → dedent → run sub-{@link Generator} (when {@code run-generator='true'}, the
+ * default for {@code .src.md} sources) → shift headings → wrap in fence. Sub-generators
+ * inherit parent properties and run with {@code rootGenerator=false} so escapes and
+ * metadata survive for the parent's final pass.
+ *
+ * <p>Remote imports are gated behind {@code <!--@nrg.allowRemoteImports=true-->} and only
+ * accept HTTP(S). Caching, request timeouts, and SHA-256 pinning are configured per
+ * occurrence; see {@link RemoteFetcher} for the freshness/fallback semantics.
+ */
 public class ImportWidget extends DefaultWidget {
 
     private final RemoteFetcher fetcher;
 
     public ImportWidget() {
-        this(new RemoteFetcher(new HttpUrlOpener(), java.time.Clock.systemUTC()));
+        this(new RemoteFetcher(new HttpUrlOpener(), Clock.systemUTC()));
     }
 
     ImportWidget(RemoteFetcher fetcher) {
@@ -127,9 +145,9 @@ public class ImportWidget extends DefaultWidget {
             // Synthesize a file for downstream code (sub-Generator, ImportLanguageDetector, region not-found message).
             String urlPath;
             try {
-                urlPath = new java.net.URI(widgetConfig.getUrl()).getPath();
+                urlPath = new URI(widgetConfig.getUrl()).getPath();
                 if (urlPath == null || urlPath.isEmpty()) urlPath = "remote";
-            } catch (java.net.URISyntaxException e) {
+            } catch (URISyntaxException e) {
                 urlPath = "remote";
             }
             sourceFile = new File(config.getSourceFile().getParentFile(), new File(urlPath).getName());
@@ -276,9 +294,9 @@ public class ImportWidget extends DefaultWidget {
 
     private static String extractUrlPath(String url) {
         try {
-            String p = new java.net.URI(url).getPath();
+            String p = new URI(url).getPath();
             return p == null ? "" : p;
-        } catch (java.net.URISyntaxException e) {
+        } catch (URISyntaxException e) {
             return "";
         }
     }

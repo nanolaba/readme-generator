@@ -12,6 +12,18 @@ import org.apache.maven.plugins.annotations.Parameter;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Maven goal {@code nrg:create-files} — wraps the {@link NRG} CLI so README templates can
+ * be regenerated as part of a Maven build (default phase: {@code compile}).
+ *
+ * <p>The Mojo is intentionally a thin shim: parameter values are translated to the
+ * matching CLI flags and passed through {@link NRG#run(String...)}. The only logic that
+ * lives here is up-front validation of the {@code <widgets>} list (existence, supertype,
+ * no-arg constructor) so a misconfigured POM fails fast with a {@code MojoExecutionException}
+ * instead of an obscure CLI error per file. {@code <check>} and {@code <validate>} failures
+ * across all template files are aggregated into a single failure at the end so authors see
+ * every diagnostic before the build halts.
+ */
 @Mojo(name = "create-files", defaultPhase = LifecyclePhase.COMPILE)
 public class NRGMojo extends AbstractMojo {
 

@@ -5,6 +5,12 @@ import com.nanolaba.nrg.core.NRGUtil;
 
 import java.util.Map;
 
+/**
+ * {@code ${widget:todo(text='...')}} — renders a visually loud "TODO" placeholder
+ * (📌⌛ prefix wrapped in a {@code <pre>} block) that survives Markdown rendering and
+ * is easy to spot in a generated README. Defaults to "Not done yet…" when no text is
+ * provided.
+ */
 public class TodoWidget extends DefaultWidget {
 
     public static final String PREFIX = "\uD83D\uDCCC ⌛";

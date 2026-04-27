@@ -8,6 +8,17 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.Map;
 
+/**
+ * {@code ${widget:math(expr='...', display='inline|block', renderer='native|svg', ...)}} —
+ * renders LaTeX math, either as raw {@code $…$}/{@code $$…$$} that GitHub picks up natively,
+ * or as an external SVG image reference (default service: latex.codecogs.com).
+ *
+ * <p>The {@code expr} parameter must be supplied with a single backslash escape per LaTeX
+ * command (e.g. {@code \\frac}); the widget collapses doubled backslashes into one before
+ * embedding the expression so authors don't have to fight the {@code <!--@key=value-->}
+ * parser. SVG mode URL-encodes spaces as {@code %20} (instead of {@code +}) so the
+ * generated Markdown stays visually clean.
+ */
 public class MathWidget extends DefaultWidget {
 
     static final String DEFAULT_SVG_SERVICE = "https://latex.codecogs.com/svg.image?";

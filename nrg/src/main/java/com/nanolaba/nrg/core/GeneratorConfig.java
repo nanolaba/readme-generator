@@ -19,6 +19,22 @@ import java.util.stream.Stream;
 
 import static com.nanolaba.nrg.core.NRGConstants.*;
 
+/**
+ * Holds the parsed configuration for one source template: declared languages,
+ * properties, widgets, and lazily-resolved external descriptors (POM, npm, Gradle).
+ *
+ * <p>Construction parses the source body in two passes:
+ * <ol>
+ *   <li>First pass extracts the bootstrap properties {@code nrg.languages} and
+ *       {@code nrg.defaultLanguage} so subsequent rendering knows which language variants exist.</li>
+ *   <li>Second pass collects every other {@code <!--@key=value-->} marker into {@link #properties}.</li>
+ * </ol>
+ *
+ * <p>Default widgets are always registered; {@code nrg.widgets} (if defined) and any
+ * caller-supplied widgets are added on top. {@link #rootGenerator} distinguishes the
+ * top-level generator from sub-generators created by {@code ImportWidget} — only the root
+ * strips NRG metadata and unescapes characters during the final pass.
+ */
 public class GeneratorConfig {
 
     private final List<NRGWidget> widgets = new ArrayList<>();

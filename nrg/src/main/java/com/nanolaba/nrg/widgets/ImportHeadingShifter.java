@@ -3,6 +3,19 @@ package com.nanolaba.nrg.widgets;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * Rewrites ATX-style headings in imported content by adding a configurable level offset,
+ * so e.g. an imported {@code # Title} becomes {@code ## Title} when nested under a parent
+ * section ({@code heading-offset='+1'}).
+ *
+ * <p>Resulting levels are clamped to 1..6 (Markdown's max), and clamped occurrences are
+ * counted and reported back to the caller for warning purposes. Code-fence content is
+ * skipped — opening fences toggle a "do not rewrite" mode until the matching close fence
+ * is seen, so inline {@code #} characters inside code blocks survive unchanged.
+ *
+ * <p>Mixed line endings are normalised to whichever separator dominates the input: CRLF
+ * if any present, else LF if any newline present, else the platform default.
+ */
 final class ImportHeadingShifter {
 
     private static final Pattern ATX = Pattern.compile("^(#{1,6})(\\s.*|\\s*)$");

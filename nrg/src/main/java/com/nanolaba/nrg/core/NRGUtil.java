@@ -9,6 +9,21 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * Static helpers shared between the CLI, the {@link GeneratorConfig} bootstrap, and the
+ * per-line {@link TemplateLine} renderer.
+ *
+ * <p>Covers four orthogonal concerns:
+ * <ul>
+ *   <li>Reflective widget loading from FQCN lists ({@link #loadWidgets}, {@link #loadWidget}).</li>
+ *   <li>Property merging and language-scoped lookup ({@link #mergeProperty},
+ *       {@link #getLanguageScopedProperty}).</li>
+ *   <li>Marker / parameter parsing for the template DSL
+ *       ({@link #extractRawPropertyMarkers}, {@link #parseParametersLine},
+ *       {@link #unwrapParameterValue}).</li>
+ *   <li>Cheap text-search utilities ({@link #findFirstUnescapedOccurrenceLine}).</li>
+ * </ul>
+ */
 public class NRGUtil {
 
     private NRGUtil() {/**/}

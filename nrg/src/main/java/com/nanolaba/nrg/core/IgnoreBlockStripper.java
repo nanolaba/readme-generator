@@ -6,6 +6,19 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 
+/**
+ * Removes content marked as ignored from a source body before any other processing.
+ *
+ * <p>Two flavours of marker are honoured (both must be unescaped):
+ * <ul>
+ *   <li>{@code <!--nrg.ignore-->} on a line drops that single line.</li>
+ *   <li>{@code <!--nrg.ignore.begin-->} … {@code <!--nrg.ignore.end-->} drops the entire
+ *       block including both marker lines.</li>
+ * </ul>
+ *
+ * <p>Unmatched {@code begin} or {@code end} markers are logged as errors but never abort
+ * generation — the malformed marker is dropped and processing continues.
+ */
 public final class IgnoreBlockStripper {
 
     private static final Pattern INLINE = Pattern.compile("(?<!\\\\)<!--\\s*nrg\\.ignore\\s*-->");

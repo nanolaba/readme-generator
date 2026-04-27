@@ -4,6 +4,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 
+/**
+ * Extracts a named region from imported source lines, delimited by
+ * {@code nrg:begin:<name>} / {@code nrg:end:<name>} markers (typically embedded in
+ * language-appropriate comments).
+ *
+ * <p>The matched marker lines themselves are dropped from the output, and any unrelated
+ * NRG marker lines that happen to fall inside the region are likewise stripped — keeping
+ * imported snippets clean even when a single source file declares overlapping regions.
+ */
 final class ImportRegionExtractor {
 
     private static final Pattern ANY_MARKER = Pattern.compile("nrg:(?:begin|end):[A-Za-z0-9_-]+");

@@ -15,6 +15,20 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
+/**
+ * {@code ${widget:exec(cmd='...', cwd='.', timeout='30', trim='true', codeblock='lang')}}
+ * — runs an external command and embeds its captured stdout in the generated README.
+ *
+ * <p>Disabled by default for security reasons; the user must pass {@code --allow-exec}
+ * (CLI) or {@code <allowExec>true</allowExec>} (Maven plugin) to opt in. The command is
+ * split on whitespace and executed via {@link ProcessBuilder} (no shell interpolation),
+ * with a configurable timeout (default {@value #DEFAULT_TIMEOUT_SECONDS}s) and an
+ * optional fenced-codeblock wrapper. Non-zero exit, timeout, or I/O failure produces an
+ * error log and an empty replacement.
+ *
+ * <p>The {@link CommandRunner} seam exists purely for tests — production callers always
+ * get the {@code ProcessBuilder}-backed implementation.
+ */
 public class ExecWidget extends DefaultWidget {
 
     static final long DEFAULT_TIMEOUT_SECONDS = 30L;

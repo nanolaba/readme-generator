@@ -2,6 +2,15 @@ package com.nanolaba.nrg.widgets;
 
 import com.nanolaba.nrg.core.TemplateLine;
 
+/**
+ * Immutable descriptor of a single {@code ${widget:name(params)}} occurrence within a
+ * {@link TemplateLine}.
+ *
+ * <p>Captures the widget name, the raw parameter string (everything between the parentheses,
+ * un-parsed — widgets typically feed it to {@code NRGUtil.parseParametersLine}), and the
+ * inclusive/exclusive offsets where the tag matched. The owning line is exposed for widgets
+ * that need contextual information about the surrounding text.
+ */
 public class WidgetTag {
 
     private final TemplateLine line;

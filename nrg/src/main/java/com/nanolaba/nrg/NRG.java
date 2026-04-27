@@ -4,8 +4,11 @@ import com.nanolaba.logging.ConsoleLogger;
 import com.nanolaba.logging.LOG;
 import com.nanolaba.nrg.core.Generator;
 import com.nanolaba.nrg.core.GeneratorConfig;
+import com.nanolaba.nrg.core.NRGConstants;
 import com.nanolaba.nrg.core.NRGUtil;
 import com.nanolaba.nrg.core.OutputFileNameResolver;
+import com.nanolaba.nrg.core.OutputFileNameValidator;
+import com.nanolaba.nrg.core.Validator;
 import com.nanolaba.nrg.widgets.NRGWidget;
 import com.nanolaba.sugar.Code;
 import org.apache.commons.cli.*;
@@ -21,11 +24,25 @@ import java.net.URLClassLoader;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.regex.Pattern;
 
 import static com.nanolaba.nrg.core.NRGConstants.DEFAULT_CHARSET;
 
+/**
+ * CLI entry point for Nanolaba Readme Generator.
+ *
+ * <p>Parses command-line options ({@code -f}, {@code --charset}, {@code --version},
+ * {@code --check}, {@code --validate}, etc.), wires up {@link Generator} for the requested
+ * source file, and writes one output file per language declared via {@code nrg.languages}.
+ * Library users can also call {@link #addWidget(NRGWidget)} before {@link #main(String...)}
+ * to register custom widgets globally, or invoke {@link #run(String...)} directly to capture
+ * the exit code without the {@link System#exit(int)} call.
+ */
 public class NRG {
 
     public static final String ENV_LOG_LEVEL = "NRG_LOG_LEVEL";
@@ -175,13 +192,12 @@ public class NRG {
             LOG.error("Source file does not exist: {}", sourceFile.getAbsolutePath());
             return 1;
         }
-        java.util.List<com.nanolaba.nrg.core.Validator.Diagnostic> diagnostics =
-                new com.nanolaba.nrg.core.Validator(sourceFile).validate();
+        List<Validator.Diagnostic> diagnostics = new Validator(sourceFile).validate();
         if (diagnostics.isEmpty()) {
             return 0;
         }
         boolean anyError = false;
-        for (com.nanolaba.nrg.core.Validator.Diagnostic d : diagnostics) {
+        for (Validator.Diagnostic d : diagnostics) {
             System.err.println(d.toString());
             if (d.isError()) anyError = true;
         }
@@ -193,7 +209,7 @@ public class NRG {
             return null;
         }
         List<URL> urls = new ArrayList<>();
-        for (String entry : classpathValue.split(java.util.regex.Pattern.quote(File.pathSeparator))) {
+        for (String entry : classpathValue.split(Pattern.quote(File.pathSeparator))) {
             String trimmed = entry.trim();
             if (trimmed.isEmpty()) {
                 continue;
@@ -257,14 +273,14 @@ public class NRG {
             Generator generator = new Generator(sourceFile, charset, widgets);
             if (fileNamePatternOverride != null) {
                 generator.getConfig().getProperties().setProperty(
-                        com.nanolaba.nrg.core.NRGConstants.PROPERTY_FILE_NAME_PATTERN, fileNamePatternOverride);
+                        NRGConstants.PROPERTY_FILE_NAME_PATTERN, fileNamePatternOverride);
             }
             if (defaultLangFileNamePatternOverride != null) {
                 generator.getConfig().getProperties().setProperty(
-                        com.nanolaba.nrg.core.NRGConstants.PROPERTY_DEFAULT_LANGUAGE_FILE_NAME_PATTERN,
+                        NRGConstants.PROPERTY_DEFAULT_LANGUAGE_FILE_NAME_PATTERN,
                         defaultLangFileNamePatternOverride);
             }
-            java.util.Optional<String> patternError = com.nanolaba.nrg.core.OutputFileNameValidator.findError(
+            Optional<String> patternError = OutputFileNameValidator.findError(
                     sourceFile, generator.getConfig().getDefaultLanguage(),
                     generator.getConfig().getLanguages(), generator.getConfig().getProperties());
             if (patternError.isPresent()) {
@@ -306,6 +322,11 @@ public class NRG {
         return failed ? 1 : 0;
     }
 
+    /**
+     * Renders a minimal unified-diff hunk between {@code existingContent} (on disk) and
+     * {@code generatedContent} for the {@code --check} mode output. Trims common prefix
+     * and suffix lines, then emits a single hunk with up to three lines of context.
+     */
     static String unifiedDiff(String existingContent, String generatedContent, String filename) {
         if (Objects.equals(existingContent, generatedContent)) {
             return "";
@@ -353,7 +374,7 @@ public class NRG {
         if (s == null || s.isEmpty()) {
             return new ArrayList<>();
         }
-        return new ArrayList<>(java.util.Arrays.asList(s.split("\\R", -1)));
+        return new ArrayList<>(Arrays.asList(s.split("\\R", -1)));
     }
 
     private static void createFiles(Generator generator) throws IOException {
@@ -406,7 +427,7 @@ public class NRG {
      */
     @Deprecated
     public static File getReadmeFile(String language, File sourceFile, String defaultLanguage) {
-        return OutputFileNameResolver.resolve(sourceFile, defaultLanguage, language, new java.util.Properties());
+        return OutputFileNameResolver.resolve(sourceFile, defaultLanguage, language, new Properties());
     }
 
     private static void printHelp(Options options) {

@@ -4,15 +4,30 @@ import com.nanolaba.nrg.NRG;
 import com.nanolaba.nrg.widgets.NRGWidget;
 import org.apache.commons.io.FileUtils;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.StringReader;
 import java.nio.charset.Charset;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 
+/**
+ * Orchestrates the generation pipeline for a single source template.
+ *
+ * <p>Holds a {@link GeneratorConfig} (parsed from the source body) and lazily produces one
+ * {@link GenerationResult} per language declared via {@code nrg.languages}. Results are
+ * computed on first access via {@link #getResult(String)} / {@link #getResults()} and cached
+ * for the lifetime of the instance.
+ *
+ * <p>Each result is a head comment plus the rendered body — {@link IfBlockProcessor} prunes
+ * inactive branches first, then every remaining line is wrapped in a {@link TemplateLine} for
+ * visibility check, property/widget substitution, and final output assembly.
+ */
 public class Generator {
 
     private final GeneratorConfig config;
@@ -69,8 +84,8 @@ public class Generator {
         result.getContent().append(generateHeadComment(language));
 
         String body = IfBlockProcessor.process(config.getSourceFileBody(), config, language);
-        java.util.concurrent.atomic.AtomicInteger counter = new java.util.concurrent.atomic.AtomicInteger(0);
-        new java.io.BufferedReader(new java.io.StringReader(body))
+        AtomicInteger counter = new AtomicInteger(0);
+        new BufferedReader(new StringReader(body))
                 .lines()
                 .map(s -> new TemplateLine(config, s, counter.getAndIncrement()))
                 .filter(t -> t.isLineVisible(language))

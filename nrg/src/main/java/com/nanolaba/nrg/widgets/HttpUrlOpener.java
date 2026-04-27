@@ -7,6 +7,14 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
+/**
+ * Production {@link UrlOpener} implementation backed by {@link HttpURLConnection}.
+ *
+ * <p>Redirects are followed manually (the JDK's built-in follower silently drops on
+ * cross-protocol hops, e.g. http→https), capped at {@code maxRedirects}. Both connect and
+ * read timeouts are set from the same {@code timeoutMillis}; non-2xx responses translate
+ * to {@link IOException}.
+ */
 final class HttpUrlOpener implements UrlOpener {
 
     @Override

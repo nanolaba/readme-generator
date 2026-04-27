@@ -1,5 +1,10 @@
 package com.nanolaba.nrg.widgets;
 
+/**
+ * Immutable value object holding everything {@link RemoteFetcher} needs to resolve a
+ * single remote import: target URL, request {@code timeoutMillis}, cache {@code ttlMillis}
+ * (negative = caching disabled), and the optional pinned {@code expectedSha256} (null = unpinned).
+ */
 final class RemoteFetchSpec {
 
     private final String url;

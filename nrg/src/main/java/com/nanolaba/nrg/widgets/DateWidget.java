@@ -7,6 +7,11 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Map;
 
+/**
+ * {@code ${widget:date(pattern='...')}} — renders the build-time {@link Date} formatted
+ * with a {@link SimpleDateFormat} pattern. Defaults to {@code dd.MM.yyyy HH:mm:ss} when
+ * no pattern is supplied. Useful for stamping a "last generated" line in a README.
+ */
 public class DateWidget extends DefaultWidget {
 
     @Override

@@ -19,6 +19,23 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+/**
+ * {@code ${widget:tableOfContents(...)}} — generates a Markdown table of contents from
+ * the headings that appear after the widget's own line in the rendered document.
+ *
+ * <p>Implementation strategy: spin up a <em>secondary</em> {@link Generator} over the
+ * same source body with this widget disabled, scan the rendered output for {@code #}-prefixed
+ * headers starting at the line where the TOC widget appears, then build links with anchor
+ * slugs in the requested {@link AnchorStyle GitHub/GitLab/Bitbucket} flavour. Headers tagged
+ * {@code <!--toc.ignore-->} are skipped; the marker itself is stripped from the surrounding
+ * line via {@link #afterRenderLine}.
+ *
+ * <p>Configurable parameters: {@code title}, {@code ordered}, {@code min-depth},
+ * {@code max-depth}, {@code min-items}, and {@code anchor-style}. Depth bounds clamp at
+ * 1..6; the TOC degrades to an empty string when {@code anchor-style} is unrecognised, when
+ * fewer than {@code min-items} headings match, or when the widget tag is preceded by an
+ * escape backslash on the source line.
+ */
 public class TableOfContentsWidget extends DefaultWidget {
 
     public static final String IGNORE_ATTR = "<!--toc.ignore-->";
@@ -279,12 +296,19 @@ public class TableOfContentsWidget extends DefaultWidget {
             }
         }
 
+        /**
+         * Builds the anchor slug for this header in the configured {@link AnchorStyle}.
+         *
+         * <p>Markdown decoration ({@code [text](url)}, bold/italic, inline code, strikethrough,
+         * raw HTML tags, bare URLs) is stripped before slugification. The three styles diverge
+         * in how punctuation, casing, and the {@code markdown-header-} prefix are handled —
+         * matched against each platform's known anchor algorithm.
+         */
         public String getAnchor() {
             if (title == null || title.trim().isEmpty()) {
                 return "";
             }
 
-            // Удаляем markdown-разметку
             String cleaned = title
                     .replaceAll("\\[([^\\]]+)\\]\\([^)]+\\)", "$1") // ссылки [text](url) -> text
                     .replaceAll("\\*\\*([^*]+)\\*\\*", "$1") // жирный текст **text** -> text

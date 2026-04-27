@@ -4,6 +4,14 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * Parser and applier for the {@code ImportWidget}'s {@code lines='...'} parameter.
+ *
+ * <p>Supports comma-separated 1-indexed entries: bare line numbers ({@code "5"}),
+ * inclusive ranges ({@code "10-20"}), and open-ended ranges ({@code "-3"} → first three
+ * lines, {@code "100-"} → from line 100 to EOF). Out-of-range starts silently emit nothing;
+ * malformed values throw {@link IllegalArgumentException}.
+ */
 final class ImportLinesSpec {
 
     private final List<int[]> ranges;

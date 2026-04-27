@@ -3,6 +3,7 @@ package com.nanolaba.nrg.widgets;
 import com.nanolaba.logging.LOG;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.MessageDigest;
@@ -11,6 +12,18 @@ import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * On-disk cache backing the remote-import feature.
+ *
+ * <p>Each cached URL is stored as a pair of files keyed by the SHA-1 of the URL: a
+ * {@code .bin} file with the raw bytes and a sibling {@code .json} sidecar carrying the
+ * {@code fetchedAtEpochMs} timestamp (and the original URL, for debuggability). Corrupt
+ * or unreadable entries are evicted on lookup; write failures are logged but never abort
+ * the surrounding fetch — the cache is best-effort, not load-bearing.
+ *
+ * <p>SHA-1 is deliberate: it is used only as a filesystem-friendly key, never for
+ * integrity. Integrity is enforced separately via {@link Sha256Hex} pinning.
+ */
 final class CacheStore {
 
     private final Path cacheDir;
@@ -28,7 +41,7 @@ final class CacheStore {
         }
         try {
             byte[] bytes = Files.readAllBytes(body);
-            String json = new String(Files.readAllBytes(sidecar), java.nio.charset.StandardCharsets.UTF_8);
+            String json = new String(Files.readAllBytes(sidecar), StandardCharsets.UTF_8);
             long fetchedAt = parseFetchedAt(json);
             return Optional.of(new CachedEntry(bytes, fetchedAt));
         } catch (IOException | IllegalArgumentException e) {
@@ -48,7 +61,7 @@ final class CacheStore {
             Path sidecar = cacheDir.resolve(key + ".json");
             Files.write(body, bytes);
             String json = "{\"url\":" + jsonString(url) + ",\"fetchedAtEpochMs\":" + fetchedAtEpochMs + "}";
-            Files.write(sidecar, json.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+            Files.write(sidecar, json.getBytes(StandardCharsets.UTF_8));
         } catch (IOException e) {
             LOG.warn(e, "cache: unable to write entry for " + url + " - continuing without cache");
         }
@@ -67,7 +80,7 @@ final class CacheStore {
     private static String key(String url) {
         try {
             MessageDigest md = MessageDigest.getInstance("SHA-1");
-            byte[] digest = md.digest(url.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+            byte[] digest = md.digest(url.getBytes(StandardCharsets.UTF_8));
             StringBuilder sb = new StringBuilder(digest.length * 2);
             for (byte b : digest) {
                 sb.append(Character.forDigit((b >> 4) & 0xF, 16));

@@ -6,14 +6,39 @@ import com.nanolaba.nrg.widgets.WidgetTag;
 import org.apache.commons.text.TextStringBuilder;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static org.apache.commons.lang3.StringUtils.*;
 
+/**
+ * Per-line rendering primitive of the generation pipeline.
+ *
+ * <p>Each instance holds a single source line plus a back-reference to its owning
+ * {@link GeneratorConfig}. {@link #generateLine(String)} is the main entry point — for the
+ * given target language it sequentially:
+ * <ol>
+ *   <li>checks line visibility (drops {@code <!--otherLang-->}-tagged and pure
+ *       property-definition lines);</li>
+ *   <li>substitutes {@code ${env.NAME}}, {@code ${pom.path}}, {@code ${npm.path}},
+ *       {@code ${gradle.path}} references;</li>
+ *   <li>substitutes {@code ${en:'...', ru:'...'}} per-language constructs;</li>
+ *   <li>substitutes {@code ${var}} property references with optional language scoping;</li>
+ *   <li>renders {@code ${widget:name(params)}} via every registered {@link NRGWidget}
+ *       (with {@code beforeRenderLine}/{@code afterRenderLine} hooks);</li>
+ *   <li>(root generator only) strips NRG metadata and unescapes backslash-escaped tags.</li>
+ * </ol>
+ *
+ * <p>Backslash-escaped occurrences ({@code \${...}}) are honoured everywhere via
+ * {@link #isNotEscaped}.
+ */
 public class TemplateLine {
 
     public static final Pattern WIDGET_TAG_PATTERN = Pattern.compile("\\$\\{ *widget:(\\w*)(\\(([^)]*)\\))? *}");
@@ -24,8 +49,8 @@ public class TemplateLine {
             Pattern.compile("\\$\\{\\s*npm\\.([A-Za-z_][A-Za-z0-9_.\\-@/]*?)(?::([^}]*))?\\s*}");
     private static final Pattern GRADLE_TAG_PATTERN =
             Pattern.compile("\\$\\{\\s*gradle\\.([A-Za-z_][A-Za-z0-9_.\\-]*?)(?::([^}]*))?\\s*}");
-    private static final java.util.Set<String> POM_INHERITED_FIELDS =
-            new java.util.HashSet<>(java.util.Arrays.asList("groupId", "version", "name"));
+    private static final Set<String> POM_INHERITED_FIELDS =
+            new HashSet<>(Arrays.asList("groupId", "version", "name"));
 
     private final GeneratorConfig config;
     private final String line;
@@ -196,7 +221,7 @@ public class TemplateLine {
         if (reader == null) {
             return null;
         }
-        java.util.Optional<String> raw = reader.read(path);
+        Optional<String> raw = reader.read(path);
         if (!raw.isPresent() && POM_INHERITED_FIELDS.contains(path)) {
             raw = reader.read("parent." + path);
         }
@@ -304,19 +329,17 @@ public class TemplateLine {
     private String resolvePomInternalName(String name, PomReader reader) {
         if (name.startsWith("env.")) {
             String envName = name.substring("env.".length());
-            String envValue = config.getEnvProvider().apply(envName);
-            return envValue;
+            return config.getEnvProvider().apply(envName);
         }
         if (name.startsWith("project.")) {
             String sub = name.substring("project.".length());
-            java.util.Optional<String> v = reader.read(sub);
+            Optional<String> v = reader.read(sub);
             if (!v.isPresent() && POM_INHERITED_FIELDS.contains(sub)) {
                 v = reader.read("parent." + sub);
             }
             return v.orElse(null);
         }
-        java.util.Optional<String> v = reader.read("properties." + name);
-        return v.orElse(null);
+        return reader.read("properties." + name).orElse(null);
     }
 
     protected String renderProperties(String line, String language) {

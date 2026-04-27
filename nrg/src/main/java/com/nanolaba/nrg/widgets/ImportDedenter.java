@@ -3,6 +3,14 @@ package com.nanolaba.nrg.widgets;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Removes a common leading-whitespace prefix from a list of imported lines.
+ *
+ * <p>Mirrors Python's {@code textwrap.dedent}: the longest prefix of whitespace shared by
+ * every non-blank line is stripped; blank lines are preserved as empty. The shared prefix
+ * must match character-for-character (mixing tabs and spaces aborts the dedent), so an
+ * accidentally aligned tab/space mix never silently corrupts the output.
+ */
 final class ImportDedenter {
 
     private ImportDedenter() {

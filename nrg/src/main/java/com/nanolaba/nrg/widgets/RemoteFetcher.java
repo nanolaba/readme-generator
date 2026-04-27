@@ -11,6 +11,19 @@ import java.nio.file.Path;
 import java.time.Clock;
 import java.util.Optional;
 
+/**
+ * Coordinates remote-import payload retrieval: cache lookup, conditional refetch,
+ * SHA-256 verification, and stale-cache fallback on network failure.
+ *
+ * <p>Cache hit logic — for a {@link RemoteFetchSpec} with a positive TTL, returns the
+ * cached bytes when their {@code fetchedAt} timestamp is within the TTL. A pinned SHA-256
+ * that disagrees with the cached entry forces eviction and refetch. On network failure,
+ * an existing cached copy (even if stale) is used as a fallback unless its SHA-256
+ * disagrees with the pin — in which case the original error is rethrown rather than
+ * surfacing untrusted bytes.
+ *
+ * <p>Only HTTP and HTTPS schemes are accepted; everything else is rejected at parse time.
+ */
 final class RemoteFetcher {
 
     private final UrlOpener opener;

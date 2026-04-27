@@ -3,6 +3,14 @@ package com.nanolaba.nrg.core;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
+/**
+ * Centralised string constants shared across the generator: NRG-recognised property names
+ * (the {@code nrg.*} keys parsed from {@code <!--@key=value-->} markers), the default
+ * source-file extension, and the default charset.
+ *
+ * <p>Kept as plain {@code public static final} fields rather than an enum so they can be
+ * referenced inline in property keys, regex literals, and log messages without ceremony.
+ */
 public class NRGConstants {
 
     public static final String PROPERTY_LANGUAGES = "nrg.languages";

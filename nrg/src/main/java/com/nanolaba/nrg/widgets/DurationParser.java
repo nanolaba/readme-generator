@@ -3,6 +3,12 @@ package com.nanolaba.nrg.widgets;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * Parses the simple duration grammar accepted by the remote-import {@code timeout} and
+ * {@code cache} parameters: a positive integer followed by a unit suffix
+ * ({@code s}, {@code m}, {@code h}, {@code d}), or the literal {@code "none"} which
+ * disables the feature.
+ */
 final class DurationParser {
 
     private static final Pattern GRAMMAR = Pattern.compile("^(\\d+)([smhd])$");
