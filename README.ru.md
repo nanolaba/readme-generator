@@ -1319,7 +1319,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 27.04.2026 21:04:28
+Last updated: 27.04.2026 21:06:27
 ```
 
 </td></tr>
@@ -1901,9 +1901,11 @@ nrg --classpath my-widgets.jar --widgets com.acme.widgets.Tag,com.acme.widgets.B
 ### Прямая связь
 
 - **Email**: nrg@nanolaba.com (для конфиденциальных вопросов)
-- **Проблемы безопасности**: Пожалуйста, используйте email с пометкой "[SECURITY]" в теме
+- **Проблемы безопасности**: политика раскрытия описана в [SECURITY.ru.md](SECURITY.ru.md). Используйте email с пометкой "[SECURITY]" в теме.
 
 ### Рекомендации
+
+См. [CONTRIBUTING.ru.md](CONTRIBUTING.ru.md) — полное руководство контрибьютора, и [CODE_OF_CONDUCT.ru.md](CODE_OF_CONDUCT.ru.md) — правила сообщества.
 
 Перед тем как оставить обратную связь:
 

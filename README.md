@@ -1314,7 +1314,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 27.04.2026 21:04:28
+Last updated: 27.04.2026 21:06:27
 ```
 
 </td></tr>
@@ -1896,9 +1896,11 @@ We value your input! Here are the best ways to connect with us:
 ### Direct Communication
 
 - **Email**: nrg@nanolaba.com (for sensitive matters or private discussions)
-- **Security Issues**: Please use email and prefix subject with "[SECURITY]"
+- **Security Issues**: see [SECURITY.md](SECURITY.md) for the full disclosure policy. Use email and prefix the subject with "[SECURITY]".
 
 ### Contribution Guide
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for the full contributor workflow and [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) for community expectations.
 
 Before submitting feedback:
 

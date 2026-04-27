@@ -16,10 +16,13 @@ We value your input! Here are the best ways to connect with us:<!--en-->
 
 - **Email**: nrg@nanolaba.com (for sensitive matters or private discussions)<!--en-->
 - **Email**: nrg@nanolaba.com (для конфиденциальных вопросов)<!--ru-->
-- **Security Issues**: Please use email and prefix subject with "[SECURITY]"<!--en-->
-- **Проблемы безопасности**: Пожалуйста, используйте email с пометкой "[SECURITY]" в теме<!--ru-->
+- **Security Issues**: see [SECURITY.md](SECURITY.md) for the full disclosure policy. Use email and prefix the subject with "[SECURITY]".<!--en-->
+- **Проблемы безопасности**: политика раскрытия описана в [SECURITY.ru.md](SECURITY.ru.md). Используйте email с пометкой "[SECURITY]" в теме.<!--ru-->
 
 ### ${en:'Contribution Guide', ru:'Рекомендации'}
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for the full contributor workflow and [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) for community expectations.<!--en-->
+См. [CONTRIBUTING.ru.md](CONTRIBUTING.ru.md) — полное руководство контрибьютора, и [CODE_OF_CONDUCT.ru.md](CODE_OF_CONDUCT.ru.md) — правила сообщества.<!--ru-->
 
 Before submitting feedback:<!--en-->
 Перед тем как оставить обратную связь:<!--ru-->
