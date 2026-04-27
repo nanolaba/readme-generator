@@ -41,8 +41,8 @@ Using **Nanolaba Readme Generator (NRG)**, you can:
 
 > 💡 **Nanolaba Readme Generator (NRG)** is written in Java and requires **Java 8** or higher to run.
 
-The latest stable version of the program is **1.0**.
-The current development version is **1.1-SNAPSHOT**.
+The latest stable version of the program is **1.1**.
+The current development version is **1.1**.
 
 
 ## Table of contents
@@ -121,7 +121,7 @@ Lines tagged `<!--en-->` go to `README.md`; lines tagged `<!--ru-->` go to `READ
 
 **Step 2: Generate the files**
 
-**Option A — CLI.** [Download](https://github.com/nanolaba/readme-generator/releases/tag/v1.0) the standalone jar, unzip it, then run:
+**Option A — CLI.** [Download](https://github.com/nanolaba/readme-generator/releases/tag/v1.1) the standalone jar, unzip it, then run:
 
 ```bash
 nrg -f /path/to/README.src.md
@@ -133,7 +133,7 @@ nrg -f /path/to/README.src.md
 <plugin>
     <groupId>com.nanolaba</groupId>
     <artifactId>nrg-maven-plugin</artifactId>
-    <version>1.0</version>
+    <version>1.1</version>
     <configuration>
         <file><item>README.src.md</item></file>
     </configuration>
@@ -209,7 +209,7 @@ ${widget:import(path='path/to/your/file/another-info.src.md')}
 **Nanolaba Readme Generator (NRG)** is written in Java and requires **Java 8** or higher to run.
 [Install](https://www.java.com/en/download/) Java if it’s not already present on your system.
 
-[Download](https://github.com/nanolaba/readme-generator/releases/tag/v1.0) the latest
+[Download](https://github.com/nanolaba/readme-generator/releases/tag/v1.1) the latest
 stable version of the application.
 
 Unzip the downloaded archive. If you're using a Unix-like system, make the `nrg.sh` file executable:
@@ -350,7 +350,7 @@ Add the following code to your `pom.xml`:
     <plugin>
         <groupId>com.nanolaba</groupId>
         <artifactId>nrg-maven-plugin</artifactId>
-        <version>1.0</version>
+        <version>1.1</version>
         <configuration>
             <file>
                 <item>README.src.md</item>
@@ -575,19 +575,19 @@ The action is published as a standalone repository [`nanolaba/nrg-action`](https
 <dependency>
     <groupId>com.nanolaba</groupId>
     <artifactId>readme-generator</artifactId>
-    <version>1.0</version>
+    <version>1.1</version>
 </dependency>  
 ```
 
 **Gradle (build.gradle)**
 
 ```groovy
-implementation 'com.nanolaba:readme-generator:1.0'
+implementation 'com.nanolaba:readme-generator:1.1'
 ```
 
 **Manual download**
 
-Get the JAR from [Maven Central](https://repo1.maven.org/maven2/com/nanolaba/readme-generator/1.0).
+Get the JAR from [Maven Central](https://repo1.maven.org/maven2/com/nanolaba/readme-generator/1.1).
 Add it to your project's classpath.
 
 After this, you can call the file generation function in your project by passing 
@@ -1314,7 +1314,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 27.04.2026 16:09:01
+Last updated: 27.04.2026 20:31:19
 ```
 
 </td></tr>
@@ -1820,7 +1820,7 @@ Other tools in the same space — useful if **Nanolaba Readme Generator (NRG)** 
 
 This section summarises the main user-visible changes in each release. For full details, see the git history.
 
-### Unreleased (1.1-SNAPSHOT)
+### 1.1
 
 - **Multi-file source input**: the CLI now accepts multiple positional source files and `glob:` patterns (`nrg "docs/**/*.src.md" A.src.md B.src.md`); `-f` remains a single-file alias and is rejected when mixed with positional args. Each input gets its own `Generator`. New `--fail-fast` short-circuits on the first non-zero per-file result; the default aggregates so every file's diagnostics surface in one run. With `--stdout`, per-file separators are emitted whenever the total output count exceeds one. Empty per-pattern matches log a warning; an overall zero-match exits `1`. The Maven plugin's `<file>` entries accept the same glob syntax, and a new `<failFast>` parameter (default `false`) maps to `--fail-fast`. Closes [#32](https://github.com/nanolaba/readme-generator/issues/32).
 - **Frozen regions**: `<!--nrg.freeze id="..."-->` … `<!--/nrg.freeze-->` block markers preserve content written by external tools (contributors-action, sponsors widgets, RSS embedders) into the generated readme across NRG regenerations. The template body between markers is a one-time bootstrap placeholder used only when the on-disk output file does not yet exist; subsequent regenerations splice the on-disk content back in. Optional `source-lang="X"` attribute redirects every language's freeze content to one source language's output file. Authoring errors (missing/duplicate id, unbalanced or nested markers, `source-lang` outside `nrg.languages`, unknown attributes) fail the build with exit `1` and are reported by `--validate`. On-disk anomalies (malformed blocks, missing ids) emit a one-time WARN and fall back to the template placeholder. Closes [#41](https://github.com/nanolaba/readme-generator/issues/41).
