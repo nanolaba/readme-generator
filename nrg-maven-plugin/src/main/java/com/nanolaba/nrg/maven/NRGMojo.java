@@ -23,6 +23,12 @@ import java.util.List;
  * instead of an obscure CLI error per file. {@code <check>} and {@code <validate>} failures
  * across all template files are aggregated into a single failure at the end so authors see
  * every diagnostic before the build halts.
+ *
+ * <p>Each {@code <file>} entry may be a literal path or a {@code glob:}-style pattern; the
+ * plugin forwards them to the CLI as positional arguments and lets {@link NRG} resolve
+ * them in one batch (see {@code com.nanolaba.nrg.core.SourceFileResolver}). Set
+ * {@code <failFast>true</failFast>} to abort on the first non-zero result instead of
+ * aggregating diagnostics across all matched files.
  */
 @Mojo(name = "create-files", defaultPhase = LifecyclePhase.COMPILE)
 public class NRGMojo extends AbstractMojo {
@@ -46,6 +52,9 @@ public class NRGMojo extends AbstractMojo {
 
     @Parameter(property = "validate", defaultValue = "false")
     private boolean validate;
+
+    @Parameter(property = "failFast", defaultValue = "false")
+    private boolean failFast;
 
     @Parameter(property = "fileNamePattern")
     private String fileNamePattern;
@@ -82,6 +91,10 @@ public class NRGMojo extends AbstractMojo {
         this.validate = validate;
     }
 
+    public void setFailFast(boolean failFast) {
+        this.failFast = failFast;
+    }
+
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         if (files == null || files.length == 0) {
@@ -91,56 +104,57 @@ public class NRGMojo extends AbstractMojo {
 
         String widgetsArg = validateAndJoinWidgets();
 
-        boolean anyCheckFailure = false;
-        boolean anyValidateFailure = false;
-        for (String file : files) {
-            List<String> args = new ArrayList<>();
-            args.add("-f");
-            args.add(file);
-            args.add("--charset");
-            args.add(charset);
-            if (logLevel != null && !logLevel.isEmpty()) {
-                args.add("--log-level");
-                args.add(logLevel);
-            }
-            if (widgetsArg != null) {
-                args.add("--widgets");
-                args.add(widgetsArg);
-            }
-            if (validate) {
-                args.add("--validate");
-            } else if (check) {
-                args.add("--check");
-            }
-            if (allowExec) {
-                args.add("--allow-exec");
-            }
-            if (fileNamePattern != null && !fileNamePattern.isEmpty()) {
-                args.add("--file-name-pattern");
-                args.add(fileNamePattern);
-            }
-            if (defaultLanguageFileNamePattern != null && !defaultLanguageFileNamePattern.isEmpty()) {
-                args.add("--default-language-file-name-pattern");
-                args.add(defaultLanguageFileNamePattern);
-            }
-            int code = NRG.run(args.toArray(new String[0]));
-            if (validate && code != 0) {
-                anyValidateFailure = true;
-            } else if (check && code != 0) {
-                anyCheckFailure = true;
-            }
+        List<String> args = new ArrayList<>();
+        args.add("--charset");
+        args.add(charset);
+        if (logLevel != null && !logLevel.isEmpty()) {
+            args.add("--log-level");
+            args.add(logLevel);
+        }
+        if (widgetsArg != null) {
+            args.add("--widgets");
+            args.add(widgetsArg);
+        }
+        if (validate) {
+            args.add("--validate");
+        } else if (check) {
+            args.add("--check");
+        }
+        if (allowExec) {
+            args.add("--allow-exec");
+        }
+        if (failFast) {
+            args.add("--fail-fast");
+        }
+        if (fileNamePattern != null && !fileNamePattern.isEmpty()) {
+            args.add("--file-name-pattern");
+            args.add(fileNamePattern);
+        }
+        if (defaultLanguageFileNamePattern != null && !defaultLanguageFileNamePattern.isEmpty()) {
+            args.add("--default-language-file-name-pattern");
+            args.add(defaultLanguageFileNamePattern);
+        }
+        // Positional file arguments must follow all flags (commons-cli stops parsing options at
+        // the first non-option token).
+        for (String f : files) {
+            if (f != null && !f.isEmpty()) args.add(f);
         }
 
-        if (anyValidateFailure) {
+        int code = NRG.run(args.toArray(new String[0]));
+        if (code == 0) {
+            return;
+        }
+        if (validate) {
             throw new MojoExecutionException(
                     "Template validation reported errors (see diagnostics above). " +
                             "Fix the source templates or remove <validate>.");
         }
-        if (anyCheckFailure) {
+        if (check) {
             throw new MojoExecutionException(
                     "Generated output differs from files on disk (see diff above). " +
                             "Regenerate README files by running the plugin without <check>.");
         }
+        throw new MojoExecutionException("Template generation failed (see errors above).");
     }
 
     private String validateAndJoinWidgets() throws MojoExecutionException {
