@@ -1355,7 +1355,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 28.04.2026 08:41:19
+Last updated: 28.04.2026 08:44:08
 ```
 
 </td></tr>
@@ -1876,7 +1876,6 @@ nrg --classpath my-widgets.jar --widgets com.acme.widgets.Tag,com.acme.widgets.B
 ### В разработке (1.2-SNAPSHOT)
 
 - **`nrg-maven-plugin` больше не наследует `create-files` в дочерние модули по умолчанию**: цель объявлена с `inheritByDefault = false`, и в многомодульных (aggregator) сборках генерация README выполняется только в корневом POM, где лежит `README.src.md` — дочерние модули больше не вызывают NRG в своём каталоге и не сыпят предупреждения (или падают) из-за отсутствующего исходника. Мягкое breaking-изменение только для проектов, сознательно полагавшихся на повторный запуск в каждом модуле; верните прежнее поведение через `<inherited>true</inherited>` в POM-е модуля. Закрывает [#49](https://github.com/nanolaba/readme-generator/issues/49).
-- Задокументировано правило экранирования обратным слэшем в NRG: корневой генератор убирает `\` только в шаблонах `\${…}`, <code>&lt;&#92;!--…--&gt;</code> и <code>&lt;!--&#92;@…--&gt;</code>; любая другая последовательность `\X` (включая эскейпы Markdown — `\(`, `\_`, `\*` и т. п.) попадает в вывод без изменений. Закрывает [#50](https://github.com/nanolaba/readme-generator/issues/50).
 
 ### 1.1
 

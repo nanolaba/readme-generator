@@ -1350,7 +1350,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 28.04.2026 08:41:18
+Last updated: 28.04.2026 08:44:08
 ```
 
 </td></tr>
@@ -1871,7 +1871,6 @@ This section summarises the main user-visible changes in each release. For full 
 ### Unreleased (1.2-SNAPSHOT)
 
 - **`nrg-maven-plugin` no longer inherits its `create-files` execution into child modules by default**: the goal is declared with `inheritByDefault = false`, so multi-module (aggregator) builds run README generation only at the root POM where `README.src.md` lives — child modules no longer re-invoke NRG in their own directory and spam warnings (or fail) over a missing source file. Soft-breaking only for projects that intentionally relied on per-child re-execution; opt back in with `<inherited>true</inherited>` in the child's POM. Closes [#49](https://github.com/nanolaba/readme-generator/issues/49).
-- Documented the backslash-escape rule used by NRG: the root generator strips a backslash only in `\${…}`, <code>&lt;&#92;!--…--&gt;</code>, and <code>&lt;!--&#92;@…--&gt;</code> patterns; every other `\X` (including markdown's own `\(`, `\_`, `\*`, etc.) reaches the output verbatim. Closes [#50](https://github.com/nanolaba/readme-generator/issues/50).
 
 ### 1.1
 
