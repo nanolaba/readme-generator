@@ -255,6 +255,24 @@ diagnostics across every matched file.<!--en-->
 сохраняется сегодняшнее поведение с агрегированием диагностик по всем<!--ru-->
 найденным файлам.<!--ru-->
 
+> [!NOTE]<!--en-->
+> **Multi-module (aggregator) projects:** the `create-files` goal is declared<!--en-->
+> with `inheritByDefault = false`, so child modules of a `<packaging>pom</packaging>`<!--en-->
+> aggregator do **not** re-run NRG in their own working directory by default<!--en-->
+> (where `README.src.md` typically does not exist). Declare the plugin once in<!--en-->
+> the parent POM and the goal runs only at the root. A child module that<!--en-->
+> genuinely needs its own README generation must opt in explicitly with<!--en-->
+> `<inherited>true</inherited>` in its own POM.<!--en-->
+
+> [!NOTE]<!--ru-->
+> **Многомодульные (aggregator) проекты:** цель `create-files` объявлена с<!--ru-->
+> `inheritByDefault = false`, поэтому дочерние модули агрегатора с<!--ru-->
+> `<packaging>pom</packaging>` **не** перезапускают NRG в собственном каталоге<!--ru-->
+> по умолчанию (где `README.src.md` обычно отсутствует). Объявите плагин один<!--ru-->
+> раз в родительском POM, и цель отработает только в корне. Если дочернему<!--ru-->
+> модулю всё же нужна собственная генерация README, явно включите её через<!--ru-->
+> `<inherited>true</inherited>` в его POM.<!--ru-->
+
 The `<widgets>` entries must name public classes that implement `NRGWidget`<!--en-->
 and declare a public no-argument constructor, and their artifact must be<!--en-->
 listed under the plugin's own `<dependencies>` so Maven can resolve them.<!--en-->

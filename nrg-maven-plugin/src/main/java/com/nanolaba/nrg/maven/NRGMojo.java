@@ -29,8 +29,14 @@ import java.util.List;
  * them in one batch (see {@code com.nanolaba.nrg.core.SourceFileResolver}). Set
  * {@code <failFast>true</failFast>} to abort on the first non-zero result instead of
  * aggregating diagnostics across all matched files.
+ *
+ * <p>{@code inheritByDefault = false}: README generation is a root-of-repo concern, so
+ * child modules of an aggregator project do <strong>not</strong> re-run the goal in their
+ * own working directory (where a {@code README.src.md} typically does not exist and would
+ * either log warnings or fail). A child module that genuinely needs to run NRG must opt
+ * in explicitly via {@code <inherited>true</inherited>} in its own POM.
  */
-@Mojo(name = "create-files", defaultPhase = LifecyclePhase.COMPILE)
+@Mojo(name = "create-files", defaultPhase = LifecyclePhase.COMPILE, inheritByDefault = false)
 public class NRGMojo extends AbstractMojo {
 
     private String[] files = new String[]{"README.src.md"};

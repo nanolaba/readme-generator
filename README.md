@@ -395,6 +395,16 @@ syntax as the CLI). Multi-doc projects can replace a long list with
 non-zero result; default `false` preserves today's behavior of aggregating
 diagnostics across every matched file.
 
+> [!NOTE]
+> **Multi-module (aggregator) projects:** the `create-files` goal is declared
+> with `inheritByDefault = false`, so child modules of a `<packaging>pom</packaging>`
+> aggregator do **not** re-run NRG in their own working directory by default
+> (where `README.src.md` typically does not exist). Declare the plugin once in
+> the parent POM and the goal runs only at the root. A child module that
+> genuinely needs its own README generation must opt in explicitly with
+> `<inherited>true</inherited>` in its own POM.
+
+
 The `<widgets>` entries must name public classes that implement `NRGWidget`
 and declare a public no-argument constructor, and their artifact must be
 listed under the plugin's own `<dependencies>` so Maven can resolve them.
@@ -1340,7 +1350,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 28.04.2026 08:36:03
+Last updated: 28.04.2026 08:41:18
 ```
 
 </td></tr>
@@ -1860,6 +1870,7 @@ This section summarises the main user-visible changes in each release. For full 
 
 ### Unreleased (1.2-SNAPSHOT)
 
+- **`nrg-maven-plugin` no longer inherits its `create-files` execution into child modules by default**: the goal is declared with `inheritByDefault = false`, so multi-module (aggregator) builds run README generation only at the root POM where `README.src.md` lives — child modules no longer re-invoke NRG in their own directory and spam warnings (or fail) over a missing source file. Soft-breaking only for projects that intentionally relied on per-child re-execution; opt back in with `<inherited>true</inherited>` in the child's POM. Closes [#49](https://github.com/nanolaba/readme-generator/issues/49).
 - Documented the backslash-escape rule used by NRG: the root generator strips a backslash only in `\${…}`, <code>&lt;&#92;!--…--&gt;</code>, and <code>&lt;!--&#92;@…--&gt;</code> patterns; every other `\X` (including markdown's own `\(`, `\_`, `\*`, etc.) reaches the output verbatim. Closes [#50](https://github.com/nanolaba/readme-generator/issues/50).
 
 ### 1.1
