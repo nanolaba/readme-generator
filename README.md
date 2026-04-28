@@ -74,16 +74,17 @@ This very README is generated with NRG — see [`README.src.md`](README.src.md).
 	4. [Use as a java-library](#use-as-a-java-library)
 3. [Template syntax](#template-syntax)
 	1. [Variables](#variables)
-	2. [Properties](#properties)
-	3. [Per-language overrides](#per-language-overrides)
-	4. [Environment variables](#environment-variables)
-	5. [Maven POM values](#maven-pom-values)
-	6. [npm package values](#npm-package-values)
-	7. [Gradle values](#gradle-values)
-	8. [Multilanguage support](#multilanguage-support)
-	9. [Ignoring content](#ignoring-content)
-	10. [Frozen regions](#frozen-regions)
-	11. [Widgets](#widgets)
+	2. [Backslash escapes](#backslash-escapes)
+	3. [Properties](#properties)
+	4. [Per-language overrides](#per-language-overrides)
+	5. [Environment variables](#environment-variables)
+	6. [Maven POM values](#maven-pom-values)
+	7. [npm package values](#npm-package-values)
+	8. [Gradle values](#gradle-values)
+	9. [Multilanguage support](#multilanguage-support)
+	10. [Ignoring content](#ignoring-content)
+	11. [Frozen regions](#frozen-regions)
+	12. [Widgets](#widgets)
 		1. [Widget 'languages'](#widget-languages)
 		2. [Widget 'import'](#widget-import)
 		3. [Widget 'tableOfContents'](#widget-tableofcontents)
@@ -679,6 +680,27 @@ ${app_descr}
 
 </td></tr>
 </table>
+
+### Backslash escapes
+
+After every substitution and widget has run, the root generator does one final pass over the
+output and strips a backslash in **only** these three patterns; every other `\\X` reaches the
+output verbatim.
+
+| In your template | In the output | Use it to |
+|---|---|---|
+| <code>&#92;$</code>        | <code>$</code>        | suppress any `\${…}` reference (property / language / env / pom / npm / gradle / widget). Applies to **any** `\$`, not only `\${…}`. |
+| <code>&lt;&#92;!--</code>  | <code>&lt;!--</code>  | suppress any HTML-comment marker — language tag, `nrg.ignore`, `nrg.freeze`, property declaration. Use it to put a literal `<!--…-->` into the output. |
+| <code>&lt;!--&#92;@</code> | <code>&lt;!--@</code> | render `<!--@key=value-->` cleanly inside an example — **cosmetic only**, does **not** stop NRG from parsing the line as a real property declaration. To actually suppress parsing, escape the comment opener with rule 2: <code>&lt;&#92;!--@key=value--&gt;</code>. |
+
+Markdown's own escape sequences (`\(`, `\)`, `\_`, `\*`, `\\`, `` \` ``, etc.) are not on this
+list — they pass through NRG unchanged and reach the markdown renderer untouched.
+
+> [!TIP]
+> Rule 1 strips the backslash from **any** `\$`, not only `\${…}`. To keep a literal `\$` in the
+> output (e.g. to render `[\$]` in a markdown link without triggering a property lookup), write
+> `\\$` in the template — the trailing `\$` becomes `$`, the leading `\` survives.
+
 
 ### Properties
 
@@ -1318,7 +1340,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 27.04.2026 23:41:10
+Last updated: 28.04.2026 08:36:03
 ```
 
 </td></tr>
@@ -1331,7 +1353,7 @@ ${widget:date(pattern = 'dd.MM.yyyy')}
 </td><td>
 
 ```markdown
-27.04.2026
+28.04.2026
 ```
 
 </td></tr>
@@ -1838,6 +1860,8 @@ This section summarises the main user-visible changes in each release. For full 
 
 ### Unreleased (1.2-SNAPSHOT)
 
+- Documented the backslash-escape rule used by NRG: the root generator strips a backslash only in `\${…}`, <code>&lt;&#92;!--…--&gt;</code>, and <code>&lt;!--&#92;@…--&gt;</code> patterns; every other `\X` (including markdown's own `\(`, `\_`, `\*`, etc.) reaches the output verbatim. Closes [#50](https://github.com/nanolaba/readme-generator/issues/50).
+
 ### 1.1
 
 - **Multi-file source input**: the CLI now accepts multiple positional source files and `glob:` patterns (`nrg "docs/**/*.src.md" A.src.md B.src.md`); `-f` remains a single-file alias and is rejected when mixed with positional args. Each input gets its own `Generator`. New `--fail-fast` short-circuits on the first non-zero per-file result; the default aggregates so every file's diagnostics surface in one run. With `--stdout`, per-file separators are emitted whenever the total output count exceeds one. Empty per-pattern matches log a warning; an overall zero-match exits `1`. The Maven plugin's `<file>` entries accept the same glob syntax, and a new `<failFast>` parameter (default `false`) maps to `--fail-fast`. Closes [#32](https://github.com/nanolaba/readme-generator/issues/32).
@@ -1927,4 +1951,4 @@ We welcome all constructive feedback to make **NRG** better!
 
 
 ---
-*Last updated: 27.04.2026*
+*Last updated: 28.04.2026*

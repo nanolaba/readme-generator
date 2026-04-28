@@ -5,6 +5,9 @@ This section summarises the main user-visible changes in each release. For full 
 
 ### ${en:'Unreleased', ru:'В разработке'} (${devVersion})<!--toc.ignore-->
 
+- Documented the backslash-escape rule used by NRG: the root generator strips a backslash only in `\\${…}`, <code>&lt;&#92;!--…--&gt;</code>, and <code>&lt;!--&#92;@…--&gt;</code> patterns; every other `\X` (including markdown's own `\(`, `\_`, `\*`, etc.) reaches the output verbatim. Closes [#50](https://github.com/nanolaba/readme-generator/issues/50).<!--en-->
+- Задокументировано правило экранирования обратным слэшем в NRG: корневой генератор убирает `\` только в шаблонах `\\${…}`, <code>&lt;&#92;!--…--&gt;</code> и <code>&lt;!--&#92;@…--&gt;</code>; любая другая последовательность `\X` (включая эскейпы Markdown — `\(`, `\_`, `\*` и т. п.) попадает в вывод без изменений. Закрывает [#50](https://github.com/nanolaba/readme-generator/issues/50).<!--ru-->
+
 ### 1.1<!--toc.ignore-->
 
 - **Multi-file source input**: the CLI now accepts multiple positional source files and `glob:` patterns (`nrg "docs/**/*.src.md" A.src.md B.src.md`); `-f` remains a single-file alias and is rejected when mixed with positional args. Each input gets its own `Generator`. New `--fail-fast` short-circuits on the first non-zero per-file result; the default aggregates so every file's diagnostics surface in one run. With `--stdout`, per-file separators are emitted whenever the total output count exceeds one. Empty per-pattern matches log a warning; an overall zero-match exits `1`. The Maven plugin's `<file>` entries accept the same glob syntax, and a new `<failFast>` parameter (default `false`) maps to `--fail-fast`. Closes [#32](https://github.com/nanolaba/readme-generator/issues/32).<!--en-->

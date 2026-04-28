@@ -330,4 +330,23 @@ class TemplateLineTest extends DefaultNRGTest {
         assertTrue(out.contains("<!--@key=value-->"), "expected <!--@key=value--> after unescape");
         assertTrue(out.contains("<!--ru-->"), "expected <!--ru--> after unescape");
     }
+
+    @Test
+    public void testEscapeRule1StripsAnyLiteralDollar() {
+        // Regression for #50: rule 1 strips the backslash from any \$, not only \${...}.
+        // Authors who want a literal \$ in the output (e.g. [\$] in a markdown link) must
+        // double the backslash: \\$ → \$.
+        String body = String.join("\n",
+                "<!--@nrg.languages=en-->",
+                "DOLLAR=[\\$]",
+                "DOUBLE=[\\\\$]",
+                "");
+        com.nanolaba.nrg.core.Generator g = new com.nanolaba.nrg.core.Generator(
+                new java.io.File("README.src.md"), body, null);
+        String out = g.getResult("en").getContent().toString();
+        assertTrue(out.contains("DOLLAR=[$]"),
+                "expected [$] (rule 1 strips any \\$, even outside \\${...}), got: " + out);
+        assertTrue(out.contains("DOUBLE=[\\$]"),
+                "expected [\\$] (\\\\$ keeps a literal \\$ in the output), got: " + out);
+    }
 }

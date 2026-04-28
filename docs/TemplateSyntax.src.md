@@ -53,6 +53,36 @@ ${app_descr}
 </td></tr>
 </table>
 
+### ${en:'Backslash escapes', ru:'Обратные слэши и экранирование'}
+
+After every substitution and widget has run, the root generator does one final pass over the<!--en-->
+output and strips a backslash in **only** these three patterns; every other `\\X` reaches the<!--en-->
+output verbatim.<!--en-->
+После того как все подстановки и виджеты отработали, корневой генератор делает один финальный<!--ru-->
+проход и убирает обратный слэш только в этих трёх шаблонах; любая другая последовательность<!--ru-->
+`\\X` остаётся в выводе как есть.<!--ru-->
+
+| ${en:'In your template', ru:'В шаблоне'} | ${en:'In the output', ru:'В выводе'} | ${en:'Use it to', ru:'Зачем нужно'} |
+|---|---|---|
+| <code>&#92;$</code>        | <code>$</code>        | ${en:'suppress any `\\${…}` reference (property / language / env / pom / npm / gradle / widget). Applies to **any** `\\$`, not only `\\${…}`.', ru:'подавить любую ссылку `\\${…}` (свойство / язык / env / pom / npm / gradle / widget). Срабатывает на **любое** `\\$`, не только на `\\${…}`.'} |
+| <code>&lt;&#92;!--</code>  | <code>&lt;!--</code>  | ${en:'suppress any HTML-comment marker — language tag, `nrg.ignore`, `nrg.freeze`, property declaration. Use it to put a literal `<\!--…-->` into the output.', ru:'подавить любой HTML-маркер — языковой тег, `nrg.ignore`, `nrg.freeze`, объявление свойства. Используется, чтобы вывести литерал `<\!--…-->`.'} |
+| <code>&lt;!--&#92;@</code> | <code>&lt;!--@</code> | ${en:'render `<\!--@key=value-->` cleanly inside an example — **cosmetic only**, does **not** stop NRG from parsing the line as a real property declaration. To actually suppress parsing, escape the comment opener with rule 2: <code>&lt;&#92;!--@key=value--&gt;</code>.', ru:'красиво вывести `<\!--@key=value-->` в примере — **только косметика**, **не** мешает NRG распарсить строку как настоящее объявление свойства. Чтобы реально подавить разбор, экранируйте открытие комментария по правилу 2: <code>&lt;&#92;!--@key=value--&gt;</code>.'} |
+
+Markdown's own escape sequences (`\(`, `\)`, `\_`, `\*`, `\\`, `` \` ``, etc.) are not on this<!--en-->
+list — they pass through NRG unchanged and reach the markdown renderer untouched.<!--en-->
+Эскейпы самого Markdown (`\(`, `\)`, `\_`, `\*`, `\\`, `` \` `` и т. п.) в этот список<!--ru-->
+не входят — они проходят NRG без изменений и попадают на рендерер Markdown как есть.<!--ru-->
+
+> [!TIP]<!--en-->
+> Rule 1 strips the backslash from **any** `\\$`, not only `\\${…}`. To keep a literal `\\$` in the<!--en-->
+> output (e.g. to render `[\\$]` in a markdown link without triggering a property lookup), write<!--en-->
+> `\\\$` in the template — the trailing `\\$` becomes `$`, the leading `\` survives.<!--en-->
+
+> [!TIP]<!--ru-->
+> Правило 1 убирает обратный слэш у **любой** последовательности `\\$`, не только у `\\${…}`.<!--ru-->
+> Чтобы оставить в выводе литерал `\\$` (например, для `[\\$]` в markdown-ссылке без подстановки),<!--ru-->
+> пишите в шаблоне `\\\$` — замыкающий `\\$` превратится в `$`, ведущий `\` останется на месте.<!--ru-->
+
 ### ${en:'Properties', ru:'Свойства'}
 
 Using the syntax for setting variable values in the template,<!--en-->
