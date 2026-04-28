@@ -152,4 +152,62 @@ class BadgeWidgetTest extends DefaultNRGTest {
         assertEquals("up_to_date", BadgeWidget.shieldsEscape("up to date"));
         assertEquals("a--b__c_d", BadgeWidget.shieldsEscape("a-b_c d"));
     }
+
+    // ---------------------------------------------------------------------
+    // alt= parameter (issue #52): every type accepts an optional alt= that
+    // overrides the type-specific default. Empty alt='' falls back to default.
+    // ---------------------------------------------------------------------
+
+    @Test
+    public void testMavenCentralAltOverride() {
+        String body = render("${widget:badge(type='maven-central', coordinates='com.nanolaba:readme-generator', alt='NRG on Maven Central')}");
+        assertTrue(body.contains("[![NRG on Maven Central]"), body);
+        assertFalse(body.contains("[![Maven Central]"), body);
+    }
+
+    @Test
+    public void testLicenseAltOverride() {
+        String body = render("${widget:badge(type='license', value='Apache-2.0', alt='NRG license: Apache 2.0')}");
+        assertTrue(body.contains("![NRG license: Apache 2.0]"), body);
+        assertFalse(body.contains("![License: Apache-2.0]"), body);
+    }
+
+    @Test
+    public void testGithubReleaseAltOverride() {
+        String body = render("${widget:badge(type='github-release', repo='nanolaba/readme-generator', alt='Latest NRG release')}");
+        assertTrue(body.contains("[![Latest NRG release]"), body);
+        assertFalse(body.contains("[![GitHub release]"), body);
+    }
+
+    @Test
+    public void testGithubStarsAltOverride() {
+        String body = render("${widget:badge(type='github-stars', repo='nanolaba/readme-generator', alt='Star NRG on GitHub')}");
+        assertTrue(body.contains("[![Star NRG on GitHub]"), body);
+        assertFalse(body.contains("[![GitHub stars]"), body);
+    }
+
+    @Test
+    public void testGithubWorkflowAltOverride() {
+        // alt= overrides only the markdown alt; name= still controls what defaults
+        // would have produced, so this case proves alt= wins over name=.
+        String body = render("${widget:badge(type='github-workflow', repo='nanolaba/readme-generator', workflow='ci.yml', name='CI', alt='NRG continuous integration build status')}");
+        assertTrue(body.contains("[![NRG continuous integration build status](https://github.com/nanolaba/readme-generator/actions/workflows/ci.yml/badge.svg)]"), body);
+        assertFalse(body.contains("[![CI]"), body);
+    }
+
+    @Test
+    public void testCustomAltOverride() {
+        String body = render("${widget:badge(type='custom', label='CI', message='passing', color='green', url='https://ci.example.com', alt='NRG CI status: passing')}");
+        assertTrue(body.contains("[![NRG CI status: passing]"), body);
+        assertFalse(body.contains("[![CI]"), body);
+    }
+
+    @Test
+    public void testEmptyAltFallsBackToDefault() {
+        // Empty alt='' is treated as not provided, so the default is used. This keeps
+        // round-tripping a template through a value-substitution pipeline safe — an
+        // unset variable resolving to '' should not break the badge.
+        String body = render("${widget:badge(type='maven-central', coordinates='com.nanolaba:readme-generator', alt='')}");
+        assertTrue(body.contains("[![Maven Central]"), body);
+    }
 }

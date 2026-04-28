@@ -14,6 +14,11 @@ import java.util.Map;
  * {@code github-release}, {@code github-stars}, {@code github-workflow}, and
  * {@code custom}. Each type validates its own required parameters; missing or malformed
  * values are logged as errors and the widget renders an empty string.
+ *
+ * <p>Every type also accepts an optional {@code alt=} parameter to override the
+ * Markdown alt-text. When absent (or empty), the type-specific default is used. This
+ * lets authors ship phrase-style alt-text for SEO and accessibility without changing
+ * the visible badge label rendered by shields.io.
  */
 public class BadgeWidget extends DefaultWidget {
 
@@ -62,7 +67,8 @@ public class BadgeWidget extends DefaultWidget {
         String artifact = parts[1].trim();
         String img = "https://img.shields.io/maven-central/v/" + group + "/" + artifact + "?label=Maven%20Central";
         String link = "https://central.sonatype.com/artifact/" + group + "/" + artifact;
-        return "[![Maven Central](" + img + ")](" + link + ")";
+        String alt = resolveAlt(p, "Maven Central");
+        return "[![" + alt + "](" + img + ")](" + link + ")";
     }
 
     private String renderLicense(Map<String, String> p) {
@@ -70,7 +76,7 @@ public class BadgeWidget extends DefaultWidget {
         if (value == null) return "";
         String encoded = shieldsEscape(value);
         String img = "https://img.shields.io/badge/License-" + encoded + "-blue.svg";
-        String alt = "License: " + value;
+        String alt = resolveAlt(p, "License: " + value);
         String url = p.get("url");
         if (url != null && !url.isEmpty()) {
             return "[![" + alt + "](" + img + ")](" + url + ")";
@@ -83,7 +89,8 @@ public class BadgeWidget extends DefaultWidget {
         if (repo == null) return "";
         String img = "https://img.shields.io/github/v/release/" + repo;
         String link = "https://github.com/" + repo + "/releases/latest";
-        return "[![GitHub release](" + img + ")](" + link + ")";
+        String alt = resolveAlt(p, "GitHub release");
+        return "[![" + alt + "](" + img + ")](" + link + ")";
     }
 
     private String renderGithubStars(Map<String, String> p) {
@@ -91,7 +98,8 @@ public class BadgeWidget extends DefaultWidget {
         if (repo == null) return "";
         String img = "https://img.shields.io/github/stars/" + repo + "?style=social";
         String link = "https://github.com/" + repo;
-        return "[![GitHub stars](" + img + ")](" + link + ")";
+        String alt = resolveAlt(p, "GitHub stars");
+        return "[![" + alt + "](" + img + ")](" + link + ")";
     }
 
     private String renderGithubWorkflow(Map<String, String> p) {
@@ -109,7 +117,8 @@ public class BadgeWidget extends DefaultWidget {
         if (branch != null && !branch.isEmpty()) {
             img += "?branch=" + branch;
         }
-        return "[![" + name + "](" + img + ")](" + base + ")";
+        String alt = resolveAlt(p, name);
+        return "[![" + alt + "](" + img + ")](" + base + ")";
     }
 
     private static String stripWorkflowExtension(String workflow) {
@@ -128,11 +137,22 @@ public class BadgeWidget extends DefaultWidget {
                 shieldsEscape(label) + "-" +
                 shieldsEscape(message) + "-" +
                 shieldsEscape(color) + ".svg";
+        String alt = resolveAlt(p, label);
         String url = p.get("url");
         if (url != null && !url.isEmpty()) {
-            return "[![" + label + "](" + img + ")](" + url + ")";
+            return "[![" + alt + "](" + img + ")](" + url + ")";
         }
-        return "![" + label + "](" + img + ")";
+        return "![" + alt + "](" + img + ")";
+    }
+
+    /**
+     * Returns the explicit {@code alt} parameter when provided non-empty, otherwise
+     * {@code fallback}. Empty string is treated as not provided so authors can omit the
+     * parameter without an extra ternary.
+     */
+    private static String resolveAlt(Map<String, String> p, String fallback) {
+        String alt = p.get("alt");
+        return (alt != null && !alt.isEmpty()) ? alt : fallback;
     }
 
     private String requireRepo(Map<String, String> p, String type) {

@@ -1371,7 +1371,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 28.04.2026 08:51:32
+Last updated: 28.04.2026 10:10:36
 ```
 
 </td></tr>
@@ -1505,12 +1505,18 @@ Supported types and their parameters:
 
 |       type        | Required parameters                                                                                                                                                                                           | Optional parameters                                                                                                                                                                                                        |
 |:-----------------:|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-|  `maven-central`  | `coordinates` — Maven coordinates `groupId:artifactId`.                                                                                                                                       | —                                                                                                                                                                                                                                                                 |
-|     `license`     | `value` — license identifier (e.g. `Apache-2.0`).                                                                                                                                   | `url` — link target; omitted → non-clickable badge.                                                                                                                                                    |
-| `github-release`  | `repo` — repository `owner/name`.                                                                                                                                                                          | —                                                                                                                                                                                                                                                                 |
-|  `github-stars`   | `repo` — repository `owner/name`.                                                                                                                                                                          | —                                                                                                                                                                                                                                                                 |
-| `github-workflow` | `repo` — repository `owner/name`;  `workflow` — workflow filename (e.g. `ci.yml`).                                                                 | `name` — alt text; defaults to the workflow filename without extension.  `branch` — filter by branch, appended as `?branch=...`. |
-|     `custom`      | `label` — left side of the badge;  `message` — right side of the badge;  `color` — shields.io color keyword or hex. | `url` — link target; omitted → non-clickable badge.                                                                                                                                                    |
+|  `maven-central`  | `coordinates` — Maven coordinates `groupId:artifactId`.                                                                                                                                       | `alt` — override the default alt-text `Maven Central`.                                                                                                                                      |
+|     `license`     | `value` — license identifier (e.g. `Apache-2.0`).                                                                                                                                   | `url` — link target; omitted → non-clickable badge.  `alt` — override the default alt-text `License: <value>`.              |
+| `github-release`  | `repo` — repository `owner/name`.                                                                                                                                                                          | `alt` — override the default alt-text `GitHub release`.                                                                                                                                    |
+|  `github-stars`   | `repo` — repository `owner/name`.                                                                                                                                                                          | `alt` — override the default alt-text `GitHub stars`.                                                                                                                                        |
+| `github-workflow` | `repo` — repository `owner/name`;  `workflow` — workflow filename (e.g. `ci.yml`).                                                                 | `name` — alt text; defaults to the workflow filename without extension.  `branch` — filter by branch, appended as `?branch=...`.  `alt` — override the alt-text (wins over `name`). |
+|     `custom`      | `label` — left side of the badge;  `message` — right side of the badge;  `color` — shields.io color keyword or hex. | `url` — link target; omitted → non-clickable badge.  `alt` — override the default alt-text (defaults to `label`).              |
+
+The optional `alt` parameter sets the Markdown image alt-text without
+changing the visible badge label rendered by shields.io. Useful for SEO
+and accessibility — search engines and screen readers see phrases like
+`NRG continuous integration build status` instead of bare labels like
+`CI`. Empty `alt=''` falls back to the type's default.
 
 Unknown `type` values and missing required parameters log an error
 and produce no output.
@@ -1891,6 +1897,7 @@ This section summarises the main user-visible changes in each release. For full 
 
 ### Unreleased (1.2-SNAPSHOT)
 
+- **`badge` widget — optional `alt=` parameter**: every type (`maven-central`, `license`, `github-release`, `github-stars`, `github-workflow`, `custom`) now accepts an optional `alt='...'` that overrides the auto-derived Markdown alt-text without changing the visible badge label rendered by shields.io. Useful for SEO and screen-reader accessibility — phrase-style alts like `NRG continuous integration build status` carry semantic signal that bare `CI` does not. Empty `alt=''` falls back to the type's default. Closes [#52](https://github.com/nanolaba/readme-generator/issues/52).
 - **Preserve original line endings on regeneration**: NRG now detects the existing on-disk output file's CRLF/LF convention and writes the regenerated content with the same convention, instead of always emitting `System.lineSeparator()`. Mixed-ending files normalise to LF. New CLI flag `--line-ending=auto|lf|crlf` (default `auto`) and matching Maven plugin `<lineEnding>` parameter override detection. In `--check` mode, `auto` ignores LE-only differences so a CRLF-vs-LF contributor mismatch no longer trips CI; explicit `lf` / `crlf` still flag a mismatch (that's the explicitly-requested invariant). Closes [#48](https://github.com/nanolaba/readme-generator/issues/48).
 - **`nrg-maven-plugin` no longer inherits its `create-files` execution into child modules by default**: the goal is declared with `inheritByDefault = false`, so multi-module (aggregator) builds run README generation only at the root POM where `README.src.md` lives — child modules no longer re-invoke NRG in their own directory and spam warnings (or fail) over a missing source file. Soft-breaking only for projects that intentionally relied on per-child re-execution; opt back in with `<inherited>true</inherited>` in the child's POM. Closes [#49](https://github.com/nanolaba/readme-generator/issues/49).
 
