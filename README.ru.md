@@ -179,7 +179,7 @@ English text
 **Что дальше**
 
 - Переменные, многоязычный синтаксис и экранирование — см. [«Синтаксис шаблона»](#синтаксис-шаблона).
-- Готовые виджеты (оглавление, импорт, языки, дата, todo) — см. [«Виджеты»](#виджеты).
+- Готовые виджеты (оглавление, импорт, языки, дата, todo, alert, badge, math, exec, if, fileTree) — см. [«Виджеты»](#виджеты).
 
 <details>
 <summary><b>Полный пример шаблона (все виджеты)</b></summary>
@@ -189,10 +189,15 @@ English text
 <!--@nrg.defaultLanguage=en-->
 
 <!--@title=**${en:'Hello, World!', ru:'Привет, Мир!'}**-->
+<!--@version=1.0-->
 
 ${widget:languages}
 
+${widget:badge(type='maven-central', coordinates='com.example:my-project')}
+
 # ${title}<!--toc.ignore-->
+
+Last updated: ${widget:date}
 
 ${widget:tableOfContents(title = "${en:'Table of contents', ru:'Содержание'}", ordered = "true")}
 
@@ -202,6 +207,20 @@ ${widget:tableOfContents(title = "${en:'Table of contents', ru:'Содержан
 
 English text<!--en-->
 Русский текст<!--ru-->
+
+${widget:alert(type='note', text='${en:'Heads up!', ru:'Обратите внимание!'}')}
+
+The area of a circle is ${widget:math(expr='\\pi r^2')}.
+
+${widget:todo(text="${en:'Document the next chapter', ru:'Описать следующую главу'}")}
+
+${widget:if(cond='endsWith(${version}, -SNAPSHOT)')}
+This is a development build.
+${widget:endIf}
+
+${widget:exec(cmd='git rev-parse --short HEAD', codeblock='text')}
+
+${widget:fileTree(path='src/main/java', depth='2', exclude='target,*.class')}
 
 ${widget:import(path='path/to/your/file/another-info.src.md')}
 ```
@@ -1377,7 +1396,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 28.04.2026 10:48:49
+Last updated: 28.04.2026 20:33:42
 ```
 
 </td></tr>

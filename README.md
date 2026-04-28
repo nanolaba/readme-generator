@@ -179,7 +179,7 @@ English text
 **What comes next**
 
 - Variables, language constructs, and escapes — see [Template syntax](#template-syntax).
-- Built-in widgets (table of contents, import, languages, date, todo) — see [Widgets](#widgets).
+- Built-in widgets (table of contents, import, languages, date, todo, alert, badge, math, exec, if, fileTree) — see [Widgets](#widgets).
 
 <details>
 <summary><b>Full template example (all widgets)</b></summary>
@@ -189,10 +189,15 @@ English text
 <!--@nrg.defaultLanguage=en-->
 
 <!--@title=**${en:'Hello, World!', ru:'Привет, Мир!'}**-->
+<!--@version=1.0-->
 
 ${widget:languages}
 
+${widget:badge(type='maven-central', coordinates='com.example:my-project')}
+
 # ${title}<!--toc.ignore-->
+
+Last updated: ${widget:date}
 
 ${widget:tableOfContents(title = "${en:'Table of contents', ru:'Содержание'}", ordered = "true")}
 
@@ -202,6 +207,20 @@ ${widget:tableOfContents(title = "${en:'Table of contents', ru:'Содержан
 
 English text<!--en-->
 Русский текст<!--ru-->
+
+${widget:alert(type='note', text='${en:'Heads up!', ru:'Обратите внимание!'}')}
+
+The area of a circle is ${widget:math(expr='\\pi r^2')}.
+
+${widget:todo(text="${en:'Document the next chapter', ru:'Описать следующую главу'}")}
+
+${widget:if(cond='endsWith(${version}, -SNAPSHOT)')}
+This is a development build.
+${widget:endIf}
+
+${widget:exec(cmd='git rev-parse --short HEAD', codeblock='text')}
+
+${widget:fileTree(path='src/main/java', depth='2', exclude='target,*.class')}
 
 ${widget:import(path='path/to/your/file/another-info.src.md')}
 ```
@@ -1371,7 +1390,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 28.04.2026 10:48:48
+Last updated: 28.04.2026 20:33:42
 ```
 
 </td></tr>
