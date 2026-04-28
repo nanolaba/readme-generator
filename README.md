@@ -58,7 +58,8 @@ This very README is generated with NRG — see [`README.src.md`](README.src.md).
 		3. [Print to stdout](#print-to-stdout)
 		4. [Logging verbosity](#logging-verbosity)
 		5. [Customising output filenames](#customising-output-filenames)
-		6. [Multiple files and glob patterns](#multiple-files-and-glob-patterns)
+		6. [Line endings](#line-endings)
+		7. [Multiple files and glob patterns](#multiple-files-and-glob-patterns)
 	2. [Use as maven plugin](#use-as-maven-plugin)
 	3. [Use as a GitHub Action](#use-as-a-github-action)
 		1. [Quickstart](#quickstart)
@@ -316,6 +317,25 @@ nrg --file-name-pattern '<base>_<LANG>.md' -f README.src.md
 nrg --file-name-pattern 'docs/<lang>/<base>.md' --default-language-file-name-pattern '<base>.md' -f README.src.md
 ```
 
+#### Line endings
+
+`--line-ending=auto|lf|crlf` controls the line-ending convention of the
+generated output. Default `auto` preserves the existing on-disk file's
+convention (CRLF stays CRLF, LF stays LF) and falls back to the platform
+default for first-time generation. Use `lf` or `crlf` to pin the output
+unconditionally — useful for Windows contributors regenerating Linux-LF
+repos and vice versa.
+
+```bash
+nrg --line-ending lf -f README.src.md
+nrg --line-ending crlf -f README.src.md
+```
+
+In `--check` mode, `auto` ignores LE-only differences against the on-disk
+file (regen would have preserved the existing convention anyway), so a
+mixed-OS contributor base does not trip CI. Explicit `lf` / `crlf` does
+flag a mismatch — that's the user-asked-for invariant.
+
 #### Multiple files and glob patterns
 
 Pass several source files in one invocation, either as explicit positional
@@ -368,6 +388,7 @@ Add the following code to your `pom.xml`:
             </widgets>
             <check>false</check>
             <failFast>false</failFast>
+            <lineEnding>auto</lineEnding>
         </configuration>
         <dependencies>
             <dependency>
@@ -1350,7 +1371,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 28.04.2026 08:44:08
+Last updated: 28.04.2026 08:51:32
 ```
 
 </td></tr>
@@ -1870,6 +1891,7 @@ This section summarises the main user-visible changes in each release. For full 
 
 ### Unreleased (1.2-SNAPSHOT)
 
+- **Preserve original line endings on regeneration**: NRG now detects the existing on-disk output file's CRLF/LF convention and writes the regenerated content with the same convention, instead of always emitting `System.lineSeparator()`. Mixed-ending files normalise to LF. New CLI flag `--line-ending=auto|lf|crlf` (default `auto`) and matching Maven plugin `<lineEnding>` parameter override detection. In `--check` mode, `auto` ignores LE-only differences so a CRLF-vs-LF contributor mismatch no longer trips CI; explicit `lf` / `crlf` still flag a mismatch (that's the explicitly-requested invariant). Closes [#48](https://github.com/nanolaba/readme-generator/issues/48).
 - **`nrg-maven-plugin` no longer inherits its `create-files` execution into child modules by default**: the goal is declared with `inheritByDefault = false`, so multi-module (aggregator) builds run README generation only at the root POM where `README.src.md` lives — child modules no longer re-invoke NRG in their own directory and spam warnings (or fail) over a missing source file. Soft-breaking only for projects that intentionally relied on per-child re-execution; opt back in with `<inherited>true</inherited>` in the child's POM. Closes [#49](https://github.com/nanolaba/readme-generator/issues/49).
 
 ### 1.1

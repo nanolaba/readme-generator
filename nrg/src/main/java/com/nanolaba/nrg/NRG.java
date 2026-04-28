@@ -4,6 +4,7 @@ import com.nanolaba.logging.ConsoleLogger;
 import com.nanolaba.logging.LOG;
 import com.nanolaba.nrg.core.Generator;
 import com.nanolaba.nrg.core.GeneratorConfig;
+import com.nanolaba.nrg.core.LineEndings;
 import com.nanolaba.nrg.core.NRGConstants;
 import com.nanolaba.nrg.core.NRGUtil;
 import com.nanolaba.nrg.core.OutputFileNameResolver;
@@ -146,6 +147,11 @@ public class NRG {
         Option failFast = new Option(null, "fail-fast", false,
                 "stop on the first non-zero result instead of aggregating across all files");
         options.addOption(failFast);
+        Option lineEnding = new Option(null, "line-ending", true,
+                "output line ending: auto|lf|crlf (default: auto — preserve existing file's convention, " +
+                        "fall back to platform default for new files; --check ignores LE-only differences in auto mode)");
+        lineEnding.setArgName("auto|lf|crlf");
+        options.addOption(lineEnding);
 
         CommandLineParser parser = new DefaultParser();
         CommandLine cmd = parser.parse(options, args);
@@ -187,6 +193,12 @@ public class NRG {
         }
         String fileNamePatternValue = cmd.getOptionValue(fileNamePattern);
         String defaultLangFileNamePatternValue = cmd.getOptionValue(defaultLangFileNamePattern);
+        LineEndings.Mode lineEndingMode;
+        try {
+            lineEndingMode = LineEndings.Mode.parse(cmd.getOptionValue(lineEnding));
+        } catch (IllegalArgumentException e) {
+            throw new ParseException(e.getMessage());
+        }
 
         List<File> sources = collectSourceFiles(cmd, file);
         if (sources == null) {
@@ -210,7 +222,7 @@ public class NRG {
                 code = generate(sourceFile, sourceCharset, toStdout, langValue, cliWidgets,
                         checkMode, cmd.hasOption(allowExec),
                         fileNamePatternValue, defaultLangFileNamePatternValue,
-                        totalOutputs > 1);
+                        totalOutputs > 1, lineEndingMode);
             }
             if (code != 0) {
                 aggregateCode = 1;
@@ -392,7 +404,7 @@ public class NRG {
     private static int generate(File sourceFile, Charset charset, boolean toStdout, String languageFilter,
                                 List<NRGWidget> cliWidgets, boolean checkMode, boolean allowExec,
                                 String fileNamePatternOverride, String defaultLangFileNamePatternOverride,
-                                boolean perFileStdoutHeader) {
+                                boolean perFileStdoutHeader, LineEndings.Mode lineEndingMode) {
         if (!sourceFile.exists()) {
             LOG.error("Source file does not exist: {}", sourceFile.getAbsolutePath());
             return 1;
@@ -436,13 +448,13 @@ public class NRG {
             }
             generator.getConfig().setExecAllowed(allowExec);
             if (checkMode) {
-                return performCheck(generator);
+                return performCheck(generator, lineEndingMode);
             }
             if (toStdout) {
                 printToStdout(generator, languageFilter, perFileStdoutHeader);
                 return 0;
             }
-            createFiles(generator);
+            createFiles(generator, lineEndingMode);
             return 0;
         } catch (IOException e) {
             LOG.error(e, () -> "Generation failed: " + sourceFile.getAbsolutePath());
@@ -450,16 +462,21 @@ public class NRG {
         }
     }
 
-    private static int performCheck(Generator generator) throws IOException {
+    private static int performCheck(Generator generator, LineEndings.Mode lineEndingMode) throws IOException {
         boolean failed = false;
         for (String language : generator.getConfig().getLanguages()) {
             File readmeFile = getReadmeFile(language, generator.getConfig());
-            String generated = generator.getResult(language).getContent().toString();
+            String generatedRaw = generator.getResult(language).getContent().toString();
             if (!readmeFile.exists()) {
                 System.err.println("Missing file: " + readmeFile.getName() + " (would be created by generation)");
                 failed = true;
                 continue;
             }
+            // Apply the same line-ending mode to the generated content as createFiles would,
+            // so AUTO mode does not flag a CRLF-vs-LF-only difference between the in-memory
+            // platform-LS output and an existing file written under a different convention.
+            String targetEnding = LineEndings.resolve(lineEndingMode, readmeFile, StandardCharsets.UTF_8);
+            String generated = LineEndings.applyTo(generatedRaw, targetEnding);
             String existing = FileUtils.readFileToString(readmeFile, StandardCharsets.UTF_8);
             if (!generated.equals(existing)) {
                 System.err.print(unifiedDiff(existing, generated, readmeFile.getName()));
@@ -524,7 +541,7 @@ public class NRG {
         return new ArrayList<>(Arrays.asList(s.split("\\R", -1)));
     }
 
-    private static void createFiles(Generator generator) throws IOException {
+    private static void createFiles(Generator generator, LineEndings.Mode lineEndingMode) throws IOException {
         for (String language : generator.getConfig().getLanguages()) {
             File readmeFile = getReadmeFile(language, generator.getConfig());
             LOG.debug("Generating file for language \"{}\" - {}", language, readmeFile.getAbsolutePath());
@@ -535,7 +552,10 @@ public class NRG {
                     continue;
                 }
             }
-            FileUtils.write(readmeFile, generator.getResult(language).getContent(), StandardCharsets.UTF_8);
+            String targetEnding = LineEndings.resolve(lineEndingMode, readmeFile, StandardCharsets.UTF_8);
+            String content = LineEndings.applyTo(
+                    generator.getResult(language).getContent(), targetEnding);
+            FileUtils.write(readmeFile, content, StandardCharsets.UTF_8);
             LOG.info("File \"{}\" created, total size {}", readmeFile.getName(), FileUtils.byteCountToDisplaySize(readmeFile.length()));
         }
     }

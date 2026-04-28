@@ -153,6 +153,36 @@ nrg --file-name-pattern '<base>_<LANG>.md' -f README.src.md
 nrg --file-name-pattern 'docs/<lang>/<base>.md' --default-language-file-name-pattern '<base>.md' -f README.src.md
 ```
 
+#### ${en:'Line endings', ru:'Перевод строк'}
+
+`--line-ending=auto|lf|crlf` controls the line-ending convention of the<!--en-->
+generated output. Default `auto` preserves the existing on-disk file's<!--en-->
+convention (CRLF stays CRLF, LF stays LF) and falls back to the platform<!--en-->
+default for first-time generation. Use `lf` or `crlf` to pin the output<!--en-->
+unconditionally — useful for Windows contributors regenerating Linux-LF<!--en-->
+repos and vice versa.<!--en-->
+`--line-ending=auto|lf|crlf` управляет переводом строк в сгенерированном<!--ru-->
+выводе. По умолчанию `auto` сохраняет конвенцию уже лежащего на диске<!--ru-->
+файла (CRLF останется CRLF, LF — LF) и откатывается на системный default<!--ru-->
+при первой генерации. Значения `lf` и `crlf` жёстко фиксируют формат —<!--ru-->
+полезно, например, для Windows-контрибьюторов, регенерирующих<!--ru-->
+Linux-репозитории с LF, и наоборот.<!--ru-->
+
+```bash
+nrg --line-ending lf -f README.src.md
+nrg --line-ending crlf -f README.src.md
+```
+
+In `--check` mode, `auto` ignores LE-only differences against the on-disk<!--en-->
+file (regen would have preserved the existing convention anyway), so a<!--en-->
+mixed-OS contributor base does not trip CI. Explicit `lf` / `crlf` does<!--en-->
+flag a mismatch — that's the user-asked-for invariant.<!--en-->
+В режиме `--check` со значением `auto` различия только в переводах строк<!--ru-->
+против файла на диске не считаются ошибкой (повторная генерация и так<!--ru-->
+сохранила бы существующую конвенцию), поэтому контрибьюторы с разных<!--ru-->
+ОС не валят CI. Явные `lf` / `crlf` всё равно сигнализируют о несовпадении<!--ru-->
+— это инвариант, который пользователь явно запросил.<!--ru-->
+
 #### ${en:'Multiple files and glob patterns', ru:'Несколько файлов и glob-паттерны'}
 
 Pass several source files in one invocation, either as explicit positional<!--en-->
@@ -221,6 +251,7 @@ Add the following code to your `pom.xml`:<!--en-->
             </widgets>
             <check>false</check>
             <failFast>false</failFast>
+            <lineEnding>auto</lineEnding>
         </configuration>
         <dependencies>
             <dependency>

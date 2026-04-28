@@ -68,12 +68,19 @@ public class NRGMojo extends AbstractMojo {
     @Parameter(property = "defaultLanguageFileNamePattern")
     private String defaultLanguageFileNamePattern;
 
+    @Parameter(property = "lineEnding")
+    private String lineEnding;
+
     public void setFileNamePattern(String fileNamePattern) {
         this.fileNamePattern = fileNamePattern;
     }
 
     public void setDefaultLanguageFileNamePattern(String defaultLanguageFileNamePattern) {
         this.defaultLanguageFileNamePattern = defaultLanguageFileNamePattern;
+    }
+
+    public void setLineEnding(String lineEnding) {
+        this.lineEnding = lineEnding;
     }
 
     @Parameter(property = "file")
@@ -139,6 +146,10 @@ public class NRGMojo extends AbstractMojo {
         if (defaultLanguageFileNamePattern != null && !defaultLanguageFileNamePattern.isEmpty()) {
             args.add("--default-language-file-name-pattern");
             args.add(defaultLanguageFileNamePattern);
+        }
+        if (lineEnding != null && !lineEnding.isEmpty()) {
+            args.add("--line-ending");
+            args.add(lineEnding);
         }
         // Positional file arguments must follow all flags (commons-cli stops parsing options at
         // the first non-option token).
