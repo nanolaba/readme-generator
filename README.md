@@ -7,10 +7,10 @@
 
 # Nanolaba Readme Generator (NRG) - Automated Markdown Documentation Tool
 
-[![CI](https://github.com/nanolaba/readme-generator/actions/workflows/ci.yml/badge.svg)](https://github.com/nanolaba/readme-generator/actions/workflows/ci.yml)
-[![Maven Central](https://img.shields.io/maven-central/v/com.nanolaba/readme-generator?label=Maven%20Central)](https://central.sonatype.com/artifact/com.nanolaba/readme-generator)
-[![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
-![Java](https://img.shields.io/badge/Java-8+-orange.svg)
+[![NRG continuous integration build status](https://github.com/nanolaba/readme-generator/actions/workflows/ci.yml/badge.svg)](https://github.com/nanolaba/readme-generator/actions/workflows/ci.yml)
+[![NRG release on Maven Central](https://img.shields.io/maven-central/v/com.nanolaba/readme-generator?label=Maven%20Central)](https://central.sonatype.com/artifact/com.nanolaba/readme-generator)
+[![NRG is open source under the Apache 2.0 license](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
+![Built with Java 8+](https://img.shields.io/badge/Java-8+-orange.svg)
 
 ![NRG demo: generating README.md and README.ru.md from a single .src.md template](assets/demo.gif)
 
@@ -1371,7 +1371,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 28.04.2026 10:10:36
+Last updated: 28.04.2026 10:48:48
 ```
 
 </td></tr>

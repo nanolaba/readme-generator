@@ -11,10 +11,10 @@ ${widget:languages}
 
 # Nanolaba Readme Generator (NRG)${en:' - Automated Markdown Documentation Tool', ru:''}
 
-${widget:badge(type='github-workflow', repo='nanolaba/readme-generator', workflow='ci.yml', name='CI')}
-${widget:badge(type='maven-central', coordinates='com.nanolaba:readme-generator')}
-${widget:badge(type='license', value='Apache 2.0', url='https://www.apache.org/licenses/LICENSE-2.0')}
-${widget:badge(type='custom', label='Java', message='8+', color='orange')}
+${widget:badge(type='github-workflow', repo='nanolaba/readme-generator', workflow='ci.yml', name='CI', alt='NRG continuous integration build status')}
+${widget:badge(type='maven-central', coordinates='com.nanolaba:readme-generator', alt='NRG release on Maven Central')}
+${widget:badge(type='license', value='Apache 2.0', url='https://www.apache.org/licenses/LICENSE-2.0', alt='NRG is open source under the Apache 2.0 license')}
+${widget:badge(type='custom', label='Java', message='8+', color='orange', alt='Built with Java 8+')}
 
 ![${en:'NRG demo: generating README.md and README.ru.md from a single .src.md template', ru:'Демо NRG: генерация README.md и README.ru.md из одного .src.md-шаблона'}](assets/demo.gif)
 
