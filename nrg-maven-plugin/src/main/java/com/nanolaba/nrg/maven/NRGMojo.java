@@ -71,6 +71,12 @@ public class NRGMojo extends AbstractMojo {
     @Parameter(property = "lineEnding")
     private String lineEnding;
 
+    @Parameter(property = "noHeader", defaultValue = "false")
+    private boolean noHeader;
+
+    @Parameter(property = "headerText")
+    private String headerText;
+
     public void setFileNamePattern(String fileNamePattern) {
         this.fileNamePattern = fileNamePattern;
     }
@@ -81,6 +87,14 @@ public class NRGMojo extends AbstractMojo {
 
     public void setLineEnding(String lineEnding) {
         this.lineEnding = lineEnding;
+    }
+
+    public void setNoHeader(boolean noHeader) {
+        this.noHeader = noHeader;
+    }
+
+    public void setHeaderText(String headerText) {
+        this.headerText = headerText;
     }
 
     @Parameter(property = "file")
@@ -150,6 +164,13 @@ public class NRGMojo extends AbstractMojo {
         if (lineEnding != null && !lineEnding.isEmpty()) {
             args.add("--line-ending");
             args.add(lineEnding);
+        }
+        if (noHeader) {
+            args.add("--no-header");
+        }
+        if (headerText != null && !headerText.isEmpty()) {
+            args.add("--header-text");
+            args.add(headerText);
         }
         // Positional file arguments must follow all flags (commons-cli stops parsing options at
         // the first non-option token).

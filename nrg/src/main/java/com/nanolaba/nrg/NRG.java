@@ -152,6 +152,13 @@ public class NRG {
                         "fall back to platform default for new files; --check ignores LE-only differences in auto mode)");
         lineEnding.setArgName("auto|lf|crlf");
         options.addOption(lineEnding);
+        Option noHeader = new Option(null, "no-header", false,
+                "suppress the auto-generated head comment lines at the top of every output file");
+        options.addOption(noHeader);
+        Option headerText = new Option(null, "header-text", true,
+                "replace the default head comment with this text (\\n, \\r, \\t, \\\\ are interpreted)");
+        headerText.setArgName("text");
+        options.addOption(headerText);
 
         CommandLineParser parser = new DefaultParser();
         CommandLine cmd = parser.parse(options, args);
@@ -193,6 +200,11 @@ public class NRG {
         }
         String fileNamePatternValue = cmd.getOptionValue(fileNamePattern);
         String defaultLangFileNamePatternValue = cmd.getOptionValue(defaultLangFileNamePattern);
+        boolean noHeaderFlag = cmd.hasOption(noHeader);
+        String headerTextValue = cmd.getOptionValue(headerText);
+        if (noHeaderFlag && headerTextValue != null) {
+            throw new ParseException("--no-header and --header-text are mutually exclusive");
+        }
         LineEndings.Mode lineEndingMode;
         try {
             lineEndingMode = LineEndings.Mode.parse(cmd.getOptionValue(lineEnding));
@@ -222,7 +234,8 @@ public class NRG {
                 code = generate(sourceFile, sourceCharset, toStdout, langValue, cliWidgets,
                         checkMode, cmd.hasOption(allowExec),
                         fileNamePatternValue, defaultLangFileNamePatternValue,
-                        totalOutputs > 1, lineEndingMode);
+                        totalOutputs > 1, lineEndingMode,
+                        noHeaderFlag, headerTextValue);
             }
             if (code != 0) {
                 aggregateCode = 1;
@@ -404,7 +417,8 @@ public class NRG {
     private static int generate(File sourceFile, Charset charset, boolean toStdout, String languageFilter,
                                 List<NRGWidget> cliWidgets, boolean checkMode, boolean allowExec,
                                 String fileNamePatternOverride, String defaultLangFileNamePatternOverride,
-                                boolean perFileStdoutHeader, LineEndings.Mode lineEndingMode) {
+                                boolean perFileStdoutHeader, LineEndings.Mode lineEndingMode,
+                                boolean noHeaderOverride, String headerTextOverride) {
         if (!sourceFile.exists()) {
             LOG.error("Source file does not exist: {}", sourceFile.getAbsolutePath());
             return 1;
@@ -424,6 +438,14 @@ public class NRG {
                 generator.getConfig().getProperties().setProperty(
                         NRGConstants.PROPERTY_DEFAULT_LANGUAGE_FILE_NAME_PATTERN,
                         defaultLangFileNamePatternOverride);
+            }
+            if (noHeaderOverride) {
+                generator.getConfig().getProperties().setProperty(
+                        NRGConstants.PROPERTY_NO_HEADER, "true");
+            }
+            if (headerTextOverride != null) {
+                generator.getConfig().getProperties().setProperty(
+                        NRGConstants.PROPERTY_HEADER_TEXT, headerTextOverride);
             }
             Optional<String> patternError = OutputFileNameValidator.findError(
                     sourceFile, generator.getConfig().getDefaultLanguage(),

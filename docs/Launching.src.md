@@ -183,6 +183,29 @@ flag a mismatch — that's the user-asked-for invariant.<!--en-->
 ОС не валят CI. Явные `lf` / `crlf` всё равно сигнализируют о несовпадении<!--ru-->
 — это инвариант, который пользователь явно запросил.<!--ru-->
 
+#### ${en:'Header customisation', ru:'Настройка заголовка'}
+
+By default every generated file opens with two HTML comment lines warning<!--en-->
+contributors not to hand-edit the output. Two flags override that:<!--en-->
+`--no-header` strips the comment entirely; `--header-text "..."` replaces<!--en-->
+it with arbitrary text (use `\n` for line breaks, also `\r`, `\t`, `\\`).<!--en-->
+The two flags are mutually exclusive. Equivalent template properties<!--en-->
+`<\!--\@nrg.noHeader=true-->` and `<\!--\@nrg.headerText=...-->` work the<!--en-->
+same way; the CLI flag wins when both are set.<!--en-->
+По умолчанию каждый сгенерированный файл начинается с двух строк HTML-<!--ru-->
+комментария, предупреждающих контрибьюторов не редактировать его руками.<!--ru-->
+Два флага переопределяют это поведение: `--no-header` полностью убирает<!--ru-->
+комментарий, `--header-text "..."` заменяет его произвольным текстом<!--ru-->
+(используйте `\n` для переноса строки, также `\r`, `\t`, `\\`).<!--ru-->
+Флаги взаимно исключающие. Эквивалентные свойства шаблона<!--ru-->
+`<\!--\@nrg.noHeader=true-->` и `<\!--\@nrg.headerText=...-->` работают<!--ru-->
+аналогично; CLI-флаг побеждает значение в шаблоне.<!--ru-->
+
+```bash
+nrg --no-header -f README.src.md
+nrg --header-text '<!-- See /wiki for editing rules -->\n<!-- Auto-generated; do not edit -->' -f README.src.md
+```
+
 #### ${en:'Multiple files and glob patterns', ru:'Несколько файлов и glob-паттерны'}
 
 Pass several source files in one invocation, either as explicit positional<!--en-->
@@ -252,6 +275,7 @@ Add the following code to your `pom.xml`:<!--en-->
             <check>false</check>
             <failFast>false</failFast>
             <lineEnding>auto</lineEnding>
+            <noHeader>false</noHeader>
         </configuration>
         <dependencies>
             <dependency>
@@ -285,6 +309,18 @@ diagnostics across every matched file.<!--en-->
 прерывает обработку на первом ненулевом результате; по умолчанию `false` —<!--ru-->
 сохраняется сегодняшнее поведение с агрегированием диагностик по всем<!--ru-->
 найденным файлам.<!--ru-->
+
+`<noHeader>true</noHeader>` (or `-DnoHeader=true`) drops the auto-generated<!--en-->
+two-line head comment from every output file; `<headerText>...</headerText>`<!--en-->
+(or `-DheaderText="..."`) replaces it with arbitrary text. Use `\n` for<!--en-->
+line breaks. The two parameters are mutually exclusive — passing both<!--en-->
+fails the build with a CLI parse error.<!--en-->
+`<noHeader>true</noHeader>` (или `-DnoHeader=true`) убирает автоматический<!--ru-->
+двухстрочный head-комментарий из каждого выходного файла;<!--ru-->
+`<headerText>...</headerText>` (или `-DheaderText="..."`) заменяет его<!--ru-->
+произвольным текстом. Используйте `\n` для перевода строк. Параметры<!--ru-->
+взаимно исключающие — одновременная передача роняет сборку с ошибкой<!--ru-->
+разбора аргументов CLI.<!--ru-->
 
 > [!NOTE]<!--en-->
 > **Multi-module (aggregator) projects:** the `create-files` goal is declared<!--en-->

@@ -7,7 +7,9 @@ import java.io.File;
 import java.util.Collection;
 
 import static com.nanolaba.nrg.core.NRGConstants.PROPERTY_DEFAULT_LANGUAGE;
+import static com.nanolaba.nrg.core.NRGConstants.PROPERTY_HEADER_TEXT;
 import static com.nanolaba.nrg.core.NRGConstants.PROPERTY_LANGUAGES;
+import static com.nanolaba.nrg.core.NRGConstants.PROPERTY_NO_HEADER;
 import static org.junit.jupiter.api.Assertions.*;
 
 class GeneratorTest extends DefaultNRGTest {
@@ -84,6 +86,52 @@ class GeneratorTest extends DefaultNRGTest {
         String body = generator.getResult("en").getContent().toString();
         assertTrue(body.contains("real"));
         assertFalse(body.contains("hidden"));
+    }
+
+    @Test
+    public void testNoHeaderPropertySuppressesHeadComment() {
+        String src = "<!--@" + PROPERTY_LANGUAGES + "=en-->" + RN +
+                "<!--@" + PROPERTY_NO_HEADER + "=true-->" + RN +
+                "Body";
+
+        Generator generator = new Generator(new File("README.src.md"), src);
+        String out = generator.getResult("en").getContent().toString();
+        assertFalse(out.contains("automatically generated"),
+                "default head comment should be suppressed, got: " + out);
+        assertTrue(out.contains("Body"));
+    }
+
+    @Test
+    public void testHeaderTextPropertyReplacesDefaultHeadComment() {
+        Generator generator = new Generator(new File("README.src.md"), "Body");
+        generator.getConfig().getProperties().setProperty(PROPERTY_HEADER_TEXT, "<!-- Custom header -->");
+
+        String out = generator.getResult("en").getContent().toString();
+        assertFalse(out.contains("automatically generated"),
+                "default head comment should be replaced, got: " + out);
+        assertTrue(out.startsWith("<!-- Custom header -->" + RN),
+                "custom header should be the first line, got: " + out);
+    }
+
+    @Test
+    public void testHeaderTextEscapesProduceMultiLineHeader() {
+        Generator generator = new Generator(new File("README.src.md"), "");
+        generator.getConfig().getProperties().setProperty(PROPERTY_HEADER_TEXT, "Line A\\nLine B");
+
+        String out = generator.getResult("en").getContent().toString();
+        assertTrue(out.startsWith("Line A" + RN + "Line B" + RN),
+                "\\n should expand to a line separator, got: " + out);
+    }
+
+    @Test
+    public void testNoHeaderWinsOverHeaderText() {
+        Generator generator = new Generator(new File("README.src.md"), "Body");
+        generator.getConfig().getProperties().setProperty(PROPERTY_NO_HEADER, "true");
+        generator.getConfig().getProperties().setProperty(PROPERTY_HEADER_TEXT, "should not appear");
+
+        String out = generator.getResult("en").getContent().toString();
+        assertFalse(out.contains("should not appear"),
+                "noHeader should win over headerText, got: " + out);
     }
 
     @Test

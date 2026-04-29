@@ -59,7 +59,8 @@ This very README is generated with NRG — see [`README.src.md`](README.src.md).
 		4. [Logging verbosity](#logging-verbosity)
 		5. [Customising output filenames](#customising-output-filenames)
 		6. [Line endings](#line-endings)
-		7. [Multiple files and glob patterns](#multiple-files-and-glob-patterns)
+		7. [Header customisation](#header-customisation)
+		8. [Multiple files and glob patterns](#multiple-files-and-glob-patterns)
 	2. [Use as maven plugin](#use-as-maven-plugin)
 	3. [Use as a GitHub Action](#use-as-a-github-action)
 		1. [Quickstart](#quickstart)
@@ -355,6 +356,21 @@ file (regen would have preserved the existing convention anyway), so a
 mixed-OS contributor base does not trip CI. Explicit `lf` / `crlf` does
 flag a mismatch — that's the user-asked-for invariant.
 
+#### Header customisation
+
+By default every generated file opens with two HTML comment lines warning
+contributors not to hand-edit the output. Two flags override that:
+`--no-header` strips the comment entirely; `--header-text "..."` replaces
+it with arbitrary text (use `\n` for line breaks, also `\r`, `\t`, `\\`).
+The two flags are mutually exclusive. Equivalent template properties
+`<!--@nrg.noHeader=true-->` and `<!--@nrg.headerText=...-->` work the
+same way; the CLI flag wins when both are set.
+
+```bash
+nrg --no-header -f README.src.md
+nrg --header-text '<!-- See /wiki for editing rules -->\n<!-- Auto-generated; do not edit -->' -f README.src.md
+```
+
 #### Multiple files and glob patterns
 
 Pass several source files in one invocation, either as explicit positional
@@ -408,6 +424,7 @@ Add the following code to your `pom.xml`:
             <check>false</check>
             <failFast>false</failFast>
             <lineEnding>auto</lineEnding>
+            <noHeader>false</noHeader>
         </configuration>
         <dependencies>
             <dependency>
@@ -434,6 +451,12 @@ syntax as the CLI). Multi-doc projects can replace a long list with
 `<failFast>true</failFast>` (or `-DfailFast=true`) to abort on the first
 non-zero result; default `false` preserves today's behavior of aggregating
 diagnostics across every matched file.
+
+`<noHeader>true</noHeader>` (or `-DnoHeader=true`) drops the auto-generated
+two-line head comment from every output file; `<headerText>...</headerText>`
+(or `-DheaderText="..."`) replaces it with arbitrary text. Use `\n` for
+line breaks. The two parameters are mutually exclusive — passing both
+fails the build with a CLI parse error.
 
 > [!NOTE]
 > **Multi-module (aggregator) projects:** the `create-files` goal is declared
@@ -1390,7 +1413,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 28.04.2026 20:33:42
+Last updated: 29.04.2026 22:25:37
 ```
 
 </td></tr>
@@ -1403,7 +1426,7 @@ ${widget:date(pattern = 'dd.MM.yyyy')}
 </td><td>
 
 ```markdown
-28.04.2026
+29.04.2026
 ```
 
 </td></tr>
@@ -1916,6 +1939,7 @@ This section summarises the main user-visible changes in each release. For full 
 
 ### Unreleased (1.2-SNAPSHOT)
 
+- **Customisable head comment**: new `--no-header` CLI flag (and matching `<noHeader>true</noHeader>` Maven plugin parameter) suppresses the auto-generated two-line `<!-- This file was automatically generated... -->` block at the top of every output file; `--header-text "..."` (`<headerText>...</headerText>`) replaces it with arbitrary text — `\n`, `\r`, `\t`, `\\` are interpreted, so a multi-line custom header is one flag away. The two flags are mutually exclusive. Equivalent template properties `<!--@nrg.noHeader=true-->` and `<!--@nrg.headerText=...-->` work identically; CLI / Maven values win on conflict. Lets maintainers running their own auto-doc tooling (e.g. per-file `@LastEditTime` HTML comments) opt out of NRG's signature without forking the generation step. Closes [#51](https://github.com/nanolaba/readme-generator/issues/51).
 - **`badge` widget — optional `alt=` parameter**: every type (`maven-central`, `license`, `github-release`, `github-stars`, `github-workflow`, `custom`) now accepts an optional `alt='...'` that overrides the auto-derived Markdown alt-text without changing the visible badge label rendered by shields.io. Useful for SEO and screen-reader accessibility — phrase-style alts like `NRG continuous integration build status` carry semantic signal that bare `CI` does not. Empty `alt=''` falls back to the type's default. Closes [#52](https://github.com/nanolaba/readme-generator/issues/52).
 - **Preserve original line endings on regeneration**: NRG now detects the existing on-disk output file's CRLF/LF convention and writes the regenerated content with the same convention, instead of always emitting `System.lineSeparator()`. Mixed-ending files normalise to LF. New CLI flag `--line-ending=auto|lf|crlf` (default `auto`) and matching Maven plugin `<lineEnding>` parameter override detection. In `--check` mode, `auto` ignores LE-only differences so a CRLF-vs-LF contributor mismatch no longer trips CI; explicit `lf` / `crlf` still flag a mismatch (that's the explicitly-requested invariant). Closes [#48](https://github.com/nanolaba/readme-generator/issues/48).
 - **`nrg-maven-plugin` no longer inherits its `create-files` execution into child modules by default**: the goal is declared with `inheritByDefault = false`, so multi-module (aggregator) builds run README generation only at the root POM where `README.src.md` lives — child modules no longer re-invoke NRG in their own directory and spam warnings (or fail) over a missing source file. Soft-breaking only for projects that intentionally relied on per-child re-execution; opt back in with `<inherited>true</inherited>` in the child's POM. Closes [#49](https://github.com/nanolaba/readme-generator/issues/49).
@@ -2009,4 +2033,4 @@ We welcome all constructive feedback to make **NRG** better!
 
 
 ---
-*Last updated: 28.04.2026*
+*Last updated: 29.04.2026*

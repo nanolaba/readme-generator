@@ -24,6 +24,8 @@ public class NRGConstants {
     public static final String PROPERTY_ALLOW_REMOTE_IMPORTS = "nrg.allowRemoteImports";
     public static final String PROPERTY_CACHE_DIR = "nrg.cacheDir";
     public static final String PROPERTY_REQUIRE_SHA256_FOR_REMOTE = "nrg.requireSha256ForRemote";
+    public static final String PROPERTY_NO_HEADER = "nrg.noHeader";
+    public static final String PROPERTY_HEADER_TEXT = "nrg.headerText";
 
     public static final String FREEZE_OPEN_MARKER_NAME = "nrg.freeze";
     public static final String FREEZE_CLOSE_MARKER_NAME = "/nrg.freeze";
