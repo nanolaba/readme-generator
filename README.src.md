@@ -23,7 +23,7 @@ ${widget:badge(type='custom', label='Java', message='8+', color='orange', alt='B
 
 ${widget:import(path='docs/Overview.src.md')}
 
-${widget:tableOfContents(title = "${en:'Table of contents', ru:'Содержание'}", ordered = "true")}
+${widget:tableOfContents(title = "${en:'Table of contents', ru:'Содержание'}", ordered = "true", numbering-style = "dotted")}
 
 ${widget:import(path='docs/QuickStart.src.md')}
 ${widget:import(path='docs/Launching.src.md')}
