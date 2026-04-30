@@ -28,6 +28,7 @@ NRG, извлекает `nrg.jar` и запускает его для переч
 | `files` | ${en:'Multi-line list of templates (one per line). Mutually exclusive with `file`.', ru:'Многострочный список шаблонов (по одному на строку). Не совместим с `file`.'} | — |
 | `charset` | ${en:'Source file encoding.', ru:'Кодировка исходных файлов.'} | `UTF-8` |
 | `mode` | ${en:'Operation mode: `generate`, `check`, or `validate`.', ru:'Режим работы: `generate`, `check` или `validate`.'} | `generate` |
+| `check-paths` | ${en:'Multi-line list of glob patterns (one per line) limiting which generated outputs `mode: check` compares against on-disk files. Requires `mode: check`.', ru:'Многострочный список glob-шаблонов (по одному на строку), ограничивающий, какие сгенерированные файлы `mode: check` сравнивает с файлами на диске. Требует `mode: check`.'} | — |
 | `nrg-version` | ${en:'NRG release tag (e.g. `v1.0`) or `latest`.', ru:'Тег релиза NRG (например, `v1.0`) или `latest`.'} | `latest` |
 | `java-version` | ${en:'JDK version for `actions/setup-java`. Ignored when `setup-java=false`.', ru:'Версия JDK для `actions/setup-java`. Игнорируется при `setup-java=false`.'} | `17` |
 | `java-distribution` | ${en:'JDK distribution for `actions/setup-java`.', ru:'Дистрибутив JDK для `actions/setup-java`.'} | `temurin` |
@@ -91,6 +92,20 @@ jobs:
         with:
           file: README.src.md
           mode: check
+```
+
+##### ${en:'Drift check on a subset of outputs', ru:'Drift-проверка по подмножеству файлов'}
+
+${en:'When only some generated files are tracked in git (e.g. only the canonical `README.md` is committed and translations are bot-managed), `check-paths` limits the comparison to those files. Patterns are cwd-relative `glob:` globs (`**/` matches zero or more directories). A pattern that matches no generated output prints a `WARN` to stderr but still exits `0`, so typos do not silently disable the check:', ru:'Когда в git лежит только часть сгенерированных файлов (например, коммитится только канонический `README.md`, а переводы регенерируются ботом), `check-paths` сужает сравнение до перечисленных. Шаблоны — cwd-относительные `glob:`-маски (`**/` соответствует нулю и более каталогов). Шаблон без совпадений печатает `WARN` в stderr, но завершается с кодом `0`, чтобы опечатка не отключала проверку молча:'}
+
+```yaml
+- uses: nanolaba/nrg-action@v1
+  with:
+    file: README.src.md
+    mode: check
+    check-paths: |
+      README.md
+      docs/canonical/*.md
 ```
 
 ${en:'Validate-only and auto-commit-via-PR recipes are in the [`nrg-action/examples`](https://github.com/nanolaba/readme-generator/tree/main/nrg-action/examples) directory of this repository.', ru:'Рецепты «только валидация» и «авто-коммит через PR» лежат в каталоге [`nrg-action/examples`](https://github.com/nanolaba/readme-generator/tree/main/nrg-action/examples) этого репозитория.'}
