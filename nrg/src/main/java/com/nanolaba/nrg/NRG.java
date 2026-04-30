@@ -9,6 +9,7 @@ import com.nanolaba.nrg.core.NRGConstants;
 import com.nanolaba.nrg.core.NRGUtil;
 import com.nanolaba.nrg.core.OutputFileNameResolver;
 import com.nanolaba.nrg.core.OutputFileNameValidator;
+import com.nanolaba.nrg.core.PathPatternMatcher;
 import com.nanolaba.nrg.core.SourceFileResolver;
 import com.nanolaba.nrg.core.Validator;
 import com.nanolaba.nrg.core.freeze.FreezeValidator;
@@ -130,6 +131,15 @@ public class NRG {
         Option check = new Option(null, "check", false,
                 "verify generated output matches files on disk; exit 1 and print a diff when they differ");
         options.addOption(check);
+        Option checkPaths = Option.builder()
+                .longOpt("check-paths")
+                .hasArg()
+                .argName("pattern")
+                .desc("limit --check to outputs matching these glob patterns " +
+                        "(repeatable, cwd-relative); without it all generated outputs are checked")
+                .build();
+        checkPaths.setArgs(Option.UNLIMITED_VALUES);
+        options.addOption(checkPaths);
         Option allowExec = new Option(null, "allow-exec", false,
                 "allow the 'exec' widget to run external commands (disabled by default)");
         options.addOption(allowExec);
@@ -193,6 +203,21 @@ public class NRG {
         if (validateMode && (toStdout || checkMode)) {
             throw new ParseException("--validate is mutually exclusive with --stdout and --check");
         }
+        String[] checkPathsValues = cmd.getOptionValues(checkPaths);
+        List<String> checkPathsList = checkPathsValues == null
+                ? Collections.<String>emptyList()
+                : Arrays.asList(checkPathsValues);
+        boolean hasCheckPathsFilter = false;
+        for (String p : checkPathsList) {
+            if (p != null && !p.isEmpty()) {
+                hasCheckPathsFilter = true;
+                break;
+            }
+        }
+        if (hasCheckPathsFilter && !checkMode) {
+            throw new ParseException("--check-paths requires --check");
+        }
+        PathPatternMatcher checkPathFilter = PathPatternMatcher.compile(checkPathsList);
         String langValue = cmd.getOptionValue(language);
         if (langValue != null && !toStdout) {
             LOG.warn("--language has no effect without --stdout; ignoring");
@@ -226,6 +251,7 @@ public class NRG {
             totalOutputs = countTotalOutputs(sources, sourceCharset, cliWidgets, langValue);
         }
         int aggregateCode = 0;
+        MatchTracker checkMatchTracker = new MatchTracker();
         for (File sourceFile : sources) {
             int code;
             if (validateMode) {
@@ -235,7 +261,8 @@ public class NRG {
                         checkMode, cmd.hasOption(allowExec),
                         fileNamePatternValue, defaultLangFileNamePatternValue,
                         totalOutputs > 1, lineEndingMode,
-                        noHeaderFlag, headerTextValue);
+                        noHeaderFlag, headerTextValue,
+                        checkPathFilter, checkMatchTracker);
             }
             if (code != 0) {
                 aggregateCode = 1;
@@ -243,6 +270,10 @@ public class NRG {
                     return 1;
                 }
             }
+        }
+        if (checkMode && hasCheckPathsFilter && !checkMatchTracker.anyMatched()) {
+            System.err.println("WARN: --check-paths matched no generated outputs (patterns: "
+                    + checkPathFilter.getPatterns() + ")");
         }
         return aggregateCode;
     }
@@ -418,7 +449,8 @@ public class NRG {
                                 List<NRGWidget> cliWidgets, boolean checkMode, boolean allowExec,
                                 String fileNamePatternOverride, String defaultLangFileNamePatternOverride,
                                 boolean perFileStdoutHeader, LineEndings.Mode lineEndingMode,
-                                boolean noHeaderOverride, String headerTextOverride) {
+                                boolean noHeaderOverride, String headerTextOverride,
+                                PathPatternMatcher checkPathFilter, MatchTracker checkMatchTracker) {
         if (!sourceFile.exists()) {
             LOG.error("Source file does not exist: {}", sourceFile.getAbsolutePath());
             return 1;
@@ -470,7 +502,7 @@ public class NRG {
             }
             generator.getConfig().setExecAllowed(allowExec);
             if (checkMode) {
-                return performCheck(generator, lineEndingMode);
+                return performCheck(generator, lineEndingMode, checkPathFilter, checkMatchTracker);
             }
             if (toStdout) {
                 printToStdout(generator, languageFilter, perFileStdoutHeader);
@@ -484,11 +516,19 @@ public class NRG {
         }
     }
 
-    private static int performCheck(Generator generator, LineEndings.Mode lineEndingMode) throws IOException {
+    private static int performCheck(Generator generator, LineEndings.Mode lineEndingMode,
+                                    PathPatternMatcher filter, MatchTracker tracker)
+            throws IOException {
         boolean failed = false;
         for (String language : generator.getConfig().getLanguages()) {
             File readmeFile = getReadmeFile(language, generator.getConfig());
+            // Force rendering for every declared language so widget/template errors continue to
+            // surface in --check, even when the resulting output is excluded from the filter.
             String generatedRaw = generator.getResult(language).getContent().toString();
+            if (!filter.isUnconstrained() && !filter.matches(readmeFile)) {
+                continue;
+            }
+            tracker.record();
             if (!readmeFile.exists()) {
                 System.err.println("Missing file: " + readmeFile.getName() + " (would be created by generation)");
                 failed = true;
@@ -668,5 +708,15 @@ public class NRG {
     public static void addWidget(NRGWidget widget) {
         Objects.requireNonNull(widget);
         additionalWidgets.add(widget);
+    }
+
+    /**
+     * Counts how many outputs survived the {@code --check-paths} filter across the whole run,
+     * so the multi-source loop can warn once when zero outputs matched any pattern.
+     */
+    private static final class MatchTracker {
+        private int count;
+        void record() { count++; }
+        boolean anyMatched() { return count > 0; }
     }
 }
