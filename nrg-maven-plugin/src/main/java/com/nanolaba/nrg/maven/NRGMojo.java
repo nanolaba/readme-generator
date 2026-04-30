@@ -77,6 +77,9 @@ public class NRGMojo extends AbstractMojo {
     @Parameter(property = "headerText")
     private String headerText;
 
+    @Parameter
+    private List<String> checkPaths;
+
     public void setFileNamePattern(String fileNamePattern) {
         this.fileNamePattern = fileNamePattern;
     }
@@ -95,6 +98,10 @@ public class NRGMojo extends AbstractMojo {
 
     public void setHeaderText(String headerText) {
         this.headerText = headerText;
+    }
+
+    public void setCheckPaths(List<String> checkPaths) {
+        this.checkPaths = checkPaths;
     }
 
     @Parameter(property = "file")
@@ -130,6 +137,19 @@ public class NRGMojo extends AbstractMojo {
         }
 
         String widgetsArg = validateAndJoinWidgets();
+
+        boolean hasCheckPathsFilter = false;
+        if (checkPaths != null) {
+            for (String p : checkPaths) {
+                if (p != null && !p.isEmpty()) {
+                    hasCheckPathsFilter = true;
+                    break;
+                }
+            }
+        }
+        if (hasCheckPathsFilter && !check) {
+            throw new MojoExecutionException("<checkPaths> requires <check>true</check>");
+        }
 
         List<String> args = new ArrayList<>();
         args.add("--charset");
@@ -171,6 +191,14 @@ public class NRGMojo extends AbstractMojo {
         if (headerText != null && !headerText.isEmpty()) {
             args.add("--header-text");
             args.add(headerText);
+        }
+        if (checkPaths != null) {
+            for (String p : checkPaths) {
+                if (p != null && !p.isEmpty()) {
+                    args.add("--check-paths");
+                    args.add(p);
+                }
+            }
         }
         // Positional file arguments must follow all flags (commons-cli stops parsing options at
         // the first non-option token).
