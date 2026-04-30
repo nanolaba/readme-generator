@@ -5,7 +5,6 @@ import com.nanolaba.sugar.Code;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.PathMatcher;
@@ -36,8 +35,6 @@ import java.util.stream.Stream;
  */
 public final class SourceFileResolver {
 
-    private static final char[] GLOB_CHARS = {'*', '?', '[', '{'};
-
     private SourceFileResolver() {/**/}
 
     public static Result resolve(List<String> patterns) {
@@ -60,7 +57,7 @@ public final class SourceFileResolver {
     }
 
     private static List<File> expand(String pattern) {
-        if (!hasGlobChars(pattern)) {
+        if (!PathPatternMatcher.hasGlobChars(pattern)) {
             File f = new File(pattern);
             return f.isFile() ? Collections.singletonList(f) : Collections.emptyList();
         }
@@ -97,9 +94,14 @@ public final class SourceFileResolver {
      * literal pattern, an additional matcher is generated for each {@code **\/} segment with
      * the segment removed, so {@code docs/**\/*.src.md} matches both {@code docs/a.src.md}
      * (zero intermediate dirs) and {@code docs/sub/b.src.md} (one or more).
+     *
+     * <p>Uses {@code base.getFileSystem()} rather than {@link java.nio.file.FileSystems#getDefault()}
+     * so tests can drive the resolver against virtual (in-memory) filesystems. The
+     * {@link PathPatternMatcher} sibling class targets real-disk paths and so uses the default
+     * filesystem instead — the variant-expansion loop is duplicated deliberately for that reason.
      */
     private static List<PathMatcher> buildMatchers(Path base, String pattern) {
-        String absolutePattern = absolutePatternString(pattern);
+        String absolutePattern = PathPatternMatcher.absolutePatternString(pattern);
         List<String> variants = new ArrayList<>();
         variants.add(absolutePattern);
         // Generate one variant per "**/" position with the segment elided. Iterating a fixed
@@ -118,46 +120,6 @@ public final class SourceFileResolver {
         return matchers;
     }
 
-    private static boolean hasGlobChars(String s) {
-        for (char c : GLOB_CHARS) {
-            if (s.indexOf(c) >= 0) return true;
-        }
-        return false;
-    }
-
-    /**
-     * Returns the pattern as an absolute, forward-slash-normalised string suitable for feeding
-     * to {@code glob:}. Cannot use {@link Paths#get(String, String...)} on the raw pattern
-     * because Windows rejects {@code *}, {@code ?}, etc. as illegal path characters — instead,
-     * if the pattern is already absolute (Unix root or Windows drive letter / UNC) it is used
-     * verbatim, otherwise it is prefixed with the cwd.
-     */
-    private static String absolutePatternString(String pattern) {
-        String normalized = pattern.replace('\\', '/');
-        if (isAbsoluteNormalized(normalized)) {
-            return normalized;
-        }
-        String cwd = Paths.get("").toAbsolutePath().toString().replace('\\', '/');
-        if (cwd.endsWith("/")) {
-            return cwd + normalized;
-        }
-        return cwd + "/" + normalized;
-    }
-
-    private static boolean isAbsoluteNormalized(String normalized) {
-        if (normalized.startsWith("/")) {
-            return true;
-        }
-        // Windows drive letter, e.g. "C:/foo".
-        if (normalized.length() >= 3
-                && Character.isLetter(normalized.charAt(0))
-                && normalized.charAt(1) == ':'
-                && normalized.charAt(2) == '/') {
-            return true;
-        }
-        return false;
-    }
-
     /**
      * Walks back from the first glob character to the previous path separator and returns the
      * absolute directory at that prefix. With no separator before the glob, walks from the
@@ -168,7 +130,7 @@ public final class SourceFileResolver {
     private static Path baseDirectory(String pattern) {
         String normalized = pattern.replace('\\', '/');
         int firstGlob = -1;
-        for (char c : GLOB_CHARS) {
+        for (char c : new char[]{'*', '?', '[', '{'}) {
             int idx = normalized.indexOf(c);
             if (idx >= 0 && (firstGlob < 0 || idx < firstGlob)) firstGlob = idx;
         }
