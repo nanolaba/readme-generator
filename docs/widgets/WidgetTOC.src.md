@@ -89,6 +89,112 @@ ${en:'Widget parameters', ru:'Свойства виджета'}:
 |            max-depth            | ${en:'Maximum heading level to include (1–6). Headings deeper than this are skipped.', ru:'Максимальный уровень заголовка (1–6). Заголовки более глубокого уровня исключаются.'}                                                                                                                                                                                                                                                                                                                                                                                      |                        `6`                        |
 |            min-items            | ${en:'Minimum number of headings (after depth and `<\!--toc.ignore-->` filters) required to render the widget. Below this threshold the widget produces no output (no title, no items).', ru:'Минимальное число заголовков (после фильтров по глубине и `<\!--toc.ignore-->`), при котором виджет выводит оглавление. При меньшем числе виджет не выводит ничего (ни заголовка, ни пунктов).'}                                                                                                                                                                        |                        `1`                        |
 |          anchor-style           | ${en:'Anchor-slugification style: `github` (default), `gitlab`, or `bitbucket`. GitLab preserves underscores and does not collapse consecutive hyphens; Bitbucket prefixes anchors with `markdown-header-`. An unknown value logs an error and causes the widget to render nothing.', ru:'Стиль формирования якорей: `github` (по умолчанию), `gitlab` или `bitbucket`. GitLab сохраняет подчёркивания и не схлопывает подряд идущие дефисы; Bitbucket добавляет префикс `markdown-header-`. При неизвестном значении выводится ошибка и виджет ничего не рендерит.'} |                     `github`                      |
+|         numbering-style         | ${en:'Counter-prefix style when `ordered=true`: `default` (today''s `1.` markers — byte-identical to omitting the parameter), hierarchical `dotted` (`1`, `1.1`, `1.1.1`), `legal` (`1.`, `1.1.`, `1.1.1.`), `appendix` (`A`, `A.1`, `A.1.1`), or flat global counters `arabic` / `roman` / `roman-upper` / `alpha` / `alpha-upper`. Unknown values log an error and fall back to `default`. No effect when `ordered=false`.', ru:'Стиль префикса-счётчика при `ordered=true`: `default` (текущие маркеры `1.` — побайтно совпадает с пропуском параметра), иерархические `dotted` (`1`, `1.1`, `1.1.1`), `legal` (`1.`, `1.1.`, `1.1.1.`), `appendix` (`A`, `A.1`, `A.1.1`) или плоские глобальные счётчики `arabic` / `roman` / `roman-upper` / `alpha` / `alpha-upper`. При неизвестном значении в лог пишется ошибка и используется `default`. Не действует при `ordered=false`.'}                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |                     `default`                     |
+|              start              | ${en:'First top-level counter value. Type-matched to `numbering-style`: digits for `dotted` / `legal` / `arabic`, roman numeral for `roman` / `roman-upper`, single letter for `alpha` / `alpha-upper` / `appendix`. Invalid input logs an error and falls back to the natural first value. Ignored when `numbering-style=default`.', ru:'Первое значение счётчика верхнего уровня. Тип соответствует `numbering-style`: цифры для `dotted` / `legal` / `arabic`, римское число для `roman` / `roman-upper`, одна буква для `alpha` / `alpha-upper` / `appendix`. При недопустимом значении в лог пишется ошибка и используется естественное первое значение. Игнорируется при `numbering-style=default`.'}                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |                                                   |
+
+${en:'Numbering styles', ru:'Стили нумерации'}:
+
+Set `numbering-style=...` (with `ordered="true"`) to pick a counter shape — hierarchical for outline-style references, flat for short summaries.<!--en-->
+Задайте `numbering-style=...` (вместе с `ordered="true"`), чтобы выбрать форму счётчика — иерархическую для ссылок-«разделов» или плоскую для коротких списков.<!--ru-->
+
+<table>
+<tr><th>${en:'Usage', ru:'Использование'} — `numbering-style="dotted"` (README.src.md)</th></tr>
+<tr><td>
+
+```markdown
+\${widget:tableOfContents(ordered = "true", numbering-style = "dotted", min-depth = "1")}
+
+# Introduction<!--toc.ignore-->
+
+## Setup<!--toc.ignore-->
+
+## Usage<!--toc.ignore-->
+```
+
+</td></tr>
+<tr><th>${en:'Result', ru:'Результат'} (README.md)</th></tr>
+<tr><td>
+
+```markdown
+- 1 [Introduction](#introduction)
+    - 1.1 [Setup](#setup)
+    - 1.2 [Usage](#usage)
+```
+
+</td></tr>
+<tr><th>${en:'Usage', ru:'Использование'} — `numbering-style="legal"` (README.src.md)</th></tr>
+<tr><td>
+
+```markdown
+\${widget:tableOfContents(ordered = "true", numbering-style = "legal", min-depth = "1")}
+
+# Introduction<!--toc.ignore-->
+
+## Setup<!--toc.ignore-->
+
+## Usage<!--toc.ignore-->
+```
+
+</td></tr>
+<tr><th>${en:'Result', ru:'Результат'} (README.md)</th></tr>
+<tr><td>
+
+```markdown
+- 1. [Introduction](#introduction)
+    - 1.1. [Setup](#setup)
+    - 1.2. [Usage](#usage)
+```
+
+</td></tr>
+<tr><th>${en:'Usage', ru:'Использование'} — `numbering-style="appendix"` (README.src.md)</th></tr>
+<tr><td>
+
+```markdown
+\${widget:tableOfContents(ordered = "true", numbering-style = "appendix", min-depth = "1")}
+
+# Appendix One<!--toc.ignore-->
+
+## Tables<!--toc.ignore-->
+
+# Appendix Two<!--toc.ignore-->
+```
+
+</td></tr>
+<tr><th>${en:'Result', ru:'Результат'} (README.md)</th></tr>
+<tr><td>
+
+```markdown
+- A [Appendix One](#appendix-one)
+    - A.1 [Tables](#tables)
+- B [Appendix Two](#appendix-two)
+```
+
+</td></tr>
+<tr><th>${en:'Usage', ru:'Использование'} — `numbering-style="arabic"` (README.src.md)</th></tr>
+<tr><td>
+
+```markdown
+\${widget:tableOfContents(ordered = "true", numbering-style = "arabic")}
+
+## Introduction<!--toc.ignore-->
+
+## Setup<!--toc.ignore-->
+
+## Usage<!--toc.ignore-->
+```
+
+</td></tr>
+<tr><th>${en:'Result', ru:'Результат'} (README.md)</th></tr>
+<tr><td>
+
+```markdown
+- 1 [Introduction](#introduction)
+- 2 [Setup](#setup)
+- 3 [Usage](#usage)
+```
+
+</td></tr>
+</table>
 
 ---
 

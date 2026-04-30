@@ -710,4 +710,311 @@ class TableOfContentsWidgetTest extends DefaultNRGTest {
         assertTrue(bodyEn.contains("2. [H2](#h2)"));
         assertTrue(bodyEn.contains("3. [H3](#h3)"));
     }
+
+    @Test
+    public void testTOCNumberingStyleDefaultIsByteIdentical() {
+        String src = "<!--@nrg.languages=en-->\n" +
+                "${widget:tableOfContents(ordered = \"true\", numbering-style = \"default\")}\n" +
+                "## A\n" +
+                "### a\n" +
+                "## B\n";
+        String srcNoStyle = "<!--@nrg.languages=en-->\n" +
+                "${widget:tableOfContents(ordered = \"true\")}\n" +
+                "## A\n" +
+                "### a\n" +
+                "## B\n";
+
+        String withStyle = new NoHeadCommentGenerator(new File("README.src.md"), src)
+                .getResult("en").getContent().toString();
+        String withoutStyle = new NoHeadCommentGenerator(new File("README.src.md"), srcNoStyle)
+                .getResult("en").getContent().toString();
+
+        assertEquals(withoutStyle, withStyle, "default numbering-style must be byte-identical to omitting the parameter");
+    }
+
+    @Test
+    public void testTOCNumberingStyleDotted() {
+        Generator generator = new NoHeadCommentGenerator(new File("README.src.md"),
+                "<!--@nrg.languages=en-->\n" +
+                        "${widget:tableOfContents(ordered = \"true\", numbering-style = \"dotted\", min-depth = \"1\")}\n" +
+                        "# H1\n" +
+                        "## H1.1\n" +
+                        "### H1.1.1\n" +
+                        "#### H1.1.1.1\n" +
+                        "## H1.2\n" +
+                        "# H2\n" +
+                        "## H2.1\n"
+        );
+
+        String body = generator.getResult("en").getContent().toString();
+        LOG.info(body);
+
+        assertTrue(body.contains("- 1 [H1](#h1)"));
+        assertTrue(body.contains("\t- 1.1 [H1.1](#h11)"));
+        assertTrue(body.contains("\t\t- 1.1.1 [H1.1.1](#h111)"));
+        assertTrue(body.contains("\t\t\t- 1.1.1.1 [H1.1.1.1](#h1111)"));
+        assertTrue(body.contains("\t- 1.2 [H1.2](#h12)"));
+        assertTrue(body.contains("- 2 [H2](#h2)"));
+        assertTrue(body.contains("\t- 2.1 [H2.1](#h21)"));
+    }
+
+    @Test
+    public void testTOCNumberingStyleLegal() {
+        Generator generator = new NoHeadCommentGenerator(new File("README.src.md"),
+                "<!--@nrg.languages=en-->\n" +
+                        "${widget:tableOfContents(ordered = \"true\", numbering-style = \"legal\", min-depth = \"1\")}\n" +
+                        "# H1\n" +
+                        "## H1.1\n" +
+                        "### H1.1.1\n" +
+                        "## H1.2\n" +
+                        "# H2\n"
+        );
+
+        String body = generator.getResult("en").getContent().toString();
+        LOG.info(body);
+
+        assertTrue(body.contains("- 1. [H1](#h1)"));
+        assertTrue(body.contains("\t- 1.1. [H1.1](#h11)"));
+        assertTrue(body.contains("\t\t- 1.1.1. [H1.1.1](#h111)"));
+        assertTrue(body.contains("\t- 1.2. [H1.2](#h12)"));
+        assertTrue(body.contains("- 2. [H2](#h2)"));
+    }
+
+    @Test
+    public void testTOCNumberingStyleAppendix() {
+        Generator generator = new NoHeadCommentGenerator(new File("README.src.md"),
+                "<!--@nrg.languages=en-->\n" +
+                        "${widget:tableOfContents(ordered = \"true\", numbering-style = \"appendix\", min-depth = \"1\")}\n" +
+                        "# Alpha\n" +
+                        "## A.1\n" +
+                        "### A.1.1\n" +
+                        "## A.2\n" +
+                        "# Bravo\n" +
+                        "## B.1\n"
+        );
+
+        String body = generator.getResult("en").getContent().toString();
+        LOG.info(body);
+
+        assertTrue(body.contains("- A [Alpha](#alpha)"));
+        assertTrue(body.contains("\t- A.1 [A.1](#a1)"));
+        assertTrue(body.contains("\t\t- A.1.1 [A.1.1](#a11)"));
+        assertTrue(body.contains("\t- A.2 [A.2](#a2)"));
+        assertTrue(body.contains("- B [Bravo](#bravo)"));
+        assertTrue(body.contains("\t- B.1 [B.1](#b1)"));
+    }
+
+    @Test
+    public void testTOCNumberingStyleAppendixWithStart() {
+        Generator generator = new NoHeadCommentGenerator(new File("README.src.md"),
+                "<!--@nrg.languages=en-->\n" +
+                        "${widget:tableOfContents(ordered = \"true\", numbering-style = \"appendix\", start = \"C\", min-depth = \"1\")}\n" +
+                        "# X\n" +
+                        "## X.1\n" +
+                        "# Y\n"
+        );
+        String body = generator.getResult("en").getContent().toString();
+        LOG.info(body);
+
+        assertTrue(body.contains("- C [X](#x)"));
+        assertTrue(body.contains("\t- C.1 [X.1](#x1)"));
+        assertTrue(body.contains("- D [Y](#y)"));
+    }
+
+    @Test
+    public void testTOCNumberingStyleArabicFlat() {
+        Generator generator = new NoHeadCommentGenerator(new File("README.src.md"),
+                "<!--@nrg.languages=en-->\n" +
+                        "${widget:tableOfContents(ordered = \"true\", numbering-style = \"arabic\", min-depth = \"1\")}\n" +
+                        "# H1\n" +
+                        "## H1.1\n" +
+                        "### H1.1.1\n" +
+                        "## H1.2\n" +
+                        "# H2\n"
+        );
+        String body = generator.getResult("en").getContent().toString();
+        LOG.info(body);
+
+        // No tabs anywhere on the rendered TOC lines, single global counter
+        assertTrue(body.contains("- 1 [H1](#h1)"));
+        assertTrue(body.contains("- 2 [H1.1](#h11)"));
+        assertTrue(body.contains("- 3 [H1.1.1](#h111)"));
+        assertTrue(body.contains("- 4 [H1.2](#h12)"));
+        assertTrue(body.contains("- 5 [H2](#h2)"));
+        assertFalse(body.contains("\t- "));
+    }
+
+    @Test
+    public void testTOCNumberingStyleRomanLowerAndUpper() {
+        String src = "<!--@nrg.languages=en-->\n" +
+                "${widget:tableOfContents(ordered = \"true\", numbering-style = \"%STYLE%\")}\n" +
+                "## A\n" +
+                "## B\n" +
+                "## C\n" +
+                "## D\n";
+
+        String lower = new NoHeadCommentGenerator(new File("README.src.md"),
+                src.replace("%STYLE%", "roman")).getResult("en").getContent().toString();
+        assertTrue(lower.contains("- i [A](#a)"));
+        assertTrue(lower.contains("- ii [B](#b)"));
+        assertTrue(lower.contains("- iii [C](#c)"));
+        assertTrue(lower.contains("- iv [D](#d)"));
+
+        String upper = new NoHeadCommentGenerator(new File("README.src.md"),
+                src.replace("%STYLE%", "roman-upper")).getResult("en").getContent().toString();
+        assertTrue(upper.contains("- I [A](#a)"));
+        assertTrue(upper.contains("- II [B](#b)"));
+        assertTrue(upper.contains("- III [C](#c)"));
+        assertTrue(upper.contains("- IV [D](#d)"));
+    }
+
+    @Test
+    public void testTOCNumberingStyleAlphaLowerAndUpper() {
+        String src = "<!--@nrg.languages=en-->\n" +
+                "${widget:tableOfContents(ordered = \"true\", numbering-style = \"%STYLE%\")}\n" +
+                "## A\n" +
+                "## B\n" +
+                "## C\n";
+
+        String lower = new NoHeadCommentGenerator(new File("README.src.md"),
+                src.replace("%STYLE%", "alpha")).getResult("en").getContent().toString();
+        assertTrue(lower.contains("- a [A](#a)"));
+        assertTrue(lower.contains("- b [B](#b)"));
+        assertTrue(lower.contains("- c [C](#c)"));
+
+        String upper = new NoHeadCommentGenerator(new File("README.src.md"),
+                src.replace("%STYLE%", "alpha-upper")).getResult("en").getContent().toString();
+        assertTrue(upper.contains("- A [A](#a)"));
+        assertTrue(upper.contains("- B [B](#b)"));
+        assertTrue(upper.contains("- C [C](#c)"));
+    }
+
+    @Test
+    public void testTOCNumberingStyleDottedWithStart() {
+        Generator generator = new NoHeadCommentGenerator(new File("README.src.md"),
+                "<!--@nrg.languages=en-->\n" +
+                        "${widget:tableOfContents(ordered = \"true\", numbering-style = \"dotted\", start = \"5\", min-depth = \"1\")}\n" +
+                        "# H1\n" +
+                        "## H1.1\n" +
+                        "# H2\n"
+        );
+        String body = generator.getResult("en").getContent().toString();
+        LOG.info(body);
+
+        assertTrue(body.contains("- 5 [H1](#h1)"));
+        assertTrue(body.contains("\t- 5.1 [H1.1](#h11)"));
+        assertTrue(body.contains("- 6 [H2](#h2)"));
+    }
+
+    @Test
+    public void testTOCNumberingStyleDottedWithMinDepth() {
+        Generator generator = new NoHeadCommentGenerator(new File("README.src.md"),
+                "<!--@nrg.languages=en-->\n" +
+                        "${widget:tableOfContents(ordered = \"true\", numbering-style = \"dotted\", min-depth = \"3\")}\n" +
+                        "# Top\n" +
+                        "## Mid\n" +
+                        "### a\n" +
+                        "#### a1\n" +
+                        "### b\n" +
+                        "## Mid2\n" +
+                        "### c\n"
+        );
+        String body = generator.getResult("en").getContent().toString();
+        LOG.info(body);
+
+        assertFalse(body.contains("[Top]"));
+        assertFalse(body.contains("[Mid]"));
+        assertFalse(body.contains("[Mid2]"));
+        assertTrue(body.contains("- 1 [a](#a)"));
+        assertTrue(body.contains("\t- 1.1 [a1](#a1)"));
+        assertTrue(body.contains("- 2 [b](#b)"));
+        assertTrue(body.contains("- 3 [c](#c)"));
+    }
+
+    @Test
+    public void testTOCNumberingStyleDottedRespectsTocIgnore() {
+        Generator generator = new NoHeadCommentGenerator(new File("README.src.md"),
+                "<!--@nrg.languages=en-->\n" +
+                        "${widget:tableOfContents(ordered = \"true\", numbering-style = \"dotted\")}\n" +
+                        "## A\n" +
+                        "## B<!--toc.ignore-->\n" +
+                        "## C\n"
+        );
+        String body = generator.getResult("en").getContent().toString();
+        LOG.info(body);
+
+        assertFalse(body.contains("[B]"));
+        assertTrue(body.contains("- 1 [A](#a)"));
+        assertTrue(body.contains("- 2 [C](#c)"));
+    }
+
+    @Test
+    public void testTOCNumberingStyleInvalidFallsBackToDefault() {
+        Generator generator = new NoHeadCommentGenerator(new File("README.src.md"),
+                "<!--@nrg.languages=en-->\n" +
+                        "${widget:tableOfContents(ordered = \"true\", numbering-style = \"dottd\")}\n" +
+                        "## A\n" +
+                        "## B\n"
+        );
+        String body = generator.getResult("en").getContent().toString();
+        LOG.info(body);
+
+        assertTrue(body.contains("1. [A](#a)"));
+        assertTrue(body.contains("2. [B](#b)"));
+    }
+
+    @Test
+    public void testTOCNumberingStyleInvalidStartFallsBackToNaturalFirst() {
+        Generator generator = new NoHeadCommentGenerator(new File("README.src.md"),
+                "<!--@nrg.languages=en-->\n" +
+                        "${widget:tableOfContents(ordered = \"true\", numbering-style = \"dotted\", start = \"A\")}\n" +
+                        "## A\n" +
+                        "## B\n"
+        );
+        String body = generator.getResult("en").getContent().toString();
+        LOG.info(body);
+
+        assertTrue(body.contains("- 1 [A](#a)"));
+        assertTrue(body.contains("- 2 [B](#b)"));
+    }
+
+    @Test
+    public void testTOCNumberingStyleIgnoredWhenNotOrdered() {
+        Generator generator = new NoHeadCommentGenerator(new File("README.src.md"),
+                "<!--@nrg.languages=en-->\n" +
+                        "${widget:tableOfContents(numbering-style = \"dotted\")}\n" +
+                        "## A\n" +
+                        "## B\n"
+        );
+        String body = generator.getResult("en").getContent().toString();
+        LOG.info(body);
+
+        assertTrue(body.contains("- [A](#a)"));
+        assertTrue(body.contains("- [B](#b)"));
+        assertFalse(body.contains("- 1 [A]"));
+        assertFalse(body.contains("- 1.1"));
+    }
+
+    @Test
+    public void testTOCNumberingStyleDottedSurvivesFences() {
+        Generator generator = new NoHeadCommentGenerator(new File("README.src.md"),
+                "<!--@nrg.languages=en-->\n" +
+                        "${widget:tableOfContents(ordered = \"true\", numbering-style = \"dotted\")}\n" +
+                        "## A\n" +
+                        "```\n" +
+                        "# c1\n" +
+                        "```\n" +
+                        "## B\n" +
+                        "```\n" +
+                        "# c2\n" +
+                        "```\n" +
+                        "## C\n"
+        );
+        String body = generator.getResult("en").getContent().toString();
+        LOG.info(body);
+
+        assertTrue(body.contains("- 1 [A](#a)"));
+        assertTrue(body.contains("- 2 [B](#b)"));
+        assertTrue(body.contains("- 3 [C](#c)"));
+    }
 }

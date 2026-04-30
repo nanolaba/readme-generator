@@ -1395,6 +1395,111 @@ Widget parameters:
 |            max-depth            | Maximum heading level to include (1–6). Headings deeper than this are skipped.                                                                                                                                                                                                                                                                                                                                                                                      |                        `6`                        |
 |            min-items            | Minimum number of headings (after depth and `<!--toc.ignore-->` filters) required to render the widget. Below this threshold the widget produces no output (no title, no items).                                                                                                                                                                        |                        `1`                        |
 |          anchor-style           | Anchor-slugification style: `github` (default), `gitlab`, or `bitbucket`. GitLab preserves underscores and does not collapse consecutive hyphens; Bitbucket prefixes anchors with `markdown-header-`. An unknown value logs an error and causes the widget to render nothing. |                     `github`                      |
+|         numbering-style         | Counter-prefix style when `ordered=true`: `default` (today's `1.` markers — byte-identical to omitting the parameter), hierarchical `dotted` (`1`, `1.1`, `1.1.1`), `legal` (`1.`, `1.1.`, `1.1.1.`), `appendix` (`A`, `A.1`, `A.1.1`), or flat global counters `arabic` / `roman` / `roman-upper` / `alpha` / `alpha-upper`. Unknown values log an error and fall back to `default`. No effect when `ordered=false`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |                     `default`                     |
+|              start              | First top-level counter value. Type-matched to `numbering-style`: digits for `dotted` / `legal` / `arabic`, roman numeral for `roman` / `roman-upper`, single letter for `alpha` / `alpha-upper` / `appendix`. Invalid input logs an error and falls back to the natural first value. Ignored when `numbering-style=default`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |                                                   |
+
+Numbering styles:
+
+Set `numbering-style=...` (with `ordered="true"`) to pick a counter shape — hierarchical for outline-style references, flat for short summaries.
+
+<table>
+<tr><th>Usage — `numbering-style="dotted"` (README.src.md)</th></tr>
+<tr><td>
+
+```markdown
+${widget:tableOfContents(ordered = "true", numbering-style = "dotted", min-depth = "1")}
+
+# Introduction
+
+## Setup
+
+## Usage
+```
+
+</td></tr>
+<tr><th>Result (README.md)</th></tr>
+<tr><td>
+
+```markdown
+- 1 [Introduction](#introduction)
+    - 1.1 [Setup](#setup)
+    - 1.2 [Usage](#usage)
+```
+
+</td></tr>
+<tr><th>Usage — `numbering-style="legal"` (README.src.md)</th></tr>
+<tr><td>
+
+```markdown
+${widget:tableOfContents(ordered = "true", numbering-style = "legal", min-depth = "1")}
+
+# Introduction
+
+## Setup
+
+## Usage
+```
+
+</td></tr>
+<tr><th>Result (README.md)</th></tr>
+<tr><td>
+
+```markdown
+- 1. [Introduction](#introduction)
+    - 1.1. [Setup](#setup)
+    - 1.2. [Usage](#usage)
+```
+
+</td></tr>
+<tr><th>Usage — `numbering-style="appendix"` (README.src.md)</th></tr>
+<tr><td>
+
+```markdown
+${widget:tableOfContents(ordered = "true", numbering-style = "appendix", min-depth = "1")}
+
+# Appendix One
+
+## Tables
+
+# Appendix Two
+```
+
+</td></tr>
+<tr><th>Result (README.md)</th></tr>
+<tr><td>
+
+```markdown
+- A [Appendix One](#appendix-one)
+    - A.1 [Tables](#tables)
+- B [Appendix Two](#appendix-two)
+```
+
+</td></tr>
+<tr><th>Usage — `numbering-style="arabic"` (README.src.md)</th></tr>
+<tr><td>
+
+```markdown
+${widget:tableOfContents(ordered = "true", numbering-style = "arabic")}
+
+## Introduction
+
+## Setup
+
+## Usage
+```
+
+</td></tr>
+<tr><th>Result (README.md)</th></tr>
+<tr><td>
+
+```markdown
+- 1 [Introduction](#introduction)
+- 2 [Setup](#setup)
+- 3 [Usage](#usage)
+```
+
+</td></tr>
+</table>
 
 ---
 
@@ -1413,7 +1518,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 29.04.2026 22:25:37
+Last updated: 30.04.2026 00:04:23
 ```
 
 </td></tr>
@@ -1426,7 +1531,7 @@ ${widget:date(pattern = 'dd.MM.yyyy')}
 </td><td>
 
 ```markdown
-29.04.2026
+30.04.2026
 ```
 
 </td></tr>
@@ -1943,6 +2048,7 @@ This section summarises the main user-visible changes in each release. For full 
 - **`badge` widget — optional `alt=` parameter**: every type (`maven-central`, `license`, `github-release`, `github-stars`, `github-workflow`, `custom`) now accepts an optional `alt='...'` that overrides the auto-derived Markdown alt-text without changing the visible badge label rendered by shields.io. Useful for SEO and screen-reader accessibility — phrase-style alts like `NRG continuous integration build status` carry semantic signal that bare `CI` does not. Empty `alt=''` falls back to the type's default. Closes [#52](https://github.com/nanolaba/readme-generator/issues/52).
 - **Preserve original line endings on regeneration**: NRG now detects the existing on-disk output file's CRLF/LF convention and writes the regenerated content with the same convention, instead of always emitting `System.lineSeparator()`. Mixed-ending files normalise to LF. New CLI flag `--line-ending=auto|lf|crlf` (default `auto`) and matching Maven plugin `<lineEnding>` parameter override detection. In `--check` mode, `auto` ignores LE-only differences so a CRLF-vs-LF contributor mismatch no longer trips CI; explicit `lf` / `crlf` still flag a mismatch (that's the explicitly-requested invariant). Closes [#48](https://github.com/nanolaba/readme-generator/issues/48).
 - **`nrg-maven-plugin` no longer inherits its `create-files` execution into child modules by default**: the goal is declared with `inheritByDefault = false`, so multi-module (aggregator) builds run README generation only at the root POM where `README.src.md` lives — child modules no longer re-invoke NRG in their own directory and spam warnings (or fail) over a missing source file. Soft-breaking only for projects that intentionally relied on per-child re-execution; opt back in with `<inherited>true</inherited>` in the child's POM. Closes [#49](https://github.com/nanolaba/readme-generator/issues/49).
+- **`tableOfContents` widget — `numbering-style` and `start` parameters**: when `ordered='true'`, pick a counter shape from nine values — `default` (today's `1.` markers, byte-identical to omitting the parameter), hierarchical `dotted` (`1`, `1.1`, `1.1.1`), `legal` (`1.`, `1.1.`, `1.1.1.`), `appendix` (`A`, `A.1`, `A.1.1`), or flat global counters `arabic` / `roman` / `roman-upper` / `alpha` / `alpha-upper`. Optional `start='3'` (or `'C'` for letter-based styles) seeds the top-level counter, useful for appendices following a numbered main body. `min-depth` clipping renumbers from the visible top, so dropping shallow levels never leaves dangling sub-counters. Unknown values log an error and fall back to `default` — typos won't blank out the TOC. Closes [#43](https://github.com/nanolaba/readme-generator/issues/43).
 
 ### 1.1
 
@@ -2033,4 +2139,4 @@ We welcome all constructive feedback to make **NRG** better!
 
 
 ---
-*Last updated: 29.04.2026*
+*Last updated: 30.04.2026*

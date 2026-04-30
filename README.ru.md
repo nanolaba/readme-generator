@@ -1403,6 +1403,111 @@ ${widget:tableOfContents(title = "${en:'Table of contents', ru:'Содержан
 |            max-depth            | Максимальный уровень заголовка (1–6). Заголовки более глубокого уровня исключаются.                                                                                                                                                                                                                                                                                                                                                                                      |                        `6`                        |
 |            min-items            | Минимальное число заголовков (после фильтров по глубине и `<!--toc.ignore-->`), при котором виджет выводит оглавление. При меньшем числе виджет не выводит ничего (ни заголовка, ни пунктов).                                                                                                                                                                        |                        `1`                        |
 |          anchor-style           | Стиль формирования якорей: `github` (по умолчанию), `gitlab` или `bitbucket`. GitLab сохраняет подчёркивания и не схлопывает подряд идущие дефисы; Bitbucket добавляет префикс `markdown-header-`. При неизвестном значении выводится ошибка и виджет ничего не рендерит. |                     `github`                      |
+|         numbering-style         | Стиль префикса-счётчика при `ordered=true`: `default` (текущие маркеры `1.` — побайтно совпадает с пропуском параметра), иерархические `dotted` (`1`, `1.1`, `1.1.1`), `legal` (`1.`, `1.1.`, `1.1.1.`), `appendix` (`A`, `A.1`, `A.1.1`) или плоские глобальные счётчики `arabic` / `roman` / `roman-upper` / `alpha` / `alpha-upper`. При неизвестном значении в лог пишется ошибка и используется `default`. Не действует при `ordered=false`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |                     `default`                     |
+|              start              | Первое значение счётчика верхнего уровня. Тип соответствует `numbering-style`: цифры для `dotted` / `legal` / `arabic`, римское число для `roman` / `roman-upper`, одна буква для `alpha` / `alpha-upper` / `appendix`. При недопустимом значении в лог пишется ошибка и используется естественное первое значение. Игнорируется при `numbering-style=default`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |                                                   |
+
+Стили нумерации:
+
+Задайте `numbering-style=...` (вместе с `ordered="true"`), чтобы выбрать форму счётчика — иерархическую для ссылок-«разделов» или плоскую для коротких списков.
+
+<table>
+<tr><th>Использование — `numbering-style="dotted"` (README.src.md)</th></tr>
+<tr><td>
+
+```markdown
+${widget:tableOfContents(ordered = "true", numbering-style = "dotted", min-depth = "1")}
+
+# Introduction
+
+## Setup
+
+## Usage
+```
+
+</td></tr>
+<tr><th>Результат (README.md)</th></tr>
+<tr><td>
+
+```markdown
+- 1 [Introduction](#introduction)
+    - 1.1 [Setup](#setup)
+    - 1.2 [Usage](#usage)
+```
+
+</td></tr>
+<tr><th>Использование — `numbering-style="legal"` (README.src.md)</th></tr>
+<tr><td>
+
+```markdown
+${widget:tableOfContents(ordered = "true", numbering-style = "legal", min-depth = "1")}
+
+# Introduction
+
+## Setup
+
+## Usage
+```
+
+</td></tr>
+<tr><th>Результат (README.md)</th></tr>
+<tr><td>
+
+```markdown
+- 1. [Introduction](#introduction)
+    - 1.1. [Setup](#setup)
+    - 1.2. [Usage](#usage)
+```
+
+</td></tr>
+<tr><th>Использование — `numbering-style="appendix"` (README.src.md)</th></tr>
+<tr><td>
+
+```markdown
+${widget:tableOfContents(ordered = "true", numbering-style = "appendix", min-depth = "1")}
+
+# Appendix One
+
+## Tables
+
+# Appendix Two
+```
+
+</td></tr>
+<tr><th>Результат (README.md)</th></tr>
+<tr><td>
+
+```markdown
+- A [Appendix One](#appendix-one)
+    - A.1 [Tables](#tables)
+- B [Appendix Two](#appendix-two)
+```
+
+</td></tr>
+<tr><th>Использование — `numbering-style="arabic"` (README.src.md)</th></tr>
+<tr><td>
+
+```markdown
+${widget:tableOfContents(ordered = "true", numbering-style = "arabic")}
+
+## Introduction
+
+## Setup
+
+## Usage
+```
+
+</td></tr>
+<tr><th>Результат (README.md)</th></tr>
+<tr><td>
+
+```markdown
+- 1 [Introduction](#introduction)
+- 2 [Setup](#setup)
+- 3 [Usage](#usage)
+```
+
+</td></tr>
+</table>
 
 ---
 
@@ -1421,7 +1526,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 29.04.2026 22:25:37
+Last updated: 30.04.2026 00:04:23
 ```
 
 </td></tr>
@@ -1434,7 +1539,7 @@ ${widget:date(pattern = 'dd.MM.yyyy')}
 </td><td>
 
 ```markdown
-29.04.2026
+30.04.2026
 ```
 
 </td></tr>
@@ -1951,6 +2056,7 @@ nrg --classpath my-widgets.jar --widgets com.acme.widgets.Tag,com.acme.widgets.B
 - **Виджет `badge` — необязательный параметр `alt=`**: каждый тип (`maven-central`, `license`, `github-release`, `github-stars`, `github-workflow`, `custom`) теперь принимает опциональный `alt='...'`, переопределяющий автоматический alt-текст markdown-изображения без изменения видимой надписи на бейдже от shields.io. Полезно для SEO и доступности — фраза вроде `NRG continuous integration build status` несёт смысловую нагрузку, в отличие от короткой метки `CI`. Пустое `alt=''` приводит к значению по умолчанию. Закрывает [#52](https://github.com/nanolaba/readme-generator/issues/52).
 - **Сохранение оригинальных переводов строк при перегенерации**: NRG определяет конвенцию CRLF/LF существующего на диске выходного файла и записывает свежий результат в той же конвенции, а не всегда платформенным `System.lineSeparator()`. Файлы со смешанными переводами нормализуются в LF. Новый CLI-флаг `--line-ending=auto|lf|crlf` (по умолчанию `auto`) и парный параметр `<lineEnding>` Maven-плагина переопределяют автодетект. В режиме `--check` `auto` игнорирует расхождения только по переводам строк — рассинхрон CRLF/LF между контрибьюторами больше не валит CI; явные `lf` / `crlf` по-прежнему отмечают несовпадение (это явно затребованный инвариант). Закрывает [#48](https://github.com/nanolaba/readme-generator/issues/48).
 - **`nrg-maven-plugin` больше не наследует `create-files` в дочерние модули по умолчанию**: цель объявлена с `inheritByDefault = false`, и в многомодульных (aggregator) сборках генерация README выполняется только в корневом POM, где лежит `README.src.md` — дочерние модули больше не вызывают NRG в своём каталоге и не сыпят предупреждения (или падают) из-за отсутствующего исходника. Мягкое breaking-изменение только для проектов, сознательно полагавшихся на повторный запуск в каждом модуле; верните прежнее поведение через `<inherited>true</inherited>` в POM-е модуля. Закрывает [#49](https://github.com/nanolaba/readme-generator/issues/49).
+- **Виджет `tableOfContents` — параметры `numbering-style` и `start`**: при `ordered='true'` выбирается форма счётчика из девяти значений — `default` (текущие маркеры `1.`, побайтно совпадает с пропуском параметра), иерархические `dotted` (`1`, `1.1`, `1.1.1`), `legal` (`1.`, `1.1.`, `1.1.1.`), `appendix` (`A`, `A.1`, `A.1.1`) или плоские глобальные счётчики `arabic` / `roman` / `roman-upper` / `alpha` / `alpha-upper`. Опциональный `start='3'` (или `'C'` для буквенных стилей) задаёт начальное значение верхнего уровня — удобно для приложений, идущих после нумерованного основного раздела. Отсечение по `min-depth` перенумеровывает с видимой вершины, так что отбрасывание неглубоких уровней не оставляет «висячих» подсчётчиков. При неизвестном значении в лог пишется ошибка и используется `default` — опечатка не обнуляет TOC. Закрывает [#43](https://github.com/nanolaba/readme-generator/issues/43).
 
 ### 1.1
 
@@ -2042,4 +2148,4 @@ nrg --classpath my-widgets.jar --widgets com.acme.widgets.Tag,com.acme.widgets.B
 
 
 ---
-*Дата последнего обновления: 29.04.2026*
+*Дата последнего обновления: 30.04.2026*
