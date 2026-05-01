@@ -14,6 +14,8 @@
 
 ![NRG demo: generating README.md and README.ru.md from a single .src.md template](assets/demo.gif)
 
+**Stop hand-editing the same README in 5 languages.** NRG generates `README.md`, `README.ru.md`, `README.zh.md`, and any other localized variant from one `.src.md` source. The built-in CI drift-check guarantees they never silently drift apart again.
+
 **NRG** is a **README generator** and **Markdown template engine** that builds **multi-language** README files from a single `.src.md` source. Open-source Java 8+, ships as a [CLI](#using-the-command-line-interface), a [Maven plugin](#use-as-maven-plugin), a [GitHub Action](#use-as-a-github-action), and a [Java library](#use-as-a-java-library).
 
 ## Overview
@@ -1549,7 +1551,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 01.05.2026 19:17:04
+Last updated: 01.05.2026 19:19:02
 ```
 
 </td></tr>

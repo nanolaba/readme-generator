@@ -18,6 +18,9 @@ ${widget:badge(type='custom', label='Java', message='8+', color='orange', alt='B
 
 ![${en:'NRG demo: generating README.md and README.ru.md from a single .src.md template', ru:'Демо NRG: генерация README.md и README.ru.md из одного .src.md-шаблона'}](assets/demo.gif)
 
+**Stop hand-editing the same README in 5 languages.** NRG generates `README.md`, `README.ru.md`, `README.zh.md`, and any other localized variant from one `.src.md` source. The built-in CI drift-check guarantees they never silently drift apart again.<!--en-->
+**Хватит вручную править один и тот же README на 5 языках.** NRG генерирует `README.md`, `README.ru.md`, `README.zh.md` и любые другие локализованные варианты из одного `.src.md`-исходника. Встроенная CI-проверка drift'а гарантирует, что они больше никогда не разойдутся молча.<!--ru-->
+
 **NRG** is a **README generator** and **Markdown template engine** that builds **multi-language** README files from a single `.src.md` source. Open-source Java 8+, ships as a [CLI](#using-the-command-line-interface), a [Maven plugin](#use-as-maven-plugin), a [GitHub Action](#use-as-a-github-action), and a [Java library](#use-as-a-java-library).<!--en-->
 **NRG** — это **генератор README** и **шаблонизатор Markdown**, который собирает **многоязычные** README-файлы из одного `.src.md`-исходника. Open-source Java 8+, поставляется как [CLI](#запуск-из-командной-строки), [Maven-плагин](#использование-как-плагина-для-maven), [GitHub Action](#использование-в-качестве-github-action) и [Java-библиотека](#использование-в-качестве-java-библиотеки).<!--ru-->
 
