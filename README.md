@@ -50,7 +50,6 @@ This very README is generated with NRG — see [`README.src.md`](README.src.md).
 
 
 ## Table of contents
-
 - 1 [Quick start](#quick-start)
 - 2 [Usage](#usage)
 	- 2.1 [Using the Command Line Interface](#using-the-command-line-interface)
@@ -1549,7 +1548,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 01.05.2026 00:58:48
+Last updated: 01.05.2026 19:12:38
 ```
 
 </td></tr>
@@ -2170,6 +2169,10 @@ Before submitting feedback:
 2. Use clear, descriptive titles for your requests 
 
 We welcome all constructive feedback to make **NRG** better! 
+
+---
+
+If **Nanolaba Readme Generator (NRG)** keeps your multi-language READMEs in sync — please give it a ⭐ on [GitHub](https://github.com/nanolaba/readme-generator). It's the single biggest signal that lands NRG in front of the next maintainer with the same problem.
 
 
 ---
