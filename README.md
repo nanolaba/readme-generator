@@ -31,6 +31,7 @@ Using **Nanolaba Readme Generator (NRG)**, you can:
 ## Key Features 
 
 - **Multi-language READMEs** - Support for EN/ZN/RU and any other languages
+- **CI drift detection** - the `--check` flag (CLI) and `mode: check` (GitHub Action) fail the build with a unified diff if generated `.md` files drift from the template — so a contributor's hand-edit can never silently land in `main`
 - **Smart Variables** - Reusable content blocks
 - **Prebuilt Widgets** - Table of contents, file import, TODOs, alerts, badges, and more
 - **LaTeX math** - Reliable formula rendering via `$…$` / `$$…$$` or an SVG fallback for places where GitHub's native MathJax breaks
@@ -1548,7 +1549,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 01.05.2026 19:12:38
+Last updated: 01.05.2026 19:17:04
 ```
 
 </td></tr>
