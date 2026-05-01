@@ -44,7 +44,7 @@
 
 > 💡 **Nanolaba Readme Generator (NRG)** написан на Java и требует для запуска версии **Java 8** и выше.
 
-Последняя стабильная версия — **1.1**.
+Последняя стабильная версия — **1.2**.
 Текущая версия разработки — **1.3-SNAPSHOT**.
 
 ### Используется в
@@ -132,7 +132,7 @@ English text<!--en-->
 
 **Шаг 2: Сгенерируйте файлы**
 
-**Вариант A — CLI.** [Скачайте](https://github.com/nanolaba/readme-generator/releases/tag/v1.1) автономный jar, распакуйте архив и запустите:
+**Вариант A — CLI.** [Скачайте](https://github.com/nanolaba/readme-generator/releases/tag/v1.2) автономный jar, распакуйте архив и запустите:
 
 ```bash
 nrg -f /path/to/README.src.md
@@ -144,7 +144,7 @@ nrg -f /path/to/README.src.md
 <plugin>
     <groupId>com.nanolaba</groupId>
     <artifactId>nrg-maven-plugin</artifactId>
-    <version>1.1</version>
+    <version>1.2</version>
     <configuration>
         <file><item>README.src.md</item></file>
     </configuration>
@@ -239,7 +239,7 @@ ${widget:import(path='path/to/your/file/another-info.src.md')}
 **Nanolaba Readme Generator (NRG)** написан на Java и требует для запуска версии **Java 8** и выше.
 [Установите](https://www.java.com/en/download/) Java, если она отсутствует у вас в системе.
 
-[Скачайте](https://github.com/nanolaba/readme-generator/releases/tag/v1.1) последнюю 
+[Скачайте](https://github.com/nanolaba/readme-generator/releases/tag/v1.2) последнюю 
 стабильную версию приложения.
 
 Разархивируйте скачанный архив. Если вы используете Unix-like системы, то назначьте файлу `nrg.sh` права 
@@ -432,7 +432,7 @@ nrg --fail-fast "docs/**/*.src.md"
     <plugin>
         <groupId>com.nanolaba</groupId>
         <artifactId>nrg-maven-plugin</artifactId>
-        <version>1.1</version>
+        <version>1.2</version>
         <configuration>
             <file>
                 <item>README.src.md</item>
@@ -692,19 +692,19 @@ Action опубликован как отдельный репозиторий [
 <dependency>
     <groupId>com.nanolaba</groupId>
     <artifactId>readme-generator</artifactId>
-    <version>1.1</version>
+    <version>1.2</version>
 </dependency>  
 ```
 
 **Gradle (build.gradle)**
 
 ```groovy
-implementation 'com.nanolaba:readme-generator:1.1'
+implementation 'com.nanolaba:readme-generator:1.2'
 ```
 
 **Скачивание вручную**
 
-Скачайте JAR из [Maven Central](https://repo1.maven.org/maven2/com/nanolaba/readme-generator/1.1)
+Скачайте JAR из [Maven Central](https://repo1.maven.org/maven2/com/nanolaba/readme-generator/1.2)
 и добавьте его в classpath проекта.
 
 После этого вы можете в своем проекте вызывать функцию создания файлов, 
@@ -1560,7 +1560,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 01.05.2026 19:19:02
+Last updated: 01.05.2026 19:23:25
 ```
 
 </td></tr>
