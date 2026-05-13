@@ -3,6 +3,9 @@ package com.nanolaba.nrg.widgets;
 import com.nanolaba.nrg.core.GeneratorConfig;
 import org.apache.commons.text.TextStringBuilder;
 
+import java.util.Collections;
+import java.util.Set;
+
 /**
  * Plug-in contract for the {@code ${widget:name(params)}} extension point.
  *
@@ -20,6 +23,22 @@ import org.apache.commons.text.TextStringBuilder;
 public interface NRGWidget {
 
     String getName();
+
+    /**
+     * Alternative names that also resolve to this widget. Used by per-line dispatch
+     * (so {@code ${widget:toc(...)}} reaches {@code TableOfContentsWidget}), by the
+     * validator (so closer pseudo-names like {@code endIf} aren't flagged as unknown),
+     * and by conflict detection at config-init time.
+     *
+     * <p>Returning an empty set (the default) means the widget is only addressable by its
+     * primary {@link #getName()}.
+     *
+     * <p>Aliases must be globally unique across all registered widgets, including primary
+     * names — {@link GeneratorConfig} throws {@link IllegalStateException} on collision.
+     */
+    default Set<String> getAliases() {
+        return Collections.emptySet();
+    }
 
     String getBody(WidgetTag widgetTag, GeneratorConfig config, String language);
 

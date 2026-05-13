@@ -6,9 +6,12 @@ import com.nanolaba.nrg.core.NRGUtil;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Deque;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -57,6 +60,13 @@ public abstract class BlockWidget extends DefaultWidget {
      */
     @Override
     public final String getBody(WidgetTag tag, GeneratorConfig config, String language) {
+        if (getEndMarkerName().equals(tag.getName())) {
+            // The pre-pass's END_LINE regex requires the closer on its own line. Reaching here
+            // means the closer was embedded mid-line, where it should not appear.
+            LOG.error("{} widget: closer ${{widget:{}}} must appear on its own line "
+                    + "(not embedded in surrounding text)", getName(), getEndMarkerName());
+            return "";
+        }
         Map<String, String> params = NRGUtil.parseParametersLine(tag.getParameters());
         if (!isInlineForm(params)) {
             LOG.error("{} widget: opener without inline-form parameter must be closed by "
@@ -185,6 +195,25 @@ public abstract class BlockWidget extends DefaultWidget {
     protected String getEndMarkerName() {
         String name = getName();
         return "end" + Character.toUpperCase(name.charAt(0)) + name.substring(1);
+    }
+
+    /**
+     * Returns the closer marker name as an alias so the validator treats
+     * {@code ${widget:end<Name>}} as known, and per-line dispatch resolving the closer to
+     * this widget short-circuits via {@link #getBody}'s closer-name check.
+     *
+     * <p>Subclasses that want their own true aliases (e.g. a short synonym for the opener)
+     * should override and merge with {@code super.getAliases()} so the closer stays in the set.
+     */
+    @Override
+    public Set<String> getAliases() {
+        Set<String> base = super.getAliases();
+        if (base.isEmpty()) {
+            return Collections.singleton(getEndMarkerName());
+        }
+        Set<String> combined = new LinkedHashSet<>(base);
+        combined.add(getEndMarkerName());
+        return Collections.unmodifiableSet(combined);
     }
 
     private static final class Frame {

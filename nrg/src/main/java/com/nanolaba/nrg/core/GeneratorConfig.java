@@ -123,7 +123,35 @@ public class GeneratorConfig {
         if (widgets != null) {
             this.widgets.addAll(widgets);
         }
+        warnOnWidgetNameCollisions();
         printConfiguration();
+    }
+
+    /**
+     * Emits a {@link LOG#warn(String, Object...) WARN} for each pair of registered widgets of
+     * <em>different classes</em> that claim the same name — either as a primary
+     * {@link NRGWidget#getName()} or via {@link NRGWidget#getAliases()}. The actual resolution
+     * order remains last-registered-wins (the documented precedence model used by the
+     * {@code --widgets} override path), so the warning is informational: it just makes the
+     * shadowing visible. Same-class re-registration (the established "configured override"
+     * pattern, e.g. passing {@code new ExecWidget(runner)} to swap the default) stays silent.
+     */
+    private void warnOnWidgetNameCollisions() {
+        Map<String, NRGWidget> seen = new LinkedHashMap<>();
+        for (NRGWidget w : widgets) {
+            checkCollision(seen, w.getName(), w);
+            for (String alias : w.getAliases()) {
+                checkCollision(seen, alias, w);
+            }
+        }
+    }
+
+    private static void checkCollision(Map<String, NRGWidget> seen, String name, NRGWidget w) {
+        NRGWidget prev = seen.put(name, w);
+        if (prev != null && prev != w && prev.getClass() != w.getClass()) {
+            LOG.warn("Widget name '{}' is declared by {} and {} — last-registered wins.",
+                    name, prev.getClass().getName(), w.getClass().getName());
+        }
     }
 
     public Stream<TemplateLine> getSourceLinesStream() {
@@ -183,10 +211,17 @@ public class GeneratorConfig {
         }
     }
 
+    /**
+     * Resolves a widget by name. Matches the widget's primary {@link NRGWidget#getName()}
+     * or any entry in its {@link NRGWidget#getAliases()}. Iterates the widget list in
+     * registration order with last-match-wins semantics so the documented precedence model
+     * (API > CLI > template-property > built-in defaults) keeps working across both primary
+     * names and aliases.
+     */
     public NRGWidget getWidget(String widgetName) {
         NRGWidget match = null;
         for (NRGWidget widget : getWidgets()) {
-            if (widget.getName().equals(widgetName)) {
+            if (widget.getName().equals(widgetName) || widget.getAliases().contains(widgetName)) {
                 match = widget;
             }
         }
