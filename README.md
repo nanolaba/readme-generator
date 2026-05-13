@@ -1356,6 +1356,8 @@ This component allows you to generate a table of contents for a document.
 The table of contents is created from headers formed using the hashtag symbol (`#`).
 Headers located above the widget in the text are ignored.
 
+Also addressable as `${widget:toc(...)}` — both names render identically.
+
 If you need to exclude a header from the table of contents, you should
 mark it with a comment `<!--toc.ignore-->`.
 
@@ -1558,7 +1560,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 13.05.2026 09:50:04
+Last updated: 13.05.2026 10:26:14
 ```
 
 </td></tr>
@@ -2011,7 +2013,7 @@ ${widget:endDetails}
 <details>
 <summary>Advanced</summary>
 
-inner *markdown* and 13.05.2026 09:50:04
+inner *markdown* and 13.05.2026 10:26:14
 
 </details>
 ```
@@ -2153,6 +2155,7 @@ This section summarises the main user-visible changes in each release. For full 
 
 - **`details` widget — collapsible `<details>` blocks**: new `${widget:details(summary='…')}` … `${widget:endDetails}` block widget rewrites paired markers into a GitHub-friendly `<details><summary>…</summary>…</details>` block, with the inner markdown still flowing through the normal pipeline — nested widgets, `${var}` substitution, and language tags keep working inside. A single-tag shortcut `${widget:details(summary='…', content='…')}` renders compact inline HTML for short snippets; `open='true'` emits `<details open>` in either form. Removes the need to hand-write HTML inside templates for the long-tables / verbose-troubleshooting / faq-section pattern. Stray `endDetails` and unclosed openers are recovered the same way as `if`/`endIf`. Closes [#31](https://github.com/nanolaba/readme-generator/issues/31).
 - **`if` widget — new inline form**: `${widget:if(cond='…', text='…')}` emits `text` on a single line when `cond` is truthy, and empty string otherwise — useful for short conditional snippets where the existing block form (`${widget:if(cond='…')}` … `${widget:endIf}`) is overkill. `\n` and `\\` inside `text=` are interpreted, and property / language substitution against the outer template happens before the widget runs. The block form is unchanged. Internally, both forms now live on a unified `BlockWidget` base class shared with `details`; the standalone `IfBlockProcessor` / `DetailsBlockProcessor` classes are removed (no user-visible effect — internal refactor).
+- **`toc` short alias for `tableOfContents`**: `${widget:toc(...)}` now works as a synonym for `${widget:tableOfContents(...)}` — anchor generation, parameters, and rendered output are byte-identical. Primary name stays `tableOfContents`. Aliases are a general widget-system feature: third-party widgets can declare their own via the new `NRGWidget.getAliases()` default method.
 
 ### 1.2
 

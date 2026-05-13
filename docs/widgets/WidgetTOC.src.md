@@ -7,6 +7,9 @@ Headers located above the widget in the text are ignored.<!--en-->
 Оглавление формируется из заголовков, сформированных при помощи знака решётки (`#`).<!--ru-->
 Заголовки, которые расположены по тексту выше виджета, игнорируются.<!--ru-->
 
+Also addressable as `\${widget:toc(...)}` — both names render identically.<!--en-->
+Также доступен под коротким именем `\${widget:toc(...)}` — обе формы рендерятся одинаково.<!--ru-->
+
 If you need to exclude a header from the table of contents, you should<!--en-->
 mark it with a comment `<\!--toc.ignore-->`.<!--en-->
 Если вам необходимо исключить какой-либо заголовок из оглавления, то для этого<!--ru-->
