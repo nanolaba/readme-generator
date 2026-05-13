@@ -1558,7 +1558,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 13.05.2026 02:15:31
+Last updated: 13.05.2026 09:50:04
 ```
 
 </td></tr>
@@ -1847,11 +1847,13 @@ Error handling:
 
 #### Widget 'if'
 
-This is a **block widget**: it spans an opening `${widget:if(cond='…')}` tag
-and a matching `${widget:endIf}` tag, and decides whether the lines
-between them appear in the generated output. When the condition is false
-the entire block — including any inner widgets — is dropped before the
-per-line pipeline runs, so widgets in dead branches never execute.
+This widget controls whether content reaches the output based on a condition.
+It comes in two forms: a **block form** spanning an opening `${widget:if(cond='…')}` tag
+and a matching `${widget:endIf}` tag (the lines between them appear in the output only
+when the condition is truthy — when false, the entire block, including inner widgets, is
+dropped before the per-line pipeline runs, so widgets in dead branches never execute);
+and an **inline form** `${widget:if(cond='…', text='…')}` that emits `text` on one line when
+the condition is truthy, or an empty string otherwise.
 
 The block is kept when `${devVersion}` ends with `-SNAPSHOT`; otherwise the entire block (the markers and the body) is removed:
 
@@ -1876,6 +1878,14 @@ ${widget:if(cond='startsWith(${repoUrl}, https://github.com/) || startsWith(${re
 Hosted on GitHub.
 ${widget:endIf}
 ```
+
+Inline form — short conditional snippet on one line:
+
+```markdown
+${widget:if(cond='endsWith(${devVersion}, -SNAPSHOT)', text='Snapshot build — expect breaking changes.')}
+```
+
+`\n` and `\\` inside `text=` are interpreted (`\n` → real newline, `\\` → single backslash). Property and language substitution against the outer template happen before the widget runs, so `${var}` and language constructs inside `text=` work as usual.
 
 Condition grammar (precedence low → high):
 
@@ -2001,7 +2011,7 @@ ${widget:endDetails}
 <details>
 <summary>Advanced</summary>
 
-inner *markdown* and 13.05.2026 02:15:31
+inner *markdown* and 13.05.2026 09:50:04
 
 </details>
 ```
@@ -2142,6 +2152,7 @@ This section summarises the main user-visible changes in each release. For full 
 ### Unreleased (1.3-SNAPSHOT)
 
 - **`details` widget — collapsible `<details>` blocks**: new `${widget:details(summary='…')}` … `${widget:endDetails}` block widget rewrites paired markers into a GitHub-friendly `<details><summary>…</summary>…</details>` block, with the inner markdown still flowing through the normal pipeline — nested widgets, `${var}` substitution, and language tags keep working inside. A single-tag shortcut `${widget:details(summary='…', content='…')}` renders compact inline HTML for short snippets; `open='true'` emits `<details open>` in either form. Removes the need to hand-write HTML inside templates for the long-tables / verbose-troubleshooting / faq-section pattern. Stray `endDetails` and unclosed openers are recovered the same way as `if`/`endIf`. Closes [#31](https://github.com/nanolaba/readme-generator/issues/31).
+- **`if` widget — new inline form**: `${widget:if(cond='…', text='…')}` emits `text` on a single line when `cond` is truthy, and empty string otherwise — useful for short conditional snippets where the existing block form (`${widget:if(cond='…')}` … `${widget:endIf}`) is overkill. `\n` and `\\` inside `text=` are interpreted, and property / language substitution against the outer template happens before the widget runs. The block form is unchanged. Internally, both forms now live on a unified `BlockWidget` base class shared with `details`; the standalone `IfBlockProcessor` / `DetailsBlockProcessor` classes are removed (no user-visible effect — internal refactor).
 
 ### 1.2
 

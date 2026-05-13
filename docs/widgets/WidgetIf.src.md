@@ -1,15 +1,19 @@
 #### ${en:'Widget', ru:'Виджет'} 'if'
 
-This is a **block widget**: it spans an opening `\${widget:if(cond='…')}` tag<!--en-->
-and a matching `\${widget:endIf}` tag, and decides whether the lines<!--en-->
-between them appear in the generated output. When the condition is false<!--en-->
-the entire block — including any inner widgets — is dropped before the<!--en-->
-per-line pipeline runs, so widgets in dead branches never execute.<!--en-->
-Это **блочный виджет**: он охватывает открывающий тег `\${widget:if(cond='…')}` и<!--ru-->
-парный `\${widget:endIf}`, и решает, попадут ли строки между ними в<!--ru-->
-итоговый файл. При ложном условии целый блок (включая вложенные виджеты)<!--ru-->
-отбрасывается до запуска per-line-конвейера, поэтому виджеты в мёртвой<!--ru-->
-ветке не выполняются никогда.<!--ru-->
+This widget controls whether content reaches the output based on a condition.<!--en-->
+It comes in two forms: a **block form** spanning an opening `\${widget:if(cond='…')}` tag<!--en-->
+and a matching `\${widget:endIf}` tag (the lines between them appear in the output only<!--en-->
+when the condition is truthy — when false, the entire block, including inner widgets, is<!--en-->
+dropped before the per-line pipeline runs, so widgets in dead branches never execute);<!--en-->
+and an **inline form** `\${widget:if(cond='…', text='…')}` that emits `text` on one line when<!--en-->
+the condition is truthy, or an empty string otherwise.<!--en-->
+Этот виджет решает, попадает ли содержимое в результат — на основе условия. Существует<!--ru-->
+в двух формах: **блочная** охватывает открывающий тег `\${widget:if(cond='…')}` и парный<!--ru-->
+`\${widget:endIf}` (строки между ними попадают в вывод только при истинном условии — при<!--ru-->
+ложном целый блок, включая вложенные виджеты, отбрасывается до запуска per-line-конвейера,<!--ru-->
+поэтому виджеты в мёртвой ветке не выполняются никогда); **однотеговая** форма<!--ru-->
+`\${widget:if(cond='…', text='…')}` выдаёт `text` одной строкой при истинном условии<!--ru-->
+или пустую строку при ложном.<!--ru-->
 
 The block is kept when `\${devVersion}` ends with `-SNAPSHOT`; otherwise the entire block (the markers and the body) is removed:<!--en-->
 Блок остаётся, если `\${devVersion}` оканчивается на `-SNAPSHOT`; иначе блок полностью удаляется вместе с маркерами:<!--ru-->
@@ -35,6 +39,15 @@ ${en:'`startsWith` / `endsWith` are case-sensitive; an empty needle is always tr
 Hosted on GitHub.
 \${widget:endIf}
 ```
+
+${en:'Inline form — short conditional snippet on one line:', ru:'Однотеговая форма — короткая условная вставка в одну строку:'}
+
+```markdown
+\${widget:if(cond='endsWith(\${devVersion}, -SNAPSHOT)', text='Snapshot build — expect breaking changes.')}
+```
+
+`\n` and `\\` inside `text=` are interpreted (`\n` → real newline, `\\` → single backslash). Property and language substitution against the outer template happen before the widget runs, so `\${var}` and language constructs inside `text=` work as usual.<!--en-->
+`\n` и `\\` внутри `text=` интерпретируются (`\n` → реальный перевод строки, `\\` → одиночный обратный слэш). Подстановка свойств и языковых конструкций внешнего шаблона выполняется до запуска виджета, поэтому `\${var}` и языковые конструкции внутри `text=` работают как обычно.<!--ru-->
 
 ${en:'Condition grammar (precedence low → high)', ru:'Грамматика условия (приоритет от низкого к высокому)'}:
 
