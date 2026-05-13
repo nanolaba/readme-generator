@@ -1017,4 +1017,23 @@ class TableOfContentsWidgetTest extends DefaultNRGTest {
         assertTrue(body.contains("- 2 [B](#b)"));
         assertTrue(body.contains("- 3 [C](#c)"));
     }
+
+    @Test
+    public void testTocAliasRendersSameAsPrimaryName() {
+        String bodyPrimary = "# Top\n" +
+                "${widget:tableOfContents}\n" +
+                "## Chapter A\n" +
+                "## Chapter B\n";
+        String bodyAlias = bodyPrimary.replace("widget:tableOfContents", "widget:toc");
+
+        String outPrimary = new Generator(new File("README.src.md"), bodyPrimary)
+                .getResult("en").getContent().toString();
+        String outAlias = new Generator(new File("README.src.md"), bodyAlias)
+                .getResult("en").getContent().toString();
+
+        assertEquals(outPrimary, outAlias,
+                "primary and alias must render byte-identically");
+        assertTrue(outPrimary.contains("Chapter A"), outPrimary);
+        assertTrue(outPrimary.contains("Chapter B"), outPrimary);
+    }
 }
