@@ -74,9 +74,9 @@ English text
 **${en:'What comes next', ru:'Что дальше'}**
 
 - Variables, language constructs, and escapes — see [Template syntax](#template-syntax).<!--en-->
-- Built-in widgets (table of contents, import, languages, date, todo, alert, badge, math, exec, if, fileTree) — see [Widgets](#widgets).<!--en-->
+- Built-in widgets (table of contents, import, languages, date, todo, alert, badge, math, exec, if, fileTree, details) — see [Widgets](#widgets).<!--en-->
 - Переменные, многоязычный синтаксис и экранирование — см. [«Синтаксис шаблона»](#синтаксис-шаблона).<!--ru-->
-- Готовые виджеты (оглавление, импорт, языки, дата, todo, alert, badge, math, exec, if, fileTree) — см. [«Виджеты»](#виджеты).<!--ru-->
+- Готовые виджеты (оглавление, импорт, языки, дата, todo, alert, badge, math, exec, if, fileTree, details) — см. [«Виджеты»](#виджеты).<!--ru-->
 
 <details>
 <summary><b>${en:'Full template example (all widgets)', ru:'Полный пример шаблона (все виджеты)'}</b></summary>
@@ -120,6 +120,12 @@ This is a development build.
 \${widget:fileTree(path='src/main/java', depth='2', exclude='target,*.class')}
 
 \${widget:import(path='path/to/your/file/another-info.src.md')}
+
+\${widget:details(summary='Advanced configuration')}
+Hidden inner markdown — \${widget:date(pattern='yyyy')} still works in here.
+\${widget:endDetails}
+
+\${widget:details(summary='Click', content='Short hidden text', open='true')}
 ```
 
 </details>

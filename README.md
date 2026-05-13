@@ -102,6 +102,7 @@ This very README is generated with NRG — see [`README.src.md`](README.src.md).
 		- 3.12.9 [Widget 'exec'](#widget-exec)
 		- 3.12.10 [Widget 'if'](#widget-if)
 		- 3.12.11 [Widget 'fileTree'](#widget-filetree)
+		- 3.12.12 [Widget 'details'](#widget-details)
 - 4 [Advanced features](#advanced-features)
 	- 4.1 [Creating a widget](#creating-a-widget)
 - 5 [Related projects](#related-projects)
@@ -184,7 +185,7 @@ English text
 **What comes next**
 
 - Variables, language constructs, and escapes — see [Template syntax](#template-syntax).
-- Built-in widgets (table of contents, import, languages, date, todo, alert, badge, math, exec, if, fileTree) — see [Widgets](#widgets).
+- Built-in widgets (table of contents, import, languages, date, todo, alert, badge, math, exec, if, fileTree, details) — see [Widgets](#widgets).
 
 <details>
 <summary><b>Full template example (all widgets)</b></summary>
@@ -228,6 +229,12 @@ ${widget:exec(cmd='git rev-parse --short HEAD', codeblock='text')}
 ${widget:fileTree(path='src/main/java', depth='2', exclude='target,*.class')}
 
 ${widget:import(path='path/to/your/file/another-info.src.md')}
+
+${widget:details(summary='Advanced configuration')}
+Hidden inner markdown — ${widget:date(pattern='yyyy')} still works in here.
+${widget:endDetails}
+
+${widget:details(summary='Click', content='Short hidden text', open='true')}
 ```
 
 </details>
@@ -1551,7 +1558,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 01.05.2026 19:23:24
+Last updated: 13.05.2026 02:15:31
 ```
 
 </td></tr>
@@ -1564,7 +1571,7 @@ ${widget:date(pattern = 'dd.MM.yyyy')}
 </td><td>
 
 ```markdown
-01.05.2026
+13.05.2026
 ```
 
 </td></tr>
@@ -1968,6 +1975,63 @@ Behaviour:
 
 ---
 
+#### Widget 'details'
+
+This component renders a GitHub-flavored collapsible disclosure block
+(`<details><summary>…</summary>…</details>`) so verbose tables, long examples,
+and troubleshooting sections can hide behind a click without hand-writing HTML.
+Two forms are supported: a **block form** with paired markers around inner
+markdown (which keeps rendering through the normal pipeline — nested widgets,
+variables, and language tags work inside), and a **single-tag form** for short
+one-liners where the body fits in a `content=` parameter.
+
+<table>
+<tr><th>Usage example</th><th>Result</th></tr>
+<tr><td>
+
+```markdown
+${widget:details(summary='Advanced')}
+inner *markdown* and ${widget:date}
+${widget:endDetails}
+```
+
+</td><td>
+
+```markdown
+<details>
+<summary>Advanced</summary>
+
+inner *markdown* and 13.05.2026 02:15:31
+
+</details>
+```
+
+</td></tr>
+<tr><td>
+
+```markdown
+${widget:details(summary='Click', content='Hidden', open='true')}
+```
+
+</td><td>
+
+```markdown
+<details open><summary>Click</summary>Hidden</details>
+```
+
+</td></tr>
+</table>
+
+Widget parameters:
+
+| Name | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              | Default value |
+|:-------------------------------:|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:-------------------------------------------------:|
+|             summary             | Always-visible title text. `${var}` substitution is applied in both forms.                                                                                                                                                                                                                                                                                                                                                                                                                              |                                                   |
+|              open               | Initial state. `'true'` emits `<details open>`; any other value (including `'false'`, empty, missing) emits plain `<details>`. Parsed via `Boolean.parseBoolean`.                                                                                                                                                                                                                   |                      `false`                      |
+|             content             | Single-tag form only. Body of the disclosure block. Presence of this parameter switches to the compact-inline single-tag form; the block form (with `${widget:endDetails}`) MUST NOT set it. `\n` and `\\` are interpreted (other backslashes are preserved verbatim). |                                                   |
+
+---
+
 
 ## Advanced features
 
@@ -2077,6 +2141,8 @@ This section summarises the main user-visible changes in each release. For full 
 
 ### Unreleased (1.3-SNAPSHOT)
 
+- **`details` widget — collapsible `<details>` blocks**: new `${widget:details(summary='…')}` … `${widget:endDetails}` block widget rewrites paired markers into a GitHub-friendly `<details><summary>…</summary>…</details>` block, with the inner markdown still flowing through the normal pipeline — nested widgets, `${var}` substitution, and language tags keep working inside. A single-tag shortcut `${widget:details(summary='…', content='…')}` renders compact inline HTML for short snippets; `open='true'` emits `<details open>` in either form. Removes the need to hand-write HTML inside templates for the long-tables / verbose-troubleshooting / faq-section pattern. Stray `endDetails` and unclosed openers are recovered the same way as `if`/`endIf`. Closes [#31](https://github.com/nanolaba/readme-generator/issues/31).
+
 ### 1.2
 
 - **Scope `--check` to specific files**: new `--check-paths` CLI flag, `<checkPaths>` Maven plugin parameter, and `check-paths` GitHub Action input limit drift detection to outputs matching the supplied `glob:` patterns (literal paths or globs, repeatable). Useful for the "only the canonical README is tracked, translations are regenerated by a bot" workflow — currently the choice is "commit every generated file" (drift-check works) or "commit none" (drift-check unusable). Patterns are cwd-relative, follow the same `**/` semantics as multi-file source globs, and a typoed path that matches nothing emits a stderr WARN so silent misconfiguration is visible. `--check-paths` requires `--check`; without the filter, every declared language is checked as before. Closes [#53](https://github.com/nanolaba/readme-generator/issues/53).
@@ -2179,4 +2245,4 @@ If **Nanolaba Readme Generator (NRG)** keeps your multi-language READMEs in sync
 
 
 ---
-*Last updated: 01.05.2026*
+*Last updated: 13.05.2026*
