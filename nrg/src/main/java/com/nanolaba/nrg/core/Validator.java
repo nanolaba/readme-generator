@@ -58,9 +58,12 @@ public final class Validator {
         for (NRGWidget w : probe.getWidgets()) {
             names.add(w.getName());
         }
-        // 'if' / 'endIf' are block-widget pseudo-names handled by IfBlockProcessor — accept them.
-        names.add("if");
+        // 'endIf' / 'endDetails' are block-widget closer pseudo-names handled by their
+        // respective BlockWidget subclasses (IfWidget, DetailsWidget) — accept them so the
+        // validator doesn't flag closers as unknown widgets. The opener names ('if', 'details')
+        // are already registered via probe.getWidgets() above.
         names.add("endIf");
+        names.add("endDetails");
         return names;
     }
 
