@@ -104,12 +104,4 @@ class AlertWidgetTest extends DefaultNRGTest {
         assertFalse(body.contains("> [!NOTE]" + RN + "> "), "no body line expected");
     }
 
-    @Test
-    public void testProcessEscapesUnit() {
-        assertEquals("a\nb", AlertWidget.processEscapes("a\\nb"));
-        assertEquals("a\\nb", AlertWidget.processEscapes("a\\\\nb"));
-        assertEquals("\\", AlertWidget.processEscapes("\\\\"));
-        assertEquals("no escapes", AlertWidget.processEscapes("no escapes"));
-        assertEquals("trail\\", AlertWidget.processEscapes("trail\\"));
-    }
 }

@@ -38,7 +38,7 @@ public class AlertWidget extends DefaultWidget {
         if (text == null) {
             text = "";
         }
-        text = processEscapes(text);
+        text = NRGUtil.processWidgetEscapes(text);
 
         String type = rawType.trim().toUpperCase();
         String ls = System.lineSeparator();
@@ -53,25 +53,4 @@ public class AlertWidget extends DefaultWidget {
         return sb.toString();
     }
 
-    static String processEscapes(String input) {
-        StringBuilder out = new StringBuilder(input.length());
-        for (int i = 0; i < input.length(); i++) {
-            char c = input.charAt(i);
-            if (c == '\\' && i + 1 < input.length()) {
-                char next = input.charAt(i + 1);
-                if (next == 'n') {
-                    out.append('\n');
-                    i++;
-                    continue;
-                }
-                if (next == '\\') {
-                    out.append('\\');
-                    i++;
-                    continue;
-                }
-            }
-            out.append(c);
-        }
-        return out.toString();
-    }
 }

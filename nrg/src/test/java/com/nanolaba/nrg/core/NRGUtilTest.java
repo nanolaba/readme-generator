@@ -156,4 +156,15 @@ class NRGUtilTest extends DefaultNRGTest {
         p.setProperty("foo", "");
         assertEquals("", NRGUtil.getLanguageScopedProperty(p, "foo", "en"));
     }
+
+    @Test
+    public void testProcessWidgetEscapes() {
+        assertEquals("a\nb", NRGUtil.processWidgetEscapes("a\\nb"));
+        assertEquals("a\\nb", NRGUtil.processWidgetEscapes("a\\\\nb"));
+        assertEquals("\\", NRGUtil.processWidgetEscapes("\\\\"));
+        assertEquals("no escapes", NRGUtil.processWidgetEscapes("no escapes"));
+        assertEquals("trail\\", NRGUtil.processWidgetEscapes("trail\\"));
+        assertEquals("a\\rb", NRGUtil.processWidgetEscapes("a\\rb"));
+        assertNull(NRGUtil.processWidgetEscapes(null));
+    }
 }

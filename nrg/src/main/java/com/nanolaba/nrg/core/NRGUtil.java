@@ -13,7 +13,7 @@ import java.util.regex.Pattern;
  * Static helpers shared between the CLI, the {@link GeneratorConfig} bootstrap, and the
  * per-line {@link TemplateLine} renderer.
  *
- * <p>Covers four orthogonal concerns:
+ * <p>Covers five orthogonal concerns:
  * <ul>
  *   <li>Reflective widget loading from FQCN lists ({@link #loadWidgets}, {@link #loadWidget}).</li>
  *   <li>Property merging and language-scoped lookup ({@link #mergeProperty},
@@ -21,6 +21,7 @@ import java.util.regex.Pattern;
  *   <li>Marker / parameter parsing for the template DSL
  *       ({@link #extractRawPropertyMarkers}, {@link #parseParametersLine},
  *       {@link #unwrapParameterValue}).</li>
+ *   <li>Widget parameter escape processing ({@link #processWidgetEscapes}).</li>
  *   <li>Cheap text-search utilities ({@link #findFirstUnescapedOccurrenceLine}).</li>
  * </ul>
  */
@@ -151,6 +152,42 @@ public class NRGUtil {
     public static String unwrapParameterValue(String wrapped) {
         wrapped = StringUtils.trimToEmpty(wrapped);
         return !wrapped.isEmpty() ? StringUtils.unwrap(wrapped, wrapped.charAt(0)) : "";
+    }
+
+    /**
+     * Interprets the two escape sequences {@code \n} and {@code \\} inside widget parameter
+     * values. {@code \n} becomes a literal newline ({@code '\n'}, not {@link System#lineSeparator()})
+     * and {@code \\} becomes a single backslash. Every other backslash is preserved verbatim,
+     * including {@code \r}, {@code \t}, and {@code \?} — widgets that need a broader escape
+     * vocabulary should implement their own scan.
+     *
+     * <p>Single-pass — replacing escapes with {@link String#replace} one at a time would let an
+     * earlier substitution's output (e.g. a literal {@code \n} unescaped from {@code \\n}) be
+     * re-interpreted by the next pass.
+     */
+    public static String processWidgetEscapes(String input) {
+        if (input == null) {
+            return null;
+        }
+        StringBuilder out = new StringBuilder(input.length());
+        for (int i = 0; i < input.length(); i++) {
+            char c = input.charAt(i);
+            if (c == '\\' && i + 1 < input.length()) {
+                char next = input.charAt(i + 1);
+                if (next == 'n') {
+                    out.append('\n');
+                    i++;
+                    continue;
+                }
+                if (next == '\\') {
+                    out.append('\\');
+                    i++;
+                    continue;
+                }
+            }
+            out.append(c);
+        }
+        return out.toString();
     }
 
     public static int findFirstUnescapedOccurrenceLine(String text, String searchString) {
