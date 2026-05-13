@@ -343,13 +343,17 @@ public class TemplateLine {
     }
 
     /**
-     * Package-private static counterpart of {@link #renderProperties(String, String)} usable from
-     * pre-pass code (e.g. {@code DetailsBlockProcessor}) that doesn't have a {@link TemplateLine}
-     * instance. Behaviour is identical: substitutes {@code ${name}} occurrences against
-     * {@link GeneratorConfig#getProperties()}, honours backslash-escapes, and re-scans after each
-     * substitution to handle nested references.
+     * Public static counterpart of {@link #renderProperties(String, String)} usable from
+     * pre-pass code (e.g. {@code BlockWidget} subclasses) that doesn't have a {@link TemplateLine}
+     * instance. Public access is required because {@code BlockWidget} subclasses live in the
+     * {@code com.nanolaba.nrg.widgets} package and cannot reach package-private members of
+     * {@code com.nanolaba.nrg.core}.
+     *
+     * <p>Behaviour is identical to the instance method: substitutes {@code ${name}} occurrences
+     * against {@link GeneratorConfig#getProperties()}, honours backslash-escapes, and re-scans
+     * after each substitution to handle nested references.
      */
-    static String renderPropertiesIn(String line, GeneratorConfig config, String language) {
+    public static String renderPropertiesIn(String line, GeneratorConfig config, String language) {
         Pattern pattern = Pattern.compile("\\$\\{\\s*([\\p{Alnum}-_.]+)\\s*}");
         Matcher m = pattern.matcher(line);
         while (m.find()) {

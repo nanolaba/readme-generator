@@ -1,6 +1,7 @@
-package com.nanolaba.nrg.core;
+package com.nanolaba.nrg.widgets;
 
 import com.nanolaba.nrg.DefaultNRGTest;
+import com.nanolaba.nrg.core.Generator;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
@@ -9,7 +10,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class DetailsBlockProcessorTest extends DefaultNRGTest {
+class DetailsWidgetBlockTest extends DefaultNRGTest {
 
     private static String render(String body) {
         Generator g = new Generator(new File("README.src.md"), body);
