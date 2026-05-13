@@ -342,7 +342,14 @@ public class TemplateLine {
         return reader.read("properties." + name).orElse(null);
     }
 
-    protected String renderProperties(String line, String language) {
+    /**
+     * Package-private static counterpart of {@link #renderProperties(String, String)} usable from
+     * pre-pass code (e.g. {@code DetailsBlockProcessor}) that doesn't have a {@link TemplateLine}
+     * instance. Behaviour is identical: substitutes {@code ${name}} occurrences against
+     * {@link GeneratorConfig#getProperties()}, honours backslash-escapes, and re-scans after each
+     * substitution to handle nested references.
+     */
+    static String renderPropertiesIn(String line, GeneratorConfig config, String language) {
         Pattern pattern = Pattern.compile("\\$\\{\\s*([\\p{Alnum}-_.]+)\\s*}");
         Matcher m = pattern.matcher(line);
         while (m.find()) {
@@ -357,11 +364,14 @@ public class TemplateLine {
                 }
             }
         }
-
         return line;
     }
 
-    private boolean isNotEscaped(String line, int start) {
+    protected String renderProperties(String line, String language) {
+        return renderPropertiesIn(line, config, language);
+    }
+
+    private static boolean isNotEscaped(String line, int start) {
         return start == 0 || line.charAt(start - 1) != '\\';
     }
 

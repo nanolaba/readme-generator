@@ -85,6 +85,7 @@ public class Generator {
         result.getContent().append(generateHeadComment(language));
 
         String body = IfBlockProcessor.process(config.getSourceFileBody(), config, language);
+        body = DetailsBlockProcessor.process(body, config, language);
         AtomicInteger counter = new AtomicInteger(0);
         new BufferedReader(new StringReader(body))
                 .lines()
