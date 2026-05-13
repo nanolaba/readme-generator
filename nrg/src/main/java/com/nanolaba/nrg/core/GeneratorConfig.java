@@ -215,8 +215,8 @@ public class GeneratorConfig {
      * Resolves a widget by name. Matches the widget's primary {@link NRGWidget#getName()}
      * or any entry in its {@link NRGWidget#getAliases()}. Iterates the widget list in
      * registration order with last-match-wins semantics so the documented precedence model
-     * (API > CLI > template-property > built-in defaults) keeps working across both primary
-     * names and aliases.
+     * (API &gt; CLI &gt; template-property &gt; built-in defaults) keeps working across both
+     * primary names and aliases.
      */
     public NRGWidget getWidget(String widgetName) {
         NRGWidget match = null;

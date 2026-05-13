@@ -25,9 +25,10 @@ import java.util.function.Function;
  * computed on first access via {@link #getResult(String)} / {@link #getResults()} and cached
  * for the lifetime of the instance.
  *
- * <p>Each result is a head comment plus the rendered body — {@link IfBlockProcessor} prunes
- * inactive branches first, then every remaining line is wrapped in a {@link TemplateLine} for
- * visibility check, property/widget substitution, and final output assembly.
+ * <p>Each result is a head comment plus the rendered body — {@link BlockDispatcher} runs each
+ * registered {@code BlockWidget}'s pre-pass first (paired-marker rewriting, false-branch
+ * pruning for {@code if}, etc.), then every remaining line is wrapped in a {@link TemplateLine}
+ * for visibility check, property/widget substitution, and final output assembly.
  */
 public class Generator {
 
