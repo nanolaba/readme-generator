@@ -63,12 +63,22 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: ./nrg-action
+      - uses: actions/setup-java@v4
         with:
-          file: README.src.md
-          mode: validate
-          nrg-version: v1.0
-          # NOTE: cannot use `mode: check` here because docs/widgets/WidgetDate.src.md
-          # renders ${widget:date} live — every regeneration produces a new timestamp,
-          # which would make the check job permanently red. validate is the strongest
-          # gate that's still deterministic.
+          distribution: temurin
+          java-version: '17'
+      # Build NRG from the checkout instead of downloading a pinned release.
+      # README.src.md routinely uses widgets added AFTER the last tag (e.g. the
+      # `details` widget post-dates v1.0), so validating it against a frozen
+      # release jar produces a permanent false "unknown widget" failure. Dogfood
+      # must test HEAD's code against HEAD's templates; the matrix jobs above
+      # already cover the published-action download path against a stable fixture.
+      # gpg/javadoc are skipped because the parent pom binds them to every build.
+      - name: Build NRG from source
+        run: mvn --batch-mode --no-transfer-progress -pl nrg -am package -DskipTests -Dgpg.skip=true -Dmaven.javadoc.skip=true
+      - name: Validate README.src.md with the freshly built NRG
+        # `validate` (not `check`): docs/widgets/WidgetDate.src.md renders
+        # ${widget:date} live, so a regeneration-based `check` would be
+        # permanently red on the changing timestamp. validate is the strongest
+        # gate that stays deterministic.
+        run: java -cp nrg/target/nrg.jar com.nanolaba.nrg.NRG -f README.src.md --validate
