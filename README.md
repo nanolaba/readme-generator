@@ -1188,6 +1188,8 @@ How to do this is explained in the [Advanced Features](#advanced-features) secti
 
 Widget parameters are written as `name='value'` pairs separated by commas; a value is quoted with either `'` or `"`. Everything between the quotes belongs to the value, including parentheses and the other quote character: `cond='endsWith(${version}, -SNAPSHOT)'`, `text="it's done (really)"`.
 
+When a widget that produces several lines (`import`, `alert`, `fileTree`, `exec`, `tableOfContents`, …) is the first thing on an indented line, every line of its output is indented the same way — which keeps the output inside a list item. Blank lines are left empty. Nothing is added when other text precedes the widget on its line.
+
 #### Widget 'languages'
 
 This component allows you to generate links to other versions of a document (written in other languages).
@@ -1280,6 +1282,8 @@ This allows defining global variables in the root file and reusing them across a
 
 By default (`wrap='false'`), the widget emits the selected content as-is, which preserves the behavior of existing template-composition imports (`*.src.md` files).
 To wrap a code fragment in a fenced block, set `wrap='true'` explicitly. The fence language is taken from `lang`, or detected from the file extension when `lang='auto'` (the default).
+
+The widget can sit on an indented line, for example inside a list item: every emitted line — both fences and the code between them — gets the indentation of the widget line, so the block stays inside the item.
 
 **Auto-dedent**
 
@@ -1562,7 +1566,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 10.11.2026 23:32:17
+Last updated: 10.11.2026 23:34:21
 ```
 
 </td></tr>
@@ -2015,7 +2019,7 @@ ${widget:endDetails}
 <details>
 <summary>Advanced</summary>
 
-inner *markdown* and 10.11.2026 23:32:17
+inner *markdown* and 10.11.2026 23:34:21
 
 </details>
 ```
@@ -2160,6 +2164,7 @@ This section summarises the main user-visible changes in each release. For full 
 - **`toc` short alias for `tableOfContents`**: `${widget:toc(...)}` now works as a synonym for `${widget:tableOfContents(...)}` — anchor generation, parameters, and rendered output are byte-identical. Primary name stays `tableOfContents`. Aliases are a general widget-system feature: third-party widgets can declare their own via the new `NRGWidget.getAliases()` default method.
 - **Parentheses inside quoted widget parameters**: a `)` inside a quoted parameter value no longer ends the widget tag. The documented `${widget:if(cond='endsWith(${devVersion}, -SNAPSHOT)')}` / `startsWith(...)` conditions and `(…)` grouping now work in both the block and the inline form — previously the opener was left in the output as literal text, the block body was always rendered and every `${widget:endIf}` was reported as stray. The same fix lets `math` take `expr='f(x) = (a + b)^2'`, `details` take `summary='Advanced (optional)'`, and `--validate` see such tags. Closes [#55](https://github.com/nanolaba/readme-generator/issues/55).
 - **`tableOfContents` no longer loses headings after a fence line with a language marker**: a closing fence followed by a language marker — hand-written (`` ```<!--en--> ``) or produced by `${widget:import(..., wrap='true')}` on a line tagged `<!--en-->` / `<!--ru-->` — was not recognised as a closer, so the next fence flipped the state and every later heading was silently dropped from the table of contents. Fences are now matched on the line as it appears in the generated file. Closes [#56](https://github.com/nanolaba/readme-generator/issues/56).
+- **Multi-line widget output keeps the indentation of the widget line**: a widget placed on an indented line (typically inside a list item) used to indent only the first line of its output — for `${widget:import(..., wrap='true')}` that meant an indented opening fence followed by code and a closing fence at column 0, which broke the list in Markdown renderers. Every non-blank line of the output is now prefixed with the leading spaces / tabs of the widget line; this applies to all widgets (`import`, `alert`, `fileTree`, `exec`, `tableOfContents`, custom ones). Output changes only for templates that already had a multi-line widget on an indented line. Closes [#57](https://github.com/nanolaba/readme-generator/issues/57).
 
 ### 1.2
 

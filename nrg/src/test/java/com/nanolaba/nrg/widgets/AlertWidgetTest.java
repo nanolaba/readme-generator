@@ -20,6 +20,15 @@ class AlertWidgetTest extends DefaultNRGTest {
     }
 
     @Test
+    public void testIndentedAlertStaysInsideListItem() {
+        Generator generator = new Generator(new File("README.src.md"),
+                "- item\n\n  ${widget:alert(type='note', text='Hello')}\n");
+
+        String body = generator.getResult("en").getContent().toString();
+        assertTrue(body.contains("  > [!NOTE]" + RN + "  > Hello" + RN), body);
+    }
+
+    @Test
     public void testAllValidTypes() {
         for (String type : new String[]{"note", "tip", "important", "warning", "caution"}) {
             Generator generator = new Generator(new File("README.src.md"),

@@ -65,6 +65,9 @@ To wrap a code fragment in a fenced block, set `wrap='true'` explicitly. The fen
 По умолчанию (`wrap='false'`) виджет выводит выбранный фрагмент без изменений, что сохраняет поведение существующих шаблонных импортов (файлов `*.src.md`).<!--ru-->
 Чтобы обернуть фрагмент кода в кодовый блок, явно задайте `wrap='true'`. Язык блока берётся из `lang`, либо определяется по расширению файла при `lang='auto'` (по умолчанию).<!--ru-->
 
+The widget can sit on an indented line, for example inside a list item: every emitted line — both fences and the code between them — gets the indentation of the widget line, so the block stays inside the item.<!--en-->
+Виджет можно ставить в строку с отступом, например внутри элемента списка: каждая выводимая строка — обе ограды и код между ними — получает отступ строки виджета, и блок остаётся внутри элемента.<!--ru-->
+
 ${en:'**Auto-dedent**', ru:'**Автоматическое удаление отступа**'}
 
 When `dedent='auto'` (the default), common leading whitespace is stripped automatically if `lines` or `region` is set, and left untouched otherwise.<!--en-->

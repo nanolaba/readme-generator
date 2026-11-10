@@ -57,6 +57,8 @@ public class TemplateLine {
 
     public static final Pattern WIDGET_TAG_PATTERN =
             Pattern.compile("\\$\\{ *widget:(\\w*)(\\((" + WIDGET_PARAMETERS_REGEX + ")\\))? *}");
+    /** A line break inside a widget body that is followed by a non-empty line. */
+    private static final Pattern CONTINUATION_LINE_START = Pattern.compile("(\\r\\n|\\r|\\n)(?=[^\\r\\n])");
     private static final Pattern ENV_TAG_PATTERN = Pattern.compile("\\$\\{\\s*env\\.([A-Za-z_][A-Za-z0-9_]*)(?::([^}]*))?\\s*}");
     private static final Pattern POM_TAG_PATTERN = Pattern.compile("\\$\\{\\s*pom\\.([A-Za-z_][A-Za-z0-9_.\\-]*?)(?::([^}]*))?\\s*}");
     private static final Pattern POM_INTERNAL_REF = Pattern.compile("\\$\\{\\s*([A-Za-z_][A-Za-z0-9_.\\-]*)(?::([^}]*))?\\s*}");
@@ -136,7 +138,8 @@ public class TemplateLine {
             if (widget != null) {
                 if (widget.isEnabled()) {
                     try {
-                        String body = widget.getBody(tag, config, language);
+                        String body = indentContinuationLines(
+                                widget.getBody(tag, config, language), result, shift + tag.getStart());
                         result.replace(shift + tag.getStart(), shift + tag.getEnd(), body);
                         shift += body.length() - (tag.getEnd() - tag.getStart());
                     }
@@ -158,6 +161,30 @@ public class TemplateLine {
                 .forEach(w -> w.afterRenderLine(result, config));
 
         return result.toString();
+    }
+
+    /**
+     * Repeats the indentation of the widget line on every further line of a multi-line
+     * widget body. The tag is replaced in place, so only the first line of the body would
+     * otherwise sit at that indentation — and an indented fence, alert or tree (typically
+     * inside a list item) would fall apart in Markdown renderers.
+     *
+     * <p>Applies only when nothing but spaces and tabs precedes the tag; with other text in
+     * front of it there is no indentation to speak of. Blank lines stay blank and a trailing
+     * line break gets nothing appended, so no whitespace-only lines are produced.
+     */
+    private static String indentContinuationLines(String body, CharSequence line, int tagStart) {
+        if (body == null || tagStart == 0 || (body.indexOf('\n') < 0 && body.indexOf('\r') < 0)) {
+            return body;
+        }
+        for (int i = 0; i < tagStart; i++) {
+            char c = line.charAt(i);
+            if (c != ' ' && c != '\t') {
+                return body;
+            }
+        }
+        String indent = line.subSequence(0, tagStart).toString();
+        return CONTINUATION_LINE_START.matcher(body).replaceAll("$1" + Matcher.quoteReplacement(indent));
     }
 
     protected List<WidgetTag> getWidgetTags(String line) {

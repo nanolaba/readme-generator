@@ -128,6 +128,24 @@ class ImportWidgetTest {
     }
 
     @Test
+    public void wrapTrueOnIndentedLineIndentsEveryEmittedLine() throws IOException {
+        // Regression for #57: only the opening fence kept the indentation of the widget line,
+        // so the code and the closing fence fell out of the list item.
+        String body = render("ImportWidgetTest/extension/README-wrap-true-indented.src.md");
+        String sep = System.lineSeparator();
+        String expected = "1. First item with an imported snippet:" + sep +
+                sep +
+                "   ```java" + sep +
+                "   public void greet() {" + sep +
+                "       System.out.println(\"hello\");" + sep +
+                "   }" + sep +
+                "   ```" + sep +
+                sep +
+                "2. Second item" + sep;
+        assertTrue(body.endsWith(expected), body);
+    }
+
+    @Test
     public void wrapTrueWithLinesWrapsInJavaFence() throws IOException {
         String body = render("ImportWidgetTest/extension/README-wrap-true-lines.src.md");
         assertTrue(body.contains("```java"), body);

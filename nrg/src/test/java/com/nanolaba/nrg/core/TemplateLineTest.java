@@ -136,6 +136,44 @@ class TemplateLineTest extends DefaultNRGTest {
     }
 
     @Test
+    public void testMultiLineWidgetBodyKeepsIndentationOfTheWidgetLine() {
+        // Regression for #57: the tag is replaced in place, so without help only the first
+        // line of a multi-line body sits at the indentation of the widget line.
+        BiFunction<String, String, String> action = (s, widgetBody) -> {
+            TemplateLine l = line(s, "ru", "en");
+            l.getConfig().getWidgets().add(new DefaultWidget() {
+                @Override
+                public String getName() {
+                    return "test";
+                }
+
+                @Override
+                public String getBody(WidgetTag tag, GeneratorConfig config, String language) {
+                    return widgetBody;
+                }
+            });
+            return l.generateLine("ru");
+        };
+
+        assertEquals("   a\n   b\n   c", action.apply("   ${widget:test}", "a\nb\nc"));
+        assertEquals("\t a\r\n\t b", action.apply("\t ${widget:test}", "a\r\nb"));
+        assertEquals("  a\n  b tail", action.apply("  ${widget:test} tail", "a\nb"));
+
+        // Blank lines stay blank, and a trailing line break gets nothing appended.
+        assertEquals("  a\n\n  b\n", action.apply("  ${widget:test}", "a\n\nb\n"));
+        assertEquals("  a\r\n\r\n  b\r\n", action.apply("  ${widget:test}", "a\r\n\r\nb\r\n"));
+
+        // Nothing to repeat: no indentation, a single-line body, or text before the tag.
+        assertEquals("a\nb", action.apply("${widget:test}", "a\nb"));
+        assertEquals("   a", action.apply("   ${widget:test}", "a"));
+        assertEquals("- a\nb", action.apply("- ${widget:test}", "a\nb"));
+        assertEquals("  x a\nb", action.apply("  x ${widget:test}", "a\nb"));
+
+        // Only the first tag on a line starts at the indentation.
+        assertEquals("  a\n  b a\nb", action.apply("  ${widget:test} ${widget:test}", "a\nb"));
+    }
+
+    @Test
     public void testRenderWidget() {
         BiFunction<String, String, String> action = (s, lang) -> {
             TemplateLine l = line(s, "ru", "en");
