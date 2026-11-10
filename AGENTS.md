@@ -16,7 +16,7 @@ Repository layout:
 - `docs/` — README source fragments; `docs/Changelog.src.md` is the changelog.
 - `.github/workflows/` — `ci.yml` (build & test on JDK 8 and 17, then `--validate` over the repository's own templates with the freshly built jar), `action-test.yml` (action self-test matrix + dogfood validation of `README.src.md`) and `release-guard.yml` (runs `.github/scripts/release-preflight.sh` on every `v*` tag / published release: POM versions must match the tag and must not be `-SNAPSHOT`, and the `readme-generator-X.Y.zip` asset must be downloadable).
 
-Versions: the development version is the POM `<version>` (currently `1.3-SNAPSHOT`); the last released version is the `stableVersion` property in the root `pom.xml`. `README.src.md` reads both via `${pom.version}` / `${pom.properties.stableVersion}`.
+Versions: the development version is the POM `<version>` (currently `1.4-SNAPSHOT`); the last released version is the `stableVersion` property in the root `pom.xml`. `README.src.md` reads both via `${pom.version}` / `${pom.properties.stableVersion}`.
 
 ## Build & test commands
 
