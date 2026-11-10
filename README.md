@@ -1579,7 +1579,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 10.11.2026 23:59:40
+Last updated: 11.11.2026 00:00:42
 ```
 
 </td></tr>
@@ -1592,7 +1592,7 @@ ${widget:date(pattern = 'dd.MM.yyyy')}
 </td><td>
 
 ```markdown
-10.11.2026
+11.11.2026
 ```
 
 </td></tr>
@@ -2032,7 +2032,7 @@ ${widget:endDetails}
 <details>
 <summary>Advanced</summary>
 
-inner *markdown* and 10.11.2026 23:59:40
+inner *markdown* and 11.11.2026 00:00:42
 
 </details>
 ```
@@ -2180,6 +2180,7 @@ This section summarises the main user-visible changes in each release. For full 
 - **Multi-line widget output keeps the indentation of the widget line**: a widget placed on an indented line (typically inside a list item) used to indent only the first line of its output — for `${widget:import(..., wrap='true')}` that meant an indented opening fence followed by code and a closing fence at column 0, which broke the list in Markdown renderers. Every non-blank line of the output is now prefixed with the leading spaces / tabs of the widget line; this applies to all widgets (`import`, `alert`, `fileTree`, `exec`, `tableOfContents`, custom ones). Output changes only for templates that already had a multi-line widget on an indented line. Closes [#57](https://github.com/nanolaba/readme-generator/issues/57).
 - **`import` with `heading-offset` no longer mis-shifts after a fence line with a language marker**: the same fence-matching fix as for `tableOfContents` — in an imported `.src.md`, a closing fence written as `` ```<!--en--> `` was not recognised, so headings after it were left unshifted and `#` lines inside the next code block were shifted instead.
 - **Security: a template can no longer write files outside the project**: `nrg.fileNamePattern` (and its per-language / default-language variants) accepted `../`, so a template could create or overwrite any file the process could write — with `nrg.noHeader` the content was fully template-controlled, which amounted to running code without `--allow-exec`. Output files must now stay inside the **project root**: the nearest ancestor of the source file that contains `.git`, or the source file's directory when there is none. A pattern that leaves it fails the run (also in `--check` and `--stdout`) and nothing is written. New `--root <dir>` CLI option, `<root>` Maven plugin parameter and `root` GitHub Action input widen the root for layouts that need it; the root cannot be set from a template.
+- **Security: XML external entities are no longer resolved when reading a POM**: the file behind `${pom.*}` is chosen by the template (`nrg.pom.path`), and it was parsed with the JDK defaults — an external entity could pull the content of any local file into the output or open a network connection without `nrg.allowRemoteImports`. A document that declares a `DOCTYPE` is now refused as a whole (`pom reader: failed to parse …`, every `${pom.*}` renders empty). Ordinary `pom.xml` files have no `DOCTYPE` and are unaffected.
 
 ### 1.2
 
@@ -2283,4 +2284,4 @@ If **Nanolaba Readme Generator (NRG)** keeps your multi-language READMEs in sync
 
 
 ---
-*Last updated: 10.11.2026*
+*Last updated: 11.11.2026*
