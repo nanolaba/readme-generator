@@ -29,7 +29,7 @@ NRG, извлекает `nrg.jar` и запускает его для переч
 | `charset` | ${en:'Source file encoding.', ru:'Кодировка исходных файлов.'} | `UTF-8` |
 | `mode` | ${en:'Operation mode: `generate`, `check`, or `validate`.', ru:'Режим работы: `generate`, `check` или `validate`.'} | `generate` |
 | `check-paths` | ${en:'Multi-line list of glob patterns (one per line) limiting which generated outputs `mode: check` compares against on-disk files. Requires `mode: check`.', ru:'Многострочный список glob-шаблонов (по одному на строку), ограничивающий, какие сгенерированные файлы `mode: check` сравнивает с файлами на диске. Требует `mode: check`.'} | — |
-| `root` | ${en:'Directory the templates are confined to — see [Project root](#project-root). Needs an NRG release newer than `v1.2`.', ru:'Каталог, за пределы которого шаблоны выйти не могут, — см. [Корень проекта](#корень-проекта). Требует релиза NRG новее `v1.2`.'} | ${en:'nearest ancestor with `.git`', ru:'ближайший предок с `.git`'} |
+| `root` | ${en:'Directory the templates are confined to — see [Project root](#project-root). Needs NRG `v1.3` or newer.', ru:'Каталог, за пределы которого шаблоны выйти не могут, — см. [Корень проекта](#корень-проекта). Требует NRG `v1.3` или новее.'} | ${en:'nearest ancestor with `.git`', ru:'ближайший предок с `.git`'} |
 | `nrg-version` | ${en:'NRG release tag (e.g. `v1.0`) or `latest`.', ru:'Тег релиза NRG (например, `v1.0`) или `latest`.'} | `latest` |
 | `nrg-sha256` | ${en:'Expected sha256 of the downloaded release zip; a mismatch fails the run before the jar is executed. Use with a fixed `nrg-version`.', ru:'Ожидаемый sha256 скачиваемого релизного zip; несовпадение завершает запуск до исполнения jar. Используйте вместе с фиксированным `nrg-version`.'} | — |
 | `java-version` | ${en:'JDK version for `actions/setup-java`. Ignored when `setup-java=false`.', ru:'Версия JDK для `actions/setup-java`. Игнорируется при `setup-java=false`.'} | `17` |
@@ -149,11 +149,11 @@ ${en:'Pinning the action does not pin the NRG jar it downloads. For that, fix `n
 - uses: nanolaba/nrg-action@v1
   with:
     file: README.src.md
-    nrg-version: v1.2
-    nrg-sha256: e48c0ad31f3f65da2898f690739fe40ff77542d3e0530072a6221a9e0ad376bf
+    nrg-version: v1.3
+    nrg-sha256: 9d5d58490703be4b575b489811baf4788c1a187e26d563b26d393f3591f52c62
 ```
 
-${en:'Without `nrg-sha256` the action checks the download against the `.sha256` file published with the release (releases after `v1.2`); for older releases it prints the checksum of what it downloaded so you can pin it.', ru:'Без `nrg-sha256` action сверяет загрузку с файлом `.sha256`, опубликованным вместе с релизом (релизы после `v1.2`); для более старых релизов он печатает контрольную сумму скачанного, чтобы её можно было закрепить.'}
+${en:'Without `nrg-sha256` the action checks the download against the `.sha256` file published with the release (NRG `v1.3` and later); for older releases it prints the checksum of what it downloaded so you can pin it.', ru:'Без `nrg-sha256` action сверяет загрузку с файлом `.sha256`, опубликованным вместе с релизом (NRG `v1.3` и новее); для более старых релизов он печатает контрольную сумму скачанного, чтобы её можно было закрепить.'}
 
 #### ${en:'Troubleshooting', ru:'Решение проблем'}
 

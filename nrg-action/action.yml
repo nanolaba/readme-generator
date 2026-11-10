@@ -24,7 +24,7 @@ inputs:
     description: 'Multi-line list of glob patterns (one per line) limiting which generated outputs `mode: check` compares against on-disk files. Useful when only some outputs are tracked in git and the rest are bot-managed. Requires mode=check.'
     required: false
   root:
-    description: 'Directory the templates are confined to (imports, descriptors and output files must stay inside it). Defaults to the nearest ancestor of each template that contains .git. Needs an NRG release newer than v1.2.'
+    description: 'Directory the templates are confined to (imports, descriptors and output files must stay inside it). Defaults to the nearest ancestor of each template that contains .git. Needs NRG v1.3 or newer.'
     required: false
   nrg-version:
     description: 'NRG release tag (e.g. v1.1) or "latest".'

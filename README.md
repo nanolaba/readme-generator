@@ -44,7 +44,7 @@ Using **Nanolaba Readme Generator (NRG)**, you can:
 
 > 💡 **Nanolaba Readme Generator (NRG)** is written in Java and requires **Java 8** or higher to run.
 
-The latest stable version of the program is **1.2**.
+The latest stable version of the program is **1.3**.
 The current development version is **1.4-SNAPSHOT**.
 
 ### Used by
@@ -134,7 +134,7 @@ Lines tagged `<!--en-->` go to `README.md`; lines tagged `<!--ru-->` go to `READ
 
 **Step 2: Generate the files**
 
-**Option A — CLI.** [Download](https://github.com/nanolaba/readme-generator/releases/tag/v1.2) the standalone jar, unzip it, then run:
+**Option A — CLI.** [Download](https://github.com/nanolaba/readme-generator/releases/tag/v1.3) the standalone jar, unzip it, then run:
 
 ```bash
 nrg -f /path/to/README.src.md
@@ -146,7 +146,7 @@ nrg -f /path/to/README.src.md
 <plugin>
     <groupId>com.nanolaba</groupId>
     <artifactId>nrg-maven-plugin</artifactId>
-    <version>1.2</version>
+    <version>1.3</version>
     <configuration>
         <file><item>README.src.md</item></file>
     </configuration>
@@ -247,7 +247,7 @@ ${widget:details(summary='Click', content='Short hidden text', open='true')}
 **Nanolaba Readme Generator (NRG)** is written in Java and requires **Java 8** or higher to run.
 [Install](https://www.java.com/en/download/) Java if it’s not already present on your system.
 
-[Download](https://github.com/nanolaba/readme-generator/releases/tag/v1.2) the latest
+[Download](https://github.com/nanolaba/readme-generator/releases/tag/v1.3) the latest
 stable version of the application.
 
 Unzip the downloaded archive. If you're using a Unix-like system, make the `nrg.sh` file executable:
@@ -450,7 +450,7 @@ Add the following code to your `pom.xml`:
     <plugin>
         <groupId>com.nanolaba</groupId>
         <artifactId>nrg-maven-plugin</artifactId>
-        <version>1.2</version>
+        <version>1.3</version>
         <configuration>
             <file>
                 <item>README.src.md</item>
@@ -577,7 +577,7 @@ list — README maintenance becomes a single workflow step.
 | `charset` | Source file encoding. | `UTF-8` |
 | `mode` | Operation mode: `generate`, `check`, or `validate`. | `generate` |
 | `check-paths` | Multi-line list of glob patterns (one per line) limiting which generated outputs `mode: check` compares against on-disk files. Requires `mode: check`. | — |
-| `root` | Directory the templates are confined to — see [Project root](#project-root). Needs an NRG release newer than `v1.2`. | nearest ancestor with `.git` |
+| `root` | Directory the templates are confined to — see [Project root](#project-root). Needs NRG `v1.3` or newer. | nearest ancestor with `.git` |
 | `nrg-version` | NRG release tag (e.g. `v1.0`) or `latest`. | `latest` |
 | `nrg-sha256` | Expected sha256 of the downloaded release zip; a mismatch fails the run before the jar is executed. Use with a fixed `nrg-version`. | — |
 | `java-version` | JDK version for `actions/setup-java`. Ignored when `setup-java=false`. | `17` |
@@ -697,11 +697,11 @@ Pinning the action does not pin the NRG jar it downloads. For that, fix `nrg-ver
 - uses: nanolaba/nrg-action@v1
   with:
     file: README.src.md
-    nrg-version: v1.2
-    nrg-sha256: e48c0ad31f3f65da2898f690739fe40ff77542d3e0530072a6221a9e0ad376bf
+    nrg-version: v1.3
+    nrg-sha256: 9d5d58490703be4b575b489811baf4788c1a187e26d563b26d393f3591f52c62
 ```
 
-Without `nrg-sha256` the action checks the download against the `.sha256` file published with the release (releases after `v1.2`); for older releases it prints the checksum of what it downloaded so you can pin it.
+Without `nrg-sha256` the action checks the download against the `.sha256` file published with the release (NRG `v1.3` and later); for older releases it prints the checksum of what it downloaded so you can pin it.
 
 #### Troubleshooting
 
@@ -722,19 +722,19 @@ The action is published as a standalone repository [`nanolaba/nrg-action`](https
 <dependency>
     <groupId>com.nanolaba</groupId>
     <artifactId>readme-generator</artifactId>
-    <version>1.2</version>
+    <version>1.3</version>
 </dependency>  
 ```
 
 **Gradle (build.gradle)**
 
 ```groovy
-implementation 'com.nanolaba:readme-generator:1.2'
+implementation 'com.nanolaba:readme-generator:1.3'
 ```
 
 **Manual download**
 
-Get the JAR from [Maven Central](https://repo1.maven.org/maven2/com/nanolaba/readme-generator/1.2).
+Get the JAR from [Maven Central](https://repo1.maven.org/maven2/com/nanolaba/readme-generator/1.3).
 Add it to your project's classpath.
 
 After this, you can call the file generation function in your project by passing 
@@ -1599,7 +1599,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 11.11.2026 01:01:07
+Last updated: 11.11.2026 01:01:25
 ```
 
 </td></tr>
@@ -2055,7 +2055,7 @@ ${widget:endDetails}
 <details>
 <summary>Advanced</summary>
 
-inner *markdown* and 11.11.2026 01:01:07
+inner *markdown* and 11.11.2026 01:01:26
 
 </details>
 ```
