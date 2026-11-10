@@ -283,10 +283,38 @@ class ImportWidgetTest {
     @Test
     void remoteSrcMdRunsGenerator(@TempDir Path tmp) throws IOException {
         String body = "<!--@unprocessedParameter=foo-->\nresult: ${unprocessedParameter}";
-        File src = writeFixture(tmp, "<!--@nrg.allowRemoteImports=true-->\n${widget:import(url='https://example.com/x.src.md')}\n");
+        String sha = Sha256Hex.hexOf(body.getBytes(StandardCharsets.UTF_8));
+        File src = writeFixture(tmp, "<!--@nrg.allowRemoteImports=true-->\n" +
+                "${widget:import(url='https://example.com/x.src.md', sha256='" + sha + "')}\n");
         Generator g = new Generator(src, StandardCharsets.UTF_8, withCustomImport(body.getBytes(StandardCharsets.UTF_8)));
         String out = g.getResult("en").getContent().toString();
         assertTrue(out.contains("result: foo"), () -> "unexpected: " + out);
+    }
+
+    @Test
+    void remoteTemplateWithoutSha256IsRefused(@TempDir Path tmp) throws IOException {
+        // A remote template runs with the same access to the project as a local one, so the
+        // bytes must be pinned: whoever controls the URL or the connection would otherwise
+        // control what gets read from the build machine into the README.
+        byte[] body = "[${env.HOME}]".getBytes(StandardCharsets.UTF_8);
+        for (String params : new String[]{
+                "url='https://example.com/x.src.md'",
+                "url='https://example.com/x.txt', run-generator='true'"}) {
+            File src = writeFixture(tmp, "<!--@nrg.allowRemoteImports=true-->\n${widget:import(" + params + ")}\n");
+            Generator g = new Generator(src, StandardCharsets.UTF_8, withCustomImport(body));
+            RuntimeException ex = assertThrows(RuntimeException.class, () -> g.getResult("en"));
+            assertTrue(ex.getMessage().contains("sha256"), ex.getMessage());
+            assertTrue(ex.getMessage().contains("run-generator='false'"), ex.getMessage());
+        }
+    }
+
+    @Test
+    void remoteTemplateCanBeEmbeddedAsTextWithoutSha256(@TempDir Path tmp) throws IOException {
+        String body = "result: ${someVar}";
+        File src = writeFixture(tmp, "<!--@nrg.allowRemoteImports=true-->\n<!--@someVar=foo-->\n" +
+                "${widget:import(url='https://example.com/x.src.md', run-generator='false')}\n");
+        Generator g = new Generator(src, StandardCharsets.UTF_8, withCustomImport(body.getBytes(StandardCharsets.UTF_8)));
+        assertTrue(g.getResult("en").getContent().toString().contains("result: ${someVar}"));
     }
 
     @Test

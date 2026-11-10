@@ -122,6 +122,18 @@ public class ImportWidget extends DefaultWidget {
             if (config.isRequireSha256ForRemote() && widgetConfig.getSha256() == null) {
                 throw new RuntimeException("import: sha256 is required for remote imports under nrg.requireSha256ForRemote=true (url=" + widgetConfig.getUrl() + ")");
             }
+            if (widgetConfig.isRunGenerator() && widgetConfig.getSha256() == null) {
+                // A remote template is rendered with the same access to the project as a local
+                // one (imports, descriptors, environment variables), so whoever controls the URL
+                // or the connection would control what is read from this machine into the
+                // output. Pinning the bytes is what makes them trustworthy.
+                throw new RuntimeException("import: a remote template must be pinned with sha256='…' before it is rendered"
+                        + " — or pass run-generator='false' to embed it as plain text (url=" + widgetConfig.getUrl() + ")");
+            }
+            if (widgetConfig.getSha256() == null && widgetConfig.getUrl().regionMatches(true, 0, "http://", 0, 7)) {
+                LOG.warn("import: {} is fetched over plain http without a sha256 pin; anyone on the network path can alter it",
+                        widgetConfig.getUrl());
+            }
             if (widgetConfig.getSha256() != null && !widgetConfig.getSha256().matches("[0-9a-f]{64}")) {
                 throw new RuntimeException("import: sha256 must be 64 lowercase hex chars (got '" + widgetConfig.getSha256() + "')");
             }

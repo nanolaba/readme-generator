@@ -134,6 +134,12 @@ For CI gates, set the system property `-Dnrg.requireSha256ForRemote=true` (defau
 Если `sha256` не указан, NRG выводит в журнал INFO-строку с фактическим хэшем, чтобы её можно было скопировать обратно в вызов виджета.<!--ru-->
 Для CI-проверок задайте системное свойство `-Dnrg.requireSha256ForRemote=true` (по умолчанию `false`) — после этого удалённые импорты без `sha256` будут завершать сборку с ошибкой.<!--ru-->
 
+A remote **template** is a special case: when the fetched text is rendered as a template (`run-generator='true'`, which is the default for URLs ending in `.src.md`), `sha256` is mandatory. A template can import your files, read your project descriptors and environment variables, so without a pin whoever controls the URL or the connection would decide what ends up in your README. Either add `sha256`, or pass `run-generator='false'` to embed the remote text as is. The `exec` widget never runs inside a remote template.<!--en-->
+**Удалённый шаблон** — особый случай: если загруженный текст рендерится как шаблон (`run-generator='true'`; это значение по умолчанию для URL, оканчивающихся на `.src.md`), параметр `sha256` обязателен. Шаблон может импортировать ваши файлы, читать дескрипторы проекта и переменные окружения, поэтому без закрепления тот, кто контролирует URL или соединение, решал бы, что попадёт в ваш README. Либо добавьте `sha256`, либо передайте `run-generator='false'`, чтобы вставить удалённый текст как есть. Виджет `exec` внутри удалённого шаблона не выполняется никогда.<!--ru-->
+
+The download itself is bounded: `timeout` covers the whole exchange (connection, redirects and body), a response larger than 16 MiB is refused, a redirect may only lead to another `http(s)` URL and never from `https` down to `http`. Fetching over plain `http://` without `sha256` logs a warning.<!--en-->
+Сама загрузка ограничена: `timeout` покрывает весь обмен (соединение, редиректы и тело), ответ больше 16 МиБ отклоняется, редирект может вести только на другой `http(s)`-адрес и никогда — с `https` на `http`. Загрузка по обычному `http://` без `sha256` сопровождается предупреждением в журнале.<!--ru-->
+
 If the network is unreachable but a cached response exists, NRG uses it (even if stale relative to `cache` TTL) and logs a warning; without any cache entry the build fails.<!--en-->
 Если сеть недоступна, но в кэше есть запись, NRG использует её (даже если она устарела относительно `cache` TTL) и выводит предупреждение; при отсутствии записи в кэше сборка завершится с ошибкой.<!--ru-->
 

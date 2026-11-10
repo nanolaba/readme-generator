@@ -128,4 +128,20 @@ class RemoteFetcherTest {
         // The rethrown exception is the original network failure, not a sha-mismatch.
         assertEquals("network down", ex.getMessage());
     }
+
+    @Test
+    void timeoutBeyondIntRangeIsClampedNotWrapped(@TempDir Path tmp) throws IOException {
+        // timeout='30d' is 2_592_000_000 ms; cast to int it wrapped to a negative value and
+        // HttpURLConnection rejected it with "timeouts can't be negative".
+        AtomicInteger seenTimeout = new AtomicInteger();
+        RemoteFetcher f = new RemoteFetcher((url, timeout, redirects) -> {
+            seenTimeout.set(timeout);
+            return new UrlOpener.Response("hello".getBytes(StandardCharsets.UTF_8));
+        }, fixedClock(1L));
+
+        f.fetch(new RemoteFetchSpec("https://example.com/x",
+                DurationParser.parseMillis("30d"), DurationParser.DISABLED, null), tmp);
+
+        assertEquals(Integer.MAX_VALUE, seenTimeout.get());
+    }
 }

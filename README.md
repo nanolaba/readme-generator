@@ -1347,6 +1347,10 @@ The `sha256` parameter (64 hex chars) is strongly recommended — it pins the fe
 When `sha256` is omitted, NRG logs an INFO line with the actual hash so it can be copied back into the widget call.
 For CI gates, set the system property `-Dnrg.requireSha256ForRemote=true` (default `false`) — remote imports without `sha256` will then fail the build.
 
+A remote **template** is a special case: when the fetched text is rendered as a template (`run-generator='true'`, which is the default for URLs ending in `.src.md`), `sha256` is mandatory. A template can import your files, read your project descriptors and environment variables, so without a pin whoever controls the URL or the connection would decide what ends up in your README. Either add `sha256`, or pass `run-generator='false'` to embed the remote text as is. The `exec` widget never runs inside a remote template.
+
+The download itself is bounded: `timeout` covers the whole exchange (connection, redirects and body), a response larger than 16 MiB is refused, a redirect may only lead to another `http(s)` URL and never from `https` down to `http`. Fetching over plain `http://` without `sha256` logs a warning.
+
 If the network is unreachable but a cached response exists, NRG uses it (even if stale relative to `cache` TTL) and logs a warning; without any cache entry the build fails.
 
 <table>
@@ -1580,7 +1584,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 11.11.2026 00:03:03
+Last updated: 11.11.2026 00:08:39
 ```
 
 </td></tr>
@@ -2033,7 +2037,7 @@ ${widget:endDetails}
 <details>
 <summary>Advanced</summary>
 
-inner *markdown* and 11.11.2026 00:03:03
+inner *markdown* and 11.11.2026 00:08:39
 
 </details>
 ```
@@ -2183,6 +2187,8 @@ This section summarises the main user-visible changes in each release. For full 
 - **Security: a template can no longer write files outside the project**: `nrg.fileNamePattern` (and its per-language / default-language variants) accepted `../`, so a template could create or overwrite any file the process could write — with `nrg.noHeader` the content was fully template-controlled, which amounted to running code without `--allow-exec`. Output files must now stay inside the **project root**: the nearest ancestor of the source file that contains `.git`, or the source file's directory when there is none. A pattern that leaves it fails the run (also in `--check` and `--stdout`) and nothing is written. New `--root <dir>` CLI option, `<root>` Maven plugin parameter and `root` GitHub Action input widen the root for layouts that need it; the root cannot be set from a template.
 - **Security: XML external entities are no longer resolved when reading a POM**: the file behind `${pom.*}` is chosen by the template (`nrg.pom.path`), and it was parsed with the JDK defaults — an external entity could pull the content of any local file into the output or open a network connection without `nrg.allowRemoteImports`. A document that declares a `DOCTYPE` is now refused as a whole (`pom reader: failed to parse …`, every `${pom.*}` renders empty). Ordinary `pom.xml` files have no `DOCTYPE` and are unaffected.
 - **Security: a template can no longer read files outside the project**: `${widget:import(path='../../…')}`, `${widget:fileTree(path=…)}` (absolute paths included) and the `nrg.pom.path` / `nrg.npm.path` / `nrg.gradle.path` properties reached any file the process could read and copied it into the generated output — for example signing passwords from a `gradle.properties` outside the repository. These paths are now held to the same project root as output files; a path outside it fails the run, and `--validate` reports an escaping import as an error without opening the file. **Behaviour change:** a template that is *not* inside a git repository can no longer import from a parent directory unless `--root` names a wider root; inside a git repository, `../` keeps working as long as it stays in the repository.
+- **Security: a remote template must be pinned**: `${widget:import(url='…')}` renders the fetched text as a template when `run-generator='true'` — the default for URLs ending in `.src.md` — and a template can import local files and read descriptors and environment variables. Without a `sha256` pin, whoever controlled the URL or the connection controlled what was read from the build machine into the README. Such an import now fails with a message asking for `sha256='…'` or `run-generator='false'` (embed as plain text). **Behaviour change** for templates that import a remote `.src.md` without `sha256`.
+- **Hardened HTTP client for remote imports**: a redirect to a non-`http(s)` URL is refused with a clear error (it used to crash with a `ClassCastException`), as is a redirect from `https` down to `http`; a response larger than 16 MiB is refused instead of being buffered without limit; `timeout` now bounds the whole exchange, so a server that drips data cannot hold the build forever; `timeout='30d'` and other values above ~24 days no longer fail with `timeouts can't be negative`; fetching over plain `http://` without `sha256` logs a warning.
 
 ### 1.2
 

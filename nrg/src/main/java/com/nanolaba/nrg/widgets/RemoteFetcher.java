@@ -54,7 +54,9 @@ final class RemoteFetcher {
 
         byte[] bytes;
         try {
-            bytes = opener.open(url, (int) spec.getTimeoutMillis(), MAX_REDIRECTS).getBody();
+            // Clamped, not cast: timeout='30d' is 2.6e9 ms and would wrap to a negative int.
+            int timeoutMillis = (int) Math.min(spec.getTimeoutMillis(), Integer.MAX_VALUE);
+            bytes = opener.open(url, timeoutMillis, MAX_REDIRECTS).getBody();
         } catch (IOException networkFailure) {
             if (cached.isPresent()) {
                 byte[] stale = cached.get().getBytes();
