@@ -577,6 +577,7 @@ list — README maintenance becomes a single workflow step.
 | `check-paths` | Multi-line list of glob patterns (one per line) limiting which generated outputs `mode: check` compares against on-disk files. Requires `mode: check`. | — |
 | `root` | Directory the templates are confined to — see [Project root](#project-root). Needs an NRG release newer than `v1.2`. | nearest ancestor with `.git` |
 | `nrg-version` | NRG release tag (e.g. `v1.0`) or `latest`. | `latest` |
+| `nrg-sha256` | Expected sha256 of the downloaded release zip; a mismatch fails the run before the jar is executed. Use with a fixed `nrg-version`. | — |
 | `java-version` | JDK version for `actions/setup-java`. Ignored when `setup-java=false`. | `17` |
 | `java-distribution` | JDK distribution for `actions/setup-java`. | `temurin` |
 | `setup-java` | Whether the action should install Java itself. Set to `"false"` if Java is already set up earlier in the job. | `true` |
@@ -687,6 +688,18 @@ If the surrounding workflow already installs Java (for example, for a Maven buil
 #### Pinning the action version
 
 Use `@v1` for auto-updates within the v1 major (recommended), `@v1.0` to lock to a single minor, or `@<full-sha>` to pin a specific commit (most secure; required by some supply-chain policies).
+
+Pinning the action does not pin the NRG jar it downloads. For that, fix `nrg-version` to a release tag and give the expected checksum of the release zip in `nrg-sha256` — any other content then fails the run before the jar is executed:
+
+```yaml
+- uses: nanolaba/nrg-action@v1
+  with:
+    file: README.src.md
+    nrg-version: v1.2
+    nrg-sha256: e48c0ad31f3f65da2898f690739fe40ff77542d3e0530072a6221a9e0ad376bf
+```
+
+Without `nrg-sha256` the action checks the download against the `.sha256` file published with the release (releases after `v1.2`); for older releases it prints the checksum of what it downloaded so you can pin it.
 
 #### Troubleshooting
 
@@ -1584,7 +1597,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 11.11.2026 00:17:44
+Last updated: 11.11.2026 00:22:23
 ```
 
 </td></tr>
@@ -2037,7 +2050,7 @@ ${widget:endDetails}
 <details>
 <summary>Advanced</summary>
 
-inner *markdown* and 11.11.2026 00:17:44
+inner *markdown* and 11.11.2026 00:22:23
 
 </details>
 ```
@@ -2193,6 +2206,7 @@ This section summarises the main user-visible changes in each release. For full 
 - **A property comment no longer swallows the rest of its line**: `<!--@key=value-->` was removed from the output together with everything up to the *last* `-->` on the line, so in `A <!--@p=1--> text <!-- note --> tail` the words `text` and the note silently disappeared; and a line that began with a property comment was dropped entirely when a second comment followed the text — or when the text contained no ASCII letters at all, which hit every non-Latin language (`<!--@p=1--> Привет` produced nothing). Each property comment is now removed on its own, and a line is skipped only when nothing but property definitions is on it.
 - **Circular imports are reported**: a template that imports itself — directly or through other files — used to recurse until the stack overflowed; the error was logged and the run still exited with code 0, leaving a broken output file. It now fails immediately with `import: circular import: a.src.md -> b.src.md -> a.src.md`. Importing the same file twice, or a region of the importing file itself, is still fine.
 - **Hostile or accidental extremes no longer crash or stall generation**: an `if` condition nested deeper than 64 levels and a `package.json` nested deeper than 512 are reported as ordinary errors instead of ending the run with `StackOverflowError`; a very long widget parameter (hundreds of kilobytes on one line) is parsed in linear time instead of taking minutes; so is a line with thousands of unterminated `<!--@` markers.
+- **GitHub Action verifies the NRG release it downloads**: new `nrg-sha256` input pins the expected checksum of the release zip — a mismatch fails the run before the jar is executed. Without it the action checks the download against the `.sha256` file now published with each release, and for older releases prints the checksum so it can be pinned.
 
 ### 1.2
 

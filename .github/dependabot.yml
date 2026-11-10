@@ -1,0 +1,18 @@
+# Keeps the Maven dependencies and the pinned GitHub Actions current.
+# Actions are referenced by commit SHA (a tag can be moved, a SHA cannot); Dependabot
+# understands the "# vX.Y.Z" comment next to the SHA and updates both together.
+version: 2
+updates:
+  - package-ecosystem: maven
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+
+  - package-ecosystem: github-actions
+    directories:
+      - /
+      - /nrg-action
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5

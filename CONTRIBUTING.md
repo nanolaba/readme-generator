@@ -190,7 +190,7 @@ The GitHub Action downloads `readme-generator-X.Y.zip` from the `vX.Y` release, 
 .github/scripts/release-preflight.sh --build
 ```
 
-It fails unless all three POMs carry the same non-`SNAPSHOT` version, and then builds `nrg/target/readme-generator-X.Y.zip` and checks the version stamped into it — upload exactly that file to the release. The `Release guard` workflow repeats the check on every `v*` tag push (`--tag vX.Y` also requires the tag to match the POM version) and, once the release is published, verifies that the asset is downloadable.
+It fails unless all three POMs carry the same non-`SNAPSHOT` version, and then builds `nrg/target/readme-generator-X.Y.zip`, checks the version stamped into it and writes `readme-generator-X.Y.zip.sha256` next to it — upload exactly these two files to the release. The `Release guard` workflow repeats the check on every `v*` tag push (`--tag vX.Y` also requires the tag to match the POM version) and, once the release is published, verifies that both assets are downloadable and that the checksum matches the zip.
 
 ## License
 

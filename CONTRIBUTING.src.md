@@ -195,8 +195,8 @@ GitHub Action скачивает `readme-generator-X.Y.zip` из релиза `v
 .github/scripts/release-preflight.sh --build
 ```
 
-It fails unless all three POMs carry the same non-`SNAPSHOT` version, and then builds `nrg/target/readme-generator-X.Y.zip` and checks the version stamped into it — upload exactly that file to the release. The `Release guard` workflow repeats the check on every `v*` tag push (`--tag vX.Y` also requires the tag to match the POM version) and, once the release is published, verifies that the asset is downloadable.<!--en-->
-Проверка падает, если версии в трёх POM различаются или содержат `SNAPSHOT`; затем она собирает `nrg/target/readme-generator-X.Y.zip` и сверяет записанную в него версию — именно этот файл нужно загрузить в релиз. Workflow `Release guard` повторяет проверку при каждом push тега `v*` (с `--tag vX.Y` тег дополнительно должен совпадать с версией в POM), а после публикации релиза убеждается, что ассет скачивается.<!--ru-->
+It fails unless all three POMs carry the same non-`SNAPSHOT` version, and then builds `nrg/target/readme-generator-X.Y.zip`, checks the version stamped into it and writes `readme-generator-X.Y.zip.sha256` next to it — upload exactly these two files to the release. The `Release guard` workflow repeats the check on every `v*` tag push (`--tag vX.Y` also requires the tag to match the POM version) and, once the release is published, verifies that both assets are downloadable and that the checksum matches the zip.<!--en-->
+Проверка падает, если версии в трёх POM различаются или содержат `SNAPSHOT`; затем она собирает `nrg/target/readme-generator-X.Y.zip`, сверяет записанную в него версию и кладёт рядом `readme-generator-X.Y.zip.sha256` — именно эти два файла нужно загрузить в релиз. Workflow `Release guard` повторяет проверку при каждом push тега `v*` (с `--tag vX.Y` тег дополнительно должен совпадать с версией в POM), а после публикации релиза убеждается, что оба ассета скачиваются и контрольная сумма совпадает с zip.<!--ru-->
 
 ## ${en:'License', ru:'Лицензия'}
 

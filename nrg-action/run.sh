@@ -20,9 +20,19 @@ INPUT_MODE="${INPUT_MODE:-generate}"
 INPUT_CHECK_PATHS="${INPUT_CHECK_PATHS:-}"
 INPUT_ROOT="${INPUT_ROOT:-}"
 INPUT_NRG_VERSION="${INPUT_NRG_VERSION:-latest}"
+INPUT_NRG_SHA256="${INPUT_NRG_SHA256:-}"
 INPUT_LOG_LEVEL="${INPUT_LOG_LEVEL:-info}"
 
 die() { echo "::error::$*" >&2; exit 1; }
+
+# Lowercase hex sha256 of a file. sha256sum on Linux/Windows runners, shasum on macOS.
+sha256_of() {
+  if command -v sha256sum >/dev/null 2>&1; then
+    sha256sum "$1" | awk '{print $1}'
+  else
+    shasum -a 256 "$1" | awk '{print $1}'
+  fi
+}
 
 # Hash all *.md files that sit next to any *.src.md in FILES[]'s parent dirs.
 # Output: lines of "<path><TAB><md5>". Missing files are absent (treated as new).
@@ -100,6 +110,30 @@ if [[ ! -f "$NRG_HOME/nrg.jar" ]]; then
   ZIP_URL="https://github.com/nanolaba/readme-generator/releases/download/$TAG/readme-generator-$STRIPPED.zip"
   echo "Downloading $ZIP_URL"
   curl -fsSL -o "$NRG_HOME/nrg.zip" "$ZIP_URL" || die "Failed to download $ZIP_URL"
+
+  # The jar is about to be executed, so check what was downloaded before unpacking it.
+  # A hash pinned by the caller (nrg-sha256) is the strong check: it does not depend on
+  # anything stored next to the zip. Without it, the .sha256 asset published with the
+  # release (v1.3 onwards) at least catches a corrupted or swapped zip.
+  ACTUAL_SHA="$(sha256_of "$NRG_HOME/nrg.zip")"
+  if [[ -n "$INPUT_NRG_SHA256" ]]; then
+    EXPECTED_SHA="$(printf '%s' "$INPUT_NRG_SHA256" | tr 'A-F' 'a-f' | tr -d '[:space:]')"
+    if [[ "$ACTUAL_SHA" != "$EXPECTED_SHA" ]]; then
+      rm -f "$NRG_HOME/nrg.zip"
+      die "sha256 mismatch for $ZIP_URL: input nrg-sha256 is $EXPECTED_SHA, the download is $ACTUAL_SHA"
+    fi
+    echo "Verified sha256 $ACTUAL_SHA (nrg-sha256 input)"
+  elif PUBLISHED="$(curl -fsSL "$ZIP_URL.sha256" 2>/dev/null)"; then
+    EXPECTED_SHA="$(printf '%s' "$PUBLISHED" | awk 'NR==1 {print $1}' | tr 'A-F' 'a-f')"
+    if [[ "$ACTUAL_SHA" != "$EXPECTED_SHA" ]]; then
+      rm -f "$NRG_HOME/nrg.zip"
+      die "sha256 mismatch for $ZIP_URL: the release publishes $EXPECTED_SHA, the download is $ACTUAL_SHA"
+    fi
+    echo "Verified sha256 $ACTUAL_SHA (release checksum)"
+  else
+    echo "::notice::Release $TAG publishes no .sha256 asset; downloaded zip has sha256 $ACTUAL_SHA. Pin it with the nrg-sha256 input."
+  fi
+
   unzip -qo "$NRG_HOME/nrg.zip" -d "$NRG_HOME"
   rm -f "$NRG_HOME/nrg.zip"
   FOUND_JAR="$(find "$NRG_HOME" -name 'nrg.jar' -print 2>/dev/null | head -n1)"
