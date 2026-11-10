@@ -24,11 +24,15 @@ ${widget:badge(type='custom', label='Java', message='8+', color='orange', alt='B
 **NRG** is a **README generator** and **Markdown template engine** that builds **multi-language** README files from a single `.src.md` source. Open-source Java 8+, ships as a [CLI](#using-the-command-line-interface), a [Maven plugin](#use-as-maven-plugin), a [GitHub Action](#use-as-a-github-action), and a [Java library](#use-as-a-java-library).<!--en-->
 **NRG** — это **генератор README** и **шаблонизатор Markdown**, который собирает **многоязычные** README-файлы из одного `.src.md`-исходника. Open-source Java 8+, поставляется как [CLI](#запуск-из-командной-строки), [Maven-плагин](#использование-как-плагина-для-maven), [GitHub Action](#использование-в-качестве-github-action) и [Java-библиотека](#использование-в-качестве-java-библиотеки).<!--ru-->
 
+**Built for agentic development.** When a coding agent maintains your docs, NRG gives it one file to edit instead of five, facts read from `pom.xml` / `package.json` instead of recalled from memory, and `--validate` / `--check` to verify its own work. See [Using NRG with AI coding agents](#using-nrg-with-ai-coding-agents).<!--en-->
+**Для агентной разработки.** Когда документацию ведёт ИИ-агент, NRG даёт ему один файл для правки вместо пяти, факты из `pom.xml` / `package.json` вместо пересказа по памяти и команды `--validate` / `--check`, чтобы проверить собственную работу. См. раздел [«NRG и ИИ-агенты»](#nrg-и-ии-агенты).<!--ru-->
+
 ${widget:import(path='docs/Overview.src.md')}
 
 ${widget:tableOfContents(title = "${en:'Table of contents', ru:'Содержание'}", ordered = "true", numbering-style = "dotted")}
 
 ${widget:import(path='docs/QuickStart.src.md')}
+${widget:import(path='docs/Agents.src.md')}
 ${widget:import(path='docs/Launching.src.md')}
 ${widget:import(path='docs/TemplateSyntax.src.md')}
 ${widget:import(path='docs/Widgets.src.md')}

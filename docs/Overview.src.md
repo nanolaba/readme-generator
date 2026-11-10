@@ -21,6 +21,7 @@ Using ${name}, you can: <!--en-->
 
 - **Multi-language READMEs** - Support for EN/ZN/RU and any other languages<!--en-->
 - **CI drift detection** - the `--check` flag (CLI) and `mode: check` (GitHub Action) fail the build with a unified diff if generated `.md` files drift from the template — so a contributor's hand-edit can never silently land in `main`<!--en-->
+- **Agent-ready** - one source of truth for AI coding agents, with `--validate` and `--check` they can run to verify their own edits — see [Using NRG with AI coding agents](#using-nrg-with-ai-coding-agents)<!--en-->
 - **Smart Variables** - Reusable content blocks<!--en-->
 - **Prebuilt Widgets** - Table of contents, file import, TODOs, alerts, badges, and more<!--en-->
 - **LaTeX math** - Reliable formula rendering via `$…$` / `$$…$$` or an SVG fallback for places where GitHub's native MathJax breaks<!--en-->
@@ -31,6 +32,7 @@ Using ${name}, you can: <!--en-->
 
 - **README на нескольких языках** - Поддержка EN/ZN/RU и любых других языков<!--ru-->
 - **Drift-проверка в CI** - флаг `--check` (CLI) и `mode: check` (GitHub Action) валят сборку с unified diff, если сгенерированные `.md` разошлись с шаблоном — никакая ручная правка контрибьютора не залетит молча в `main`<!--ru-->
+- **Готовность к работе с агентами** - единый источник правды для ИИ-агентов и команды `--validate` / `--check`, которыми они проверяют собственные правки, — см. раздел [«NRG и ИИ-агенты»](#nrg-и-ии-агенты)<!--ru-->
 - **Переменные** - Повторно используемые блоки контента<!--ru-->
 - **Готовые виджеты** - Оглавление, импорт файлов, TODO-списки, alert-блоки, бейджи и другие<!--ru-->
 - **LaTeX-формулы** - Надёжный рендеринг через `$…$` / `$$…$$` или SVG-фолбэк для случаев, где встроенный GitHub MathJax не справляется<!--ru-->

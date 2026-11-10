@@ -18,6 +18,8 @@
 
 **NRG** is a **README generator** and **Markdown template engine** that builds **multi-language** README files from a single `.src.md` source. Open-source Java 8+, ships as a [CLI](#using-the-command-line-interface), a [Maven plugin](#use-as-maven-plugin), a [GitHub Action](#use-as-a-github-action), and a [Java library](#use-as-a-java-library).
 
+**Built for agentic development.** When a coding agent maintains your docs, NRG gives it one file to edit instead of five, facts read from `pom.xml` / `package.json` instead of recalled from memory, and `--validate` / `--check` to verify its own work. See [Using NRG with AI coding agents](#using-nrg-with-ai-coding-agents).
+
 ## Overview
 
 Using **Nanolaba Readme Generator (NRG)**, you can: 
@@ -34,6 +36,7 @@ Using **Nanolaba Readme Generator (NRG)**, you can:
 
 - **Multi-language READMEs** - Support for EN/ZN/RU and any other languages
 - **CI drift detection** - the `--check` flag (CLI) and `mode: check` (GitHub Action) fail the build with a unified diff if generated `.md` files drift from the template — so a contributor's hand-edit can never silently land in `main`
+- **Agent-ready** - one source of truth for AI coding agents, with `--validate` and `--check` they can run to verify their own edits — see [Using NRG with AI coding agents](#using-nrg-with-ai-coding-agents)
 - **Smart Variables** - Reusable content blocks
 - **Prebuilt Widgets** - Table of contents, file import, TODOs, alerts, badges, and more
 - **LaTeX math** - Reliable formula rendering via `$…$` / `$$…$$` or an SVG fallback for places where GitHub's native MathJax breaks
@@ -54,64 +57,69 @@ This very README is generated with NRG — see [`README.src.md`](README.src.md).
 
 ## Table of contents
 - 1 [Quick start](#quick-start)
-- 2 [Usage](#usage)
-	- 2.1 [Using the Command Line Interface](#using-the-command-line-interface)
-		- 2.1.1 [Verifying generated files (CI mode)](#verifying-generated-files-ci-mode)
-		- 2.1.2 [Validating source templates](#validating-source-templates)
-		- 2.1.3 [Print to stdout](#print-to-stdout)
-		- 2.1.4 [Logging verbosity](#logging-verbosity)
-		- 2.1.5 [Customising output filenames](#customising-output-filenames)
-		- 2.1.6 [Project root](#project-root)
-		- 2.1.7 [Line endings](#line-endings)
-		- 2.1.8 [Header customisation](#header-customisation)
-		- 2.1.9 [Multiple files and glob patterns](#multiple-files-and-glob-patterns)
-	- 2.2 [Use as maven plugin](#use-as-maven-plugin)
-	- 2.3 [Use as a GitHub Action](#use-as-a-github-action)
-		- 2.3.1 [Quickstart](#quickstart)
-		- 2.3.2 [Inputs](#inputs)
-		- 2.3.3 [Outputs](#outputs)
-		- 2.3.4 [Examples](#examples)
-			- 2.3.4.1 [Basic generate](#basic-generate)
-			- 2.3.4.2 [Drift check on PR](#drift-check-on-pr)
-			- 2.3.4.3 [Drift check on a subset of outputs](#drift-check-on-a-subset-of-outputs)
-		- 2.3.5 [Multi-file projects](#multi-file-projects)
-		- 2.3.6 [Skipping the built-in setup-java](#skipping-the-built-in-setup-java)
-		- 2.3.7 [Pinning the action version](#pinning-the-action-version)
-		- 2.3.8 [Troubleshooting](#troubleshooting)
-	- 2.4 [Use as a java-library](#use-as-a-java-library)
-- 3 [Template syntax](#template-syntax)
-	- 3.1 [Variables](#variables)
-	- 3.2 [Backslash escapes](#backslash-escapes)
-	- 3.3 [Properties](#properties)
-	- 3.4 [Per-language overrides](#per-language-overrides)
-	- 3.5 [Environment variables](#environment-variables)
-	- 3.6 [Maven POM values](#maven-pom-values)
-	- 3.7 [npm package values](#npm-package-values)
-	- 3.8 [Gradle values](#gradle-values)
-	- 3.9 [Multilanguage support](#multilanguage-support)
-	- 3.10 [Ignoring content](#ignoring-content)
-	- 3.11 [Frozen regions](#frozen-regions)
-	- 3.12 [Widgets](#widgets)
-		- 3.12.1 [Widget 'languages'](#widget-languages)
-		- 3.12.2 [Widget 'import'](#widget-import)
-		- 3.12.3 [Widget 'tableOfContents'](#widget-tableofcontents)
-		- 3.12.4 [Widget 'date'](#widget-date)
-		- 3.12.5 [Widget 'todo'](#widget-todo)
-		- 3.12.6 [Widget 'alert'](#widget-alert)
-		- 3.12.7 [Widget 'badge'](#widget-badge)
-		- 3.12.8 [Widget 'math'](#widget-math)
-		- 3.12.9 [Widget 'exec'](#widget-exec)
-		- 3.12.10 [Widget 'if'](#widget-if)
-		- 3.12.11 [Widget 'fileTree'](#widget-filetree)
-		- 3.12.12 [Widget 'details'](#widget-details)
-- 4 [Advanced features](#advanced-features)
-	- 4.1 [Creating a widget](#creating-a-widget)
-- 5 [Related projects](#related-projects)
-- 6 [Changelog](#changelog)
-- 7 [Feedback & Support](#feedback-support)
-	- 7.1 [Community Support](#community-support)
-	- 7.2 [Direct Communication](#direct-communication)
-	- 7.3 [Contribution Guide](#contribution-guide)
+- 2 [Using NRG with AI coding agents](#using-nrg-with-ai-coding-agents)
+	- 2.1 [The agent loop](#the-agent-loop)
+	- 2.2 [Instructions for the agent](#instructions-for-the-agent)
+	- 2.3 [One template for every agent](#one-template-for-every-agent)
+	- 2.4 [Running unattended](#running-unattended)
+- 3 [Usage](#usage)
+	- 3.1 [Using the Command Line Interface](#using-the-command-line-interface)
+		- 3.1.1 [Verifying generated files (CI mode)](#verifying-generated-files-ci-mode)
+		- 3.1.2 [Validating source templates](#validating-source-templates)
+		- 3.1.3 [Print to stdout](#print-to-stdout)
+		- 3.1.4 [Logging verbosity](#logging-verbosity)
+		- 3.1.5 [Customising output filenames](#customising-output-filenames)
+		- 3.1.6 [Project root](#project-root)
+		- 3.1.7 [Line endings](#line-endings)
+		- 3.1.8 [Header customisation](#header-customisation)
+		- 3.1.9 [Multiple files and glob patterns](#multiple-files-and-glob-patterns)
+	- 3.2 [Use as maven plugin](#use-as-maven-plugin)
+	- 3.3 [Use as a GitHub Action](#use-as-a-github-action)
+		- 3.3.1 [Quickstart](#quickstart)
+		- 3.3.2 [Inputs](#inputs)
+		- 3.3.3 [Outputs](#outputs)
+		- 3.3.4 [Examples](#examples)
+			- 3.3.4.1 [Basic generate](#basic-generate)
+			- 3.3.4.2 [Drift check on PR](#drift-check-on-pr)
+			- 3.3.4.3 [Drift check on a subset of outputs](#drift-check-on-a-subset-of-outputs)
+		- 3.3.5 [Multi-file projects](#multi-file-projects)
+		- 3.3.6 [Skipping the built-in setup-java](#skipping-the-built-in-setup-java)
+		- 3.3.7 [Pinning the action version](#pinning-the-action-version)
+		- 3.3.8 [Troubleshooting](#troubleshooting)
+	- 3.4 [Use as a java-library](#use-as-a-java-library)
+- 4 [Template syntax](#template-syntax)
+	- 4.1 [Variables](#variables)
+	- 4.2 [Backslash escapes](#backslash-escapes)
+	- 4.3 [Properties](#properties)
+	- 4.4 [Per-language overrides](#per-language-overrides)
+	- 4.5 [Environment variables](#environment-variables)
+	- 4.6 [Maven POM values](#maven-pom-values)
+	- 4.7 [npm package values](#npm-package-values)
+	- 4.8 [Gradle values](#gradle-values)
+	- 4.9 [Multilanguage support](#multilanguage-support)
+	- 4.10 [Ignoring content](#ignoring-content)
+	- 4.11 [Frozen regions](#frozen-regions)
+	- 4.12 [Widgets](#widgets)
+		- 4.12.1 [Widget 'languages'](#widget-languages)
+		- 4.12.2 [Widget 'import'](#widget-import)
+		- 4.12.3 [Widget 'tableOfContents'](#widget-tableofcontents)
+		- 4.12.4 [Widget 'date'](#widget-date)
+		- 4.12.5 [Widget 'todo'](#widget-todo)
+		- 4.12.6 [Widget 'alert'](#widget-alert)
+		- 4.12.7 [Widget 'badge'](#widget-badge)
+		- 4.12.8 [Widget 'math'](#widget-math)
+		- 4.12.9 [Widget 'exec'](#widget-exec)
+		- 4.12.10 [Widget 'if'](#widget-if)
+		- 4.12.11 [Widget 'fileTree'](#widget-filetree)
+		- 4.12.12 [Widget 'details'](#widget-details)
+- 5 [Advanced features](#advanced-features)
+	- 5.1 [Creating a widget](#creating-a-widget)
+- 6 [Related projects](#related-projects)
+- 7 [Changelog](#changelog)
+- 8 [Feedback & Support](#feedback-support)
+	- 8.1 [Community Support](#community-support)
+	- 8.2 [Direct Communication](#direct-communication)
+	- 8.3 [Contribution Guide](#contribution-guide)
 
 
 ## Quick start
@@ -239,6 +247,79 @@ ${widget:details(summary='Click', content='Short hidden text', open='true')}
 ```
 
 </details>
+
+## Using NRG with AI coding agents
+
+More and more documentation is written by coding agents — Claude Code, Codex, Cursor, Copilot. They are quick at it, and they keep making the same few mistakes: they update `README.md` and leave `README.ru.md` as it was, quote a version number from memory, paste a code sample that stops compiling a week later, or "fix" a generated file directly. **Nanolaba Readme Generator (NRG)** makes the README a build artifact, so each of these mistakes either cannot happen or is caught by a command the agent runs itself.
+
+| What goes wrong | What NRG does about it |
+|---|---|
+| One language is updated, the others are forgotten | All languages live in one `.src.md` with translations on adjacent lines: the agent reads and edits them together, and a single diff shows both |
+| Versions and coordinates quoted from memory | `${pom.version}`, `${npm.version}`, `${gradle.version}` are read from the build descriptor on every generation |
+| Code samples that no longer match the code | `${widget:import(path='…', region='…')}` embeds a region of a real source file — one that is compiled and tested |
+| A generated file is edited by hand | `--check` exits with `1` and prints a unified diff, so CI fails on the edit |
+| A mistake in template syntax | `--validate` reports `ERROR: file.src.md:LINE: message` without generating anything |
+| The whole README is loaded to change one section | The template is split into small fragments joined by `import`; the agent opens only the fragment it needs |
+
+### The agent loop
+
+Three commands let an agent check its own work — each ends with an exit code and a message that says where to look:
+
+```bash
+nrg --validate -f README.src.md   # template mistakes: ERROR: README.src.md:42: unknown widget 'tocc'
+nrg -f README.src.md              # regenerate every language
+nrg --check -f README.src.md      # exit 1 and a unified diff when files on disk are stale
+```
+
+`--validate`, `--check` and `--stdout` never write files. Add `--log-level warn` to keep the output — and the agent's context — short. Details: [Validating source templates](#validating-source-templates), [Verifying generated files](#verifying-generated-files-ci-mode).
+
+### Instructions for the agent
+
+An agent does not know that `README.md` is generated until something tells it. Put this into `AGENTS.md`, `CLAUDE.md`, or whichever instruction file your agent reads:
+
+```markdown
+## Documentation
+
+- `README.md` and `README.*.md` are generated by NRG from `README.src.md`. Never edit them by hand.
+- Change the `.src.md` template. A line tagged `<!--en-->` has a counterpart for every other
+  language right next to it — update all of them.
+- After a change run `nrg --validate -f README.src.md && nrg -f README.src.md`.
+- Commit the template together with the regenerated files.
+```
+
+This repository is developed the same way — see its [AGENTS.md](AGENTS.md).
+
+The default header of a generated file says that it was generated, but not from what. `--header-text` can name the template, so that an agent which opens `README.md` first is sent to the right file:
+
+```bash
+nrg --header-text '<!-- Generated from README.src.md by NRG. Do not edit: change the template and run `nrg -f README.src.md` -->' -f README.src.md
+```
+
+Pass the same text to `--check`, otherwise the header itself is reported as drift; in the Maven plugin `<headerText>` covers both modes. See [Header customisation](#header-customisation).
+
+### One template for every agent
+
+Agents read different files — `AGENTS.md`, `CLAUDE.md`, `GEMINI.md` — whose content is mostly the same. The "languages" of a template do not have to be human languages:
+
+```markdown
+<!--@nrg.languages=agents,claude,gemini-->
+<!--@nrg.fileNamePattern=<LANG>.md-->
+
+# Project rules
+
+${widget:import(path='docs/build.md')}
+
+A note for Claude Code only.<!--claude-->
+A note for Gemini CLI only.<!--gemini-->
+```
+
+`nrg -f AGENTS.src.md` writes `AGENTS.md`, `CLAUDE.md` and `GEMINI.md`: untagged lines go to all three, tagged lines to one. With `import`, the instruction files and the README can share a fragment — the build commands, for instance — and can no longer contradict each other.
+
+### Running unattended
+
+An agent runs commands on templates it did not write — a pull request, a freshly cloned repository. **Nanolaba Readme Generator (NRG)** treats a template as untrusted data: every path it names must stay inside the [project root](#project-root), and no command is executed unless `--allow-exec` is given on the command line.
+
+Two things remain yours to control: `${env.NAME}` reads any environment variable of the process, and a template can switch remote imports on for itself (`nrg.allowRemoteImports`). For a template you do not trust, keep secrets out of the environment and run without network access.
 
 ## Usage
 
@@ -1599,7 +1680,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 11.11.2026 01:11:46
+Last updated: 11.11.2026 02:27:52
 ```
 
 </td></tr>
@@ -2055,7 +2136,7 @@ ${widget:endDetails}
 <details>
 <summary>Advanced</summary>
 
-inner *markdown* and 11.11.2026 01:11:46
+inner *markdown* and 11.11.2026 02:27:52
 
 </details>
 ```
