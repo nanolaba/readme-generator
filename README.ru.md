@@ -1608,7 +1608,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 11.11.2026 01:05:48
+Last updated: 11.11.2026 01:11:47
 ```
 
 </td></tr>
@@ -2065,7 +2065,7 @@ ${widget:endDetails}
 <details>
 <summary>Advanced</summary>
 
-inner *markdown* and 11.11.2026 01:05:48
+inner *markdown* and 11.11.2026 01:11:47
 
 </details>
 ```
@@ -2205,6 +2205,7 @@ nrg --classpath my-widgets.jar --widgets com.acme.widgets.Tag,com.acme.widgets.B
 ### В разработке (1.4-SNAPSHOT)
 
 - **Обновлены runtime-зависимости**: `commons-cli` 1.9.0 → 1.11.0, `commons-lang3` 3.18.0 → 3.21.0, `commons-text` 1.12.0 → 1.15.0, `commons-io` 2.17.0 → 2.22.0, `nanolog` 1.0 → 1.1. Минимальной версией Java остаётся 8, а `nrg-maven-plugin` по-прежнему работает на Maven 3.9.9 и новее.
+- **GitHub Action устанавливает Java через `actions/setup-java` 6.2.0** (было 4.9.1): в запусках больше нет предупреждений `Node.js 20 is deprecated` и `setup-java v4 is deprecated`. До пользователей дойдёт с выпуском action, сопровождающим NRG 1.4.
 
 ### 1.3
 

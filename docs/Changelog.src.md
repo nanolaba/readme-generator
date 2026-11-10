@@ -7,6 +7,8 @@ This section summarises the main user-visible changes in each release. For full 
 
 - **Updated runtime dependencies**: `commons-cli` 1.9.0 → 1.11.0, `commons-lang3` 3.18.0 → 3.21.0, `commons-text` 1.12.0 → 1.15.0, `commons-io` 2.17.0 → 2.22.0, `nanolog` 1.0 → 1.1. Java 8 remains the minimum, and `nrg-maven-plugin` still runs on Maven 3.9.9 and newer.<!--en-->
 - **Обновлены runtime-зависимости**: `commons-cli` 1.9.0 → 1.11.0, `commons-lang3` 3.18.0 → 3.21.0, `commons-text` 1.12.0 → 1.15.0, `commons-io` 2.17.0 → 2.22.0, `nanolog` 1.0 → 1.1. Минимальной версией Java остаётся 8, а `nrg-maven-plugin` по-прежнему работает на Maven 3.9.9 и новее.<!--ru-->
+- **GitHub Action sets up Java with `actions/setup-java` 6.2.0** (was 4.9.1): runs no longer carry the `Node.js 20 is deprecated` and `setup-java v4 is deprecated` warnings. Reaches users with the action release that accompanies NRG 1.4.<!--en-->
+- **GitHub Action устанавливает Java через `actions/setup-java` 6.2.0** (было 4.9.1): в запусках больше нет предупреждений `Node.js 20 is deprecated` и `setup-java v4 is deprecated`. До пользователей дойдёт с выпуском action, сопровождающим NRG 1.4.<!--ru-->
 
 ### 1.3<!--toc.ignore-->
 

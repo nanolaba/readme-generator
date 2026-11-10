@@ -1599,7 +1599,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 11.11.2026 01:05:48
+Last updated: 11.11.2026 01:11:46
 ```
 
 </td></tr>
@@ -2055,7 +2055,7 @@ ${widget:endDetails}
 <details>
 <summary>Advanced</summary>
 
-inner *markdown* and 11.11.2026 01:05:48
+inner *markdown* and 11.11.2026 01:11:46
 
 </details>
 ```
@@ -2196,6 +2196,7 @@ This section summarises the main user-visible changes in each release. For full 
 ### Unreleased (1.4-SNAPSHOT)
 
 - **Updated runtime dependencies**: `commons-cli` 1.9.0 → 1.11.0, `commons-lang3` 3.18.0 → 3.21.0, `commons-text` 1.12.0 → 1.15.0, `commons-io` 2.17.0 → 2.22.0, `nanolog` 1.0 → 1.1. Java 8 remains the minimum, and `nrg-maven-plugin` still runs on Maven 3.9.9 and newer.
+- **GitHub Action sets up Java with `actions/setup-java` 6.2.0** (was 4.9.1): runs no longer carry the `Node.js 20 is deprecated` and `setup-java v4 is deprecated` warnings. Reaches users with the action release that accompanies NRG 1.4.
 
 ### 1.3
 
