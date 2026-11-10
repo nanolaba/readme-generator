@@ -1,0 +1,70 @@
+name: Release guard
+
+# Fails loudly when a release tag points at a commit that cannot produce a proper release
+# asset — see .github/scripts/release-preflight.sh for the rules and the v1.2 incident (#54).
+on:
+  push:
+    tags: [ 'v*' ]
+  release:
+    types: [ published ]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release tag to verify (e.g. v1.3)'
+        required: true
+
+permissions:
+  contents: read
+
+env:
+  TAG: ${{ github.event.release.tag_name || inputs.tag || github.ref_name }}
+
+jobs:
+  preflight:
+    name: Tag matches a non-SNAPSHOT version
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout the tag
+        uses: actions/checkout@v4
+        with:
+          ref: refs/tags/${{ env.TAG }}
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: maven
+
+      - name: Verify version and build the release asset
+        run: bash .github/scripts/release-preflight.sh --tag "$TAG" --build
+
+      # The zip built here is the one that belongs on the GitHub release page.
+      - name: Upload the release asset
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-asset
+          path: nrg/target/readme-generator-*.zip
+          if-no-files-found: error
+
+  published-asset:
+    name: Published asset is downloadable
+    # A bare tag push has no release yet; the asset can only be checked once one is published.
+    if: github.event_name != 'push'
+    needs: preflight
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout the tag
+        uses: actions/checkout@v4
+        with:
+          ref: refs/tags/${{ env.TAG }}
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: maven
+
+      - name: Smoke-test the asset URL
+        run: bash .github/scripts/release-preflight.sh --tag "$TAG" --published

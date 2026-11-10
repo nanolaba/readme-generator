@@ -188,6 +188,16 @@ We aim to give first feedback within a few days. If you don't hear back in a wee
 Releases are cut from `main` by maintainers. Versioning follows [Semantic Versioning](https://semver.org/). Contributors don't need to touch `pom.xml` versions in feature PRs — that happens at release time.<!--en-->
 Релизы режутся с `main` мейнтейнерами. Версионирование — [Semantic Versioning](https://semver.org/). В фича-PR не нужно править версии в `pom.xml` — это делается на релизе.<!--ru-->
 
+The GitHub Action downloads `readme-generator-X.Y.zip` from the `vX.Y` release, so a tag cut from a commit that still says `X.Y-SNAPSHOT` breaks every consumer. Before tagging, run the pre-flight guard from the repository root:<!--en-->
+GitHub Action скачивает `readme-generator-X.Y.zip` из релиза `vX.Y`, поэтому тег, поставленный на коммит с версией `X.Y-SNAPSHOT`, ломает всех потребителей. Перед тем как ставить тег, запустите из корня репозитория предрелизную проверку:<!--ru-->
+
+```bash
+.github/scripts/release-preflight.sh --build
+```
+
+It fails unless all three POMs carry the same non-`SNAPSHOT` version, and then builds `nrg/target/readme-generator-X.Y.zip` and checks the version stamped into it — upload exactly that file to the release. The `Release guard` workflow repeats the check on every `v*` tag push (`--tag vX.Y` also requires the tag to match the POM version) and, once the release is published, verifies that the asset is downloadable.<!--en-->
+Проверка падает, если версии в трёх POM различаются или содержат `SNAPSHOT`; затем она собирает `nrg/target/readme-generator-X.Y.zip` и сверяет записанную в него версию — именно этот файл нужно загрузить в релиз. Workflow `Release guard` повторяет проверку при каждом push тега `v*` (с `--tag vX.Y` тег дополнительно должен совпадать с версией в POM), а после публикации релиза убеждается, что ассет скачивается.<!--ru-->
+
 ## ${en:'License', ru:'Лицензия'}
 
 By contributing, you agree that your contributions will be licensed under the project's [Apache License 2.0](LICENSE).<!--en-->
