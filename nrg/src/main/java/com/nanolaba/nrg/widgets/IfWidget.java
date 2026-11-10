@@ -8,6 +8,7 @@ import com.nanolaba.nrg.core.NRGUtil;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * {@code ${widget:if(...)}} — conditional rendering. Two forms:
@@ -29,6 +30,13 @@ import java.util.Map;
  * is documented under {@link IfCondition}.
  */
 public class IfWidget extends BlockWidget {
+
+    private static final Set<String> PARAMETERS = NRGWidget.parameterNames("cond", "text");
+
+    @Override
+    public Set<String> getParameterNames() {
+        return PARAMETERS;
+    }
 
     @Override
     public String getName() {

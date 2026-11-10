@@ -3,7 +3,9 @@ package com.nanolaba.nrg.widgets;
 import com.nanolaba.nrg.core.GeneratorConfig;
 import org.apache.commons.text.TextStringBuilder;
 
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 /**
@@ -40,6 +42,24 @@ public interface NRGWidget {
      */
     default Set<String> getAliases() {
         return Collections.emptySet();
+    }
+
+    /**
+     * Names of the parameters this widget understands, used by {@code --validate} to report a
+     * misspelt or invented parameter ({@code ${widget:toc(maxDepth='2')}}) that the widget
+     * would otherwise ignore silently.
+     *
+     * <p>{@code null} (the default) means "not declared": the validator then skips the check
+     * for this widget, which keeps custom widgets written before this method existed valid.
+     * Return an empty set for a widget that takes no parameters at all.
+     */
+    default Set<String> getParameterNames() {
+        return null;
+    }
+
+    /** Builds the unmodifiable, insertion-ordered set a widget returns from {@link #getParameterNames()}. */
+    static Set<String> parameterNames(String... names) {
+        return Collections.unmodifiableSet(new LinkedHashSet<>(Arrays.asList(names)));
     }
 
     String getBody(WidgetTag widgetTag, GeneratorConfig config, String language);

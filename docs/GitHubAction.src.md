@@ -42,7 +42,7 @@ ${en:'`mode` semantics:', ru:'Семантика режима (`mode`):'}
 
 - ${en:'`generate` writes `README.md`, `README.ru.md`, … to disk (default).', ru:'`generate` записывает `README.md`, `README.ru.md`, … на диск (по умолчанию).'}
 - ${en:'`check` is a read-only verification: if files on disk differ from what NRG would generate, it exits with a non-zero status and prints a unified diff. Use this on pull requests.', ru:'`check` — проверка без записи: если файлы на диске расходятся с тем, что сгенерировал бы NRG, action завершается с ненулевым кодом и печатает unified diff. Удобен для pull request-ов.'}
-- ${en:'`validate` scans the template for authoring mistakes (unknown widgets, undeclared language markers, missing imports, unbalanced ignore-blocks). No files are written.', ru:'`validate` проверяет шаблон на авторские ошибки (неизвестные виджеты, необъявленные языковые маркеры, отсутствующие импорты, несбалансированные ignore-блоки). Файлы не записываются.'}
+- ${en:'`validate` scans the template for authoring mistakes (unknown widgets and widget parameters, undeclared language markers, missing imports, unbalanced ignore-blocks and block widgets, misspelt variables — see [Validating source templates](#validating-source-templates)). Fails on errors, not on warnings. No files are written.', ru:'`validate` проверяет шаблон на авторские ошибки (неизвестные виджеты и их параметры, необъявленные языковые маркеры, отсутствующие импорты, несбалансированные ignore-блоки и блочные виджеты, опечатки в переменных — см. [«Валидация исходных шаблонов»](#валидация-исходных-шаблонов)). Падает на ошибках, но не на предупреждениях. Файлы не записываются.'}
 
 #### ${en:'Outputs', ru:'Выходные значения'}
 

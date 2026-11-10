@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -372,6 +373,30 @@ public class TemplateLine {
         }
         result.append(line, last, line.length());
         return result.toString();
+    }
+
+    /**
+     * The {@code pom.x} / {@code npm.x} / {@code gradle.x} references on this line that would
+     * render empty: no {@code :fallback}, and the descriptor of {@link #config} does not define
+     * the path. Resolution is the one rendering uses, so {@code --validate} reports exactly the
+     * references generation would warn about. Escaped references are skipped.
+     */
+    List<String> findUnresolvedDescriptorReferences() {
+        List<String> unresolved = new ArrayList<>();
+        collectUnresolved(POM_TAG_PATTERN, "pom.", this::resolvePomPath, unresolved);
+        collectUnresolved(NPM_TAG_PATTERN, "npm.", this::resolveNpmPath, unresolved);
+        collectUnresolved(GRADLE_TAG_PATTERN, "gradle.", this::resolveGradlePath, unresolved);
+        return unresolved;
+    }
+
+    private void collectUnresolved(Pattern pattern, String prefix,
+                                   Function<String, String> resolver, List<String> sink) {
+        Matcher m = pattern.matcher(line);
+        while (m.find()) {
+            if (isNotEscaped(line, m.start()) && m.group(2) == null && resolver.apply(m.group(1)) == null) {
+                sink.add(prefix + m.group(1));
+            }
+        }
     }
 
     private String resolveGradlePath(String path) {

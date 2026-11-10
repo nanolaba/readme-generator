@@ -5,6 +5,7 @@ import com.nanolaba.nrg.core.GeneratorConfig;
 import com.nanolaba.nrg.core.NRGUtil;
 
 import java.util.Map;
+import java.util.Set;
 
 /**
  * {@code ${widget:badge(type='...', ...)}} — renders shields.io-backed status badges as
@@ -21,6 +22,13 @@ import java.util.Map;
  * the visible badge label rendered by shields.io.
  */
 public class BadgeWidget extends DefaultWidget {
+
+    private static final Set<String> PARAMETERS = NRGWidget.parameterNames("type", "alt", "url", "coordinates", "value", "repo", "workflow", "name", "branch", "label", "message", "color");
+
+    @Override
+    public Set<String> getParameterNames() {
+        return PARAMETERS;
+    }
 
     @Override
     public String getName() {

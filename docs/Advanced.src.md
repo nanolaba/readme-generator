@@ -64,3 +64,12 @@ during instantiation.<!--en-->
 Каждый класс-виджет должен быть публичным и иметь публичный конструктор<!--ru-->
 без аргументов. Если класс не найден, не реализует `NRGWidget` или выбрасывает<!--ru-->
 исключение при создании, NRG выводит понятное сообщение в консоль.<!--ru-->
+
+To let `--validate` catch a misspelt parameter of your widget, override<!--en-->
+`getParameterNames()` and return the names it understands<!--en-->
+(`NRGWidget.parameterNames("name", "greeting")`; an empty set for a widget<!--en-->
+without parameters). The default `null` turns the check off for that widget.<!--en-->
+Чтобы `--validate` находил опечатки в параметрах вашего виджета, переопределите<!--ru-->
+`getParameterNames()` и верните имена, которые он понимает<!--ru-->
+(`NRGWidget.parameterNames("name", "greeting")`; пустое множество — для виджета<!--ru-->
+без параметров). Значение по умолчанию `null` отключает проверку для этого виджета.<!--ru-->

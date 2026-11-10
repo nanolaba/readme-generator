@@ -14,6 +14,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Renders a {@code tree -L}-style directory listing with Unicode box-drawing characters.
@@ -38,6 +39,13 @@ public class FileTreeWidget extends DefaultWidget {
     private static final String CONNECTOR_LAST = "└── ";
     private static final String INDENT_VERT = "│   ";
     private static final String INDENT_BLANK = "    ";
+
+    private static final Set<String> PARAMETERS = NRGWidget.parameterNames("path", "depth", "dirsOnly", "codeblock", "exclude");
+
+    @Override
+    public Set<String> getParameterNames() {
+        return PARAMETERS;
+    }
 
     @Override
     public String getName() {

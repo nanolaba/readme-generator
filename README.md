@@ -383,22 +383,35 @@ nrg --check --check-paths README.md -f README.src.md
 #### Validating source templates
 
 Use `--validate` to scan the template (and every reachable
-`${widget:import}`-imported file) for authoring mistakes without
-generating any output. v1 covers four classes of error:
+`${widget:import}`-imported template) for authoring mistakes without
+generating any output. Errors:
 
 - unregistered widget names (`${widget:doesNotExist}`),
+- parameters a built-in widget does not have (`${widget:toc(maxDepth='2')}` — the parameter is `max-depth`),
 - language markers `<!--xx-->` whose code is not in `nrg.languages`,
-- `${widget:import(path='...')}` paths that do not exist on disk,
-- unbalanced `<!--nrg.ignore.begin-->` / `<!--nrg.ignore.end-->` pairs.
+- `${widget:import(path='...')}` paths that do not exist on disk or leave the project root,
+- unbalanced `<!--nrg.ignore.begin-->` / `<!--nrg.ignore.end-->` pairs,
+- unclosed or stray block widgets (`${widget:if(...)}` without `${widget:endIf}`, a lone `${widget:endDetails}`),
+- a `${name}` reference that is not declared but is one or two edits away from a property that is (`${stableVerison}`).
+
+Warnings (reported, but the exit status stays `0`):
+
+- any other undefined `${name}` — it stays in the output as written, which is right for a shell example like `${HOME}` and wrong for a forgotten property,
+- `${pom.…}` / `${npm.…}` / `${gradle.…}` without a `:fallback` that the descriptor does not define, so it renders empty,
+- <code>&lt;!--&#92;@nrg.languages=...--&gt;</code> and other `nrg.*` keys written with the cosmetic `\@` escape — such a line still declares the property (see [Backslash escapes](#backslash-escapes)); write <code>&lt;&#92;!--@...--&gt;</code> to show it in an example.
 
 ```bash
 nrg --validate -f README.src.md && echo "Template is clean"
 ```
 
-Each diagnostic is printed as `ERROR: file.src.md:LINE: message`. With
-no errors, NRG exits silently with status `0`. With at least one error,
-all diagnostics are printed to stderr and the process exits with status
-`1`. `--validate` is mutually exclusive with `--check` and `--stdout`.
+Each diagnostic is printed as `ERROR: file.src.md:LINE: message` or
+`WARNING: file.src.md:LINE: message`; where there is an obvious fix, the
+message ends with it (`unknown widget 'tocc'; did you mean 'toc'?`).
+With no diagnostics, NRG exits silently with status `0`. All diagnostics
+go to stderr; the process exits with status `1` when at least one of them
+is an error. An import with `run-generator='false'` is only checked for
+existence — its content is not a template. `--validate` is mutually
+exclusive with `--check` and `--stdout`.
 
 #### Print to stdout
 
@@ -621,10 +634,10 @@ the generated output diverges from the committed files. Handy for a
 `mvn verify` step in CI to guard against stale READMEs.
 
 Set `<validate>true</validate>` (or pass `-Dvalidate=true`) to scan
-the templates for authoring mistakes (unknown widgets, missing imports,
-undeclared language markers, unbalanced ignore-blocks) without
+the templates for authoring mistakes (the checks listed in
+[Validating source templates](#validating-source-templates)) without
 generating any output. The build fails with a `MojoExecutionException`
-when diagnostics are reported. Mutually exclusive with `<check>`.
+when an error is reported; warnings are only logged. Mutually exclusive with `<check>`.
 
 `<fileNamePattern>` and `<defaultLanguageFileNamePattern>` (or
 `-DfileNamePattern=...` / `-DdefaultLanguageFileNamePattern=...`) mirror
@@ -690,7 +703,7 @@ list — README maintenance becomes a single workflow step.
 
 - `generate` writes `README.md`, `README.ru.md`, … to disk (default).
 - `check` is a read-only verification: if files on disk differ from what NRG would generate, it exits with a non-zero status and prints a unified diff. Use this on pull requests.
-- `validate` scans the template for authoring mistakes (unknown widgets, undeclared language markers, missing imports, unbalanced ignore-blocks). No files are written.
+- `validate` scans the template for authoring mistakes (unknown widgets and widget parameters, undeclared language markers, missing imports, unbalanced ignore-blocks and block widgets, misspelt variables — see [Validating source templates](#validating-source-templates)). Fails on errors, not on warnings. No files are written.
 
 #### Outputs
 
@@ -1699,7 +1712,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 11.11.2026 02:44:45
+Last updated: 11.11.2026 02:55:05
 ```
 
 </td></tr>
@@ -2155,7 +2168,7 @@ ${widget:endDetails}
 <details>
 <summary>Advanced</summary>
 
-inner *markdown* and 11.11.2026 02:44:45
+inner *markdown* and 11.11.2026 02:55:05
 
 </details>
 ```
@@ -2261,6 +2274,11 @@ constructor. NRG falls back to a helpful error message on the console
 if the class cannot be found, doesn't implement `NRGWidget`, or throws
 during instantiation.
 
+To let `--validate` catch a misspelt parameter of your widget, override
+`getParameterNames()` and return the names it understands
+(`NRGWidget.parameterNames("name", "greeting")`; an empty set for a widget
+without parameters). The default `null` turns the check off for that widget.
+
 ## Related projects
 
 Other tools in the same space — useful if **Nanolaba Readme Generator (NRG)** does not fit your stack or workflow. ✅ = supported, ➖ = partial, ❌ = not supported.
@@ -2296,6 +2314,7 @@ This section summarises the main user-visible changes in each release. For full 
 ### Unreleased (1.4-SNAPSHOT)
 
 - **The header of a generated file names its template**: the default comment at the top of every output now reads `This file was automatically generated by Nanolaba Readme Generator (NRG) from README.src.md` and `Do not edit it by hand: change README.src.md and regenerate`, with the template path relative to the output file. Whoever opens the generated file first — a contributor or a coding agent — learns which file to edit. The NRG version is no longer part of the default header, so upgrading NRG no longer changes every generated file and no longer fails `--check`. `--header-text` / `nrg.headerText` / `<headerText>` accept the placeholders `<source>`, `<lang>` and `<version>`, and `--\>` in the header text produces `-->`, so a template can set a header that is itself an HTML comment. **Behaviour change:** the first two lines of every generated file change once — regenerate after upgrading. Closes [#68](https://github.com/nanolaba/readme-generator/issues/68).
+- **`--validate` catches near-miss syntax**: new errors for a parameter a built-in widget does not have (`${widget:toc(maxDepth='2')}`), for an unclosed `${widget:if(...)}` / `${widget:details(...)}` block or a stray closer, and for an undefined `${name}` that is one or two edits away from a declared property (`${stableVerison}`). New warnings — reported without failing the run — for other undefined `${name}` references (they stay in the output as written), for `${pom.…}` / `${npm.…}` / `${gradle.…}` references that render empty, and for <code>&lt;!--&#92;@nrg.languages=…--&gt;</code>-style examples, which declare the property for real. Unknown widget names, widget parameters and language markers get a "did you mean …?" hint. Widgets passed with `--widgets` are now known to `--validate`, and an import with `run-generator='false'` is no longer scanned as a template. Custom widgets opt into the parameter check by overriding the new `NRGWidget.getParameterNames()`. Closes [#69](https://github.com/nanolaba/readme-generator/issues/69).
 
 - **Updated runtime dependencies**: `commons-cli` 1.9.0 → 1.11.0, `commons-lang3` 3.18.0 → 3.21.0, `commons-text` 1.12.0 → 1.15.0, `commons-io` 2.17.0 → 2.22.0, `nanolog` 1.0 → 1.1. Java 8 remains the minimum, and `nrg-maven-plugin` still runs on Maven 3.9.9 and newer.
 - **GitHub Action sets up Java with `actions/setup-java` 6.2.0** (was 4.9.1): runs no longer carry the `Node.js 20 is deprecated` and `setup-java v4 is deprecated` warnings. Reaches users with the action release that accompanies NRG 1.4.

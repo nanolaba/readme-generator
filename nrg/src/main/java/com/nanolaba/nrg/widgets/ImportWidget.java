@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * {@code ${widget:import(path='...' | url='...', ...)}} — embeds another file (local or
@@ -44,6 +45,13 @@ public class ImportWidget extends DefaultWidget {
 
     ImportWidget(RemoteFetcher fetcher) {
         this.fetcher = fetcher;
+    }
+
+    private static final Set<String> PARAMETERS = NRGWidget.parameterNames("path", "url", "charset", "run-generator", "lines", "region", "wrap", "lang", "dedent", "heading-offset", "cache", "timeout", "sha256");
+
+    @Override
+    public Set<String> getParameterNames() {
+        return PARAMETERS;
     }
 
     @Override

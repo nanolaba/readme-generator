@@ -79,6 +79,26 @@ public abstract class BlockWidget extends DefaultWidget {
     }
 
     /**
+     * True when {@code line} opens a block the way the pre-pass sees it: the opener alone on
+     * its line, without the parameters of the inline form. Lets {@code --validate} pair
+     * openers and closers by exactly the rules {@link #processBlocks} applies.
+     */
+    public final boolean isBlockOpenerLine(String line) {
+        Matcher m = openLine.matcher(line);
+        return m.matches() && !isInlineForm(NRGUtil.parseParametersLine(m.group(1)));
+    }
+
+    /** True when {@code line} is this widget's closer ({@code ${widget:endNAME}}) alone on its line. */
+    public final boolean isBlockCloserLine(String line) {
+        return endLine.matcher(line).matches();
+    }
+
+    /** Name of the closer tag, e.g. {@code endIf}. */
+    public final String getCloserName() {
+        return getEndMarkerName();
+    }
+
+    /**
      * Pre-pass entry point invoked once per source body by {@code BlockDispatcher}.
      * Subclasses do not override.
      */

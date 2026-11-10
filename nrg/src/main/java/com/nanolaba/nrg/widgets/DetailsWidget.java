@@ -8,6 +8,7 @@ import com.nanolaba.nrg.core.TemplateLine;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * {@code ${widget:details(...)}} — emits a GitHub-flavored {@code <details>} collapsible
@@ -36,6 +37,13 @@ import java.util.Map;
  * runs.
  */
 public class DetailsWidget extends BlockWidget {
+
+    private static final Set<String> PARAMETERS = NRGWidget.parameterNames("summary", "open", "content");
+
+    @Override
+    public Set<String> getParameterNames() {
+        return PARAMETERS;
+    }
 
     @Override
     public String getName() {

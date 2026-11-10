@@ -19,6 +19,13 @@ public class AlertWidget extends DefaultWidget {
     static final Set<String> VALID_TYPES = Collections.unmodifiableSet(
             new LinkedHashSet<>(Arrays.asList("note", "tip", "important", "warning", "caution")));
 
+    private static final Set<String> PARAMETERS = NRGWidget.parameterNames("type", "text");
+
+    @Override
+    public Set<String> getParameterNames() {
+        return PARAMETERS;
+    }
+
     @Override
     public String getName() {
         return "alert";

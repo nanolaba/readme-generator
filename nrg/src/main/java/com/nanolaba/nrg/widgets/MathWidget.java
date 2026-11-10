@@ -7,6 +7,7 @@ import com.nanolaba.nrg.core.NRGUtil;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * {@code ${widget:math(expr='...', display='inline|block', renderer='native|svg', ...)}} —
@@ -22,6 +23,13 @@ import java.util.Map;
 public class MathWidget extends DefaultWidget {
 
     static final String DEFAULT_SVG_SERVICE = "https://latex.codecogs.com/svg.image?";
+
+    private static final Set<String> PARAMETERS = NRGWidget.parameterNames("expr", "display", "renderer", "service", "alt");
+
+    @Override
+    public Set<String> getParameterNames() {
+        return PARAMETERS;
+    }
 
     @Override
     public String getName() {

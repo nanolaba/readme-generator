@@ -5,6 +5,7 @@ import com.nanolaba.nrg.core.OutputFileNameResolver;
 
 import java.io.File;
 import java.nio.file.Path;
+import java.util.Set;
 
 /**
  * {@code ${widget:languages}} — renders the language-switcher line {@code [ en | **ru** | de ]}.
@@ -14,6 +15,13 @@ import java.nio.file.Path;
  * Path separators are normalised to forward slashes so links work on any platform.
  */
 public class LanguagesWidget extends DefaultWidget {
+
+    private static final Set<String> PARAMETERS = NRGWidget.parameterNames();
+
+    @Override
+    public Set<String> getParameterNames() {
+        return PARAMETERS;
+    }
 
     @Override
     public String getName() {

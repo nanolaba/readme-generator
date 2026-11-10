@@ -50,6 +50,31 @@ public class ValidateCliTest extends DefaultNRGTest {
     }
 
     @Test
+    public void testValidateKnowsWidgetsPassedWithWidgetsFlag() throws IOException {
+        Path src = writeSource("README.src.md",
+                "<!--@nrg.languages=en-->\n" +
+                        "${widget:exampleWidget(name='X')}\n");
+
+        int code = NRG.run("--validate", "--widgets", "com.nanolaba.nrg.examples.ExampleWidget",
+                "-f", src.toString());
+
+        assertEquals(0, code, getErrAndClear());
+    }
+
+    @Test
+    public void testValidateWarningsKeepExitCodeZero() throws IOException {
+        Path src = writeSource("README.src.md",
+                "<!--@nrg.languages=en-->\n" +
+                        "echo ${HOME}\n");
+
+        int code = NRG.run("--validate", "-f", src.toString());
+
+        assertEquals(0, code);
+        String err = getErrAndClear();
+        assertTrue(err.contains("WARNING: README.src.md:2: undefined variable 'HOME'"), err);
+    }
+
+    @Test
     public void testValidateMutuallyExclusiveWithCheck() throws IOException {
         Path src = writeSource("README.src.md", "X");
         int code = NRG.run("--validate", "--check", "-f", src.toString());

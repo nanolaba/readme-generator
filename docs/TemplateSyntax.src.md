@@ -90,8 +90,8 @@ you can specify application properties, for example:<!--en-->
 При помощи синтаксиса установки значений переменных в шаблоне можно указывать свойства приложения, например:<!--ru-->
 
 ```markdown
-<!--\@nrg.languages=en,ru-->
-<!--\@nrg.defaultLanguage=en-->
+<\!--@nrg.languages=en,ru-->
+<\!--@nrg.defaultLanguage=en-->
 ```
 
 **${en:'Available properties', ru:'Свойства приложения'}:**
@@ -204,7 +204,7 @@ otherwise it falls back to the bare `name`. If neither is defined, the literal `
 а при его отсутствии — голый ключ `name`. Если ни то, ни другое не задано, в выводе остаётся литерал `\${name}`.<!--ru-->
 
 ```markdown
-<!--\@nrg.languages=en,ru,ja-->
+<\!--@nrg.languages=en,ru,ja-->
 <!--\@screenshot.en=./public/show-en.png-->
 <!--\@screenshot.ru=./public/show-ru.png-->
 <!--\@screenshot=./public/show.png-->

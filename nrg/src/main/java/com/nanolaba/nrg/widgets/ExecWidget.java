@@ -12,6 +12,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
@@ -42,6 +43,13 @@ public class ExecWidget extends DefaultWidget {
 
     ExecWidget(CommandRunner runner) {
         this.runner = runner;
+    }
+
+    private static final Set<String> PARAMETERS = NRGWidget.parameterNames("cmd", "trim", "timeout", "cwd", "codeblock");
+
+    @Override
+    public Set<String> getParameterNames() {
+        return PARAMETERS;
     }
 
     @Override

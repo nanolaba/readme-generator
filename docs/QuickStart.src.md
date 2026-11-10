@@ -5,7 +5,7 @@
 **${en:'Step 1: Create a minimal template', ru:'Шаг 1: Создайте минимальный шаблон'} (`README.src.md`)**
 
 ```markdown
-<!--\@nrg.languages=en,ru-->
+<\!--@nrg.languages=en,ru-->
 
 # Hello<\!--en-->
 # Привет<\!--ru-->
@@ -82,8 +82,8 @@ English text
 <summary><b>${en:'Full template example (all widgets)', ru:'Полный пример шаблона (все виджеты)'}</b></summary>
 
 ```markdown
-<!--\@nrg.languages=en,ru-->
-<!--\@nrg.defaultLanguage=en-->
+<\!--@nrg.languages=en,ru-->
+<\!--@nrg.defaultLanguage=en-->
 
 <!--\@title=**\${en:'Hello, World!', ru:'Привет, Мир!'}**-->
 <!--\@version=1.0-->

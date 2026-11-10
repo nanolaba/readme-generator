@@ -6,6 +6,7 @@ import com.nanolaba.nrg.core.NRGUtil;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * {@code ${widget:date(pattern='...')}} — renders the build-time {@link Date} formatted
@@ -13,6 +14,13 @@ import java.util.Map;
  * no pattern is supplied. Useful for stamping a "last generated" line in a README.
  */
 public class DateWidget extends DefaultWidget {
+
+    private static final Set<String> PARAMETERS = NRGWidget.parameterNames("pattern");
+
+    @Override
+    public Set<String> getParameterNames() {
+        return PARAMETERS;
+    }
 
     @Override
     public String getName() {

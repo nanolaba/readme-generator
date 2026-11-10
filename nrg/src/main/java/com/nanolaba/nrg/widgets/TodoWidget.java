@@ -4,6 +4,7 @@ import com.nanolaba.nrg.core.GeneratorConfig;
 import com.nanolaba.nrg.core.NRGUtil;
 
 import java.util.Map;
+import java.util.Set;
 
 /**
  * {@code ${widget:todo(text='...')}} — renders a visually loud "TODO" placeholder
@@ -14,6 +15,13 @@ import java.util.Map;
 public class TodoWidget extends DefaultWidget {
 
     public static final String PREFIX = "\uD83D\uDCCC ⌛";
+
+    private static final Set<String> PARAMETERS = NRGWidget.parameterNames("text");
+
+    @Override
+    public Set<String> getParameterNames() {
+        return PARAMETERS;
+    }
 
     @Override
     public String getName() {

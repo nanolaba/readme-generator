@@ -55,6 +55,13 @@ public class TableOfContentsWidget extends DefaultWidget {
     private static final Pattern FENCE_OPEN = Pattern.compile("^(`{3,}|~{3,}).*$");
     private static final Pattern HEADING_LINE = Pattern.compile("^#+.*$");
 
+    private static final Set<String> PARAMETERS = NRGWidget.parameterNames("title", "ordered", "min-depth", "max-depth", "min-items", "anchor-style", "numbering-style", "start");
+
+    @Override
+    public Set<String> getParameterNames() {
+        return PARAMETERS;
+    }
+
     @Override
     public String getName() {
         return "tableOfContents";

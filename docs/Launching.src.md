@@ -84,33 +84,57 @@ nrg --check --check-paths README.md -f README.src.md
 #### ${en:'Validating source templates', ru:'Валидация исходных шаблонов'}
 
 Use `--validate` to scan the template (and every reachable<!--en-->
-`\${widget:import}`-imported file) for authoring mistakes without<!--en-->
-generating any output. v1 covers four classes of error:<!--en-->
+`\${widget:import}`-imported template) for authoring mistakes without<!--en-->
+generating any output. Errors:<!--en-->
 Флаг `--validate` сканирует шаблон (и все импортируемые через<!--ru-->
-`\${widget:import}` файлы) на типичные ошибки авторов, ничего не<!--ru-->
-генерируя. В v1 проверяются четыре класса ошибок:<!--ru-->
+`\${widget:import}` шаблоны) на типичные ошибки авторов, ничего не<!--ru-->
+генерируя. Ошибки:<!--ru-->
 
 - unregistered widget names (`\${widget:doesNotExist}`),<!--en-->
+- parameters a built-in widget does not have (`\${widget:toc(maxDepth='2')}` — the parameter is `max-depth`),<!--en-->
 - language markers `<\!--xx-->` whose code is not in `nrg.languages`,<!--en-->
-- `\${widget:import(path='...')}` paths that do not exist on disk,<!--en-->
-- unbalanced `<\!--nrg.ignore.begin-->` / `<\!--nrg.ignore.end-->` pairs.<!--en-->
+- `\${widget:import(path='...')}` paths that do not exist on disk or leave the project root,<!--en-->
+- unbalanced `<\!--nrg.ignore.begin-->` / `<\!--nrg.ignore.end-->` pairs,<!--en-->
+- unclosed or stray block widgets (`\${widget:if(...)}` without `\${widget:endIf}`, a lone `\${widget:endDetails}`),<!--en-->
+- a `\${name}` reference that is not declared but is one or two edits away from a property that is (`\${stableVerison}`).<!--en-->
 - незарегистрированные имена виджетов (`\${widget:doesNotExist}`),<!--ru-->
+- параметры, которых нет у встроенного виджета (`\${widget:toc(maxDepth='2')}` — параметр называется `max-depth`),<!--ru-->
 - языковые маркеры `<\!--xx-->`, чей код отсутствует в `nrg.languages`,<!--ru-->
-- пути в `\${widget:import(path='...')}`, которых нет на диске,<!--ru-->
-- несбалансированные пары `<\!--nrg.ignore.begin-->` / `<\!--nrg.ignore.end-->`.<!--ru-->
+- пути в `\${widget:import(path='...')}`, которых нет на диске или которые выходят за корень проекта,<!--ru-->
+- несбалансированные пары `<\!--nrg.ignore.begin-->` / `<\!--nrg.ignore.end-->`,<!--ru-->
+- незакрытые или одинокие блочные виджеты (`\${widget:if(...)}` без `\${widget:endIf}`, отдельный `\${widget:endDetails}`),<!--ru-->
+- ссылка `\${name}` на необъявленное свойство, отличающаяся на одну-две правки от объявленного (`\${stableVerison}`).<!--ru-->
+
+Warnings (reported, but the exit status stays `0`):<!--en-->
+Предупреждения (выводятся, но код возврата остаётся `0`):<!--ru-->
+
+- any other undefined `\${name}` — it stays in the output as written, which is right for a shell example like `\${HOME}` and wrong for a forgotten property,<!--en-->
+- `\${pom.…}` / `\${npm.…}` / `\${gradle.…}` without a `:fallback` that the descriptor does not define, so it renders empty,<!--en-->
+- <code>&lt;!--&#92;@nrg.languages=...--&gt;</code> and other `nrg.*` keys written with the cosmetic `\@` escape — such a line still declares the property (see [Backslash escapes](#backslash-escapes)); write <code>&lt;&#92;!--@...--&gt;</code> to show it in an example.<!--en-->
+- любой другой необъявленный `\${name}` — он остаётся в выводе как есть, что правильно для shell-примера вроде `\${HOME}` и неправильно для забытого свойства,<!--ru-->
+- `\${pom.…}` / `\${npm.…}` / `\${gradle.…}` без `:fallback`, которых нет в дескрипторе, — они рендерятся пустыми,<!--ru-->
+- <code>&lt;!--&#92;@nrg.languages=...--&gt;</code> и другие ключи `nrg.*`, записанные с косметическим экранированием `\@`, — такая строка всё равно объявляет свойство (см. [«Обратные слэши и экранирование»](#обратные-слэши-и-экранирование)); чтобы показать её в примере, пишите <code>&lt;&#92;!--@...--&gt;</code>.<!--ru-->
 
 ```bash
 nrg --validate -f README.src.md && echo "Template is clean"
 ```
 
-Each diagnostic is printed as `ERROR: file.src.md:LINE: message`. With<!--en-->
-no errors, NRG exits silently with status `0`. With at least one error,<!--en-->
-all diagnostics are printed to stderr and the process exits with status<!--en-->
-`1`. `--validate` is mutually exclusive with `--check` and `--stdout`.<!--en-->
-Каждое сообщение печатается в формате `ERROR: file.src.md:LINE: text`.<!--ru-->
-Без ошибок NRG молча завершается с кодом `0`. При наличии хотя бы одной<!--ru-->
-ошибки все сообщения печатаются в stderr, процесс завершается с кодом<!--ru-->
-`1`. `--validate` несовместим с `--check` и `--stdout`.<!--ru-->
+Each diagnostic is printed as `ERROR: file.src.md:LINE: message` or<!--en-->
+`WARNING: file.src.md:LINE: message`; where there is an obvious fix, the<!--en-->
+message ends with it (`unknown widget 'tocc'; did you mean 'toc'?`).<!--en-->
+With no diagnostics, NRG exits silently with status `0`. All diagnostics<!--en-->
+go to stderr; the process exits with status `1` when at least one of them<!--en-->
+is an error. An import with `run-generator='false'` is only checked for<!--en-->
+existence — its content is not a template. `--validate` is mutually<!--en-->
+exclusive with `--check` and `--stdout`.<!--en-->
+Каждое сообщение печатается в формате `ERROR: file.src.md:LINE: text` или<!--ru-->
+`WARNING: file.src.md:LINE: text`; если исправление очевидно, сообщение<!--ru-->
+заканчивается им (`unknown widget 'tocc'; did you mean 'toc'?`). Без<!--ru-->
+диагностик NRG молча завершается с кодом `0`. Все сообщения печатаются<!--ru-->
+в stderr; процесс завершается с кодом `1`, если среди них есть хотя бы<!--ru-->
+одна ошибка. Импорт с `run-generator='false'` проверяется только на<!--ru-->
+наличие файла — его содержимое не является шаблоном. `--validate`<!--ru-->
+несовместим с `--check` и `--stdout`.<!--ru-->
 
 #### ${en:'Print to stdout', ru:'Вывод в stdout'}
 
@@ -434,15 +458,15 @@ the generated output diverges from the committed files. Handy for a<!--en-->
 README.<!--ru-->
 
 Set `<validate>true</validate>` (or pass `-Dvalidate=true`) to scan<!--en-->
-the templates for authoring mistakes (unknown widgets, missing imports,<!--en-->
-undeclared language markers, unbalanced ignore-blocks) without<!--en-->
+the templates for authoring mistakes (the checks listed in<!--en-->
+[Validating source templates](#validating-source-templates)) without<!--en-->
 generating any output. The build fails with a `MojoExecutionException`<!--en-->
-when diagnostics are reported. Mutually exclusive with `<check>`.<!--en-->
+when an error is reported; warnings are only logged. Mutually exclusive with `<check>`.<!--en-->
 Параметр `<validate>true</validate>` (или `-Dvalidate=true`) сканирует<!--ru-->
-шаблоны на типичные ошибки авторов (неизвестные виджеты, отсутствующие<!--ru-->
-импорты, незаявленные языковые маркеры, несбалансированные ignore-блоки)<!--ru-->
-без генерации файлов. Сборка падает с `MojoExecutionException` при<!--ru-->
-наличии диагностик. Несовместим с `<check>`.<!--ru-->
+шаблоны на типичные ошибки авторов (проверки перечислены в разделе<!--ru-->
+[«Валидация исходных шаблонов»](#валидация-исходных-шаблонов)) без генерации<!--ru-->
+файлов. Сборка падает с `MojoExecutionException`, если найдена ошибка;<!--ru-->
+предупреждения только выводятся в лог. Несовместим с `<check>`.<!--ru-->
 
 `<fileNamePattern>` and `<defaultLanguageFileNamePattern>` (or<!--en-->
 `-DfileNamePattern=...` / `-DdefaultLanguageFileNamePattern=...`) mirror<!--en-->
