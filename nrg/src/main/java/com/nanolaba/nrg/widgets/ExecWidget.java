@@ -188,29 +188,57 @@ public class ExecWidget extends DefaultWidget {
             pb.directory(cwd);
             pb.redirectErrorStream(false);
             Process p = pb.start();
+            // Nobody will ever type into the child; at EOF a command that reads input moves on
+            // instead of waiting for the timeout.
+            p.getOutputStream().close();
+            // Both pipes are drained while the process runs. A pipe holds a few kilobytes: a
+            // child that writes more blocks until someone reads, so waiting for it first and
+            // reading afterwards deadlocked on any sizeable output.
+            StreamDrain out = new StreamDrain(p.getInputStream());
+            StreamDrain err = new StreamDrain(p.getErrorStream());
             try {
                 boolean finished = p.waitFor(timeoutSeconds, TimeUnit.SECONDS);
                 if (!finished) {
                     p.destroyForcibly();
                     return ExecResult.timeout();
                 }
-                String out = readAll(p.getInputStream());
-                String err = readAll(p.getErrorStream());
                 int exit = p.exitValue();
-                return exit == 0 ? ExecResult.ok(out, err) : ExecResult.failed(exit, out, err);
+                String stdout = out.await();
+                String stderr = err.await();
+                return exit == 0 ? ExecResult.ok(stdout, stderr) : ExecResult.failed(exit, stdout, stderr);
             } catch (InterruptedException e) {
                 p.destroyForcibly();
                 Thread.currentThread().interrupt();
                 throw new IOException("interrupted while waiting for command", e);
             }
         }
+    }
 
-        private static String readAll(InputStream in) throws IOException {
-            try {
-                return IOUtils.toString(in, StandardCharsets.UTF_8);
-            } finally {
-                in.close();
+    /** Reads one stream of a child process to the end on its own daemon thread. */
+    private static final class StreamDrain {
+        private final Thread thread;
+        private volatile String text = "";
+        private volatile IOException failure;
+
+        StreamDrain(InputStream in) {
+            thread = new Thread(() -> {
+                try (InputStream stream = in) {
+                    text = IOUtils.toString(stream, StandardCharsets.UTF_8);
+                } catch (IOException e) {
+                    failure = e;
+                }
+            }, "nrg-exec-drain");
+            thread.setDaemon(true);
+            thread.start();
+        }
+
+        /** Returns the captured text once the stream is exhausted, i.e. after the process exited. */
+        String await() throws IOException, InterruptedException {
+            thread.join();
+            if (failure != null) {
+                throw failure;
             }
+            return text;
         }
     }
 }

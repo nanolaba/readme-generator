@@ -1599,7 +1599,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 11.11.2026 00:23:33
+Last updated: 11.11.2026 00:27:09
 ```
 
 </td></tr>
@@ -2052,7 +2052,7 @@ ${widget:endDetails}
 <details>
 <summary>Advanced</summary>
 
-inner *markdown* and 11.11.2026 00:23:33
+inner *markdown* and 11.11.2026 00:27:09
 
 </details>
 ```
@@ -2209,6 +2209,7 @@ This section summarises the main user-visible changes in each release. For full 
 - **Circular imports are reported**: a template that imports itself — directly or through other files — used to recurse until the stack overflowed; the error was logged and the run still exited with code 0, leaving a broken output file. It now fails immediately with `import: circular import: a.src.md -> b.src.md -> a.src.md`. Importing the same file twice, or a region of the importing file itself, is still fine.
 - **Hostile or accidental extremes no longer crash or stall generation**: an `if` condition nested deeper than 64 levels and a `package.json` nested deeper than 512 are reported as ordinary errors instead of ending the run with `StackOverflowError`; a very long widget parameter (hundreds of kilobytes on one line) is parsed in linear time instead of taking minutes; so is a line with thousands of unterminated `<!--@` markers.
 - **GitHub Action verifies the NRG release it downloads**: new `nrg-sha256` input pins the expected checksum of the release zip — a mismatch fails the run before the jar is executed. Without it the action checks the download against the `.sha256` file now published with each release, and for older releases prints the checksum so it can be pinned.
+- **`exec` widget no longer times out on large output**: the command's output was read only after the process had finished, but a process that writes more than the operating system's pipe buffer (a few kilobytes) blocks until someone reads — so every command with sizeable stdout or stderr hung until the timeout and produced nothing. Both streams are now read while the command runs, and the command's standard input is closed, so a program that waits for input ends immediately instead of hanging.
 
 ### 1.2
 

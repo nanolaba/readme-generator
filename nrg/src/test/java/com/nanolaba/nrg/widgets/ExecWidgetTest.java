@@ -254,6 +254,49 @@ class ExecWidgetTest extends DefaultNRGTest {
         assertTrue(getErrAndClear().contains("exec widget: failed to run command"));
     }
 
+    /** Runs {@link ExecProbeMain} as a real child process through the production runner. */
+    private static String runProbe(String probeArgs, String timeout) {
+        // 'java' is taken from PATH and the class path is passed as cwd + "-cp .", so no path
+        // (which may contain spaces) has to survive the widget's whitespace splitting.
+        String classes = new File(ExecProbeMain.class.getProtectionDomain().getCodeSource().getLocation().getPath())
+                .getAbsolutePath().replace('\\', '/').replace("%20", " ");
+        Generator g = makeGenerator("[${widget:exec(cmd='java -cp . " + ExecProbeMain.class.getName() + " "
+                + probeArgs + "', cwd='" + classes + "', timeout='" + timeout + "')}]", new ExecWidget(), true);
+        return g.getResult("en").getContent().toString();
+    }
+
+    @Test
+    public void testOutputLargerThanThePipeBufferIsCaptured() {
+        // The runner used to wait for the process before reading its output. A child that
+        // writes more than the pipe buffer blocks until someone reads, so it never exited and
+        // every such command "timed out" with nothing captured.
+        String body = assertTimeoutPreemptively(java.time.Duration.ofSeconds(60),
+                () -> runProbe("flood 3000000 0", "30"));
+
+        int from = body.indexOf('[') + 1;
+        int to = body.lastIndexOf(']');
+        assertEquals(3_000_000, to - from, "captured stdout length");
+        assertEquals("", getErrAndClear());
+    }
+
+    @Test
+    public void testLargeStderrDoesNotBlockTheCommandEither() {
+        String body = assertTimeoutPreemptively(java.time.Duration.ofSeconds(60),
+                () -> runProbe("flood 10 3000000", "30"));
+
+        assertTrue(body.contains("[oooooooooo]"), body);
+    }
+
+    @Test
+    public void testCommandDoesNotInheritAnOpenStdin() {
+        // Nothing will ever be typed into the child: its stdin must be at EOF, otherwise a
+        // command that reads input waits until the timeout.
+        String body = assertTimeoutPreemptively(java.time.Duration.ofSeconds(60),
+                () -> runProbe("stdin", "30"));
+
+        assertTrue(body.contains("[stdin-closed]"), body);
+    }
+
     /**
      * Package-private test double that records invocations and returns a fixed result.
      */
