@@ -124,6 +124,56 @@ class GeneratorTest extends DefaultNRGTest {
     }
 
     @Test
+    public void testDefaultHeaderNamesSourceTemplate() {
+        Generator generator = new Generator(new File("README.src.md"), "Body");
+
+        String out = generator.getResult("en").getContent().toString();
+        String firstLines = out.substring(0, out.indexOf("Body"));
+        assertTrue(firstLines.contains("from README.src.md"),
+                "default header must name the root template, got: " + firstLines);
+        assertTrue(firstLines.contains("change README.src.md and regenerate"),
+                "default header must say how to fix the file, got: " + firstLines);
+        assertFalse(firstLines.contains(com.nanolaba.nrg.NRG.getVersion()),
+                "default header must not carry the NRG version, got: " + firstLines);
+    }
+
+    @Test
+    public void testDefaultHeaderSourcePathIsRelativeToOutputFile() {
+        String src = "<!--@" + PROPERTY_LANGUAGES + "=en,ru-->" + RN +
+                "<!--@nrg.fileNamePattern=docs/<lang>/<base>.md-->" + RN +
+                "Body";
+        Generator generator = new Generator(new File("README.src.md"), src);
+
+        String out = generator.getResult("ru").getContent().toString();
+        assertTrue(out.contains("from ../../README.src.md"),
+                "source path must be relative to docs/ru/README.md, got: " + out);
+    }
+
+    @Test
+    public void testHeaderTextPlaceholders() {
+        String src = "<!--@" + PROPERTY_LANGUAGES + "=en,ru-->" + RN + "Body";
+        Generator generator = new Generator(new File("README.src.md"), src);
+        generator.getConfig().getProperties().setProperty(PROPERTY_HEADER_TEXT,
+                "<!-- <source> / <lang> / <version> -->");
+
+        String out = generator.getResult("ru").getContent().toString();
+        assertTrue(out.startsWith("<!-- README.src.md / ru / " + com.nanolaba.nrg.NRG.getVersion() + " -->" + RN),
+                "placeholders must be substituted, got: " + out);
+    }
+
+    @Test
+    public void testHeaderTextAsCommentFromTemplateProperty() {
+        String src = "<!--@" + PROPERTY_LANGUAGES + "=en-->" + RN +
+                "<!--@" + PROPERTY_HEADER_TEXT + "=<\\!-- Generated from <source>, do not edit --\\>-->" + RN +
+                "Body";
+        Generator generator = new Generator(new File("README.src.md"), src);
+
+        String out = generator.getResult("en").getContent().toString();
+        assertTrue(out.startsWith("<!-- Generated from README.src.md, do not edit -->" + RN),
+                "<\\!-- and --\\> must produce a well-formed comment, got: " + out);
+    }
+
+    @Test
     public void testNoHeaderWinsOverHeaderText() {
         Generator generator = new Generator(new File("README.src.md"), "Body");
         generator.getConfig().getProperties().setProperty(PROPERTY_NO_HEADER, "true");
