@@ -275,6 +275,8 @@ generate right now. The flag is meant for CI / pre-commit hooks:
 no files are written, a missing or out-of-date target file prints
 a diff to stderr, and the process exits with status `1`.
 
+The diff shows generated content, so anything a template pulls in — including values of `${env.NAME}` — ends up in the CI log when the check fails. Keep secrets out of templates.
+
 ```bash
 nrg --check -f README.src.md && echo "README is up to date"
 ```
@@ -1597,7 +1599,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 11.11.2026 00:22:23
+Last updated: 11.11.2026 00:23:33
 ```
 
 </td></tr>
@@ -2050,7 +2052,7 @@ ${widget:endDetails}
 <details>
 <summary>Advanced</summary>
 
-inner *markdown* and 11.11.2026 00:22:23
+inner *markdown* and 11.11.2026 00:23:33
 
 </details>
 ```

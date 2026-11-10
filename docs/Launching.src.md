@@ -45,6 +45,9 @@ NRG сгенерировал бы прямо сейчас. Режим предн
 файлы не записываются, при отсутствии или расхождении выводится diff<!--ru-->
 в stderr, процесс завершается с кодом `1`.<!--ru-->
 
+The diff shows generated content, so anything a template pulls in — including values of `\${env.NAME}` — ends up in the CI log when the check fails. Keep secrets out of templates.<!--en-->
+В diff попадает сгенерированное содержимое, поэтому всё, что шаблон подтягивает, — включая значения `\${env.NAME}` — при провале проверки окажется в логе CI. Не используйте секреты в шаблонах.<!--ru-->
+
 ```bash
 nrg --check -f README.src.md && echo "README is up to date"
 ```

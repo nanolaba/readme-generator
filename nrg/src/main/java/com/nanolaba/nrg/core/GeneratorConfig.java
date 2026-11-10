@@ -205,7 +205,11 @@ public class GeneratorConfig {
             LOG.debug("Generator configuration:");
             for (Field field : getClass().getDeclaredFields()) {
                 if (!Modifier.isStatic(field.getModifiers())) {
-                    if (!field.getName().equals("sourceFileBody")) {
+                    if (field.getName().equals("properties")) {
+                        // Names only. A value may come from ${env.…} (a token, a password), and a
+                        // debug log is routinely pasted into issues or kept by CI.
+                        LOG.debug("properties (names only): {}", new TreeSet<>(properties.stringPropertyNames()));
+                    } else if (!field.getName().equals("sourceFileBody")) {
                         LOG.debug("{}: {}", field.getName(), Code.run(() -> field.get(this)));
                     }
                 }

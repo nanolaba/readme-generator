@@ -276,6 +276,8 @@ NRG сгенерировал бы прямо сейчас. Режим предн
 файлы не записываются, при отсутствии или расхождении выводится diff
 в stderr, процесс завершается с кодом `1`.
 
+В diff попадает сгенерированное содержимое, поэтому всё, что шаблон подтягивает, — включая значения `${env.NAME}` — при провале проверки окажется в логе CI. Не используйте секреты в шаблонах.
+
 ```bash
 nrg --check -f README.src.md && echo "README is up to date"
 ```
@@ -1606,7 +1608,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 11.11.2026 00:22:23
+Last updated: 11.11.2026 00:23:34
 ```
 
 </td></tr>
@@ -2060,7 +2062,7 @@ ${widget:endDetails}
 <details>
 <summary>Advanced</summary>
 
-inner *markdown* and 11.11.2026 00:22:23
+inner *markdown* and 11.11.2026 00:23:34
 
 </details>
 ```
