@@ -76,6 +76,8 @@ ${en:'Enabling execution', ru:'Как включить выполнение'}:<!
 - Maven: add `<allowExec>true</allowExec>` to the `nrg-maven-plugin` configuration (or set the `-DallowExec=true` property).<!--en-->
 - Library: call `generator.getConfig().setExecAllowed(true)` before the first `getResult(...)` call.<!--en-->
 
+The permission covers the template you run NRG on and every **local** file it imports. It never extends to a template fetched with `import(url=…)`: `exec` inside remote content is refused even when the import is pinned with `sha256`. A command runs once per generated language, also when the document has a table of contents.<!--en-->
+
 ${en:'Error handling', ru:'Обработка ошибок'}:<!--en-->
 
 - Non-zero exit → error in the log (with exit code and stderr snippet) + empty output.<!--en-->
@@ -88,6 +90,8 @@ ${en:'Error handling', ru:'Обработка ошибок'}:<!--en-->
 - CLI: передайте флаг `--allow-exec` команде `nrg`.<!--ru-->
 - Maven: добавьте `<allowExec>true</allowExec>` в конфигурацию плагина `nrg-maven-plugin` (или задайте свойство `-DallowExec=true`).<!--ru-->
 - Библиотека: вызовите `generator.getConfig().setExecAllowed(true)` до первого вызова `getResult(...)`.<!--ru-->
+
+Разрешение действует на шаблон, на котором запущен NRG, и на все **локальные** файлы, которые он импортирует. На шаблон, загруженный через `import(url=…)`, оно не распространяется никогда: `exec` внутри удалённого содержимого отклоняется, даже если импорт закреплён по `sha256`. Команда выполняется один раз на каждый генерируемый язык — в том числе когда в документе есть оглавление.<!--ru-->
 
 Обработка ошибок:<!--ru-->
 

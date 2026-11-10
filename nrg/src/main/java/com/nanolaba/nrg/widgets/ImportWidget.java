@@ -463,12 +463,17 @@ public class ImportWidget extends DefaultWidget {
 
     private static class InMemoryImportedFileGenerator extends Generator {
         InMemoryImportedFileGenerator(File sourceFile, String body, Config widgetConfig, GeneratorConfig parentConfig) {
-            super(sourceFile, body);
+            // An imported template sees the same widgets as the template that imports it.
+            super(sourceFile, body, parentConfig.getInheritableWidgets());
             getConfig().setRootGenerator(false);
             getConfig().setLanguages(parentConfig.getLanguages());
             getConfig().setDefaultLanguage(parentConfig.getDefaultLanguage());
-            getConfig().setRootSourceFile(parentConfig.getRootSourceFile());
-            getConfig().setProjectRoot(parentConfig.getProjectRoot());
+            parentConfig.passRunContextTo(getConfig());
+            if (widgetConfig.getUrl() != null) {
+                // --allow-exec is consent to run the commands in the user's own templates.
+                // Text fetched from elsewhere never gets it, pinned or not.
+                getConfig().setExecAllowed(false);
+            }
             parentConfig.getProperties().forEach((key, value) -> {
                 if (!getConfig().getProperties().containsKey(key)) {
                     getConfig().getProperties().setProperty(key.toString(), String.valueOf(value));

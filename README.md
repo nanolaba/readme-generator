@@ -1599,7 +1599,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 11.11.2026 00:27:09
+Last updated: 11.11.2026 00:29:41
 ```
 
 </td></tr>
@@ -1873,12 +1873,15 @@ Enabling execution:
 - Maven: add `<allowExec>true</allowExec>` to the `nrg-maven-plugin` configuration (or set the `-DallowExec=true` property).
 - Library: call `generator.getConfig().setExecAllowed(true)` before the first `getResult(...)` call.
 
+The permission covers the template you run NRG on and every **local** file it imports. It never extends to a template fetched with `import(url=…)`: `exec` inside remote content is refused even when the import is pinned with `sha256`. A command runs once per generated language, also when the document has a table of contents.
+
 Error handling:
 
 - Non-zero exit → error in the log (with exit code and stderr snippet) + empty output.
 - Command not found / IO error → error in the log + empty output.
 - Timeout → warning in the log + empty output.
 - Invalid `timeout` or `trim` → error in the log + empty output (command is not run).
+
 
 
 
@@ -2052,7 +2055,7 @@ ${widget:endDetails}
 <details>
 <summary>Advanced</summary>
 
-inner *markdown* and 11.11.2026 00:27:09
+inner *markdown* and 11.11.2026 00:29:41
 
 </details>
 ```
@@ -2210,6 +2213,7 @@ This section summarises the main user-visible changes in each release. For full 
 - **Hostile or accidental extremes no longer crash or stall generation**: an `if` condition nested deeper than 64 levels and a `package.json` nested deeper than 512 are reported as ordinary errors instead of ending the run with `StackOverflowError`; a very long widget parameter (hundreds of kilobytes on one line) is parsed in linear time instead of taking minutes; so is a line with thousands of unterminated `<!--@` markers.
 - **GitHub Action verifies the NRG release it downloads**: new `nrg-sha256` input pins the expected checksum of the release zip — a mismatch fails the run before the jar is executed. Without it the action checks the download against the `.sha256` file now published with each release, and for older releases prints the checksum so it can be pinned.
 - **`exec` widget no longer times out on large output**: the command's output was read only after the process had finished, but a process that writes more than the operating system's pipe buffer (a few kilobytes) blocks until someone reads — so every command with sizeable stdout or stderr hung until the timeout and produced nothing. Both streams are now read while the command runs, and the command's standard input is closed, so a program that waits for input ends immediately instead of hanging.
+- **Imported files and the table of contents now see what the main template sees**: a custom widget registered with `--widgets`, `<widgets>`, `NRG.addWidget(...)` or the root template's `nrg.widgets` was unknown inside an imported file (the tag was left in the output as text); `exec` inside an imported local file was refused even with `--allow-exec`; and a document with a table of contents logged `Unknown widget name` and `exec widget: execution is disabled` for widgets that worked fine, because the table of contents scans the document in a second pass that had none of this. All of it is passed down now. A `tableOfContents` inside an imported file no longer fails with a `NullPointerException` for languages other than the first, and `exec` is no longer attempted in the scan pass at all.
 
 ### 1.2
 

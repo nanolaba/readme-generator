@@ -58,6 +58,12 @@ public class ExecWidget extends DefaultWidget {
             LOG.error("exec widget: missing required 'cmd' parameter");
             return "";
         }
+        if (config.isStructureScan()) {
+            // The table of contents renders the template a second time just to read its
+            // headings and throws the result away; running the command there would run it
+            // twice (and it used to log a bogus "execution is disabled" instead).
+            return "";
+        }
         if (!config.isExecAllowed()) {
             LOG.error("exec widget: execution is disabled; pass --allow-exec (or set <allowExec>true</allowExec> in the Maven plugin) to enable");
             return "";

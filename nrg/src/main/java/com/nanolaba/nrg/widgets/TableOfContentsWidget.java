@@ -1,6 +1,7 @@
 package com.nanolaba.nrg.widgets;
 
 import com.nanolaba.logging.LOG;
+import com.nanolaba.nrg.core.GenerationResult;
 import com.nanolaba.nrg.core.Generator;
 import com.nanolaba.nrg.core.GeneratorConfig;
 import com.nanolaba.nrg.core.NRGUtil;
@@ -101,15 +102,7 @@ public class TableOfContentsWidget extends DefaultWidget {
 
         List<Header> allHeaders = new ArrayList<>();
 
-        Generator generator = new Generator(config.getSourceFile(), config.getSourceFileBody());
-        generator.getConfig().setRootGenerator(false);
-        generator.getConfig().setRootSourceFile(config.getRootSourceFile());
-        generator.getConfig().setProjectRoot(config.getProjectRoot());
-        generator.getConfig().setImportChain(config.getImportChain());
-        generator.getConfig().getWidgets().stream()
-                .filter(widget -> widget instanceof TableOfContentsWidget)
-                .forEach(widget -> widget.setEnabled(false));
-        String sourceFileBody = generator.getResult(language).getContent().toString();
+        String sourceFileBody = renderForHeadingScan(config, language);
 
         int indexOfTOC = NRGUtil.findFirstUnescapedOccurrenceLine(sourceFileBody, "${widget:tableOfContents");
         if (indexOfTOC < 0) {
@@ -194,6 +187,52 @@ public class TableOfContentsWidget extends DefaultWidget {
             return "";
         }
         return String.join("", items);
+    }
+
+    /**
+     * Renders the same template once more, with the table of contents switched off, to see
+     * which headings the document will have — including those that imports and other widgets
+     * produce.
+     *
+     * <p>The second generator has to see the document the way the first one does, so it gets
+     * everything the first one was given from outside: the caller's widgets, the run context
+     * (project root, environment, exec permission), the languages and the properties an
+     * importing template passed down. Without that the scan warned about "unknown" custom
+     * widgets, refused {@code exec}, and for a table of contents inside an imported file knew
+     * only the default language. It is marked as a structure scan so that widgets with side
+     * effects stay quiet: its output is discarded.
+     */
+    private static String renderForHeadingScan(GeneratorConfig config, String language) {
+        Generator generator = new Generator(config.getSourceFile(), config.getSourceFileBody(),
+                config.getCallerWidgets());
+        GeneratorConfig scan = generator.getConfig();
+        scan.setRootGenerator(false);
+        config.passRunContextTo(scan);
+        scan.setStructureScan(true);
+        scan.setImportChain(config.getImportChain());
+        scan.setLanguages(config.getLanguages());
+        scan.setDefaultLanguage(config.getDefaultLanguage());
+        config.getProperties().forEach((key, value) -> {
+            if (!scan.getProperties().containsKey(key)) {
+                scan.getProperties().setProperty(key.toString(), String.valueOf(value));
+            }
+        });
+
+        // Caller-supplied widgets are the same instances the outer generator uses, so a
+        // table-of-contents widget among them must be switched back on afterwards.
+        List<NRGWidget> switchedOff = new ArrayList<>();
+        for (NRGWidget widget : scan.getWidgets()) {
+            if (widget instanceof TableOfContentsWidget && widget.isEnabled()) {
+                widget.setEnabled(false);
+                switchedOff.add(widget);
+            }
+        }
+        try {
+            GenerationResult result = generator.getResult(language);
+            return result == null ? "" : result.getContent().toString();
+        } finally {
+            switchedOff.forEach(widget -> widget.setEnabled(true));
+        }
     }
 
     private static boolean isFenceClose(String line, char marker, int minLen) {

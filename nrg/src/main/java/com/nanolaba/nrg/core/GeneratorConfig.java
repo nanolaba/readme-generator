@@ -39,6 +39,8 @@ import static com.nanolaba.nrg.core.NRGConstants.*;
 public class GeneratorConfig {
 
     private final List<NRGWidget> widgets = new ArrayList<>();
+    private final List<NRGWidget> callerWidgets = new ArrayList<>();
+    private final List<NRGWidget> inheritableWidgets = new ArrayList<>();
 
     private final File sourceFile;
     private final String sourceFileBody;
@@ -52,6 +54,7 @@ public class GeneratorConfig {
     private String widgetsProperty;
     private boolean rootGenerator = true;
     private boolean execAllowed = false;
+    private boolean structureScan = false;
     private Function<String, String> envProvider = System::getenv;
     private final Set<String> warnedMissingEnvVars = new HashSet<>();
     private PomReader pomReader;
@@ -121,9 +124,13 @@ public class GeneratorConfig {
         getSourceLinesStream().forEach(line -> readPropertiesFromLine(line, defaultLanguage));
 
         initDefaultWidgets(this.widgets);
-        this.widgets.addAll(NRGUtil.loadWidgets(widgetsProperty, null));
+        List<NRGWidget> declaredWidgets = NRGUtil.loadWidgets(widgetsProperty, null);
+        this.widgets.addAll(declaredWidgets);
+        this.inheritableWidgets.addAll(declaredWidgets);
         if (widgets != null) {
             this.widgets.addAll(widgets);
+            this.callerWidgets.addAll(widgets);
+            this.inheritableWidgets.addAll(widgets);
         }
         warnOnWidgetNameCollisions();
         printConfiguration();
@@ -344,6 +351,57 @@ public class GeneratorConfig {
 
     public void setRootGenerator(boolean rootGenerator) {
         this.rootGenerator = rootGenerator;
+    }
+
+    /**
+     * Widgets the caller handed to the constructor (API, {@code --widgets}, the Maven
+     * plugin), without the built-ins and without those this template declares itself.
+     * A second generator over the <em>same</em> template is given these, so the template's
+     * own {@code nrg.widgets} are not registered twice.
+     */
+    public List<NRGWidget> getCallerWidgets() {
+        return Collections.unmodifiableList(callerWidgets);
+    }
+
+    /**
+     * Every widget beyond the built-ins: declared by this template via {@code nrg.widgets}
+     * or supplied by the caller. A generator for an <em>imported</em> template is given these,
+     * so an imported file can use the same widgets as the file that imports it.
+     */
+    public List<NRGWidget> getInheritableWidgets() {
+        return Collections.unmodifiableList(inheritableWidgets);
+    }
+
+    /**
+     * Copies the settings that come from whoever started the run — not from any template —
+     * into a generator created on this one's behalf (an imported template, the table of
+     * contents' scan of the same template). These used to be dropped: a custom widget passed
+     * on the command line was unknown inside an imported file, {@code exec} was refused there
+     * even with {@code --allow-exec}, and an injected environment was replaced by the real
+     * one.
+     *
+     * <p>Widgets are not covered here: they have to be passed to the child's constructor,
+     * see {@link #getCallerWidgets()} and {@link #getInheritableWidgets()}.
+     */
+    public void passRunContextTo(GeneratorConfig child) {
+        child.setRootSourceFile(rootSourceFile);
+        child.setProjectRoot(getProjectRoot());
+        child.setEnvProvider(envProvider);
+        child.setExecAllowed(execAllowed);
+        child.setStructureScan(structureScan);
+    }
+
+    /**
+     * True while the template is rendered only to read its structure (the table of contents
+     * collects headings this way), not to produce output. Widgets with side effects must do
+     * nothing in such a pass: the output is thrown away and the real pass does the work.
+     */
+    public boolean isStructureScan() {
+        return structureScan;
+    }
+
+    public void setStructureScan(boolean structureScan) {
+        this.structureScan = structureScan;
     }
 
     public boolean isExecAllowed() {
