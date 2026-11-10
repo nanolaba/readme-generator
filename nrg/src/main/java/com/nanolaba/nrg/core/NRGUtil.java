@@ -139,6 +139,71 @@ public class NRGUtil {
         return map;
     }
 
+    /**
+     * Removes every {@code <!--@…-->} property comment from {@code text} and returns the same
+     * instance when there is none. Each comment ends at the first {@code -->} after it on the
+     * same line; a comment with no terminator on its line is left alone.
+     *
+     * <p>Replaces the regex {@code <!-- *@.*-->}, which was wrong twice over. Being greedy, it
+     * ran from the first property comment to the <em>last</em> {@code -->} on the line and
+     * deleted whatever text stood between them. And on a line with many unterminated
+     * {@code <!--@} it rescanned the rest of the line for every one of them — quadratic time
+     * that a 40 KB line turned into seconds. This scan is linear: the position of the next
+     * terminator is remembered instead of being searched for again.
+     */
+    public static String stripPropertyComments(String text) {
+        int open = text.indexOf("<!--");
+        if (open < 0) {
+            return text;
+        }
+        StringBuilder out = null;
+        int copied = 0;
+        int close = -1;     // start of the nearest "-->" at or after the current comment, once known
+        int lineBreak = -1; // nearest line break at or after the current comment, once known
+        while (open >= 0) {
+            int at = open + 4;
+            while (at < text.length() && text.charAt(at) == ' ') {
+                at++;
+            }
+            if (at < text.length() && text.charAt(at) == '@') {
+                if (close < at) {
+                    close = text.indexOf("-->", at);
+                    if (close < 0) {
+                        break; // no terminator anywhere further on
+                    }
+                }
+                if (lineBreak < at) {
+                    lineBreak = nextLineBreak(text, at);
+                }
+                if (close < lineBreak) {
+                    if (out == null) {
+                        out = new StringBuilder(text.length());
+                    }
+                    out.append(text, copied, open);
+                    copied = close + 3;
+                    open = text.indexOf("<!--", copied);
+                    continue;
+                }
+            }
+            open = text.indexOf("<!--", open + 4);
+        }
+        if (out == null) {
+            return text;
+        }
+        return out.append(text, copied, text.length()).toString();
+    }
+
+    /** Index of the first line break at or after {@code from}, or the text length if none. */
+    private static int nextLineBreak(String text, int from) {
+        for (int i = from; i < text.length(); i++) {
+            char c = text.charAt(i);
+            if (c == '\n' || c == '\r') {
+                return i;
+            }
+        }
+        return text.length();
+    }
+
     public static Map<String, String> parseParametersLine(String parameters) {
         Map<String, String> map = new HashMap<>();
         if (StringUtils.isNotEmpty(parameters)) {

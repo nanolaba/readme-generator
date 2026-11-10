@@ -167,4 +167,48 @@ class NRGUtilTest extends DefaultNRGTest {
         assertEquals("a\\rb", NRGUtil.processWidgetEscapes("a\\rb"));
         assertNull(NRGUtil.processWidgetEscapes(null));
     }
+
+    @Test
+    public void testStripPropertyComments() {
+        assertEquals("", NRGUtil.stripPropertyComments("<!--@a=1-->"));
+        assertEquals("", NRGUtil.stripPropertyComments("<!-- @a=1 -->"));
+        assertEquals("", NRGUtil.stripPropertyComments("<!--@-->"));
+        assertEquals("x  y", NRGUtil.stripPropertyComments("x <!--@a=1--> y"));
+        assertEquals("", NRGUtil.stripPropertyComments("<!--@a=1--><!--@b=2-->"));
+
+        // Each comment ends at its own terminator: the text between two comments survives.
+        assertEquals("A  KEEP <!-- plain --> tail",
+                NRGUtil.stripPropertyComments("A <!--@p=1--> KEEP <!-- plain --> tail"));
+        assertEquals(" KEEP ", NRGUtil.stripPropertyComments("<!--@p=1--> KEEP <!--@q=2-->"));
+
+        // Not property comments.
+        assertEquals("<!-- plain -->", NRGUtil.stripPropertyComments("<!-- plain -->"));
+        assertEquals("<\\!--@a=1-->", NRGUtil.stripPropertyComments("<\\!--@a=1-->"));
+        assertEquals("<!--\\@a=1-->", NRGUtil.stripPropertyComments("<!--\\@a=1-->"));
+        assertEquals("<!--\t@a=1-->", NRGUtil.stripPropertyComments("<!--\t@a=1-->"));
+
+        // A comment is confined to its line; an unterminated one is left alone.
+        assertEquals("<!--@a\nb-->", NRGUtil.stripPropertyComments("<!--@a\nb-->"));
+        assertEquals("<!--@a\r\nx\r\ny", NRGUtil.stripPropertyComments("<!--@a\r\nx<!--@b=1-->\r\ny"));
+        assertEquals("<!--@never closed", NRGUtil.stripPropertyComments("<!--@never closed"));
+
+        String untouched = "no comments here";
+        assertTrue(untouched == NRGUtil.stripPropertyComments(untouched), "same instance when nothing is removed");
+    }
+
+    @Test
+    public void testStripPropertyCommentsIsLinearOnHostileLines() {
+        // 200 KB of unterminated openers: the regex this replaced rescanned the rest of the
+        // line for each one. Also with a terminator far away, on a later line.
+        StringBuilder openers = new StringBuilder();
+        for (int i = 0; i < 40_000; i++) {
+            openers.append("<!--@");
+        }
+        String hostile = openers.toString();
+
+        org.junit.jupiter.api.Assertions.assertTimeoutPreemptively(java.time.Duration.ofSeconds(5), () -> {
+            assertEquals(hostile, NRGUtil.stripPropertyComments(hostile));
+            assertEquals(hostile + "\n-->", NRGUtil.stripPropertyComments(hostile + "\n-->"));
+        });
+    }
 }

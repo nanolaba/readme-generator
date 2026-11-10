@@ -93,13 +93,41 @@ public class TemplateLine {
         for (String language : config.getLanguages()) {
             line = line.replaceAll("<!-- *" + Pattern.quote(language) + " *-->", "");
         }
-        return line.replaceAll("<!-- *@.*-->", "");
+        return NRGUtil.stripPropertyComments(line);
+    }
+
+    /**
+     * A line that carries property definitions and nothing a reader would see: once the
+     * property comments and language markers are gone, no letter or digit is left.
+     * Punctuation may remain — {@code - <!--@a=1-->} is still such a line.
+     *
+     * <p>The check used to be the regex {@code \W*<!-- *@.*-->\W*}. Its greedy middle took a
+     * line like {@code <!--@a=1--> text <!--@b=2-->} for a pure definition and dropped the
+     * text, and {@code \W} is ASCII-only in Java, so {@code <!--@a=1--> Привет} was dropped as
+     * well.
+     */
+    private boolean hasOnlyPropertyDefinitions() {
+        String withoutProperties = NRGUtil.stripPropertyComments(line);
+        if (withoutProperties == line) {
+            return false; // same instance: there was no property comment at all
+        }
+        String visible = withoutProperties;
+        for (String language : config.getLanguages()) {
+            visible = visible.replaceAll("<!-- *" + Pattern.quote(language) + " *-->", "");
+        }
+        for (int i = 0; i < visible.length(); i++) {
+            char c = visible.charAt(i);
+            if (Character.isLetterOrDigit(c) || c == '_') {
+                return false;
+            }
+        }
+        return true;
     }
 
     public boolean isLineVisible(String language) {
         boolean hasLanguageMark = config.getLanguages().stream().anyMatch(s -> line.matches(".*<!-- *" + Pattern.quote(s) + " *-->.*"));
         boolean hasCurrentLanguageMark = line.matches(".*<!-- *" + Pattern.quote(language) + " *-->.*");
-        boolean hasOnlyPropertyDefinition = line.matches("\\W*<!-- *@.*-->\\W*");
+        boolean hasOnlyPropertyDefinition = hasOnlyPropertyDefinitions();
 
         return (!hasLanguageMark || hasCurrentLanguageMark) && !hasOnlyPropertyDefinition;
     }

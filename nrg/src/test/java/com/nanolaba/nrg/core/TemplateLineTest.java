@@ -62,6 +62,18 @@ class TemplateLineTest extends DefaultNRGTest {
         assertFalse(line("<!--@nrg.some=property-->").isLineVisible("ru"));
         assertFalse(line("<!--@nrg.some = property-->").isLineVisible("ru"));
         assertFalse(line("<!--  @nrg.some  =  property  -->").isLineVisible("ru"));
+
+        // Property definitions with nothing readable around them: still not a visible line.
+        assertFalse(line("<!--@a=1--><!--@b=2-->").isLineVisible("ru"));
+        assertFalse(line("- <!--@a=1--> ").isLineVisible("ru"));
+        assertFalse(line("<!--@a=1--><!--ru-->").isLineVisible("ru"));
+
+        // Text next to a definition makes the line visible. The old check dropped all three:
+        // text between two comments, text followed by a plain comment, and any non-ASCII text
+        // (\W is ASCII-only in Java, so Cyrillic counted as "no word characters").
+        assertTrue(line("<!--@a=1--> text <!--@b=2-->").isLineVisible("ru"));
+        assertTrue(line("<!--@a=1--> text <!-- plain -->").isLineVisible("ru"));
+        assertTrue(line("<!--@a=1--> Привет").isLineVisible("ru"));
     }
 
     @Test
@@ -80,6 +92,19 @@ class TemplateLineTest extends DefaultNRGTest {
         assertEquals("", action.apply("<!-- @nrg.test = test --><!--ru-->"));
         assertEquals("123", action.apply("1<!-- @nrg.test = test -->2<!--ru-->3"));
         assertEquals("123", action.apply("1<!-- @nrg.test  =  test  -->2<!--ru-->3"));
+
+        // A property comment ends at its own "-->", not at the last one on the line.
+        assertEquals("A  KEEP <!-- plain --> tail", action.apply("A <!--@p=1--> KEEP <!-- plain --> tail"));
+        assertEquals("1 KEEP 2", action.apply("1<!--@p=1--> KEEP <!--@q=2-->2"));
+    }
+
+    @Test
+    public void testTextNextToPropertyDefinitionsSurvivesGeneration() {
+        assertEquals("A  KEEP <!-- plain --> tail",
+                line("A <!--@p=1--> KEEP <!-- plain --> tail").generateLine("ru"));
+        assertEquals(" KEEP ", line("<!--@p=1--> KEEP <!--@q=2-->").generateLine("ru"));
+        assertEquals(" Привет, ${p}".replace("${p}", "1"), line("<!--@p=1--> Привет, ${p}").generateLine("ru"));
+        assertNull(line("<!--@p=1--><!--@q=2-->").generateLine("ru"));
     }
 
     @Test
