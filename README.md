@@ -61,9 +61,10 @@ This very README is generated with NRG — see [`README.src.md`](README.src.md).
 		- 2.1.3 [Print to stdout](#print-to-stdout)
 		- 2.1.4 [Logging verbosity](#logging-verbosity)
 		- 2.1.5 [Customising output filenames](#customising-output-filenames)
-		- 2.1.6 [Line endings](#line-endings)
-		- 2.1.7 [Header customisation](#header-customisation)
-		- 2.1.8 [Multiple files and glob patterns](#multiple-files-and-glob-patterns)
+		- 2.1.6 [Project root](#project-root)
+		- 2.1.7 [Line endings](#line-endings)
+		- 2.1.8 [Header customisation](#header-customisation)
+		- 2.1.9 [Multiple files and glob patterns](#multiple-files-and-glob-patterns)
 	- 2.2 [Use as maven plugin](#use-as-maven-plugin)
 	- 2.3 [Use as a GitHub Action](#use-as-a-github-action)
 		- 2.3.1 [Quickstart](#quickstart)
@@ -362,6 +363,17 @@ nrg --file-name-pattern '<base>_<LANG>.md' -f README.src.md
 nrg --file-name-pattern 'docs/<lang>/<base>.md' --default-language-file-name-pattern '<base>.md' -f README.src.md
 ```
 
+#### Project root
+
+A template is confined to a **project root**: the output files it asks for must stay inside that directory.
+The root is the nearest ancestor of the source file that contains a `.git` entry, or the source file's own directory when there is none. It is never taken from the template.
+A file name pattern that resolves outside the root (for example `../../somewhere/<base>.md` from a directory that is not inside a git repository) stops the run with an error and nothing is written.
+If your layout legitimately needs a wider root, name it explicitly with `--root <dir>` (Maven plugin: `<root>`, GitHub Action: `root`).
+
+```bash
+nrg --root /path/to/workspace -f docs/README.src.md
+```
+
 #### Line endings
 
 `--line-ending=auto|lf|crlf` controls the line-ending convention of the
@@ -562,6 +574,7 @@ list — README maintenance becomes a single workflow step.
 | `charset` | Source file encoding. | `UTF-8` |
 | `mode` | Operation mode: `generate`, `check`, or `validate`. | `generate` |
 | `check-paths` | Multi-line list of glob patterns (one per line) limiting which generated outputs `mode: check` compares against on-disk files. Requires `mode: check`. | — |
+| `root` | Directory the templates are confined to — see [Project root](#project-root). Needs an NRG release newer than `v1.2`. | nearest ancestor with `.git` |
 | `nrg-version` | NRG release tag (e.g. `v1.0`) or `latest`. | `latest` |
 | `java-version` | JDK version for `actions/setup-java`. Ignored when `setup-java=false`. | `17` |
 | `java-distribution` | JDK distribution for `actions/setup-java`. | `temurin` |
@@ -1566,7 +1579,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 10.11.2026 23:35:29
+Last updated: 10.11.2026 23:59:40
 ```
 
 </td></tr>
@@ -2019,7 +2032,7 @@ ${widget:endDetails}
 <details>
 <summary>Advanced</summary>
 
-inner *markdown* and 10.11.2026 23:35:29
+inner *markdown* and 10.11.2026 23:59:40
 
 </details>
 ```
@@ -2166,6 +2179,7 @@ This section summarises the main user-visible changes in each release. For full 
 - **`tableOfContents` no longer loses headings after a fence line with a language marker**: a closing fence followed by a language marker — hand-written (`` ```<!--en--> ``) or produced by `${widget:import(..., wrap='true')}` on a line tagged `<!--en-->` / `<!--ru-->` — was not recognised as a closer, so the next fence flipped the state and every later heading was silently dropped from the table of contents. Fences are now matched on the line as it appears in the generated file. Closes [#56](https://github.com/nanolaba/readme-generator/issues/56).
 - **Multi-line widget output keeps the indentation of the widget line**: a widget placed on an indented line (typically inside a list item) used to indent only the first line of its output — for `${widget:import(..., wrap='true')}` that meant an indented opening fence followed by code and a closing fence at column 0, which broke the list in Markdown renderers. Every non-blank line of the output is now prefixed with the leading spaces / tabs of the widget line; this applies to all widgets (`import`, `alert`, `fileTree`, `exec`, `tableOfContents`, custom ones). Output changes only for templates that already had a multi-line widget on an indented line. Closes [#57](https://github.com/nanolaba/readme-generator/issues/57).
 - **`import` with `heading-offset` no longer mis-shifts after a fence line with a language marker**: the same fence-matching fix as for `tableOfContents` — in an imported `.src.md`, a closing fence written as `` ```<!--en--> `` was not recognised, so headings after it were left unshifted and `#` lines inside the next code block were shifted instead.
+- **Security: a template can no longer write files outside the project**: `nrg.fileNamePattern` (and its per-language / default-language variants) accepted `../`, so a template could create or overwrite any file the process could write — with `nrg.noHeader` the content was fully template-controlled, which amounted to running code without `--allow-exec`. Output files must now stay inside the **project root**: the nearest ancestor of the source file that contains `.git`, or the source file's directory when there is none. A pattern that leaves it fails the run (also in `--check` and `--stdout`) and nothing is written. New `--root <dir>` CLI option, `<root>` Maven plugin parameter and `root` GitHub Action input widen the root for layouts that need it; the root cannot be set from a template.
 
 ### 1.2
 

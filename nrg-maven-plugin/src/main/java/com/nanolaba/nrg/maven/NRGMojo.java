@@ -80,6 +80,9 @@ public class NRGMojo extends AbstractMojo {
     @Parameter
     private List<String> checkPaths;
 
+    @Parameter(property = "root")
+    private String root;
+
     public void setFileNamePattern(String fileNamePattern) {
         this.fileNamePattern = fileNamePattern;
     }
@@ -102,6 +105,10 @@ public class NRGMojo extends AbstractMojo {
 
     public void setCheckPaths(List<String> checkPaths) {
         this.checkPaths = checkPaths;
+    }
+
+    public void setRoot(String root) {
+        this.root = root;
     }
 
     @Parameter(property = "file")
@@ -191,6 +198,10 @@ public class NRGMojo extends AbstractMojo {
         if (headerText != null && !headerText.isEmpty()) {
             args.add("--header-text");
             args.add(headerText);
+        }
+        if (root != null && !root.isEmpty()) {
+            args.add("--root");
+            args.add(root);
         }
         if (checkPaths != null) {
             for (String p : checkPaths) {

@@ -177,6 +177,21 @@ nrg --file-name-pattern '<base>_<LANG>.md' -f README.src.md
 nrg --file-name-pattern 'docs/<lang>/<base>.md' --default-language-file-name-pattern '<base>.md' -f README.src.md
 ```
 
+#### ${en:'Project root', ru:'Корень проекта'}
+
+A template is confined to a **project root**: the output files it asks for must stay inside that directory.<!--en-->
+The root is the nearest ancestor of the source file that contains a `.git` entry, or the source file's own directory when there is none. It is never taken from the template.<!--en-->
+A file name pattern that resolves outside the root (for example `../../somewhere/<base>.md` from a directory that is not inside a git repository) stops the run with an error and nothing is written.<!--en-->
+If your layout legitimately needs a wider root, name it explicitly with `--root <dir>` (Maven plugin: `<root>`, GitHub Action: `root`).<!--en-->
+Шаблон ограничен **корнем проекта**: выходные файлы, которые он запрашивает, должны оставаться внутри этого каталога.<!--ru-->
+Корень — ближайший предок исходного файла, содержащий `.git`, а если такого нет — каталог самого исходного файла. Из шаблона корень задать нельзя.<!--ru-->
+Паттерн имени файла, выводящий за пределы корня (например, `../../somewhere/<base>.md` из каталога вне git-репозитория), останавливает запуск с ошибкой, и ничего не записывается.<!--ru-->
+Если раскладке проекта действительно нужен более широкий корень, задайте его явно: `--root <dir>` (Maven-плагин: `<root>`, GitHub Action: `root`).<!--ru-->
+
+```bash
+nrg --root /path/to/workspace -f docs/README.src.md
+```
+
 #### ${en:'Line endings', ru:'Перевод строк'}
 
 `--line-ending=auto|lf|crlf` controls the line-ending convention of the<!--en-->

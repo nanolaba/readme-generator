@@ -45,6 +45,7 @@ public class GeneratorConfig {
     private final Properties properties = new Properties();
 
     private File rootSourceFile;
+    private File projectRoot;
     private List<String> languages = Collections.singletonList("en");
     private String defaultLanguage;
     private String widgetsProperty;
@@ -238,6 +239,31 @@ public class GeneratorConfig {
 
     public void setRootSourceFile(File rootSourceFile) {
         this.rootSourceFile = rootSourceFile;
+    }
+
+    /**
+     * The directory this template is confined to (see {@link ProjectRoot}). Detected from
+     * the root source file on first use unless {@link #setProjectRoot(File)} was called.
+     */
+    public File getProjectRoot() {
+        if (projectRoot == null) {
+            projectRoot = ProjectRoot.detect(rootSourceFile);
+        }
+        return projectRoot;
+    }
+
+    public void setProjectRoot(File projectRoot) {
+        this.projectRoot = projectRoot;
+    }
+
+    /**
+     * Returns {@code file} if it lies inside the project root, otherwise throws
+     * {@link ProjectRoot.OutsideProjectRootException}.
+     *
+     * @param what short description of the path's role for the error message.
+     */
+    public File requireInsideProjectRoot(File file, String what) {
+        return ProjectRoot.require(getProjectRoot(), file, what);
     }
 
     public String getSourceFileBody() {

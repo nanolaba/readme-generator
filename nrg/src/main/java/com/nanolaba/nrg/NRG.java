@@ -165,6 +165,11 @@ public class NRG {
         Option noHeader = new Option(null, "no-header", false,
                 "suppress the auto-generated head comment lines at the top of every output file");
         options.addOption(noHeader);
+        Option root = new Option(null, "root", true,
+                "directory the templates are confined to: imports, descriptors and output files must stay inside it " +
+                        "(default: the nearest ancestor of the source file that contains .git, else the source file's directory)");
+        root.setArgName("dir");
+        options.addOption(root);
         Option headerText = new Option(null, "header-text", true,
                 "replace the default head comment with this text (\\n, \\r, \\t, \\\\ are interpreted)");
         headerText.setArgName("text");
@@ -230,6 +235,13 @@ public class NRG {
         if (noHeaderFlag && headerTextValue != null) {
             throw new ParseException("--no-header and --header-text are mutually exclusive");
         }
+        File rootDir = null;
+        if (cmd.hasOption(root)) {
+            rootDir = new File(cmd.getOptionValue(root));
+            if (!rootDir.isDirectory()) {
+                throw new ParseException("--root is not a directory: " + rootDir.getAbsolutePath());
+            }
+        }
         LineEndings.Mode lineEndingMode;
         try {
             lineEndingMode = LineEndings.Mode.parse(cmd.getOptionValue(lineEnding));
@@ -262,7 +274,7 @@ public class NRG {
                         fileNamePatternValue, defaultLangFileNamePatternValue,
                         totalOutputs > 1, lineEndingMode,
                         noHeaderFlag, headerTextValue,
-                        checkPathFilter, checkMatchTracker);
+                        checkPathFilter, checkMatchTracker, rootDir);
             }
             if (code != 0) {
                 aggregateCode = 1;
@@ -450,7 +462,8 @@ public class NRG {
                                 String fileNamePatternOverride, String defaultLangFileNamePatternOverride,
                                 boolean perFileStdoutHeader, LineEndings.Mode lineEndingMode,
                                 boolean noHeaderOverride, String headerTextOverride,
-                                PathPatternMatcher checkPathFilter, MatchTracker checkMatchTracker) {
+                                PathPatternMatcher checkPathFilter, MatchTracker checkMatchTracker,
+                                File rootDir) {
         if (!sourceFile.exists()) {
             LOG.error("Source file does not exist: {}", sourceFile.getAbsolutePath());
             return 1;
@@ -462,6 +475,9 @@ public class NRG {
             }
             widgets.addAll(additionalWidgets);
             Generator generator = new Generator(sourceFile, charset, widgets);
+            if (rootDir != null) {
+                generator.getConfig().setProjectRoot(rootDir);
+            }
             if (fileNamePatternOverride != null) {
                 generator.getConfig().getProperties().setProperty(
                         NRGConstants.PROPERTY_FILE_NAME_PATTERN, fileNamePatternOverride);
@@ -481,7 +497,8 @@ public class NRG {
             }
             Optional<String> patternError = OutputFileNameValidator.findError(
                     sourceFile, generator.getConfig().getDefaultLanguage(),
-                    generator.getConfig().getLanguages(), generator.getConfig().getProperties());
+                    generator.getConfig().getLanguages(), generator.getConfig().getProperties(),
+                    generator.getConfig().getProjectRoot());
             if (patternError.isPresent()) {
                 LOG.error("File name pattern error: {}", patternError.get());
                 return 1;

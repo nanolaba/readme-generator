@@ -29,6 +29,7 @@ NRG, извлекает `nrg.jar` и запускает его для переч
 | `charset` | ${en:'Source file encoding.', ru:'Кодировка исходных файлов.'} | `UTF-8` |
 | `mode` | ${en:'Operation mode: `generate`, `check`, or `validate`.', ru:'Режим работы: `generate`, `check` или `validate`.'} | `generate` |
 | `check-paths` | ${en:'Multi-line list of glob patterns (one per line) limiting which generated outputs `mode: check` compares against on-disk files. Requires `mode: check`.', ru:'Многострочный список glob-шаблонов (по одному на строку), ограничивающий, какие сгенерированные файлы `mode: check` сравнивает с файлами на диске. Требует `mode: check`.'} | — |
+| `root` | ${en:'Directory the templates are confined to — see [Project root](#project-root). Needs an NRG release newer than `v1.2`.', ru:'Каталог, за пределы которого шаблоны выйти не могут, — см. [Корень проекта](#корень-проекта). Требует релиза NRG новее `v1.2`.'} | ${en:'nearest ancestor with `.git`', ru:'ближайший предок с `.git`'} |
 | `nrg-version` | ${en:'NRG release tag (e.g. `v1.0`) or `latest`.', ru:'Тег релиза NRG (например, `v1.0`) или `latest`.'} | `latest` |
 | `java-version` | ${en:'JDK version for `actions/setup-java`. Ignored when `setup-java=false`.', ru:'Версия JDK для `actions/setup-java`. Игнорируется при `setup-java=false`.'} | `17` |
 | `java-distribution` | ${en:'JDK distribution for `actions/setup-java`.', ru:'Дистрибутив JDK для `actions/setup-java`.'} | `temurin` |

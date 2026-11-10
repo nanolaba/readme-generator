@@ -90,4 +90,23 @@ class NRGMojoCheckPathsTest {
         assertDoesNotThrow(mojo::execute);
         assertTrue(Files.exists(tempDir.resolve("README.md")));
     }
+
+    @Test
+    void testRootIsForwarded() throws Exception {
+        // Without <root> the template below is refused: its pattern leaves the source directory
+        // and the temp directory is not inside a git repository.
+        Path docs = Files.createDirectories(tempDir.resolve("docs"));
+        Path src = docs.resolve("README.src.md");
+        Files.write(src, "<!--@nrg.fileNamePattern=../<base>.md-->\nHello\n".getBytes(StandardCharsets.UTF_8));
+
+        NRGMojo refused = new NRGMojo();
+        refused.setFile(new String[]{src.toString()});
+        assertThrows(MojoExecutionException.class, refused::execute);
+
+        NRGMojo widened = new NRGMojo();
+        widened.setFile(new String[]{src.toString()});
+        widened.setRoot(tempDir.toString());
+        assertDoesNotThrow(widened::execute);
+        assertTrue(Files.isRegularFile(tempDir.resolve("README.md")));
+    }
 }

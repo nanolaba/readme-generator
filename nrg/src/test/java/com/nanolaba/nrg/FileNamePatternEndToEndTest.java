@@ -59,4 +59,62 @@ class FileNamePatternEndToEndTest extends DefaultNRGTest {
         assertFalse(tmp.resolve("README.md").toFile().exists(),
                 "no file should be written when validation fails");
     }
+
+    @Test
+    void templatePatternCannotWriteOutsideTheProjectRoot(@TempDir Path tmp) throws Exception {
+        // A file name pattern is template data. "../" in it used to write anywhere the process
+        // could — with nrg.noHeader the content was fully template-controlled too.
+        Path src = Files.createDirectories(tmp.resolve("repo/docs")).resolve("a.src.md");
+        Files.write(src, ("<!--@nrg.noHeader=true-->\n" +
+                "<!--@nrg.fileNamePattern=../../outside/hook.sh-->\n" +
+                "echo pwned\n").getBytes(StandardCharsets.UTF_8));
+
+        int code = NRG.run("-f", src.toAbsolutePath().toString());
+
+        assertEquals(1, code);
+        assertFalse(tmp.resolve("outside").toFile().exists(), "nothing may be created outside the root");
+        String out = getOutAndClear() + getErrAndClear();
+        assertTrue(out.contains("outside the project root"), out);
+        assertTrue(out.contains("--root"), out);
+    }
+
+    @Test
+    void checkAndStdoutModesRejectEscapingPatternsToo(@TempDir Path tmp) throws Exception {
+        Path src = Files.createDirectories(tmp.resolve("repo")).resolve("a.src.md");
+        Files.write(src, ("<!--@nrg.fileNamePattern=../<base>.md-->\nHello\n").getBytes(StandardCharsets.UTF_8));
+
+        assertEquals(1, NRG.run("-f", src.toAbsolutePath().toString(), "--check"));
+        assertEquals(1, NRG.run("-f", src.toAbsolutePath().toString(), "--stdout"));
+    }
+
+    @Test
+    void patternMayLeaveTheSourceDirectoryInsideAGitRepository(@TempDir Path tmp) throws Exception {
+        Files.createDirectories(tmp.resolve("repo/.git"));
+        Path src = Files.createDirectories(tmp.resolve("repo/docs")).resolve("README.src.md");
+        Files.write(src, ("<!--@nrg.fileNamePattern=../<base>.md-->\nHello\n").getBytes(StandardCharsets.UTF_8));
+
+        assertEquals(0, NRG.run("-f", src.toAbsolutePath().toString()));
+        assertTrue(tmp.resolve("repo/README.md").toFile().isFile());
+    }
+
+    @Test
+    void rootOptionWidensTheRoot(@TempDir Path tmp) throws Exception {
+        Path src = Files.createDirectories(tmp.resolve("plain/docs")).resolve("README.src.md");
+        Files.write(src, ("<!--@nrg.fileNamePattern=../<base>.md-->\nHello\n").getBytes(StandardCharsets.UTF_8));
+
+        assertEquals(1, NRG.run("-f", src.toAbsolutePath().toString()));
+        assertEquals(0, NRG.run("-f", src.toAbsolutePath().toString(),
+                "--root", tmp.resolve("plain").toString()));
+        assertTrue(tmp.resolve("plain/README.md").toFile().isFile());
+    }
+
+    @Test
+    void rootOptionMustBeADirectory(@TempDir Path tmp) throws Exception {
+        Path src = tmp.resolve("README.src.md");
+        Files.write(src, "Hello\n".getBytes(StandardCharsets.UTF_8));
+
+        assertEquals(1, NRG.run("-f", src.toAbsolutePath().toString(),
+                "--root", tmp.resolve("missing").toString()));
+        assertTrue(getErrAndClear().contains("--root is not a directory"));
+    }
 }
