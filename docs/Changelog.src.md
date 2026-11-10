@@ -5,6 +5,9 @@ This section summarises the main user-visible changes in each release. For full 
 
 ### ${en:'Unreleased', ru:'В разработке'} (${devVersion})<!--toc.ignore-->
 
+- **Updated runtime dependencies**: `commons-cli` 1.9.0 → 1.11.0, `commons-lang3` 3.18.0 → 3.21.0, `commons-text` 1.12.0 → 1.15.0, `commons-io` 2.17.0 → 2.22.0, `nanolog` 1.0 → 1.1. Java 8 remains the minimum, and `nrg-maven-plugin` still runs on Maven 3.9.9 and newer.<!--en-->
+- **Обновлены runtime-зависимости**: `commons-cli` 1.9.0 → 1.11.0, `commons-lang3` 3.18.0 → 3.21.0, `commons-text` 1.12.0 → 1.15.0, `commons-io` 2.17.0 → 2.22.0, `nanolog` 1.0 → 1.1. Минимальной версией Java остаётся 8, а `nrg-maven-plugin` по-прежнему работает на Maven 3.9.9 и новее.<!--ru-->
+
 ### 1.3<!--toc.ignore-->
 
 - **`details` widget — collapsible `<details>` blocks**: new `\${widget:details(summary='…')}` … `\${widget:endDetails}` block widget rewrites paired markers into a GitHub-friendly `<details><summary>…</summary>…</details>` block, with the inner markdown still flowing through the normal pipeline — nested widgets, `${var}` substitution, and language tags keep working inside. A single-tag shortcut `\${widget:details(summary='…', content='…')}` renders compact inline HTML for short snippets; `open='true'` emits `<details open>` in either form. Removes the need to hand-write HTML inside templates for the long-tables / verbose-troubleshooting / faq-section pattern. Stray `endDetails` and unclosed openers are recovered the same way as `if`/`endIf`. Closes [#31](https://github.com/nanolaba/readme-generator/issues/31).<!--en-->

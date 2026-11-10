@@ -35,33 +35,37 @@
 
         <!-- libs-->
         <nanolaba-sugar.version>1.0</nanolaba-sugar.version>
-        <nanolaba-nanolog.version>1.0</nanolaba-nanolog.version>
+        <nanolaba-nanolog.version>1.1</nanolaba-nanolog.version>
 
-        <junit5.version>5.11.3</junit5.version>
-        <commons-cli.version>1.9.0</commons-cli.version>
-        <commons-lang3.version>3.18.0</commons-lang3.version>
-        <commons-text.version>1.12.0</commons-text.version>
-        <commons-io.version>2.17.0</commons-io.version>
+        <junit5.version>5.14.4</junit5.version>
+        <commons-cli.version>1.11.0</commons-cli.version>
+        <commons-lang3.version>3.21.0</commons-lang3.version>
+        <commons-text.version>1.15.0</commons-text.version>
+        <commons-io.version>2.22.0</commons-io.version>
 
         <!-- Maven plugins -->
-        <maven-compiler-plugin.version>3.13.0</maven-compiler-plugin.version>
-        <maven-clean-plugin.version>3.3.2</maven-clean-plugin.version>
-        <maven-surefire-plugin.version>3.2.5</maven-surefire-plugin.version>
-        <maven-resources-plugin.version>3.3.1</maven-resources-plugin.version>
-        <maven-jar-plugin.version>3.3.0</maven-jar-plugin.version>
-        <maven-install-plugin.version>3.1.1</maven-install-plugin.version>
-        <maven-deploy-plugin.version>3.1.1</maven-deploy-plugin.version>
-        <maven-site-plugin.version>3.12.1</maven-site-plugin.version>
-        <maven-project-info-reports-plugin.version>3.5.0</maven-project-info-reports-plugin.version>
-        <maven-assembly-plugin.version>3.6.0</maven-assembly-plugin.version>
+        <maven-compiler-plugin.version>3.16.0</maven-compiler-plugin.version>
+        <maven-clean-plugin.version>3.5.0</maven-clean-plugin.version>
+        <maven-surefire-plugin.version>3.6.1</maven-surefire-plugin.version>
+        <maven-resources-plugin.version>3.5.0</maven-resources-plugin.version>
+        <maven-jar-plugin.version>3.5.1</maven-jar-plugin.version>
+        <maven-install-plugin.version>3.2.0</maven-install-plugin.version>
+        <maven-deploy-plugin.version>3.2.0</maven-deploy-plugin.version>
+        <maven-site-plugin.version>3.22.0</maven-site-plugin.version>
+        <maven-project-info-reports-plugin.version>3.9.0</maven-project-info-reports-plugin.version>
+        <maven-assembly-plugin.version>3.8.0</maven-assembly-plugin.version>
+        <!-- Not just a build dependency: maven-plugin-plugin writes this version into the plugin
+             descriptor as requiredMavenVersion, so raising it stops nrg-maven-plugin from running
+             on every older Maven. Bump only when a newer Maven API is actually needed. -->
         <maven-plugin-api.version>3.9.9</maven-plugin-api.version>
-        <maven-plugin-tools.version>3.15.1</maven-plugin-tools.version>
+        <maven-plugin-tools.version>3.16.0</maven-plugin-tools.version>
         <maven-project.version>2.2.1</maven-project.version>
-        <central-publishing-maven-plugin.version>0.8.0</central-publishing-maven-plugin.version>
-        <maven-source-plugin.version>2.2.1</maven-source-plugin.version>
-        <maven-javadoc-plugin.version>2.9.1</maven-javadoc-plugin.version>
-        <maven-gpg-plugin.version>1.5</maven-gpg-plugin.version>
+        <central-publishing-maven-plugin.version>0.12.0</central-publishing-maven-plugin.version>
+        <maven-source-plugin.version>3.4.0</maven-source-plugin.version>
+        <maven-javadoc-plugin.version>3.12.0</maven-javadoc-plugin.version>
+        <maven-gpg-plugin.version>3.2.8</maven-gpg-plugin.version>
 
+        <!-- 1.15.8 / 1.2.1 are the last releases that load on Java 8, which the build still targets. -->
         <pitest-maven.version>1.15.8</pitest-maven.version>
         <pitest-junit5-plugin.version>1.2.1</pitest-junit5-plugin.version>
     </properties>
@@ -84,6 +88,21 @@
         <url>https://github.com/nanolaba/readme-generator</url>
         <connection>scm:git:git://github.com/nanolaba/readme-generator.git</connection>
     </scm>
+
+    <dependencyManagement>
+        <dependencies>
+            <!-- Keeps every JUnit artifact on one version. pitest-junit5-plugin brings its own,
+                 older junit-platform-launcher; left unaligned, test discovery fails with
+                 "OutputDirectoryCreator not available". -->
+            <dependency>
+                <groupId>org.junit</groupId>
+                <artifactId>junit-bom</artifactId>
+                <version>${junit5.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
     <dependencies>
         <dependency>

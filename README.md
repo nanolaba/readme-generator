@@ -1599,7 +1599,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 11.11.2026 01:01:25
+Last updated: 11.11.2026 01:05:48
 ```
 
 </td></tr>
@@ -2055,7 +2055,7 @@ ${widget:endDetails}
 <details>
 <summary>Advanced</summary>
 
-inner *markdown* and 11.11.2026 01:01:26
+inner *markdown* and 11.11.2026 01:05:48
 
 </details>
 ```
@@ -2194,6 +2194,8 @@ Other tools in the same space — useful if **Nanolaba Readme Generator (NRG)** 
 This section summarises the main user-visible changes in each release. For full details, see the git history.
 
 ### Unreleased (1.4-SNAPSHOT)
+
+- **Updated runtime dependencies**: `commons-cli` 1.9.0 → 1.11.0, `commons-lang3` 3.18.0 → 3.21.0, `commons-text` 1.12.0 → 1.15.0, `commons-io` 2.17.0 → 2.22.0, `nanolog` 1.0 → 1.1. Java 8 remains the minimum, and `nrg-maven-plugin` still runs on Maven 3.9.9 and newer.
 
 ### 1.3
 
