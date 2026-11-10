@@ -1584,7 +1584,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 11.11.2026 00:13:42
+Last updated: 11.11.2026 00:17:44
 ```
 
 </td></tr>
@@ -2037,7 +2037,7 @@ ${widget:endDetails}
 <details>
 <summary>Advanced</summary>
 
-inner *markdown* and 11.11.2026 00:13:42
+inner *markdown* and 11.11.2026 00:17:44
 
 </details>
 ```
@@ -2191,6 +2191,8 @@ This section summarises the main user-visible changes in each release. For full 
 - **Hardened HTTP client for remote imports**: a redirect to a non-`http(s)` URL is refused with a clear error (it used to crash with a `ClassCastException`), as is a redirect from `https` down to `http`; a response larger than 16 MiB is refused instead of being buffered without limit; `timeout` now bounds the whole exchange, so a server that drips data cannot hold the build forever; `timeout='30d'` and other values above ~24 days no longer fail with `timeouts can't be negative`; fetching over plain `http://` without `sha256` logs a warning.
 - **Long text inside `${en:'…', ru:'…'}` no longer crashes generation**: a quoted text of roughly two thousand characters or more ended the run with `StackOverflowError`. Any length works now, as does any number of doubled quotes.
 - **A property comment no longer swallows the rest of its line**: `<!--@key=value-->` was removed from the output together with everything up to the *last* `-->` on the line, so in `A <!--@p=1--> text <!-- note --> tail` the words `text` and the note silently disappeared; and a line that began with a property comment was dropped entirely when a second comment followed the text — or when the text contained no ASCII letters at all, which hit every non-Latin language (`<!--@p=1--> Привет` produced nothing). Each property comment is now removed on its own, and a line is skipped only when nothing but property definitions is on it.
+- **Circular imports are reported**: a template that imports itself — directly or through other files — used to recurse until the stack overflowed; the error was logged and the run still exited with code 0, leaving a broken output file. It now fails immediately with `import: circular import: a.src.md -> b.src.md -> a.src.md`. Importing the same file twice, or a region of the importing file itself, is still fine.
+- **Hostile or accidental extremes no longer crash or stall generation**: an `if` condition nested deeper than 64 levels and a `package.json` nested deeper than 512 are reported as ordinary errors instead of ending the run with `StackOverflowError`; a very long widget parameter (hundreds of kilobytes on one line) is parsed in linear time instead of taking minutes; so is a line with thousands of unterminated `<!--@` markers.
 
 ### 1.2
 

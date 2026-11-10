@@ -378,6 +378,46 @@ class ImportWidgetTest {
     }
 
     @Test
+    public void circularImportIsReportedInsteadOfOverflowingTheStack(@TempDir Path tmp) throws IOException {
+        // Used to recurse until StackOverflowError, which was logged — and the run exited 0.
+        Files.write(tmp.resolve("a.src.md"), "A\n${widget:import(path='b.src.md')}\n".getBytes(StandardCharsets.UTF_8));
+        Files.write(tmp.resolve("b.src.md"), "B\n${widget:import(path='test.src.md')}\n".getBytes(StandardCharsets.UTF_8));
+        File src = writeFixture(tmp, "ROOT\n${widget:import(path='a.src.md')}\n");
+
+        RuntimeException e = assertThrows(RuntimeException.class,
+                () -> new Generator(src, StandardCharsets.UTF_8).getResult("en"));
+
+        assertTrue(e.getMessage().startsWith("import: circular import: "), e.getMessage());
+        assertTrue(e.getMessage().matches(".*test\\.src\\.md -> .*a\\.src\\.md -> .*b\\.src\\.md -> .*test\\.src\\.md"),
+                e.getMessage());
+    }
+
+    @Test
+    public void selfImportIsCircularAlsoBehindATableOfContents(@TempDir Path tmp) throws IOException {
+        File plain = writeFixture(tmp, "x\n${widget:import(path='test.src.md')}\n");
+        assertThrows(RuntimeException.class, () -> new Generator(plain, StandardCharsets.UTF_8).getResult("en"));
+
+        File withToc = writeFixture(tmp, "${widget:toc}\n## H\n${widget:import(path='test.src.md')}\n");
+        RuntimeException e = assertThrows(RuntimeException.class,
+                () -> new Generator(withToc, StandardCharsets.UTF_8).getResult("en"));
+        assertTrue(e.getMessage().contains("circular import"), e.getMessage());
+    }
+
+    @Test
+    public void importingTheSameFileTwiceOrARegionOfItselfIsNotCircular(@TempDir Path tmp) throws IOException {
+        Files.write(tmp.resolve("part.src.md"), "PART\n".getBytes(StandardCharsets.UTF_8));
+        File src = writeFixture(tmp, "${widget:import(path='part.src.md')}\n" +
+                "${widget:import(path='part.src.md')}\n" +
+                "<!-- nrg:begin:intro -->\nINTRO\n<!-- nrg:end:intro -->\n" +
+                "again: ${widget:import(path='test.src.md', region='intro')}\n");
+
+        String body = new Generator(src, StandardCharsets.UTF_8).getResult("en").getContent().toString();
+
+        assertEquals(2, StringUtils.countMatches(body, "PART"), body);
+        assertTrue(body.contains("again: INTRO"), body);
+    }
+
+    @Test
     public void invalidHeadingOffsetThrows() {
         RuntimeException ex = assertThrows(RuntimeException.class,
                 () -> render("ImportWidgetTest/heading-offset/README-invalid.src.md"));

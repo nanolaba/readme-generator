@@ -114,4 +114,33 @@ class MinimalJsonParserTest {
         assertThrows(IllegalArgumentException.class,
                 () -> MinimalJsonParser.parse("{\"a\":1} junk"));
     }
+
+    private static String repeat(String s, int n) {
+        StringBuilder b = new StringBuilder(s.length() * n);
+        for (int i = 0; i < n; i++) {
+            b.append(s);
+        }
+        return b.toString();
+    }
+
+    @Test
+    void deepNestingIsAParseErrorNotAStackOverflow() {
+        // StackOverflowError is an Error: the readers catch Exception, so it ended the run.
+        IllegalArgumentException arrays = assertThrows(IllegalArgumentException.class,
+                () -> MinimalJsonParser.parse(repeat("[", 50_000) + repeat("]", 50_000)));
+        assertTrue(arrays.getMessage().contains("nesting deeper than"), arrays.getMessage());
+
+        assertThrows(IllegalArgumentException.class,
+                () -> MinimalJsonParser.parse(repeat("{\"a\":", 50_000) + "1" + repeat("}", 50_000)));
+    }
+
+    @Test
+    void nestingWithinTheLimitStillParses() {
+        Object parsed = MinimalJsonParser.parse(repeat("[", 500) + repeat("]", 500));
+        assertTrue(parsed instanceof java.util.List);
+
+        // Siblings do not add depth: a long flat array is fine.
+        assertEquals(20_000, ((java.util.List<?>) MinimalJsonParser.parse(
+                "[" + repeat("[],", 19_999) + "[]]")).size());
+    }
 }

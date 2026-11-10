@@ -15,6 +15,9 @@ import java.util.Map;
  */
 public final class MinimalJsonParser {
 
+    /** Real package.json files nest a handful of levels; this leaves two orders of magnitude. */
+    private static final int MAX_NESTING = 512;
+
     private MinimalJsonParser() {/**/}
 
     public static Object parse(String text) {
@@ -36,9 +39,18 @@ public final class MinimalJsonParser {
         char ch = c.peek();
         switch (ch) {
             case '{':
-                return parseObject(c);
             case '[':
-                return parseArray(c);
+                // Objects and arrays are the only recursive productions. Unbounded, a file of
+                // twenty thousand '[' ended the run with a StackOverflowError — an Error, which
+                // the readers' "parse failure" handling does not catch.
+                if (++c.depth > MAX_NESTING) {
+                    throw c.error("nesting deeper than " + MAX_NESTING + " levels");
+                }
+                try {
+                    return ch == '{' ? parseObject(c) : parseArray(c);
+                } finally {
+                    c.depth--;
+                }
             case '"':
                 return parseString(c);
             case 't':
@@ -203,6 +215,7 @@ public final class MinimalJsonParser {
     private static final class Cursor {
         private final String text;
         private int pos;
+        private int depth;
 
         Cursor(String text) { this.text = text; }
 

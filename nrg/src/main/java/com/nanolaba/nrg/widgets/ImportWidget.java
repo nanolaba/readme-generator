@@ -203,7 +203,15 @@ public class ImportWidget extends DefaultWidget {
         // 5. Run-generator processing (if enabled) — over the joined extracted text
         String content = String.join(System.lineSeparator(), selected);
         if (widgetConfig.isRunGenerator()) {
+            List<String> chain = new ArrayList<>(config.getImportChain());
+            String key = importKey(sourceFile, widgetConfig);
+            if (chain.contains(key)) {
+                chain.add(key);
+                throw new RuntimeException("import: circular import: " + String.join(" -> ", chain));
+            }
+            chain.add(key);
             Generator subGenerator = new InMemoryImportedFileGenerator(sourceFile, content, widgetConfig, config);
+            subGenerator.getConfig().setImportChain(chain);
             GenerationResult subResult = subGenerator.getResult(language);
             content = subResult == null ? "" : subResult.getContent().toString();
         }
@@ -234,6 +242,18 @@ public class ImportWidget extends DefaultWidget {
             return "```" + lang + System.lineSeparator() + content + System.lineSeparator() + "```";
         }
         return content;
+    }
+
+    /**
+     * Identity of the imported text for cycle detection. The selection is part of it: a file
+     * may import a region of itself, and that is a cycle only if the region imports itself.
+     */
+    private static String importKey(File sourceFile, Config c) {
+        String target = c.getUrl() != null ? c.getUrl() : GeneratorConfig.importKey(sourceFile);
+        if (c.getRegion() != null) {
+            return target + "#region=" + c.getRegion();
+        }
+        return c.getLines() != null ? target + "#lines=" + c.getLines() : target;
     }
 
     private static boolean hasSelection(Config c) {

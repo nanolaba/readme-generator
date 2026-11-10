@@ -105,6 +105,7 @@ public class TableOfContentsWidget extends DefaultWidget {
         generator.getConfig().setRootGenerator(false);
         generator.getConfig().setRootSourceFile(config.getRootSourceFile());
         generator.getConfig().setProjectRoot(config.getProjectRoot());
+        generator.getConfig().setImportChain(config.getImportChain());
         generator.getConfig().getWidgets().stream()
                 .filter(widget -> widget instanceof TableOfContentsWidget)
                 .forEach(widget -> widget.setEnabled(false));

@@ -215,4 +215,39 @@ class IfConditionTest extends DefaultNRGTest {
         assertThrows(IfCondition.ParseException.class,
                 () -> IfCondition.evaluate("contains(x, y)", cfg, "en"));
     }
+
+    private static String repeat(String s, int n) {
+        StringBuilder b = new StringBuilder(s.length() * n);
+        for (int i = 0; i < n; i++) {
+            b.append(s);
+        }
+        return b.toString();
+    }
+
+    @Test
+    public void testDeepNestingIsAParseErrorNotAStackOverflow() {
+        GeneratorConfig cfg = configWith("");
+
+        IfCondition.ParseException parens = assertThrows(IfCondition.ParseException.class,
+                () -> IfCondition.evaluate(repeat("(", 20_000) + "yes" + repeat(")", 20_000), cfg, "en"));
+        assertTrue(parens.getMessage().contains("nested too deeply"), parens.getMessage());
+
+        assertThrows(IfCondition.ParseException.class,
+                () -> IfCondition.evaluate(repeat("!", 20_000) + "yes", cfg, "en"));
+        assertThrows(IfCondition.ParseException.class,
+                () -> IfCondition.evaluate(repeat("(", 20_000), cfg, "en"));
+    }
+
+    @Test
+    public void testNestingWithinTheLimitStillEvaluates() {
+        GeneratorConfig cfg = configWith("");
+
+        assertTrue(IfCondition.evaluate(repeat("(", 60) + "yes" + repeat(")", 60), cfg, "en"));
+        assertTrue(IfCondition.evaluate(repeat("!", 60) + "yes", cfg, "en"));
+        // Sequential groups do not add depth, and a long flat chain must not recurse per
+        // operator when it is evaluated.
+        assertTrue(IfCondition.evaluate("(yes)" + repeat(" && (yes)", 50_000), cfg, "en"));
+        assertFalse(IfCondition.evaluate("\"\"" + repeat(" || \"\"", 50_000), cfg, "en"));
+        assertTrue(IfCondition.evaluate("\"\"" + repeat(" || \"\"", 50_000) + " || yes", cfg, "en"));
+    }
 }

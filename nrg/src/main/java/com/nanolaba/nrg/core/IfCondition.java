@@ -93,33 +93,41 @@ public final class IfCondition {
         }
     }
 
+    /**
+     * {@code a && b && c …} as one flat node. A left-leaning chain of binary nodes would make
+     * evaluation recurse once per operator, so a long enough chain overflowed the stack even
+     * though nothing in it is nested.
+     */
     private static final class AndNode implements Node {
-        private final Node left, right;
+        private final List<Node> operands;
 
-        AndNode(Node left, Node right) {
-            this.left = left;
-            this.right = right;
+        AndNode(List<Node> operands) {
+            this.operands = operands;
         }
 
         @Override
         public boolean eval(GeneratorConfig config, String language) {
-            if (!left.eval(config, language)) return false;
-            return right.eval(config, language);
+            for (Node operand : operands) {
+                if (!operand.eval(config, language)) return false;
+            }
+            return true;
         }
     }
 
+    /** {@code a || b || c …} as one flat node, for the same reason as {@link AndNode}. */
     private static final class OrNode implements Node {
-        private final Node left, right;
+        private final List<Node> operands;
 
-        OrNode(Node left, Node right) {
-            this.left = left;
-            this.right = right;
+        OrNode(List<Node> operands) {
+            this.operands = operands;
         }
 
         @Override
         public boolean eval(GeneratorConfig config, String language) {
-            if (left.eval(config, language)) return true;
-            return right.eval(config, language);
+            for (Node operand : operands) {
+                if (operand.eval(config, language)) return true;
+            }
+            return false;
         }
     }
 
@@ -423,8 +431,12 @@ public final class IfCondition {
     // -------- Parser ----------
 
     private static final class Parser {
+        /** Far beyond any hand-written condition, far below what the thread stack can take. */
+        private static final int MAX_NESTING = 64;
+
         private final List<Token> tokens;
         private int idx;
+        private int depth;
 
         Parser(List<Token> tokens) {
             this.tokens = tokens;
@@ -440,31 +452,55 @@ public final class IfCondition {
         }
 
         private Node parseOr() {
-            Node left = parseAnd();
+            Node first = parseAnd();
+            if (peekKind() != TokenKind.OR) {
+                return first;
+            }
+            List<Node> operands = new ArrayList<>();
+            operands.add(first);
             while (peekKind() == TokenKind.OR) {
                 consume();
-                Node right = parseAnd();
-                left = new OrNode(left, right);
+                operands.add(parseAnd());
             }
-            return left;
+            return new OrNode(operands);
         }
 
         private Node parseAnd() {
-            Node left = parseUnary();
+            Node first = parseUnary();
+            if (peekKind() != TokenKind.AND) {
+                return first;
+            }
+            List<Node> operands = new ArrayList<>();
+            operands.add(first);
             while (peekKind() == TokenKind.AND) {
                 consume();
-                Node right = parseUnary();
-                left = new AndNode(left, right);
+                operands.add(parseUnary());
             }
-            return left;
+            return new AndNode(operands);
         }
 
         private Node parseUnary() {
             if (peekKind() == TokenKind.NOT) {
                 consume();
-                return new NotNode(parseUnary());
+                enterNesting();
+                try {
+                    return new NotNode(parseUnary());
+                } finally {
+                    depth--;
+                }
             }
             return parsePrimary();
+        }
+
+        /**
+         * Both recursive productions — {@code '(' expression ')'} and {@code '!' unary} — go
+         * through here. Without a bound, a condition of a few thousand {@code (} or {@code !}
+         * ended the run with a StackOverflowError instead of an "invalid condition" message.
+         */
+        private void enterNesting() {
+            if (++depth > MAX_NESTING) {
+                throw new ParseException("Condition is nested too deeply (limit " + MAX_NESTING + ")");
+            }
         }
 
         private Node parsePrimary() {
@@ -474,9 +510,14 @@ public final class IfCondition {
             }
             if (kind == TokenKind.LPAREN) {
                 consume();
-                Node inner = parseExpression();
-                expect(TokenKind.RPAREN);
-                return inner;
+                enterNesting();
+                try {
+                    Node inner = parseExpression();
+                    expect(TokenKind.RPAREN);
+                    return inner;
+                } finally {
+                    depth--;
+                }
             }
             if (kind == TokenKind.FUNCTION) {
                 return parseFunctionCall();

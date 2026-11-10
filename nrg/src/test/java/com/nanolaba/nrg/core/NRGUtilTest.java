@@ -168,6 +168,70 @@ class NRGUtilTest extends DefaultNRGTest {
         assertNull(NRGUtil.processWidgetEscapes(null));
     }
 
+    /** The implementation {@link NRGUtil#parseParametersLine} replaced; kept as the oracle. */
+    private static Map<String, String> parseParametersWithTheOldRegex(String parameters) {
+        Map<String, String> map = new java.util.HashMap<>();
+        if (parameters != null && !parameters.isEmpty()) {
+            java.util.regex.Matcher matcher = java.util.regex.Pattern
+                    .compile("(\\S+) *= *([\"'])(((?!\\2).)*)(\\2)").matcher(parameters);
+            while (matcher.find()) {
+                map.put(matcher.group(1), matcher.group(3));
+            }
+        }
+        return map;
+    }
+
+    @Test
+    public void testParseParametersLineMatchesTheRegexItReplaced() {
+        String[] handPicked = {
+                "", " ", "a='1'", "a = '1'", "a  =  \"1\"", "a='1', b=\"2\"", "a='1',b='2'",
+                "a=b='x'", "a='b'='c'", "a='it's'", "a=\"it's\"", "a='x\"y'", "a = ", "='x'", "a=''",
+                "a='1' b", "a ='1'b= '2'", "a\t='1'", "a=\t'1'", "a='1\n2'", "a='1' \n b='2'",
+                "title = \"Table of contents\", ordered = \"true\"", "====='x'", "a==='x'", "a='x'==='y'",
+                "a b c = 'x'", "a='x", "a=\"x'", "'='='", "\"=\"=\"", "a='\u2028'", "a\u00a0='1'",
+        };
+        for (String input : handPicked) {
+            assertEquals(parseParametersWithTheOldRegex(input), NRGUtil.parseParametersLine(input),
+                    "input: [" + input + "]");
+        }
+
+        // Every string up to a few characters over a small alphabet, then longer random ones.
+        char[] alphabet = {'a', 'b', '=', ' ', '\'', '"', ',', '\t', '\n'};
+        java.util.Random random = new java.util.Random(20261111L);
+        for (int round = 0; round < 300_000; round++) {
+            int length = random.nextInt(round < 150_000 ? 9 : 40);
+            StringBuilder sb = new StringBuilder(length);
+            for (int j = 0; j < length; j++) {
+                sb.append(alphabet[random.nextInt(alphabet.length)]);
+            }
+            String input = sb.toString();
+            Map<String, String> expected = parseParametersWithTheOldRegex(input);
+            Map<String, String> actual = NRGUtil.parseParametersLine(input);
+            if (!expected.equals(actual)) {
+                assertEquals(expected, actual, "input: [" + input.replace("\n", "\\n").replace("\t", "\\t") + "]");
+            }
+        }
+    }
+
+    @Test
+    public void testParseParametersLineIsLinearOnHostileInput() {
+        // Each of these took the old regex from many seconds to minutes at this size.
+        StringBuilder noEquals = new StringBuilder();
+        StringBuilder manyEquals = new StringBuilder("a");
+        StringBuilder unclosed = new StringBuilder();
+        for (int i = 0; i < 300_000; i++) {
+            noEquals.append('x');
+            manyEquals.append('=');
+            unclosed.append("a='");
+        }
+        org.junit.jupiter.api.Assertions.assertTimeoutPreemptively(java.time.Duration.ofSeconds(10), () -> {
+            assertTrue(NRGUtil.parseParametersLine(noEquals.toString()).isEmpty());
+            assertTrue(NRGUtil.parseParametersLine(manyEquals.toString()).isEmpty());
+            assertEquals(1, NRGUtil.parseParametersLine(manyEquals + "'v'").size());
+            NRGUtil.parseParametersLine(unclosed.toString());
+        });
+    }
+
     @Test
     public void testStripPropertyComments() {
         assertEquals("", NRGUtil.stripPropertyComments("<!--@a=1-->"));

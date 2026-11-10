@@ -204,16 +204,117 @@ public class NRGUtil {
         return text.length();
     }
 
+    /**
+     * Parses a widget parameter list — {@code name='value', other="value"} — into a map.
+     *
+     * <p>The grammar is the one the regex {@code (\S+) *= *(["'])(((?!\2).)*)(\2)} defined,
+     * applied with {@code find()} from left to right, and this method reproduces its results
+     * exactly (a randomised test compares the two). The regex itself had to go: on a long run
+     * without an {@code =} it retried from every character and rescanned the rest each time,
+     * so a single 300 KB parameter kept a build busy for minutes.
+     *
+     * <p>How the regex semantics map onto one pass. A name is a run of non-whitespace and the
+     * engine prefers the longest one, so for the run starting at {@code i} the candidates for
+     * the end of the name are, in order: the end of the run (with the {@code =} after optional
+     * spaces), then every {@code =} inside the run from right to left. A candidate holds when
+     * a quote follows the {@code =} (after optional spaces) and the same quote occurs again
+     * before the line ends. Whether a candidate holds does not depend on where the name
+     * starts, so when none holds for the start of a run, none holds for any later start in
+     * it and the whole run is skipped. The tables built up front answer "next quote" and
+     * "next line break" in constant time.
+     */
     public static Map<String, String> parseParametersLine(String parameters) {
         Map<String, String> map = new HashMap<>();
-        if (StringUtils.isNotEmpty(parameters)) {
-            Pattern pattern = Pattern.compile("(\\S+) *= *([\"'])(((?!\\2).)*)(\\2)");
-            Matcher matcher = pattern.matcher(parameters);
-            while (matcher.find()) {
-                map.put(matcher.group(1), matcher.group(3));
+        if (StringUtils.isEmpty(parameters)) {
+            return map;
+        }
+        final String text = parameters;
+        final int n = text.length();
+        int[] nextSingle = new int[n + 1];
+        int[] nextDouble = new int[n + 1];
+        int[] nextLineEnd = new int[n + 1];
+        nextSingle[n] = nextDouble[n] = nextLineEnd[n] = n;
+        for (int p = n - 1; p >= 0; p--) {
+            char c = text.charAt(p);
+            nextSingle[p] = c == '\'' ? p : nextSingle[p + 1];
+            nextDouble[p] = c == '"' ? p : nextDouble[p + 1];
+            nextLineEnd[p] = isRegexLineTerminator(c) ? p : nextLineEnd[p + 1];
+        }
+
+        int i = 0;
+        while (i < n) {
+            if (isRegexWhitespace(text.charAt(i))) {
+                i++;
+                continue;
             }
+            int runEnd = i;
+            while (runEnd < n && !isRegexWhitespace(text.charAt(runEnd))) {
+                runEnd++;
+            }
+            int nameEnd = -1;
+            int openQuote = -1;
+            // Longest name first: the whole run, with '=' after optional spaces.
+            int equals = skipSpaces(text, runEnd);
+            if (equals < n && text.charAt(equals) == '=') {
+                openQuote = openingQuoteAfter(text, equals, nextSingle, nextDouble, nextLineEnd);
+                if (openQuote >= 0) {
+                    nameEnd = runEnd;
+                }
+            }
+            for (int k = runEnd - 1; nameEnd < 0 && k > i; k--) {
+                if (text.charAt(k) == '=') {
+                    openQuote = openingQuoteAfter(text, k, nextSingle, nextDouble, nextLineEnd);
+                    if (openQuote >= 0) {
+                        nameEnd = k;
+                    }
+                }
+            }
+            if (nameEnd < 0) {
+                i = runEnd;
+                continue;
+            }
+            int closeQuote = (text.charAt(openQuote) == '\'' ? nextSingle : nextDouble)[openQuote + 1];
+            map.put(text.substring(i, nameEnd), text.substring(openQuote + 1, closeQuote));
+            i = closeQuote + 1;
         }
         return map;
+    }
+
+    /**
+     * Given the position of an {@code =}, returns the position of the quote that opens the
+     * value — after optional spaces, and only if the same quote closes it before the line
+     * ends — or {@code -1}.
+     */
+    private static int openingQuoteAfter(String text, int equals, int[] nextSingle, int[] nextDouble,
+                                         int[] nextLineEnd) {
+        int quote = skipSpaces(text, equals + 1);
+        if (quote >= text.length()) {
+            return -1;
+        }
+        char q = text.charAt(quote);
+        if (q != '\'' && q != '"') {
+            return -1;
+        }
+        int close = (q == '\'' ? nextSingle : nextDouble)[quote + 1];
+        return close < text.length() && close < nextLineEnd[quote + 1] ? quote : -1;
+    }
+
+    private static int skipSpaces(String text, int from) {
+        int p = from;
+        while (p < text.length() && text.charAt(p) == ' ') {
+            p++;
+        }
+        return p;
+    }
+
+    /** {@code \s} of java.util.regex without UNICODE_CHARACTER_CLASS. */
+    private static boolean isRegexWhitespace(char c) {
+        return c == ' ' || c == '\t' || c == '\n' || c == 0x0B || c == '\f' || c == '\r';
+    }
+
+    /** What {@code .} refuses to match in java.util.regex by default. */
+    private static boolean isRegexLineTerminator(char c) {
+        return c == '\n' || c == '\r' || c == '\u0085' || c == ' ' || c == ' ';
     }
 
     public static String unwrapParameterValue(String wrapped) {

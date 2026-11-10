@@ -46,6 +46,7 @@ public class GeneratorConfig {
 
     private File rootSourceFile;
     private File projectRoot;
+    private List<String> importChain;
     private List<String> languages = Collections.singletonList("en");
     private String defaultLanguage;
     private String widgetsProperty;
@@ -239,6 +240,29 @@ public class GeneratorConfig {
 
     public void setRootSourceFile(File rootSourceFile) {
         this.rootSourceFile = rootSourceFile;
+    }
+
+    /**
+     * Keys of the templates currently being rendered on the way down to this one, outermost
+     * first and this one last. An import whose key is already in the chain is a cycle;
+     * without this check a file that imports itself (directly or through others) recursed
+     * until the stack overflowed.
+     *
+     * <p>A key is whatever identifies the imported text: {@link #importKey(File)} for a whole
+     * local file, the same plus the selection for a region or line range, the URL for a
+     * remote import.
+     */
+    public List<String> getImportChain() {
+        return importChain != null ? importChain : Collections.singletonList(importKey(sourceFile));
+    }
+
+    /** Set on a child generator: the chain of the importing template plus the child's own key. */
+    public void setImportChain(List<String> importChain) {
+        this.importChain = importChain;
+    }
+
+    public static String importKey(File file) {
+        return file == null ? "<memory>" : file.getAbsoluteFile().toPath().normalize().toString();
     }
 
     /**
