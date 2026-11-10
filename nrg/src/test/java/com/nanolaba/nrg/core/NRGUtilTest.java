@@ -181,35 +181,109 @@ class NRGUtilTest extends DefaultNRGTest {
         return map;
     }
 
-    @Test
-    public void testParseParametersLineMatchesTheRegexItReplaced() {
-        String[] handPicked = {
-                "", " ", "a='1'", "a = '1'", "a  =  \"1\"", "a='1', b=\"2\"", "a='1',b='2'",
-                "a=b='x'", "a='b'='c'", "a='it's'", "a=\"it's\"", "a='x\"y'", "a = ", "='x'", "a=''",
-                "a='1' b", "a ='1'b= '2'", "a\t='1'", "a=\t'1'", "a='1\n2'", "a='1' \n b='2'",
-                "title = \"Table of contents\", ordered = \"true\"", "====='x'", "a==='x'", "a='x'==='y'",
-                "a b c = 'x'", "a='x", "a=\"x'", "'='='", "\"=\"=\"", "a='\u2028'", "a\u00a0='1'",
-        };
-        for (String input : handPicked) {
-            assertEquals(parseParametersWithTheOldRegex(input), NRGUtil.parseParametersLine(input),
-                    "input: [" + input + "]");
+    private static Map<String, String> mapOf(String... keysAndValues) {
+        Map<String, String> map = new java.util.HashMap<>();
+        for (int i = 0; i < keysAndValues.length; i += 2) {
+            map.put(keysAndValues[i], keysAndValues[i + 1]);
         }
+        return map;
+    }
 
-        // Every string up to a few characters over a small alphabet, then longer random ones.
-        char[] alphabet = {'a', 'b', '=', ' ', '\'', '"', ',', '\t', '\n'};
+    @Test
+    public void testParseParametersLineGrammar() {
+        assertEquals(mapOf(), NRGUtil.parseParametersLine(null));
+        assertEquals(mapOf(), NRGUtil.parseParametersLine(""));
+        assertEquals(mapOf(), NRGUtil.parseParametersLine("  "));
+        assertEquals(mapOf("a", "1"), NRGUtil.parseParametersLine("a='1'"));
+        assertEquals(mapOf("a", "1"), NRGUtil.parseParametersLine("a  =  \"1\""));
+        assertEquals(mapOf("a", ""), NRGUtil.parseParametersLine("a=''"));
+        assertEquals(mapOf("title", "Table of contents", "ordered", "true"),
+                NRGUtil.parseParametersLine("title = \"Table of contents\", ordered = \"true\""));
+        assertEquals(mapOf("min-depth", "2", "numbering.style", "dotted", "a_b", "c"),
+                NRGUtil.parseParametersLine("min-depth='2' numbering.style='dotted' a_b='c'"));
+
+        // A value keeps everything up to its own closing quote.
+        assertEquals(mapOf("a", "it's (done), x=y"), NRGUtil.parseParametersLine("a=\"it's (done), x=y\""));
+        assertEquals(mapOf("a", "say \"hi\""), NRGUtil.parseParametersLine("a='say \"hi\"'"));
+        assertEquals(mapOf("text", "say a='b', c='d'"), NRGUtil.parseParametersLine("text=\"say a='b', c='d'\""));
+        assertEquals(mapOf("cond", "endsWith(${v}, -SNAPSHOT)", "text", "x"),
+                NRGUtil.parseParametersLine("cond='endsWith(${v}, -SNAPSHOT)', text='x'"));
+
+        // A later parameter with the same name wins.
+        assertEquals(mapOf("a", "2"), NRGUtil.parseParametersLine("a='1', a='2'"));
+
+        // Not parameters: no quote after '=', no closing quote, a value broken by a line end.
+        assertEquals(mapOf(), NRGUtil.parseParametersLine("a = "));
+        assertEquals(mapOf(), NRGUtil.parseParametersLine("a=b"));
+        assertEquals(mapOf(), NRGUtil.parseParametersLine("a='x"));
+        assertEquals(mapOf(), NRGUtil.parseParametersLine("a='1\n2'"));
+        assertEquals(mapOf(), NRGUtil.parseParametersLine("='x'"));
+        assertEquals(mapOf("b", "y"), NRGUtil.parseParametersLine("a='x, b=\"y\""));
+        assertEquals(mapOf("c", "x"), NRGUtil.parseParametersLine("a b c = 'x'"));
+    }
+
+    @Test
+    public void testParseParametersLineDoesNotNeedASpaceAfterTheComma() {
+        // The name used to be "the longest run of non-whitespace", so in the first line below
+        // the whole of title="T",ordered was read as one name and both parameters were lost.
+        assertEquals(mapOf("title", "T", "ordered", "true"),
+                NRGUtil.parseParametersLine("title=\"T\",ordered=\"true\""));
+        assertEquals(mapOf("a", "1", "b", "2", "c", "3"), NRGUtil.parseParametersLine("a='1',b='2',c=\"3\""));
+        assertEquals(mapOf("a", "1", "b", "2"), NRGUtil.parseParametersLine("a='1' ,b='2'"));
+        assertEquals(mapOf("a", "1", "b", "2"), NRGUtil.parseParametersLine("a='1',,  ,b='2',"));
+        assertEquals(mapOf("a", "1", "b", "2"), NRGUtil.parseParametersLine(",a='1',\tb='2'"));
+        // Nothing at all between two parameters is tolerated as well.
+        assertEquals(mapOf("a", "1", "b", "2"), NRGUtil.parseParametersLine("a='1'b='2'"));
+    }
+
+    @Test
+    public void testParseParametersLineOnRandomWellFormedLists() {
+        char[] nameChars = "abcxyz019-_.".toCharArray();
+        // Deliberately includes what must not end or split a value.
+        char[] valueChars = "ab 12,=()[]{}<>-_.:/\\$#@!\t".toCharArray();
+        String[] separators = {", ", ",", " ", " , ", ",  ", "\t", ""};
+        String[] aroundEquals = {"", " ", "  "};
         java.util.Random random = new java.util.Random(20261111L);
-        for (int round = 0; round < 300_000; round++) {
-            int length = random.nextInt(round < 150_000 ? 9 : 40);
-            StringBuilder sb = new StringBuilder(length);
-            for (int j = 0; j < length; j++) {
-                sb.append(alphabet[random.nextInt(alphabet.length)]);
+
+        for (int round = 0; round < 50_000; round++) {
+            Map<String, String> expected = new java.util.HashMap<>();
+            Map<String, String> expectedByOldRegex = new java.util.HashMap<>();
+            StringBuilder list = new StringBuilder();
+            StringBuilder conventional = new StringBuilder(); // ", " between, plain values
+            int count = random.nextInt(6);
+            for (int p = 0; p < count; p++) {
+                StringBuilder name = new StringBuilder();
+                for (int j = 1 + random.nextInt(6); j > 0; j--) {
+                    name.append(nameChars[random.nextInt(nameChars.length)]);
+                }
+                char quote = random.nextBoolean() ? '\'' : '"';
+                StringBuilder value = new StringBuilder();
+                for (int j = random.nextInt(12); j > 0; j--) {
+                    int pick = random.nextInt(valueChars.length + 1);
+                    value.append(pick == valueChars.length ? (quote == '\'' ? '"' : '\'') : valueChars[pick]);
+                }
+                String eq = aroundEquals[random.nextInt(aroundEquals.length)] + "="
+                        + aroundEquals[random.nextInt(aroundEquals.length)];
+                if (p > 0) {
+                    list.append(separators[random.nextInt(separators.length)]);
+                    conventional.append(", ");
+                }
+                list.append(name).append(eq).append(quote).append(value).append(quote);
+                expected.put(name.toString(), value.toString());
+
+                String plainValue = value.toString().replaceAll("[='\"]", "x");
+                conventional.append(name).append(eq).append(quote).append(plainValue).append(quote);
+                expectedByOldRegex.put(name.toString(), plainValue);
             }
-            String input = sb.toString();
-            Map<String, String> expected = parseParametersWithTheOldRegex(input);
-            Map<String, String> actual = NRGUtil.parseParametersLine(input);
-            if (!expected.equals(actual)) {
-                assertEquals(expected, actual, "input: [" + input.replace("\n", "\\n").replace("\t", "\\t") + "]");
-            }
+            assertEquals(expected, NRGUtil.parseParametersLine(list.toString()), "input: [" + list + "]");
+
+            // Written the conventional way, a list means exactly what it meant to the regex
+            // this parser replaced — existing templates keep their meaning.
+            String conventionalList = conventional.toString();
+            assertEquals(expectedByOldRegex, parseParametersWithTheOldRegex(conventionalList),
+                    "oracle disagrees with the generator on: [" + conventionalList + "]");
+            assertEquals(expectedByOldRegex, NRGUtil.parseParametersLine(conventionalList),
+                    "input: [" + conventionalList + "]");
         }
     }
 
@@ -227,7 +301,10 @@ class NRGUtilTest extends DefaultNRGTest {
         org.junit.jupiter.api.Assertions.assertTimeoutPreemptively(java.time.Duration.ofSeconds(10), () -> {
             assertTrue(NRGUtil.parseParametersLine(noEquals.toString()).isEmpty());
             assertTrue(NRGUtil.parseParametersLine(manyEquals.toString()).isEmpty());
-            assertEquals(1, NRGUtil.parseParametersLine(manyEquals + "'v'").size());
+            // '=' is not part of a name, so a====…='v' has no '=' directly followed by a value
+            // after the name and is not a parameter.
+            assertTrue(NRGUtil.parseParametersLine(manyEquals + "'v'").isEmpty());
+            assertEquals(mapOf("k", "v"), NRGUtil.parseParametersLine(noEquals + " k='v'"));
             NRGUtil.parseParametersLine(unclosed.toString());
         });
     }

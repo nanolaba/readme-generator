@@ -1215,7 +1215,7 @@ Widgets allow you to insert programmatically generated text into a document.
 If you are using **Nanolaba Readme Generator (NRG)** as a Java library, you can write your own widget.
 How to do this is explained in the [Advanced Features](#advanced-features) section.
 
-Widget parameters are written as `name='value'` pairs separated by commas; a value is quoted with either `'` or `"`. Everything between the quotes belongs to the value, including parentheses and the other quote character: `cond='endsWith(${version}, -SNAPSHOT)'`, `text="it's done (really)"`.
+Widget parameters are written as `name='value'` pairs separated by commas (a space after the comma is optional); a value is quoted with either `'` or `"`. Everything between the quotes belongs to the value, including parentheses and the other quote character: `cond='endsWith(${version}, -SNAPSHOT)'`, `text="it's done (really)"`.
 
 When a widget that produces several lines (`import`, `alert`, `fileTree`, `exec`, `tableOfContents`, …) is the first thing on an indented line, every line of its output is indented the same way — which keeps the output inside a list item. Blank lines are left empty. Nothing is added when other text precedes the widget on its line.
 
@@ -1599,7 +1599,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 11.11.2026 00:29:41
+Last updated: 11.11.2026 00:38:49
 ```
 
 </td></tr>
@@ -2055,7 +2055,7 @@ ${widget:endDetails}
 <details>
 <summary>Advanced</summary>
 
-inner *markdown* and 11.11.2026 00:29:41
+inner *markdown* and 11.11.2026 00:38:49
 
 </details>
 ```
@@ -2214,6 +2214,7 @@ This section summarises the main user-visible changes in each release. For full 
 - **GitHub Action verifies the NRG release it downloads**: new `nrg-sha256` input pins the expected checksum of the release zip — a mismatch fails the run before the jar is executed. Without it the action checks the download against the `.sha256` file now published with each release, and for older releases prints the checksum so it can be pinned.
 - **`exec` widget no longer times out on large output**: the command's output was read only after the process had finished, but a process that writes more than the operating system's pipe buffer (a few kilobytes) blocks until someone reads — so every command with sizeable stdout or stderr hung until the timeout and produced nothing. Both streams are now read while the command runs, and the command's standard input is closed, so a program that waits for input ends immediately instead of hanging.
 - **Imported files and the table of contents now see what the main template sees**: a custom widget registered with `--widgets`, `<widgets>`, `NRG.addWidget(...)` or the root template's `nrg.widgets` was unknown inside an imported file (the tag was left in the output as text); `exec` inside an imported local file was refused even with `--allow-exec`; and a document with a table of contents logged `Unknown widget name` and `exec widget: execution is disabled` for widgets that worked fine, because the table of contents scans the document in a second pass that had none of this. All of it is passed down now. A `tableOfContents` inside an imported file no longer fails with a `NullPointerException` for languages other than the first, and `exec` is no longer attempted in the scan pass at all.
+- **Widget parameters no longer need a space after the comma**: in `${widget:tableOfContents(title="T",ordered="true")}` both parameters were silently ignored, because everything up to the last `=` — `title="T",ordered` — was read as a single parameter name. A name now ends at a comma, `=` or quote, so `a='1',b='2'` means the same as `a='1', b='2'`. Parameter lists written with spaces are parsed exactly as before.
 
 ### 1.2
 

@@ -207,21 +207,22 @@ public class NRGUtil {
     /**
      * Parses a widget parameter list — {@code name='value', other="value"} — into a map.
      *
-     * <p>The grammar is the one the regex {@code (\S+) *= *(["'])(((?!\2).)*)(\2)} defined,
-     * applied with {@code find()} from left to right, and this method reproduces its results
-     * exactly (a randomised test compares the two). The regex itself had to go: on a long run
-     * without an {@code =} it retried from every character and rescanned the rest each time,
-     * so a single 300 KB parameter kept a build busy for minutes.
+     * <p>A parameter is a name, {@code =}, and a value in single or double quotes, with
+     * optional spaces around the {@code =}. The value runs to the next quote of the same kind
+     * on the same line, so it may contain the other quote, commas and parentheses. Anything
+     * between parameters — commas, whitespace, stray text — is skipped; a later parameter
+     * with the same name wins.
      *
-     * <p>How the regex semantics map onto one pass. A name is a run of non-whitespace and the
-     * engine prefers the longest one, so for the run starting at {@code i} the candidates for
-     * the end of the name are, in order: the end of the run (with the {@code =} after optional
-     * spaces), then every {@code =} inside the run from right to left. A candidate holds when
-     * a quote follows the {@code =} (after optional spaces) and the same quote occurs again
-     * before the line ends. Whether a candidate holds does not depend on where the name
-     * starts, so when none holds for the start of a run, none holds for any later start in
-     * it and the whole run is skipped. The tables built up front answer "next quote" and
-     * "next line break" in constant time.
+     * <p>A name is a run of characters other than whitespace, {@code =}, {@code ,} and
+     * quotes. This used to be "any run of non-whitespace, the longer the better" (the regex
+     * {@code (\S+) *= *(["'])…}), which made the space after a comma mandatory without saying
+     * so: in {@code title="T",ordered="true"} the whole of {@code title="T",ordered} was
+     * taken as one name and both parameters were lost.
+     *
+     * <p>The scan is a single pass. The tables built up front answer "where is the next
+     * quote" and "where does the line end" in constant time; the regex this replaced
+     * rescanned the rest of the text from every character and needed minutes for a 300 KB
+     * parameter.
      */
     public static Map<String, String> parseParametersLine(String parameters) {
         Map<String, String> map = new HashMap<>();
@@ -243,34 +244,20 @@ public class NRGUtil {
 
         int i = 0;
         while (i < n) {
-            if (isRegexWhitespace(text.charAt(i))) {
+            if (!isParameterNameChar(text.charAt(i))) {
                 i++;
                 continue;
             }
-            int runEnd = i;
-            while (runEnd < n && !isRegexWhitespace(text.charAt(runEnd))) {
-                runEnd++;
+            int nameEnd = i;
+            while (nameEnd < n && isParameterNameChar(text.charAt(nameEnd))) {
+                nameEnd++;
             }
-            int nameEnd = -1;
-            int openQuote = -1;
-            // Longest name first: the whole run, with '=' after optional spaces.
-            int equals = skipSpaces(text, runEnd);
-            if (equals < n && text.charAt(equals) == '=') {
-                openQuote = openingQuoteAfter(text, equals, nextSingle, nextDouble, nextLineEnd);
-                if (openQuote >= 0) {
-                    nameEnd = runEnd;
-                }
-            }
-            for (int k = runEnd - 1; nameEnd < 0 && k > i; k--) {
-                if (text.charAt(k) == '=') {
-                    openQuote = openingQuoteAfter(text, k, nextSingle, nextDouble, nextLineEnd);
-                    if (openQuote >= 0) {
-                        nameEnd = k;
-                    }
-                }
-            }
-            if (nameEnd < 0) {
-                i = runEnd;
+            int equals = skipSpaces(text, nameEnd);
+            int openQuote = equals < n && text.charAt(equals) == '='
+                    ? openingQuoteAfter(text, equals, nextSingle, nextDouble, nextLineEnd)
+                    : -1;
+            if (openQuote < 0) {
+                i = nameEnd; // not a parameter: resume after this word
                 continue;
             }
             int closeQuote = (text.charAt(openQuote) == '\'' ? nextSingle : nextDouble)[openQuote + 1];
@@ -278,6 +265,10 @@ public class NRGUtil {
             i = closeQuote + 1;
         }
         return map;
+    }
+
+    private static boolean isParameterNameChar(char c) {
+        return !isRegexWhitespace(c) && c != '=' && c != ',' && c != '\'' && c != '"';
     }
 
     /**
