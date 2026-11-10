@@ -122,6 +122,19 @@ class ProjectRootTest {
     }
 
     @Test
+    void linkCycleFailsClosed(@TempDir Path tmp) throws IOException {
+        // The file system cannot say where a cycle leads, so the path is never "inside".
+        File root = Files.createDirectories(tmp.resolve("repo")).toFile();
+        symlink(tmp.resolve("repo/a"), tmp.resolve("repo/b"));
+        symlink(tmp.resolve("repo/b"), tmp.resolve("repo/a"));
+
+        assertFalse(ProjectRoot.contains(root, new File(root, "a")));
+        assertFalse(ProjectRoot.contains(root, new File(root, "a/x.md")));
+        assertThrows(ProjectRoot.OutsideProjectRootException.class,
+                () -> ProjectRoot.require(root, new File(root, "a"), "import path"));
+    }
+
+    @Test
     void linkThatStaysInsideTheRootIsFine(@TempDir Path tmp) throws IOException {
         File root = Files.createDirectories(tmp.resolve("repo")).toFile();
         Path real = Files.createDirectories(tmp.resolve("repo/real"));

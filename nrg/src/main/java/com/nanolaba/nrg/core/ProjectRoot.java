@@ -37,7 +37,13 @@ public final class ProjectRoot {
      * submodules use a file).
      */
     public static File detect(File rootSourceFile) {
-        File start = canonical(rootSourceFile == null ? new File(".") : rootSourceFile.getAbsoluteFile().getParentFile());
+        File start = rootSourceFile == null ? new File(".") : rootSourceFile.getAbsoluteFile().getParentFile();
+        try {
+            start = canonical(start);
+        } catch (UnresolvablePathException e) {
+            // Kept as written: every later containment check against it fails closed.
+            return start.getAbsoluteFile();
+        }
         for (File dir = start; dir != null; dir = dir.getParentFile()) {
             if (new File(dir, ".git").exists()) {
                 return dir;
@@ -47,7 +53,11 @@ public final class ProjectRoot {
     }
 
     public static boolean contains(File root, File candidate) {
-        return canonical(candidate).toPath().startsWith(canonical(root).toPath());
+        try {
+            return canonical(candidate).toPath().startsWith(canonical(root).toPath());
+        } catch (UnresolvablePathException e) {
+            return false;
+        }
     }
 
     /**
@@ -60,7 +70,7 @@ public final class ProjectRoot {
     public static File require(File root, File candidate, String what) {
         if (!contains(root, candidate)) {
             throw new OutsideProjectRootException(what + " is outside the project root: "
-                    + canonical(candidate).getPath() + " (root: " + canonical(root).getPath()
+                    + describe(candidate) + " (root: " + describe(root)
                     + "). Pass --root <dir> (Maven: <root>) to widen the root.");
         }
         return candidate;
@@ -115,14 +125,36 @@ public final class ProjectRoot {
         return current;
     }
 
+    /**
+     * Reached when an existing entry could not be resolved by the file system. The only case
+     * with a safe answer is a dangling symbolic link whose target can be read; anything else
+     * (a link cycle, an unreadable link, too many hops) fails closed — the lexical path says
+     * nothing about where the entry really leads.
+     */
     private static Path followDanglingLink(Path parent, Path link, int depth) {
         if (depth >= MAX_LINK_HOPS || !Files.isSymbolicLink(link)) {
-            return link;
+            throw new UnresolvablePathException(link);
         }
         try {
             return resolveLinks(parent.resolve(Files.readSymbolicLink(link)), depth + 1);
         } catch (IOException e) {
-            return link;
+            throw new UnresolvablePathException(link);
+        }
+    }
+
+    /** A path whose real location could not be established; never treated as inside a root. */
+    private static final class UnresolvablePathException extends RuntimeException {
+        UnresolvablePathException(Path path) {
+            super("cannot resolve " + path);
+        }
+    }
+
+    /** Resolved path for messages; falls back to the absolute path when resolution fails. */
+    static String describe(File file) {
+        try {
+            return canonical(file).getPath();
+        } catch (UnresolvablePathException e) {
+            return (file == null ? new File(".") : file).getAbsolutePath();
         }
     }
 

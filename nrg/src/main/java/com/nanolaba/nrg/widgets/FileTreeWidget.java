@@ -3,6 +3,7 @@ package com.nanolaba.nrg.widgets;
 import com.nanolaba.logging.LOG;
 import com.nanolaba.nrg.core.GeneratorConfig;
 import com.nanolaba.nrg.core.NRGUtil;
+import com.nanolaba.nrg.core.ProjectRoot;
 
 import java.io.File;
 import java.nio.file.FileSystems;
@@ -82,7 +83,7 @@ public class FileTreeWidget extends DefaultWidget {
 
         StringBuilder body = new StringBuilder();
         body.append(root.getName()).append(System.lineSeparator());
-        renderChildren(root, "", depth, 1, dirsOnly, excludeMatchers, "", body);
+        renderChildren(root, "", depth, 1, dirsOnly, excludeMatchers, "", body, config.getProjectRoot());
 
         String content = stripTrailingNewline(body.toString());
         if (codeblock) {
@@ -100,7 +101,7 @@ public class FileTreeWidget extends DefaultWidget {
 
     private void renderChildren(File dir, String indent, int maxDepth, int currentLevel,
                                 boolean dirsOnly, List<PathMatcher> excludes, String relativePathPrefix,
-                                StringBuilder out) {
+                                StringBuilder out, File projectRoot) {
         File[] childArray = dir.listFiles();
         if (childArray == null) {
             return;
@@ -128,12 +129,15 @@ public class FileTreeWidget extends DefaultWidget {
             String connector = isLast ? CONNECTOR_LAST : CONNECTOR_BRANCH;
             out.append(indent).append(connector).append(entry.getName()).append(System.lineSeparator());
 
-            if (entry.isDirectory() && currentLevel < maxDepth) {
+            // A directory entry may be a link that leads out of the project; it is listed by
+            // name but never descended into.
+            if (entry.isDirectory() && currentLevel < maxDepth && ProjectRoot.contains(projectRoot, entry)) {
                 String childIndent = indent + (isLast ? INDENT_BLANK : INDENT_VERT);
                 String childRel = relativePathPrefix.isEmpty()
                         ? entry.getName()
                         : relativePathPrefix + "/" + entry.getName();
-                renderChildren(entry, childIndent, maxDepth, currentLevel + 1, dirsOnly, excludes, childRel, out);
+                renderChildren(entry, childIndent, maxDepth, currentLevel + 1, dirsOnly, excludes, childRel, out,
+                        projectRoot);
             }
         }
     }

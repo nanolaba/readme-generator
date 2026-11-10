@@ -40,7 +40,7 @@ public final class OutputFileNameValidator {
             }
             if (projectRoot != null && !ProjectRoot.contains(projectRoot, f)) {
                 return Optional.of("Output file for language '" + lang + "' is outside the project root: "
-                        + ProjectRoot.canonical(f).getPath() + " (root: " + ProjectRoot.canonical(projectRoot).getPath()
+                        + ProjectRoot.describe(f) + " (root: " + ProjectRoot.describe(projectRoot)
                         + "). Pass --root <dir> (Maven: <root>) to widen the root.");
             }
             String key = f.getAbsolutePath();

@@ -3,6 +3,7 @@ package com.nanolaba.nrg;
 import com.nanolaba.nrg.core.Generator;
 import com.nanolaba.nrg.core.ProjectRoot;
 import com.nanolaba.nrg.core.Validator;
+import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -82,6 +83,68 @@ class ProjectRootBoundaryTest extends DefaultNRGTest {
         assertRefused("<!--@nrg.pom.path=../outside/pom.xml-->\n${pom.version}\n", "nrg.pom.path");
         assertRefused("<!--@nrg.npm.path=../outside/package.json-->\n${npm.version}\n", "nrg.npm.path");
         assertRefused("<!--@nrg.gradle.path=../outside-->\n${gradle.signing.password}\n", "nrg.gradle.path");
+    }
+
+    /** Creates a symbolic link, or skips the test where the platform refuses (Windows without the privilege). */
+    private static void symlink(Path link, Path target) {
+        try {
+            Files.createSymbolicLink(link, target);
+        } catch (IOException | UnsupportedOperationException | SecurityException e) {
+            Assumptions.assumeTrue(false, "symbolic links are not available here: " + e);
+        }
+    }
+
+    @Test
+    void defaultDescriptorsAreCheckedAsTheFilesActuallyOpened() {
+        // No nrg.*.path at all: the defaults sit next to the source file, yet each can be a
+        // link that leads out of the project.
+        symlink(repo.resolve("pom.xml"), tmp.resolve("outside/pom.xml"));
+        symlink(repo.resolve("package.json"), tmp.resolve("outside/package.json"));
+        symlink(repo.resolve("gradle.properties"), tmp.resolve("outside/gradle.properties"));
+
+        assertRefused("${pom.version}\n", "pom.xml");
+        assertRefused("${npm.version}\n", "package.json");
+        assertRefused("${gradle.signing.password}\n", "nrg.gradle.path");
+    }
+
+    @Test
+    void importThroughALinkIsRefused() {
+        symlink(repo.resolve("innocent.md"), tmp.resolve("outside/secret.txt"));
+        assertRefused("${widget:import(path='innocent.md')}\n", "import path");
+    }
+
+    @Test
+    void fileTreeListsALinkButDoesNotDescendThroughIt() throws IOException {
+        Files.createDirectories(repo.resolve("tree/real"));
+        write(repo.resolve("tree/real/inside.txt"), "");
+        symlink(repo.resolve("tree/escape"), tmp.resolve("outside"));
+
+        String out = render("${widget:fileTree(path='tree', depth='3')}\n");
+
+        assertTrue(out.contains("escape"), out);
+        assertTrue(out.contains("inside.txt"), out);
+        assertFalse(out.contains("secret.txt"), out);
+    }
+
+    @Test
+    void fileTreeDoesNotDescendThroughAWindowsJunction() throws Exception {
+        Assumptions.assumeTrue(System.getProperty("os.name").toLowerCase().startsWith("windows"));
+        Files.createDirectories(repo.resolve("tree/real"));
+        write(repo.resolve("tree/real/inside.txt"), "");
+        Path junction = repo.resolve("tree/escape");
+        Process mklink = new ProcessBuilder("cmd", "/c", "mklink", "/J",
+                junction.toString(), tmp.resolve("outside").toString()).redirectErrorStream(true).start();
+        Assumptions.assumeTrue(mklink.waitFor() == 0, "mklink /J failed");
+        try {
+            String out = render("${widget:fileTree(path='tree', depth='3')}\n");
+
+            assertTrue(out.contains("escape"), out);
+            assertTrue(out.contains("inside.txt"), out);
+            assertFalse(out.contains("secret.txt"), out);
+            assertRefused("${widget:import(path='tree/escape/secret.txt')}\n", "import path");
+        } finally {
+            Files.delete(junction);
+        }
     }
 
     @Test

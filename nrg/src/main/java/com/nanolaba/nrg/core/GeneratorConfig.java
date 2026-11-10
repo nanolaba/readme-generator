@@ -361,7 +361,9 @@ public class GeneratorConfig {
         String configured = getProperties().getProperty(NRGConstants.PROPERTY_POM_PATH);
         File base = sourceFile == null ? new File(".").getAbsoluteFile() : sourceFile.getAbsoluteFile().getParentFile();
         if (configured == null || configured.isEmpty()) {
-            return new File(base, "pom.xml");
+            // The default sits next to the source file, but it may still be a link that
+            // leads elsewhere — every file that is actually opened is checked.
+            return requireInsideProjectRoot(new File(base, "pom.xml"), "pom.xml");
         }
         File requested = new File(configured);
         return requireInsideProjectRoot(
@@ -393,7 +395,7 @@ public class GeneratorConfig {
                 ? new File(".").getAbsoluteFile()
                 : sourceFile.getAbsoluteFile().getParentFile();
         if (configured == null || configured.isEmpty()) {
-            return new File(base, "package.json");
+            return requireInsideProjectRoot(new File(base, "package.json"), "package.json");
         }
         File requested = new File(configured);
         return requireInsideProjectRoot(
@@ -443,11 +445,23 @@ public class GeneratorConfig {
             File groovy = new File(anchor, "build.gradle");
             File kotlin = new File(anchor, "build.gradle.kts");
             File buildScript = groovy.isFile() ? groovy : (kotlin.isFile() ? kotlin : null);
-            return new File[] { props.isFile() ? props : null, buildScript };
+            return new File[] { insideRootOrNull(props), insideRootOrNull(buildScript) };
         }
         File parent = anchor.getParentFile();
         File props = parent == null ? null : new File(parent, "gradle.properties");
-        return new File[] { props != null && props.isFile() ? props : null, anchor.isFile() ? anchor : null };
+        return new File[] { insideRootOrNull(props), insideRootOrNull(anchor) };
+    }
+
+    /**
+     * Existing-file filter for the Gradle descriptors with the project-root check applied to
+     * the file that is actually opened: the directory was checked already, but a file inside
+     * it can itself be a link that leads elsewhere.
+     */
+    private File insideRootOrNull(File file) {
+        if (file == null || !file.isFile()) {
+            return null;
+        }
+        return requireInsideProjectRoot(file, PROPERTY_GRADLE_PATH);
     }
 
     /**
