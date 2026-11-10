@@ -35,6 +35,12 @@ jobs:
       - name: Build & test
         run: mvn --batch-mode --no-transfer-progress verify -Dgpg.skip=true -Dmaven.javadoc.skip=true
 
+      # Dogfood: HEAD's generator against HEAD's templates, on every push and pull request.
+      # --validate rather than --check: the README renders ${widget:date}, so a regeneration
+      # never matches the committed file byte for byte.
+      - name: Validate the repository's own templates
+        run: java -jar nrg/target/nrg.jar --validate README.src.md CONTRIBUTING.src.md SECURITY.src.md CODE_OF_CONDUCT.src.md
+
       - name: Upload surefire reports on failure
         if: failure()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2

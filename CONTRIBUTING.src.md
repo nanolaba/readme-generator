@@ -144,8 +144,8 @@ The top-level `README.md` and `README.ru.md` are **generated** from `README.src.
    ```
 3. ${en:'Commit both the `.src.md` change and the regenerated `.md` files in the same commit.', ru:'Коммитьте изменения в `.src.md` и перегенерированные `.md` в одном коммите.'}
 
-CI runs the generator in `--check` mode and fails the build if the committed `.md` files don't match what the source would regenerate.<!--en-->
-CI запускает генератор в режиме `--check` и валит сборку, если закоммиченные `.md` не совпадают с тем, что произвёл бы генератор.<!--ru-->
+CI builds NRG from the commit under test and runs it in `--validate` mode over the repository's own templates, so a broken template (unknown widget, missing import, undeclared language marker) fails the build. It does **not** compare the committed `.md` files with a fresh regeneration: the README renders the current date, so the two never match byte for byte. Regenerating before you commit is therefore on you.<!--en-->
+CI собирает NRG из проверяемого коммита и запускает его в режиме `--validate` на собственных шаблонах репозитория, так что сломанный шаблон (неизвестный виджет, отсутствующий импорт, необъявленный языковой маркер) валит сборку. Сравнения закоммиченных `.md` со свежей перегенерацией **нет**: README подставляет текущую дату, и побайтного совпадения не бывает. Поэтому перегенерировать файлы перед коммитом — ваша ответственность.<!--ru-->
 
 ## ${en:'Commit messages', ru:'Сообщения коммитов'}
 
