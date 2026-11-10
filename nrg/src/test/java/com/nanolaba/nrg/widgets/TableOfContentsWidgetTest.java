@@ -7,8 +7,13 @@ import com.nanolaba.nrg.core.NoHeadCommentGenerator;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -577,6 +582,82 @@ class TableOfContentsWidgetTest extends DefaultNRGTest {
         assertTrue(bodyEn.contains("3. [C](#c)"));
         assertTrue(bodyEn.contains("4. [D](#d)"));
         assertTrue(bodyEn.contains("5. [E](#e)"));
+    }
+
+    @Test
+    public void testTOCSeesClosingFenceThatCarriesLanguageMarker() {
+        // Regression for #56: the scan runs over non-root output, where language markers are
+        // still present. "```<!--en-->" was not recognised as a closing fence, so the fence
+        // state flipped and every later heading was treated as code.
+        Generator generator = new NoHeadCommentGenerator(new File("README.src.md"),
+                "<!--@nrg.languages=en,ru-->\n" +
+                        "${widget:tableOfContents(ordered = \"true\")}\n" +
+                        "## A\n" +
+                        "```java<!--en-->\n" +
+                        "// english<!--en-->\n" +
+                        "```<!--en-->\n" +
+                        "```java<!--ru-->\n" +
+                        "// russian<!--ru-->\n" +
+                        "``` <!-- ru -->\n" +
+                        "\n" +
+                        "```\n" +
+                        "# not a heading\n" +
+                        "```\n" +
+                        "## B\n" +
+                        "### B1\n" +
+                        "## C\n"
+        );
+
+        for (String language : new String[]{"en", "ru"}) {
+            String body = generator.getResult(language).getContent().toString();
+            assertTrue(body.contains("1. [A](#a)"), body);
+            assertTrue(body.contains("2. [B](#b)"), body);
+            assertTrue(body.contains("1. [B1](#b1)"), body);
+            assertTrue(body.contains("3. [C](#c)"), body);
+            assertFalse(body.contains("[not a heading]"), body);
+        }
+    }
+
+    @Test
+    public void testTOCSurvivesWrappedImportOnLineWithLanguageMarker(@TempDir Path dir) throws IOException {
+        // The exact shape reported in #56: the widget's multi-line output replaces the tag in
+        // place, so the marker ends up glued to the closing fence the import emitted.
+        String sample = "public class Sample {\n" +
+                "    // nrg:begin:demo\n" +
+                "    void demo() {}\n" +
+                "    // nrg:end:demo\n" +
+                "}\n";
+        Files.write(dir.resolve("Sample.java"), sample.getBytes(StandardCharsets.UTF_8));
+        Files.write(dir.resolve("SampleRu.java"), sample.replace("demo()", "demoRu()").getBytes(StandardCharsets.UTF_8));
+
+        Generator generator = new NoHeadCommentGenerator(dir.resolve("README.src.md").toFile(),
+                "<!--@nrg.languages=en,ru-->\n" +
+                        "# Title\n" +
+                        "${widget:tableOfContents(title='Contents')}\n" +
+                        "## Section one\n" +
+                        "${widget:import(path='Sample.java', region='demo', wrap='true')}<!--en-->\n" +
+                        "${widget:import(path='SampleRu.java', region='demo', wrap='true')}<!--ru-->\n" +
+                        "\n" +
+                        "```\n" +
+                        "some output\n" +
+                        "```\n" +
+                        "### Section one point one\n" +
+                        "## Section two\n" +
+                        "### Section two point one\n" +
+                        "## Section three\n"
+        );
+
+        String en = generator.getResult("en").getContent().toString();
+        String ru = generator.getResult("ru").getContent().toString();
+        assertTrue(en.contains("void demo() {}"), en);
+        assertTrue(ru.contains("void demoRu() {}"), ru);
+        for (String body : new String[]{en, ru}) {
+            assertTrue(body.contains("- [Section one](#section-one)"), body);
+            assertTrue(body.contains("\t- [Section one point one](#section-one-point-one)"), body);
+            assertTrue(body.contains("- [Section two](#section-two)"), body);
+            assertTrue(body.contains("\t- [Section two point one](#section-two-point-one)"), body);
+            assertTrue(body.contains("- [Section three](#section-three)"), body);
+        }
     }
 
     @Test

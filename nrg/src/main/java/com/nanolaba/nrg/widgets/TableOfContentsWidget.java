@@ -135,15 +135,20 @@ public class TableOfContentsWidget extends DefaultWidget {
                 // Fence state must be tracked from the first line so the body's overall
                 // fence layout is correct even when the TOC widget itself sits inside an
                 // earlier fence; otherwise we'd start mid-block with insideFence=false.
+                // The scanned text is non-root output, so language markers and property
+                // comments are still in it. Fences must be judged on the line as it will look
+                // in the final file: "```<!--en-->" (a per-language fence line, or the tail of
+                // a wrapped import on a marker-tagged line) closes a fence there.
+                String fenceLine = new TemplateLine(config, rawLine, 0).removeNrgDataFromText(rawLine);
                 if (insideFence) {
-                    if (isFenceClose(rawLine, fenceChar, fenceLen)) {
+                    if (isFenceClose(fenceLine, fenceChar, fenceLen)) {
                         insideFence = false;
                         fenceChar = 0;
                         fenceLen = 0;
                     }
                     continue;
                 }
-                Matcher fenceOpen = FENCE_OPEN.matcher(rawLine);
+                Matcher fenceOpen = FENCE_OPEN.matcher(fenceLine);
                 if (fenceOpen.matches()) {
                     insideFence = true;
                     fenceChar = fenceOpen.group(1).charAt(0);

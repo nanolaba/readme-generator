@@ -1363,7 +1363,7 @@ Also addressable as `${widget:toc(...)}` — both names render identically.
 If you need to exclude a header from the table of contents, you should
 mark it with a comment `<!--toc.ignore-->`.
 
-Lines that look like headings but are part of a fenced code block (opened with three or more backticks or tildes), of an indented code block (4+ leading spaces), of an inline code span, or of a backslash-escaped heading are not treated as headings and do not appear in the table of contents.
+Lines that look like headings but are part of a fenced code block (opened with three or more backticks or tildes), of an indented code block (4+ leading spaces), of an inline code span, or of a backslash-escaped heading are not treated as headings and do not appear in the table of contents. A fence line may carry a language marker (`` ```<!--en--> ``, or a wrapped `import` on a line tagged with one): the marker is ignored when fences are matched, exactly as in the generated file.
 
 <table>
 <tr><th>Usage example (README.src.md)</th></tr>
@@ -1562,7 +1562,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 10.11.2026 23:29:47
+Last updated: 10.11.2026 23:32:17
 ```
 
 </td></tr>
@@ -2015,7 +2015,7 @@ ${widget:endDetails}
 <details>
 <summary>Advanced</summary>
 
-inner *markdown* and 10.11.2026 23:29:48
+inner *markdown* and 10.11.2026 23:32:17
 
 </details>
 ```
@@ -2159,6 +2159,7 @@ This section summarises the main user-visible changes in each release. For full 
 - **`if` widget — new inline form**: `${widget:if(cond='…', text='…')}` emits `text` on a single line when `cond` is truthy, and empty string otherwise — useful for short conditional snippets where the existing block form (`${widget:if(cond='…')}` … `${widget:endIf}`) is overkill. `\n` and `\\` inside `text=` are interpreted, and property / language substitution against the outer template happens before the widget runs. The block form is unchanged. Internally, both forms now live on a unified `BlockWidget` base class shared with `details`; the standalone `IfBlockProcessor` / `DetailsBlockProcessor` classes are removed (no user-visible effect — internal refactor).
 - **`toc` short alias for `tableOfContents`**: `${widget:toc(...)}` now works as a synonym for `${widget:tableOfContents(...)}` — anchor generation, parameters, and rendered output are byte-identical. Primary name stays `tableOfContents`. Aliases are a general widget-system feature: third-party widgets can declare their own via the new `NRGWidget.getAliases()` default method.
 - **Parentheses inside quoted widget parameters**: a `)` inside a quoted parameter value no longer ends the widget tag. The documented `${widget:if(cond='endsWith(${devVersion}, -SNAPSHOT)')}` / `startsWith(...)` conditions and `(…)` grouping now work in both the block and the inline form — previously the opener was left in the output as literal text, the block body was always rendered and every `${widget:endIf}` was reported as stray. The same fix lets `math` take `expr='f(x) = (a + b)^2'`, `details` take `summary='Advanced (optional)'`, and `--validate` see such tags. Closes [#55](https://github.com/nanolaba/readme-generator/issues/55).
+- **`tableOfContents` no longer loses headings after a fence line with a language marker**: a closing fence followed by a language marker — hand-written (`` ```<!--en--> ``) or produced by `${widget:import(..., wrap='true')}` on a line tagged `<!--en-->` / `<!--ru-->` — was not recognised as a closer, so the next fence flipped the state and every later heading was silently dropped from the table of contents. Fences are now matched on the line as it appears in the generated file. Closes [#56](https://github.com/nanolaba/readme-generator/issues/56).
 
 ### 1.2
 
