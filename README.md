@@ -365,9 +365,10 @@ nrg --file-name-pattern 'docs/<lang>/<base>.md' --default-language-file-name-pat
 
 #### Project root
 
-A template is confined to a **project root**: the output files it asks for must stay inside that directory.
+A template is confined to a **project root**: every path it names must stay inside that directory — the output files it asks for, the files it imports (`import`), the directories it lists (`fileTree`), and the descriptors behind `${pom.*}` / `${npm.*}` / `${gradle.*}` (`nrg.pom.path`, `nrg.npm.path`, `nrg.gradle.path`).
 The root is the nearest ancestor of the source file that contains a `.git` entry, or the source file's own directory when there is none. It is never taken from the template.
-A file name pattern that resolves outside the root (for example `../../somewhere/<base>.md` from a directory that is not inside a git repository) stops the run with an error and nothing is written.
+A path that resolves outside the root (for example `../../somewhere/<base>.md` as a file name pattern, or `path='../../other-project/file.md'` in an import) stops the run with an error; nothing is read from there and nothing is written. `--validate` reports such imports as errors without opening the files.
+This is what keeps a template you did not write — a pull request, a freshly cloned repository — from copying your files into a README or overwriting files on your machine. Environment variables are a different matter: `${env.NAME}` reads any variable of the process, so do not run NRG on untrusted templates with secrets in the environment.
 If your layout legitimately needs a wider root, name it explicitly with `--root <dir>` (Maven plugin: `<root>`, GitHub Action: `root`).
 
 ```bash
@@ -1274,7 +1275,7 @@ Widget parameters:
 
 | Name | Description                                                                                                                                            | Default value |
 |:-------------------------------:|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:-------------------------------------------------:|
-|              path               | Path to the imported file                                                                                                           |                                                   |
+|              path               | Path to the imported file, relative to the importing file. Must lie inside the [project root](#project-root) |                                                   |
 |             charset             | File encoding                                                                                                                 |                      `UTF-8`                      |
 |          run-generator          | Should the system perform text generation when importing template files                          |                      `true`                       |
 |              lines              | Line range(s) to extract: e.g. `10-20`, `10-`, `-20`, `15`, `10-20,30-35` |                                                   |
@@ -1579,7 +1580,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 11.11.2026 00:00:42
+Last updated: 11.11.2026 00:03:03
 ```
 
 </td></tr>
@@ -1990,7 +1991,7 @@ Widget parameters:
 
 | Name | Description                                                                                                                                                                                                                                                                                                                                                          | Default value |
 |:-------------------------------:|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:-------------------------------------------------:|
-|              path               | Directory to list. Relative paths are resolved against the source-file directory; absolute paths are used as-is. Missing or non-directory paths log an error and produce no output. |                                                   |
+|              path               | Directory to list. Relative paths are resolved against the source-file directory; absolute paths are used as-is. The directory must lie inside the [project root](#project-root), otherwise the run fails. Missing or non-directory paths log an error and produce no output. |                                                   |
 |              depth              | Recursion limit (positive integer). `1` lists only direct children; `2` descends one level deeper, and so on.                                                                                                                                                  |                       `2`                         |
 |             exclude             | Comma-separated glob patterns. Each pattern is matched against both the entry name and the entry's path relative to `path` — so `target` skips a folder named `target` anywhere, and `sub/drop.txt` targets one specific file. |                  (none)      |
 |            dirsOnly             | `true` lists directories only; files are hidden.                                                                                                                                                                                                                                                                          |                     `false`                       |
@@ -2032,7 +2033,7 @@ ${widget:endDetails}
 <details>
 <summary>Advanced</summary>
 
-inner *markdown* and 11.11.2026 00:00:42
+inner *markdown* and 11.11.2026 00:03:03
 
 </details>
 ```
@@ -2181,6 +2182,7 @@ This section summarises the main user-visible changes in each release. For full 
 - **`import` with `heading-offset` no longer mis-shifts after a fence line with a language marker**: the same fence-matching fix as for `tableOfContents` — in an imported `.src.md`, a closing fence written as `` ```<!--en--> `` was not recognised, so headings after it were left unshifted and `#` lines inside the next code block were shifted instead.
 - **Security: a template can no longer write files outside the project**: `nrg.fileNamePattern` (and its per-language / default-language variants) accepted `../`, so a template could create or overwrite any file the process could write — with `nrg.noHeader` the content was fully template-controlled, which amounted to running code without `--allow-exec`. Output files must now stay inside the **project root**: the nearest ancestor of the source file that contains `.git`, or the source file's directory when there is none. A pattern that leaves it fails the run (also in `--check` and `--stdout`) and nothing is written. New `--root <dir>` CLI option, `<root>` Maven plugin parameter and `root` GitHub Action input widen the root for layouts that need it; the root cannot be set from a template.
 - **Security: XML external entities are no longer resolved when reading a POM**: the file behind `${pom.*}` is chosen by the template (`nrg.pom.path`), and it was parsed with the JDK defaults — an external entity could pull the content of any local file into the output or open a network connection without `nrg.allowRemoteImports`. A document that declares a `DOCTYPE` is now refused as a whole (`pom reader: failed to parse …`, every `${pom.*}` renders empty). Ordinary `pom.xml` files have no `DOCTYPE` and are unaffected.
+- **Security: a template can no longer read files outside the project**: `${widget:import(path='../../…')}`, `${widget:fileTree(path=…)}` (absolute paths included) and the `nrg.pom.path` / `nrg.npm.path` / `nrg.gradle.path` properties reached any file the process could read and copied it into the generated output — for example signing passwords from a `gradle.properties` outside the repository. These paths are now held to the same project root as output files; a path outside it fails the run, and `--validate` reports an escaping import as an error without opening the file. **Behaviour change:** a template that is *not* inside a git repository can no longer import from a parent directory unless `--root` names a wider root; inside a git repository, `../` keeps working as long as it stays in the repository.
 
 ### 1.2
 

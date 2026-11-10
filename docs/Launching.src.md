@@ -179,13 +179,15 @@ nrg --file-name-pattern 'docs/<lang>/<base>.md' --default-language-file-name-pat
 
 #### ${en:'Project root', ru:'Корень проекта'}
 
-A template is confined to a **project root**: the output files it asks for must stay inside that directory.<!--en-->
+A template is confined to a **project root**: every path it names must stay inside that directory — the output files it asks for, the files it imports (`import`), the directories it lists (`fileTree`), and the descriptors behind `\${pom.*}` / `\${npm.*}` / `\${gradle.*}` (`nrg.pom.path`, `nrg.npm.path`, `nrg.gradle.path`).<!--en-->
 The root is the nearest ancestor of the source file that contains a `.git` entry, or the source file's own directory when there is none. It is never taken from the template.<!--en-->
-A file name pattern that resolves outside the root (for example `../../somewhere/<base>.md` from a directory that is not inside a git repository) stops the run with an error and nothing is written.<!--en-->
+A path that resolves outside the root (for example `../../somewhere/<base>.md` as a file name pattern, or `path='../../other-project/file.md'` in an import) stops the run with an error; nothing is read from there and nothing is written. `--validate` reports such imports as errors without opening the files.<!--en-->
+This is what keeps a template you did not write — a pull request, a freshly cloned repository — from copying your files into a README or overwriting files on your machine. Environment variables are a different matter: `\${env.NAME}` reads any variable of the process, so do not run NRG on untrusted templates with secrets in the environment.<!--en-->
 If your layout legitimately needs a wider root, name it explicitly with `--root <dir>` (Maven plugin: `<root>`, GitHub Action: `root`).<!--en-->
-Шаблон ограничен **корнем проекта**: выходные файлы, которые он запрашивает, должны оставаться внутри этого каталога.<!--ru-->
+Шаблон ограничен **корнем проекта**: любой путь, который он называет, должен оставаться внутри этого каталога — выходные файлы, импортируемые файлы (`import`), перечисляемые каталоги (`fileTree`) и дескрипторы, стоящие за `\${pom.*}` / `\${npm.*}` / `\${gradle.*}` (`nrg.pom.path`, `nrg.npm.path`, `nrg.gradle.path`).<!--ru-->
 Корень — ближайший предок исходного файла, содержащий `.git`, а если такого нет — каталог самого исходного файла. Из шаблона корень задать нельзя.<!--ru-->
-Паттерн имени файла, выводящий за пределы корня (например, `../../somewhere/<base>.md` из каталога вне git-репозитория), останавливает запуск с ошибкой, и ничего не записывается.<!--ru-->
+Путь, выводящий за пределы корня (например, `../../somewhere/<base>.md` в паттерне имени файла или `path='../../other-project/file.md'` в импорте), останавливает запуск с ошибкой: оттуда ничего не читается и туда ничего не записывается. `--validate` сообщает о таких импортах как об ошибках, не открывая файлы.<!--ru-->
+Именно это не даёт чужому шаблону — из pull request или только что склонированного репозитория — скопировать ваши файлы в README или перезаписать файлы на вашей машине. С переменными окружения иначе: `\${env.NAME}` читает любую переменную процесса, поэтому не запускайте NRG на недоверенных шаблонах, когда в окружении лежат секреты.<!--ru-->
 Если раскладке проекта действительно нужен более широкий корень, задайте его явно: `--root <dir>` (Maven-плагин: `<root>`, GitHub Action: `root`).<!--ru-->
 
 ```bash

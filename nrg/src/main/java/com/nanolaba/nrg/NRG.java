@@ -267,7 +267,7 @@ public class NRG {
         for (File sourceFile : sources) {
             int code;
             if (validateMode) {
-                code = runValidation(sourceFile);
+                code = runValidation(sourceFile, rootDir);
             } else {
                 code = generate(sourceFile, sourceCharset, toStdout, langValue, cliWidgets,
                         checkMode, cmd.hasOption(allowExec),
@@ -387,12 +387,12 @@ public class NRG {
         return total;
     }
 
-    private static int runValidation(File sourceFile) {
+    private static int runValidation(File sourceFile, File rootDir) {
         if (!sourceFile.exists()) {
             LOG.error("Source file does not exist: {}", sourceFile.getAbsolutePath());
             return 1;
         }
-        List<Validator.Diagnostic> diagnostics = new Validator(sourceFile).validate();
+        List<Validator.Diagnostic> diagnostics = new Validator(sourceFile, rootDir).validate();
         if (diagnostics.isEmpty()) {
             return 0;
         }

@@ -93,11 +93,9 @@ public class FileTreeWidget extends DefaultWidget {
 
     private static File resolveRoot(GeneratorConfig config, String raw) {
         File requested = new File(raw);
-        if (requested.isAbsolute()) {
-            return requested;
-        }
         File base = config.getSourceFile().getAbsoluteFile().getParentFile();
-        return new File(base, raw);
+        return config.requireInsideProjectRoot(
+                requested.isAbsolute() ? requested : new File(base, raw), "fileTree path");
     }
 
     private void renderChildren(File dir, String indent, int maxDepth, int currentLevel,

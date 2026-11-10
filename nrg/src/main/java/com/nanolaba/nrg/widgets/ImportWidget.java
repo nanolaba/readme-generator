@@ -109,7 +109,8 @@ public class ImportWidget extends DefaultWidget {
         File sourceFile;
         byte[] rawBytes;
         if (widgetConfig.getPath() != null) {
-            sourceFile = new File(config.getSourceFile().getParentFile(), widgetConfig.getPath());
+            sourceFile = config.requireInsideProjectRoot(
+                    new File(config.getSourceFile().getParentFile(), widgetConfig.getPath()), "import path");
             if (!sourceFile.exists()) {
                 throw new RuntimeException("import: file not found: " + sourceFile.getAbsolutePath());
             }
@@ -435,6 +436,7 @@ public class ImportWidget extends DefaultWidget {
             getConfig().setLanguages(parentConfig.getLanguages());
             getConfig().setDefaultLanguage(parentConfig.getDefaultLanguage());
             getConfig().setRootSourceFile(parentConfig.getRootSourceFile());
+            getConfig().setProjectRoot(parentConfig.getProjectRoot());
             parentConfig.getProperties().forEach((key, value) -> {
                 if (!getConfig().getProperties().containsKey(key)) {
                     getConfig().getProperties().setProperty(key.toString(), String.valueOf(value));

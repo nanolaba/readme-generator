@@ -30,8 +30,19 @@ public final class Validator {
 
     private final File rootSourceFile;
 
+    private final File projectRoot;
+
     public Validator(File rootSourceFile) {
+        this(rootSourceFile, null);
+    }
+
+    /**
+     * @param projectRoot directory imports must stay inside (see {@link ProjectRoot});
+     *                    {@code null} detects it from {@code rootSourceFile}.
+     */
+    public Validator(File rootSourceFile, File projectRoot) {
         this.rootSourceFile = rootSourceFile;
+        this.projectRoot = projectRoot != null ? projectRoot : ProjectRoot.detect(rootSourceFile);
     }
 
     public List<Diagnostic> validate() {
@@ -104,7 +115,12 @@ public final class Validator {
                     String path = extractImportPath(params);
                     if (path != null) {
                         File importedFile = new File(file.getAbsoluteFile().getParentFile(), path);
-                        if (!importedFile.isFile()) {
+                        if (!ProjectRoot.contains(projectRoot, importedFile)) {
+                            // Reported without touching the file: following it would let a
+                            // template probe and parse files outside the project.
+                            diagnostics.add(new Diagnostic(file, lineNo,
+                                    "import path is outside the project root: '" + path + "'", Severity.ERROR));
+                        } else if (!importedFile.isFile()) {
                             diagnostics.add(new Diagnostic(file, lineNo,
                                     "import path not found: '" + path + "'", Severity.ERROR));
                         } else {

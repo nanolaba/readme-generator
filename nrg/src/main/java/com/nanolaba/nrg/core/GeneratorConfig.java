@@ -364,7 +364,8 @@ public class GeneratorConfig {
             return new File(base, "pom.xml");
         }
         File requested = new File(configured);
-        return requested.isAbsolute() ? requested : new File(base, configured);
+        return requireInsideProjectRoot(
+                requested.isAbsolute() ? requested : new File(base, configured), PROPERTY_POM_PATH);
     }
 
     public NpmReader getNpmReader() {
@@ -395,7 +396,8 @@ public class GeneratorConfig {
             return new File(base, "package.json");
         }
         File requested = new File(configured);
-        return requested.isAbsolute() ? requested : new File(base, configured);
+        return requireInsideProjectRoot(
+                requested.isAbsolute() ? requested : new File(base, configured), PROPERTY_NPM_PATH);
     }
 
     public GradleReader getGradleReader() {
@@ -433,7 +435,8 @@ public class GeneratorConfig {
             anchor = base;
         } else {
             File requested = new File(configured);
-            anchor = requested.isAbsolute() ? requested : new File(base, configured);
+            anchor = requireInsideProjectRoot(
+                    requested.isAbsolute() ? requested : new File(base, configured), PROPERTY_GRADLE_PATH);
         }
         if (anchor.isDirectory()) {
             File props = new File(anchor, "gradle.properties");
