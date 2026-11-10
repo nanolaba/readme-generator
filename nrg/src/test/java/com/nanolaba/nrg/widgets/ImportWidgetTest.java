@@ -10,6 +10,7 @@ import org.junit.jupiter.api.io.TempDir;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Clock;
 import java.util.Arrays;
@@ -323,6 +324,29 @@ class ImportWidgetTest {
         assertTrue(body.contains("# Project"), body);
         assertTrue(body.contains("## Section A"), body);
         assertTrue(body.contains("## Section B"), body);
+    }
+
+    @Test
+    public void headingOffsetSeesClosingFenceThatCarriesLanguageMarker(@TempDir Path tmp) throws IOException {
+        // Same root cause as #56: the shift runs over sub-generator output, where language
+        // markers are still attached to per-language fence lines.
+        Files.write(tmp.resolve("frag.src.md"), ("# Frag\n" +
+                "```text<!--en-->\n" +
+                "# english code<!--en-->\n" +
+                "```<!--en-->\n" +
+                "\n" +
+                "```\n" +
+                "# plain code\n" +
+                "```\n" +
+                "## After\n").getBytes(StandardCharsets.UTF_8));
+        File src = writeFixture(tmp, "<!--@nrg.languages=en,ru-->\n" +
+                "${widget:import(path='frag.src.md', heading-offset='1')}\n");
+
+        String body = new Generator(src, StandardCharsets.UTF_8).getResult("en").getContent().toString();
+        assertTrue(body.contains("## Frag"), body);
+        assertTrue(body.contains("### After"), body);
+        assertTrue(body.contains(System.lineSeparator() + "# english code"), body);
+        assertTrue(body.contains(System.lineSeparator() + "# plain code"), body);
     }
 
     @Test

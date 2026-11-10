@@ -106,12 +106,12 @@ ${en:'**Heading offset**', ru:'**Сдвиг уровней заголовков*
 
 `heading-offset='N'` shifts every ATX heading (`#`, `##`, …, `######`) in the imported content by `N` levels — useful when an imported `.src.md` owns its own heading hierarchy but is being included under a parent section.<!--en-->
 Levels are clamped to `[1, 6]`; clamped headings emit a single aggregated warning per import call.<!--en-->
-Lines inside fenced code blocks (```` ``` ```` or `~~~`) are not shifted, so a `# bash comment` inside a fence stays a `# bash comment`.<!--en-->
+Lines inside fenced code blocks (```` ``` ```` or `~~~`) are not shifted, so a `# bash comment` inside a fence stays a `# bash comment`. A fence line may carry a language marker (`` ```<\!--en--> ``); the marker is ignored when fences are matched.<!--en-->
 Setext-style headings (`====` / `----`) and indented (4-space) code blocks are not detected — prefer ATX headings and fenced code blocks in imports that use this parameter.<!--en-->
 Combining `heading-offset` with a non-zero value and `wrap='true'` fails the build.<!--en-->
 `heading-offset='N'` сдвигает каждый ATX-заголовок (`#`, `##`, …, `######`) в импортируемом содержимом на `N` уровней — это полезно, когда у импортируемого `.src.md` собственная иерархия заголовков, но он включается в раздел родителя.<!--ru-->
 Уровни ограничиваются диапазоном `[1, 6]`; усечённые заголовки приводят к одному сводному предупреждению на вызов импорта.<!--ru-->
-Строки внутри блоков кода (```` ``` ```` или `~~~`) не сдвигаются, поэтому `# bash-комментарий` внутри блока кода остаётся `# bash-комментарием`.<!--ru-->
+Строки внутри блоков кода (```` ``` ```` или `~~~`) не сдвигаются, поэтому `# bash-комментарий` внутри блока кода остаётся `# bash-комментарием`. Строка-ограда может нести языковой маркер (`` ```<\!--en--> ``); при сопоставлении оград он не учитывается.<!--ru-->
 Setext-заголовки (`====` / `----`) и блоки кода с отступом 4 пробела не распознаются — в импортах с этим параметром используйте ATX-заголовки и ограждённые кодовые блоки.<!--ru-->
 Сочетание `heading-offset` с ненулевым значением и `wrap='true'` приводит к ошибке сборки.<!--ru-->
 

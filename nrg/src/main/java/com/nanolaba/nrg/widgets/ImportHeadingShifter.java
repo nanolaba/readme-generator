@@ -1,5 +1,6 @@
 package com.nanolaba.nrg.widgets;
 
+import java.util.function.UnaryOperator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -37,6 +38,17 @@ final class ImportHeadingShifter {
     }
 
     static Result shift(String content, int offset) {
+        return shift(content, offset, UnaryOperator.identity());
+    }
+
+    /**
+     * @param fenceLineView maps a line to the form in which it reaches the generated file.
+     *                      Imported content is sub-generator output, so a fence line may still
+     *                      carry an NRG marker ({@code ```<!--en-->}) that the root generator
+     *                      strips later; fences are matched on that final form, otherwise such
+     *                      a closer is missed and every heading after it is taken for code.
+     */
+    static Result shift(String content, int offset, UnaryOperator<String> fenceLineView) {
         if (offset == 0 || content.isEmpty()) {
             return new Result(content, 0, null);
         }
@@ -67,8 +79,9 @@ final class ImportHeadingShifter {
             String line = lines[i];
             String rewritten = line;
 
+            String fenceLine = fenceLineView.apply(line);
             if (insideFence) {
-                if (isFenceClose(line, fenceChar, fenceLen)) {
+                if (isFenceClose(fenceLine, fenceChar, fenceLen)) {
                     insideFence = false;
                     fenceChar = 0;
                     fenceLen = 0;
@@ -77,7 +90,7 @@ final class ImportHeadingShifter {
                 continue;
             }
 
-            Matcher openM = FENCE_OPEN.matcher(line);
+            Matcher openM = FENCE_OPEN.matcher(fenceLine);
             if (openM.matches()) {
                 insideFence = true;
                 fenceChar = openM.group(1).charAt(0);

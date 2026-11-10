@@ -5,6 +5,7 @@ import com.nanolaba.nrg.core.GenerationResult;
 import com.nanolaba.nrg.core.Generator;
 import com.nanolaba.nrg.core.GeneratorConfig;
 import com.nanolaba.nrg.core.NRGUtil;
+import com.nanolaba.nrg.core.TemplateLine;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
@@ -197,7 +198,8 @@ public class ImportWidget extends DefaultWidget {
         // 5b. Apply heading-offset (post-sub-generator so chained imports / language blocks
         //     / variable substitution all see the shift).
         if (headingOffset != 0) {
-            ImportHeadingShifter.Result shifted = ImportHeadingShifter.shift(content, headingOffset);
+            ImportHeadingShifter.Result shifted = ImportHeadingShifter.shift(content, headingOffset,
+                    line -> new TemplateLine(config, line, 0).removeNrgDataFromText(line));
             content = shifted.content;
             if (shifted.clampedCount > 0) {
                 String src = widgetConfig.getPath() != null ? widgetConfig.getPath() : widgetConfig.getUrl();

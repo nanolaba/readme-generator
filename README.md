@@ -1317,7 +1317,7 @@ Nested regions are supported — when extracting an outer region, inner region m
 
 `heading-offset='N'` shifts every ATX heading (`#`, `##`, …, `######`) in the imported content by `N` levels — useful when an imported `.src.md` owns its own heading hierarchy but is being included under a parent section.
 Levels are clamped to `[1, 6]`; clamped headings emit a single aggregated warning per import call.
-Lines inside fenced code blocks (```` ``` ```` or `~~~`) are not shifted, so a `# bash comment` inside a fence stays a `# bash comment`.
+Lines inside fenced code blocks (```` ``` ```` or `~~~`) are not shifted, so a `# bash comment` inside a fence stays a `# bash comment`. A fence line may carry a language marker (`` ```<!--en--> ``); the marker is ignored when fences are matched.
 Setext-style headings (`====` / `----`) and indented (4-space) code blocks are not detected — prefer ATX headings and fenced code blocks in imports that use this parameter.
 Combining `heading-offset` with a non-zero value and `wrap='true'` fails the build.
 
@@ -1566,7 +1566,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 10.11.2026 23:34:21
+Last updated: 10.11.2026 23:35:29
 ```
 
 </td></tr>
@@ -2019,7 +2019,7 @@ ${widget:endDetails}
 <details>
 <summary>Advanced</summary>
 
-inner *markdown* and 10.11.2026 23:34:21
+inner *markdown* and 10.11.2026 23:35:29
 
 </details>
 ```
@@ -2165,6 +2165,7 @@ This section summarises the main user-visible changes in each release. For full 
 - **Parentheses inside quoted widget parameters**: a `)` inside a quoted parameter value no longer ends the widget tag. The documented `${widget:if(cond='endsWith(${devVersion}, -SNAPSHOT)')}` / `startsWith(...)` conditions and `(…)` grouping now work in both the block and the inline form — previously the opener was left in the output as literal text, the block body was always rendered and every `${widget:endIf}` was reported as stray. The same fix lets `math` take `expr='f(x) = (a + b)^2'`, `details` take `summary='Advanced (optional)'`, and `--validate` see such tags. Closes [#55](https://github.com/nanolaba/readme-generator/issues/55).
 - **`tableOfContents` no longer loses headings after a fence line with a language marker**: a closing fence followed by a language marker — hand-written (`` ```<!--en--> ``) or produced by `${widget:import(..., wrap='true')}` on a line tagged `<!--en-->` / `<!--ru-->` — was not recognised as a closer, so the next fence flipped the state and every later heading was silently dropped from the table of contents. Fences are now matched on the line as it appears in the generated file. Closes [#56](https://github.com/nanolaba/readme-generator/issues/56).
 - **Multi-line widget output keeps the indentation of the widget line**: a widget placed on an indented line (typically inside a list item) used to indent only the first line of its output — for `${widget:import(..., wrap='true')}` that meant an indented opening fence followed by code and a closing fence at column 0, which broke the list in Markdown renderers. Every non-blank line of the output is now prefixed with the leading spaces / tabs of the widget line; this applies to all widgets (`import`, `alert`, `fileTree`, `exec`, `tableOfContents`, custom ones). Output changes only for templates that already had a multi-line widget on an indented line. Closes [#57](https://github.com/nanolaba/readme-generator/issues/57).
+- **`import` with `heading-offset` no longer mis-shifts after a fence line with a language marker**: the same fence-matching fix as for `tableOfContents` — in an imported `.src.md`, a closing fence written as `` ```<!--en--> `` was not recognised, so headings after it were left unshifted and `#` lines inside the next code block were shifted instead.
 
 ### 1.2
 
