@@ -13,6 +13,9 @@ on:
       - '.github/workflows/action-test.yml'
   schedule:
     - cron: '0 6 * * 1'   # weekly Monday 06:00 UTC — catches drift in `latest` API / release format
+  # On demand: GitHub switches the schedule off after 60 days without repository activity,
+  # and the matrix has to be green before nrg-action/ is copied to the published action.
+  workflow_dispatch:
 
 permissions:
   contents: read
