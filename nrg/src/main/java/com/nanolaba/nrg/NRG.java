@@ -85,12 +85,27 @@ public class NRG {
     }
 
     public static int run(String... args) {
+        Thread thread = Thread.currentThread();
+        ClassLoader callerClassLoader = thread.getContextClassLoader();
         try {
             return parseCommandLine(args);
         } catch (ParseException e) {
             System.err.println("Incorrect command line arguments: " + e.getMessage());
             System.err.println("To view help, run with the -h option");
             return 1;
+        } finally {
+            // --classpath installs its own loader for the run. run() is also called in-process
+            // (the Maven plugin, library users, tests), so the caller's loader is put back and
+            // ours is closed instead of staying behind with its jars open.
+            ClassLoader used = thread.getContextClassLoader();
+            thread.setContextClassLoader(callerClassLoader);
+            if (used != callerClassLoader && used instanceof URLClassLoader) {
+                try {
+                    ((URLClassLoader) used).close();
+                } catch (IOException e) {
+                    LOG.debug("Could not close the --classpath class loader: {}", e.getMessage());
+                }
+            }
         }
     }
 

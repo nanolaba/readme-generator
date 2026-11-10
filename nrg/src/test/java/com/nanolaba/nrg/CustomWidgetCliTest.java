@@ -11,6 +11,8 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class CustomWidgetCliTest extends DefaultNRGTest {
@@ -75,5 +77,31 @@ public class CustomWidgetCliTest extends DefaultNRGTest {
 
         String combined = getOutAndClear() + getErrAndClear();
         assertTrue(combined.contains("--classpath entry does not exist"));
+    }
+
+    @Test
+    public void testClasspathOptionDoesNotLeaveItsClassLoaderOnTheCallingThread() throws IOException {
+        // run() is called in-process by the Maven plugin and by library users; the loader that
+        // --classpath installs for the run must not stay behind as the thread's context loader.
+        Path src = tempDir.resolve("README.src.md");
+        Files.write(src, ("<!--@nrg.languages=en-->\n" +
+                "Hi ${widget:exampleWidget(name=\"Eve\")}!\n").getBytes(StandardCharsets.UTF_8));
+        Path extraClasses = Files.createDirectories(tempDir.resolve("extra-classes"));
+        ClassLoader before = Thread.currentThread().getContextClassLoader();
+
+        int code = NRG.run("--stdout", "--classpath", extraClasses.toString(),
+                "--widgets", ExampleWidget.class.getName(), "-f", src.toString());
+
+        assertEquals(0, code);
+        assertTrue(getOutAndClear().contains("Hi Hello, Eve!!"));
+        assertSame(before, Thread.currentThread().getContextClassLoader());
+    }
+
+    @Test
+    public void testContextClassLoaderIsRestoredAfterAFailedRun() {
+        ClassLoader before = Thread.currentThread().getContextClassLoader();
+
+        assertEquals(1, NRG.run("--classpath", tempDir.toString(), "--no-such-option"));
+        assertSame(before, Thread.currentThread().getContextClassLoader());
     }
 }

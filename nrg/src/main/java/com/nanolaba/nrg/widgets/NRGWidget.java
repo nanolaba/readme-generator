@@ -33,8 +33,10 @@ public interface NRGWidget {
      * <p>Returning an empty set (the default) means the widget is only addressable by its
      * primary {@link #getName()}.
      *
-     * <p>Aliases must be globally unique across all registered widgets, including primary
-     * names — {@link GeneratorConfig} throws {@link IllegalStateException} on collision.
+     * <p>Aliases share one namespace with primary names. A name claimed by two widgets is
+     * not an error: the widget registered last wins (which is how a caller overrides a
+     * built-in), and {@link GeneratorConfig} logs a warning when the two are of different
+     * classes.
      */
     default Set<String> getAliases() {
         return Collections.emptySet();
