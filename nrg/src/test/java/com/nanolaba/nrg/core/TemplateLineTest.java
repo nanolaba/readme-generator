@@ -136,6 +136,30 @@ class TemplateLineTest extends DefaultNRGTest {
     }
 
     @Test
+    public void testLongTextInLanguageConstructDoesNotOverflowTheStack() {
+        // About two thousand characters used to be enough for a StackOverflowError: the old
+        // pattern looped over an alternation, and java.util.regex recurses once per iteration.
+        StringBuilder longText = new StringBuilder();
+        for (int i = 0; i < 20_000; i++) {
+            longText.append("word ");
+        }
+        String text = longText.toString();
+
+        assertEquals(text, line("${en:'x', ru:'" + text + "'}", "en", "ru").generateLine("ru"));
+        assertEquals(text, line("${ru:\"" + text + "\", en:'x'}", "en", "ru").generateLine("ru"));
+        assertEquals("x", line("${en:'x', ru:'" + text + "'}", "en", "ru").generateLine("en"));
+
+        // Doubled quotes are the other loop in the pattern.
+        StringBuilder quotes = new StringBuilder();
+        StringBuilder expected = new StringBuilder();
+        for (int i = 0; i < 20_000; i++) {
+            quotes.append("it''s ");
+            expected.append("it's ");
+        }
+        assertEquals(expected.toString(), line("${ru:'" + quotes + "'}", "en", "ru").generateLine("ru"));
+    }
+
+    @Test
     public void testMultiLineWidgetBodyKeepsIndentationOfTheWidgetLine() {
         // Regression for #57: the tag is replaced in place, so without help only the first
         // line of a multi-line body sits at the indentation of the widget line.

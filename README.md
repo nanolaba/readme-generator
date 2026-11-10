@@ -1584,7 +1584,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 11.11.2026 00:08:39
+Last updated: 11.11.2026 00:11:39
 ```
 
 </td></tr>
@@ -2037,7 +2037,7 @@ ${widget:endDetails}
 <details>
 <summary>Advanced</summary>
 
-inner *markdown* and 11.11.2026 00:08:39
+inner *markdown* and 11.11.2026 00:11:39
 
 </details>
 ```
@@ -2189,6 +2189,7 @@ This section summarises the main user-visible changes in each release. For full 
 - **Security: a template can no longer read files outside the project**: `${widget:import(path='../../…')}`, `${widget:fileTree(path=…)}` (absolute paths included) and the `nrg.pom.path` / `nrg.npm.path` / `nrg.gradle.path` properties reached any file the process could read and copied it into the generated output — for example signing passwords from a `gradle.properties` outside the repository. These paths are now held to the same project root as output files; a path outside it fails the run, and `--validate` reports an escaping import as an error without opening the file. **Behaviour change:** a template that is *not* inside a git repository can no longer import from a parent directory unless `--root` names a wider root; inside a git repository, `../` keeps working as long as it stays in the repository.
 - **Security: a remote template must be pinned**: `${widget:import(url='…')}` renders the fetched text as a template when `run-generator='true'` — the default for URLs ending in `.src.md` — and a template can import local files and read descriptors and environment variables. Without a `sha256` pin, whoever controlled the URL or the connection controlled what was read from the build machine into the README. Such an import now fails with a message asking for `sha256='…'` or `run-generator='false'` (embed as plain text). **Behaviour change** for templates that import a remote `.src.md` without `sha256`.
 - **Hardened HTTP client for remote imports**: a redirect to a non-`http(s)` URL is refused with a clear error (it used to crash with a `ClassCastException`), as is a redirect from `https` down to `http`; a response larger than 16 MiB is refused instead of being buffered without limit; `timeout` now bounds the whole exchange, so a server that drips data cannot hold the build forever; `timeout='30d'` and other values above ~24 days no longer fail with `timeouts can't be negative`; fetching over plain `http://` without `sha256` logs a warning.
+- **Long text inside `${en:'…', ru:'…'}` no longer crashes generation**: a quoted text of roughly two thousand characters or more ended the run with `StackOverflowError`. Any length works now, as does any number of doubled quotes.
 
 ### 1.2
 

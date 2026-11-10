@@ -57,6 +57,16 @@ public class TemplateLine {
 
     public static final Pattern WIDGET_TAG_PATTERN =
             Pattern.compile("\\$\\{ *widget:(\\w*)(\\((" + WIDGET_PARAMETERS_REGEX + ")\\))? *}");
+    /**
+     * Quoted text of a language construct ({@code ${en:'…', ru:"…"}}) with the quote doubled
+     * to escape it. Written as "plain run, then (doubled quote, plain run) repeated" with
+     * possessive quantifiers rather than the obvious {@code (?:[^']|'')*}: java.util.regex
+     * recurses once per iteration of an alternation inside a loop, so the obvious form threw
+     * {@link StackOverflowError} on a paragraph of about two thousand characters.
+     */
+    private static final String SINGLE_QUOTED_BODY = "[^']*+(?:''[^']*+)*+";
+    private static final String DOUBLE_QUOTED_BODY = "[^\"]*+(?:\"\"[^\"]*+)*+";
+
     /** A line break inside a widget body that is followed by a non-empty line. */
     private static final Pattern CONTINUATION_LINE_START = Pattern.compile("(\\r\\n|\\r|\\n)(?=[^\\r\\n])");
     private static final Pattern ENV_TAG_PATTERN = Pattern.compile("\\$\\{\\s*env\\.([A-Za-z_][A-Za-z0-9_]*)(?::([^}]*))?\\s*}");
@@ -431,8 +441,7 @@ public class TemplateLine {
         if (langAlt.isEmpty()) {
             return line;
         }
-        String quoted = "(?:'(?:[^']|'')*'|\"(?:[^\"]|\"\")*\")";
-        String entry = "\\s*(?:" + langAlt + ")\\s*:\\s*" + quoted + "\\s*";
+        String entry = "\\s*(?:" + langAlt + ")\\s*:\\s*(?:'" + SINGLE_QUOTED_BODY + "'|\"" + DOUBLE_QUOTED_BODY + "\")\\s*";
         String regex = "\\$\\{(" + entry + "(?:," + entry + ")*)}";
 
         StringBuilder result = new StringBuilder(line);
@@ -443,12 +452,14 @@ public class TemplateLine {
                 String body = "";
 
                 String content = matcher.group(1);
-                String ENTRY_PATTERN = "(\\s*LANG: *(?<quote>['\"])(?<text>(?:(?!\\k<quote>).|\\k<quote>\\k<quote>)*)\\k<quote>[,\\s]*)"
-                        .replace("LANG", Pattern.quote(language));
-                Matcher entryMatcher = Pattern.compile(ENTRY_PATTERN).matcher(content);
+                String entryPattern = "\\s*" + Pattern.quote(language) + ": *(?:'(?<single>"
+                        + SINGLE_QUOTED_BODY + ")'|\"(?<double>" + DOUBLE_QUOTED_BODY + ")\")[,\\s]*";
+                Matcher entryMatcher = Pattern.compile(entryPattern).matcher(content);
                 while (entryMatcher.find()) {
-                    String quote = entryMatcher.group("quote");
-                    body = entryMatcher.group("text").replace(quote + quote, quote);
+                    String single = entryMatcher.group("single");
+                    body = single != null
+                            ? single.replace("''", "'")
+                            : entryMatcher.group("double").replace("\"\"", "\"");
                 }
 
                 result.replace(shift + matcher.start(), shift + matcher.end(), body);
