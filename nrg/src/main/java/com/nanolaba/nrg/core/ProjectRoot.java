@@ -2,6 +2,9 @@ package com.nanolaba.nrg.core;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.LinkOption;
+import java.nio.file.Path;
 
 /**
  * The directory a template is confined to: every path a template can name — files it
@@ -16,10 +19,15 @@ import java.io.IOException;
  * ({@code --root} on the CLI, {@code <root>} in the Maven plugin,
  * {@link GeneratorConfig#setProjectRoot(File)} in code) it is detected from the root
  * source file: the nearest ancestor directory that contains a {@code .git} entry, or the
- * source file's own directory when there is none. Comparisons use canonical paths, so a
- * symbolic link inside the root that points outside of it does not widen the root.
+ * source file's own directory when there is none. Paths are compared after following
+ * every link the way the operating system will (see {@link #canonical(File)}), so a
+ * symbolic link or junction inside the root that points outside of it does not widen the
+ * root.
  */
 public final class ProjectRoot {
+
+    /** Bound on chained dangling links, so a link cycle cannot recurse forever. */
+    private static final int MAX_LINK_HOPS = 40;
 
     private ProjectRoot() {/* utility */}
 
@@ -58,12 +66,63 @@ public final class ProjectRoot {
         return candidate;
     }
 
+    /**
+     * Resolves a path the way the operating system will when the file is opened: component
+     * by component, following every link on the way.
+     *
+     * <p>{@link File#getCanonicalFile()} is not enough here. On Windows it does not follow
+     * symbolic links or junctions (JDK 8–23), so a link committed inside the repository would
+     * pass the containment check and still lead outside. And normalising {@code ..} lexically
+     * before following links is wrong on every platform: {@code link/../x} is a sibling of the
+     * link's <em>target</em>, not of the link.
+     *
+     * <p>Components that do not exist yet (an output file about to be created) are appended
+     * as written; nothing can redirect them. A dangling symbolic link is followed by hand,
+     * because writing through it would create its target.
+     */
     static File canonical(File file) {
-        File absolute = (file == null ? new File(".") : file).getAbsoluteFile();
+        Path absolute = (file == null ? new File(".") : file).getAbsoluteFile().toPath();
+        return resolveLinks(absolute, 0).toFile();
+    }
+
+    private static Path resolveLinks(Path absolute, int depth) {
+        Path current = absolute.getRoot();
+        if (current == null) {
+            return absolute.normalize();
+        }
+        for (Path name : absolute) {
+            String segment = name.toString();
+            if (segment.equals(".")) {
+                continue;
+            }
+            if (segment.equals("..")) {
+                // 'current' holds no links at this point, so its parent is the real parent.
+                if (current.getParent() != null) {
+                    current = current.getParent();
+                }
+                continue;
+            }
+            Path next = current.resolve(name);
+            if (Files.exists(next, LinkOption.NOFOLLOW_LINKS)) {
+                try {
+                    next = next.toRealPath();
+                } catch (IOException e) {
+                    next = followDanglingLink(current, next, depth);
+                }
+            }
+            current = next;
+        }
+        return current;
+    }
+
+    private static Path followDanglingLink(Path parent, Path link, int depth) {
+        if (depth >= MAX_LINK_HOPS || !Files.isSymbolicLink(link)) {
+            return link;
+        }
         try {
-            return absolute.getCanonicalFile();
+            return resolveLinks(parent.resolve(Files.readSymbolicLink(link)), depth + 1);
         } catch (IOException e) {
-            return absolute.toPath().normalize().toFile();
+            return link;
         }
     }
 
