@@ -1186,6 +1186,8 @@ Widgets allow you to insert programmatically generated text into a document.
 If you are using **Nanolaba Readme Generator (NRG)** as a Java library, you can write your own widget.
 How to do this is explained in the [Advanced Features](#advanced-features) section.
 
+Widget parameters are written as `name='value'` pairs separated by commas; a value is quoted with either `'` or `"`. Everything between the quotes belongs to the value, including parentheses and the other quote character: `cond='endsWith(${version}, -SNAPSHOT)'`, `text="it's done (really)"`.
+
 #### Widget 'languages'
 
 This component allows you to generate links to other versions of a document (written in other languages).
@@ -1560,7 +1562,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 13.05.2026 10:26:14
+Last updated: 10.11.2026 23:29:47
 ```
 
 </td></tr>
@@ -1573,7 +1575,7 @@ ${widget:date(pattern = 'dd.MM.yyyy')}
 </td><td>
 
 ```markdown
-13.05.2026
+10.11.2026
 ```
 
 </td></tr>
@@ -1758,7 +1760,7 @@ Widget parameters:
 Tips / caveats:
 
 - Curly braces `{` / `}` inside `expr` work as in LaTeX (subscripts, superscripts, `\\text{…}`, `\\frac{…}{…}`).
-- Raw `(` and `)` are not allowed inside `expr` because the widget-tag parser uses them as delimiters — wrap them with `\\left(` / `\\right)` for LaTeX grouping.
+- Parentheses `(` / `)` inside the quoted `expr` are part of the value — write `f(x) = (a + b)^2` as is. (Up to 1.2 the first `)` ended the widget tag, so `\\left(` / `\\right)` was the only way to group.)
 - The svg renderer depends on an external service, so generated images break if the endpoint disappears. Self-host or pin a known-good URL via `service` for long-lived docs.
 - Pre-rendering, MathML output, and LaTeX linting are out of scope.
 
@@ -2013,7 +2015,7 @@ ${widget:endDetails}
 <details>
 <summary>Advanced</summary>
 
-inner *markdown* and 13.05.2026 10:26:14
+inner *markdown* and 10.11.2026 23:29:48
 
 </details>
 ```
@@ -2156,6 +2158,7 @@ This section summarises the main user-visible changes in each release. For full 
 - **`details` widget — collapsible `<details>` blocks**: new `${widget:details(summary='…')}` … `${widget:endDetails}` block widget rewrites paired markers into a GitHub-friendly `<details><summary>…</summary>…</details>` block, with the inner markdown still flowing through the normal pipeline — nested widgets, `${var}` substitution, and language tags keep working inside. A single-tag shortcut `${widget:details(summary='…', content='…')}` renders compact inline HTML for short snippets; `open='true'` emits `<details open>` in either form. Removes the need to hand-write HTML inside templates for the long-tables / verbose-troubleshooting / faq-section pattern. Stray `endDetails` and unclosed openers are recovered the same way as `if`/`endIf`. Closes [#31](https://github.com/nanolaba/readme-generator/issues/31).
 - **`if` widget — new inline form**: `${widget:if(cond='…', text='…')}` emits `text` on a single line when `cond` is truthy, and empty string otherwise — useful for short conditional snippets where the existing block form (`${widget:if(cond='…')}` … `${widget:endIf}`) is overkill. `\n` and `\\` inside `text=` are interpreted, and property / language substitution against the outer template happens before the widget runs. The block form is unchanged. Internally, both forms now live on a unified `BlockWidget` base class shared with `details`; the standalone `IfBlockProcessor` / `DetailsBlockProcessor` classes are removed (no user-visible effect — internal refactor).
 - **`toc` short alias for `tableOfContents`**: `${widget:toc(...)}` now works as a synonym for `${widget:tableOfContents(...)}` — anchor generation, parameters, and rendered output are byte-identical. Primary name stays `tableOfContents`. Aliases are a general widget-system feature: third-party widgets can declare their own via the new `NRGWidget.getAliases()` default method.
+- **Parentheses inside quoted widget parameters**: a `)` inside a quoted parameter value no longer ends the widget tag. The documented `${widget:if(cond='endsWith(${devVersion}, -SNAPSHOT)')}` / `startsWith(...)` conditions and `(…)` grouping now work in both the block and the inline form — previously the opener was left in the output as literal text, the block body was always rendered and every `${widget:endIf}` was reported as stray. The same fix lets `math` take `expr='f(x) = (a + b)^2'`, `details` take `summary='Advanced (optional)'`, and `--validate` see such tags. Closes [#55](https://github.com/nanolaba/readme-generator/issues/55).
 
 ### 1.2
 
@@ -2259,4 +2262,4 @@ If **Nanolaba Readme Generator (NRG)** keeps your multi-language READMEs in sync
 
 
 ---
-*Last updated: 13.05.2026*
+*Last updated: 10.11.2026*

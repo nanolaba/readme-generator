@@ -41,7 +41,22 @@ import static org.apache.commons.lang3.StringUtils.*;
  */
 public class TemplateLine {
 
-    public static final Pattern WIDGET_TAG_PATTERN = Pattern.compile("\\$\\{ *widget:(\\w*)(\\(([^)]*)\\))? *}");
+    /**
+     * Regex source for the parameter list of a widget tag — everything between the tag's
+     * parentheses. A quoted value ({@code '…'} or {@code "…"}) is consumed as a unit, so a
+     * {@code )} inside it does not end the list: {@code cond='endsWith(${v}, -SNAPSHOT)'}.
+     *
+     * <p>A quote character with no partner later on the line is treated as plain text
+     * rather than as an opening quote; tags such as {@code text='it's'} were recognised
+     * before quotes became significant and must stay recognised. The alternatives are mutually
+     * exclusive and the quantifier is possessive, so matching never backtracks into a
+     * different split of the same text.
+     */
+    public static final String WIDGET_PARAMETERS_REGEX =
+            "(?:[^)'\"]|'[^']*'|\"[^\"]*\"|'(?![^']*')|\"(?![^\"]*\"))*+";
+
+    public static final Pattern WIDGET_TAG_PATTERN =
+            Pattern.compile("\\$\\{ *widget:(\\w*)(\\((" + WIDGET_PARAMETERS_REGEX + ")\\))? *}");
     private static final Pattern ENV_TAG_PATTERN = Pattern.compile("\\$\\{\\s*env\\.([A-Za-z_][A-Za-z0-9_]*)(?::([^}]*))?\\s*}");
     private static final Pattern POM_TAG_PATTERN = Pattern.compile("\\$\\{\\s*pom\\.([A-Za-z_][A-Za-z0-9_.\\-]*?)(?::([^}]*))?\\s*}");
     private static final Pattern POM_INTERNAL_REF = Pattern.compile("\\$\\{\\s*([A-Za-z_][A-Za-z0-9_.\\-]*)(?::([^}]*))?\\s*}");

@@ -118,6 +118,15 @@ class MathWidgetTest extends DefaultNRGTest {
     }
 
     @Test
+    public void testParenthesesInExpr() {
+        Generator generator = new Generator(new File("README.src.md"),
+                "area ${widget:math(expr='f(x) = (a + b)^2')} done");
+
+        String body = generator.getResult("en").getContent().toString();
+        assertTrue(body.contains("area $f(x) = (a + b)^2$ done"), body);
+    }
+
+    @Test
     public void testLanguageSubstitutionInAlt() {
         Generator generator = new Generator(new File("README.src.md"),
                 "<!--@nrg.languages=en,ru-->\n" +

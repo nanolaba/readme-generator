@@ -3,6 +3,7 @@ package com.nanolaba.nrg.widgets;
 import com.nanolaba.logging.LOG;
 import com.nanolaba.nrg.core.GeneratorConfig;
 import com.nanolaba.nrg.core.NRGUtil;
+import com.nanolaba.nrg.core.TemplateLine;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -45,7 +46,8 @@ public abstract class BlockWidget extends DefaultWidget {
         String name = getName();
         String end = getEndMarkerName();
         this.openLine = Pattern.compile(
-                "^\\s*\\$\\{\\s*widget:" + Pattern.quote(name) + "\\s*(?:\\(([^)]*)\\))?\\s*}\\s*$");
+                "^\\s*\\$\\{\\s*widget:" + Pattern.quote(name)
+                        + "\\s*(?:\\((" + TemplateLine.WIDGET_PARAMETERS_REGEX + ")\\))?\\s*}\\s*$");
         this.endLine = Pattern.compile(
                 "^\\s*\\$\\{\\s*widget:" + Pattern.quote(end) + "\\s*}\\s*$");
     }

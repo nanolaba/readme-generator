@@ -49,14 +49,14 @@ ${en:'Widget parameters', ru:'Свойства виджета'}:
 Tips / caveats:<!--en-->
 
 - Curly braces `{` / `}` inside `expr` work as in LaTeX (subscripts, superscripts, `\\text{…}`, `\\frac{…}{…}`).<!--en-->
-- Raw `(` and `)` are not allowed inside `expr` because the widget-tag parser uses them as delimiters — wrap them with `\\left(` / `\\right)` for LaTeX grouping.<!--en-->
+- Parentheses `(` / `)` inside the quoted `expr` are part of the value — write `f(x) = (a + b)^2` as is. (Up to 1.2 the first `)` ended the widget tag, so `\\left(` / `\\right)` was the only way to group.)<!--en-->
 - The svg renderer depends on an external service, so generated images break if the endpoint disappears. Self-host or pin a known-good URL via `service` for long-lived docs.<!--en-->
 - Pre-rendering, MathML output, and LaTeX linting are out of scope.<!--en-->
 
 Подсказки и ограничения:<!--ru-->
 
 - Фигурные скобки `{` / `}` внутри `expr` работают как в LaTeX (подстрочные/надстрочные индексы, `\\text`, `\\frac` и т. п.).<!--ru-->
-- Круглые скобки `(` и `)` внутри `expr` использовать нельзя: парсер тегов использует их как разделители. Для группировки применяйте `\\left(` / `\\right)`.<!--ru-->
+- Круглые скобки `(` / `)` внутри значения `expr` в кавычках — часть значения: `f(x) = (a + b)^2` пишется как есть. (До версии 1.2 включительно первая `)` обрывала тег виджета, и группировать можно было только через `\\left(` / `\\right)`.)<!--ru-->
 - svg-рендерер зависит от внешнего сервиса — если сервис исчезнет, картинки перестанут отображаться. Для долгоживущей документации имеет смысл поднять собственный сервис и указать его через `service`.<!--ru-->
 - Пре-рендеринг, вывод MathML и проверка синтаксиса LaTeX не поддерживаются.<!--ru-->
 

@@ -7,6 +7,9 @@ How to do this is explained in the [Advanced Features](#advanced-features) secti
 Если вы используете ${name} как java-библиотеку, то вы можете написать свой собственный виджет.<!--ru-->
 Как это сделать рассказано в разделе [Расширенные возможности](#расширенные-возможности).<!--ru-->
 
+Widget parameters are written as `name='value'` pairs separated by commas; a value is quoted with either `'` or `"`. Everything between the quotes belongs to the value, including parentheses and the other quote character: `cond='endsWith(\${version}, -SNAPSHOT)'`, `text="it's done (really)"`.<!--en-->
+Параметры виджета записываются парами `name='value'` через запятую; значение берётся в кавычки `'` или `"`. Всё, что стоит между кавычками, относится к значению — в том числе круглые скобки и кавычка другого вида: `cond='endsWith(\${version}, -SNAPSHOT)'`, `text="it's done (really)"`.<!--ru-->
+
 ${widget:import(path='widgets/WidgetLanguages.src.md')}
 ${widget:import(path='widgets/WidgetImport.src.md')}
 ${widget:import(path='widgets/WidgetTOC.src.md')}

@@ -8,6 +8,7 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -168,6 +169,56 @@ class IfWidgetTest extends DefaultNRGTest {
 
         String out = render(body, null);
         assertTrue(out.contains("GITHUB"), out);
+        assertFalse(out.contains("widget:if"), out);
+        assertEquals("", getErrAndClear());
+    }
+
+    @Test
+    public void testFunctionCallFalseConditionDropsBlock() {
+        // Regression for #55: the ')' closing the function call used to end the widget tag,
+        // so the opener was left in the output as text and the body was always rendered.
+        String body = "<!--@version=1.1-->\n" +
+                "before\n" +
+                "${widget:if(cond='endsWith(${version}, -SNAPSHOT)')}\n" +
+                "SNAPSHOT-ONLY\n" +
+                "${widget:endIf}\n" +
+                "after\n";
+
+        String out = render(body, null);
+        assertTrue(out.contains("before"), out);
+        assertTrue(out.contains("after"), out);
+        assertFalse(out.contains("SNAPSHOT-ONLY"), out);
+        assertFalse(out.contains("widget:if"), out);
+        assertEquals("", getErrAndClear());
+    }
+
+    @Test
+    public void testGroupingParenthesesInBlockCondition() {
+        String body = "<!--@a=yes-->\n" +
+                "<!--@off=-->\n" +
+                "${widget:if(cond='(${a} || ${off}) && !${off}')}\n" +
+                "GROUPED\n" +
+                "${widget:endIf}\n" +
+                "${widget:if(cond=\"(${off} || ${off}) && ${a}\")}\n" +
+                "DROPPED\n" +
+                "${widget:endIf}\n";
+
+        String out = render(body, null);
+        assertTrue(out.contains("GROUPED"), out);
+        assertFalse(out.contains("DROPPED"), out);
+        assertFalse(out.contains("widget:if"), out);
+        assertEquals("", getErrAndClear());
+    }
+
+    @Test
+    public void testInlineFormWithFunctionCallCondition() {
+        String body = "<!--@version=1.1-SNAPSHOT-->\n" +
+                "a ${widget:if(cond='endsWith(${version}, -SNAPSHOT)', text='(snapshot)')} b " +
+                "${widget:if(cond='startsWith(${version}, 2.)', text='(v2)')} c\n";
+
+        String out = render(body, null);
+        assertTrue(out.contains("a (snapshot) b  c"), out);
+        assertEquals("", getErrAndClear());
     }
 
     @Test

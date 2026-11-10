@@ -189,6 +189,21 @@ class DetailsWidgetBlockTest extends DefaultNRGTest {
     }
 
     @Test
+    public void testParenthesesInSummary() {
+        String body = "${widget:details(summary='Advanced (optional)')}\n" +
+                "inner text\n" +
+                "${widget:endDetails}\n" +
+                "${widget:details(summary='Short (inline)', content='C (1)')}\n";
+
+        String out = render(body);
+        assertTrue(out.contains("<summary>Advanced (optional)</summary>"), out);
+        assertTrue(out.contains("inner text"), out);
+        assertTrue(out.contains("<details><summary>Short (inline)</summary>C (1)</details>"), out);
+        assertFalse(out.contains("widget:"), out);
+        assertEquals("", getErrAndClear());
+    }
+
+    @Test
     public void testMixedContentAndEndDetailsLogsStray() {
         String body = "${widget:details(summary='S', content='X')}\n" +
                 "${widget:endDetails}\n";

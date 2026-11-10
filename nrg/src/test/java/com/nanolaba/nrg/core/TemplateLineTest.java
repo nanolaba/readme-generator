@@ -107,6 +107,35 @@ class TemplateLineTest extends DefaultNRGTest {
     }
 
     @Test
+    public void testGetWidgetTagWithParenthesesInQuotedParameters() {
+        Function<String, List<WidgetTag>> tags = s -> line(s).getWidgetTags(s);
+
+        // Regression for #55: a ')' inside a quoted value must not end the parameter list.
+        assertEquals("cond='endsWith(1.1, -SNAPSHOT)'",
+                tags.apply("${widget:if(cond='endsWith(1.1, -SNAPSHOT)')}").get(0).getParameters());
+        assertEquals("expr=\"f(x) = (a + b)\", display='block'",
+                tags.apply("x ${widget:math(expr=\"f(x) = (a + b)\", display='block')} y").get(0).getParameters());
+        assertEquals("text='a) b'", tags.apply("${widget:todo(text='a) b')}").get(0).getParameters());
+
+        // The other quote character inside a value is plain text, apostrophes included.
+        assertEquals("text=\"it's (done)\"",
+                tags.apply("${widget:todo(text=\"it's (done)\")}").get(0).getParameters());
+
+        // Two tags on one line stay two tags.
+        List<WidgetTag> two = tags.apply("${widget:a(x='(1)')} and ${widget:b(y='(2)')}");
+        assertEquals(2, two.size());
+        assertEquals("x='(1)'", two.get(0).getParameters());
+        assertEquals("y='(2)'", two.get(1).getParameters());
+
+        // A quote without a partner is not a delimiter: such tags were recognised before
+        // quotes became significant and must stay recognised.
+        assertEquals("text='it's'", tags.apply("${widget:todo(text='it's')}").get(0).getParameters());
+
+        // An unquoted ')' still ends the parameter list.
+        assertEquals("a", tags.apply("${widget:test(a)} b)}").get(0).getParameters());
+    }
+
+    @Test
     public void testRenderWidget() {
         BiFunction<String, String, String> action = (s, lang) -> {
             TemplateLine l = line(s, "ru", "en");
