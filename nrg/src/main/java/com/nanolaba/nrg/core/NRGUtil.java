@@ -51,7 +51,9 @@ public class NRGUtil {
     private static NRGWidget loadWidget(String fqcn, ClassLoader classLoader) {
         Class<?> cls;
         try {
-            cls = Class.forName(fqcn, true, classLoader);
+            // initialize=false: the name can come from a template (nrg.widgets), and naming a
+            // class must not run its static initialiser before we know it is a widget.
+            cls = Class.forName(fqcn, false, classLoader);
         } catch (ClassNotFoundException e) {
             LOG.error("Widget class not found: '{}' (check the classpath and the spelling)", fqcn);
             return null;

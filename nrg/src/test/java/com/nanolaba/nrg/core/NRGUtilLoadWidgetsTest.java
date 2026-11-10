@@ -56,6 +56,28 @@ class NRGUtilLoadWidgetsTest extends DefaultNRGTest {
         assertTrue(getErrAndClear().contains("no-argument constructor"));
     }
 
+    @Test
+    public void testRejectedClassIsNotInitialised() {
+        // nrg.widgets is template data: naming a class there must not run its static
+        // initialiser unless the class really is a widget.
+        List<NRGWidget> loaded = NRGUtil.loadWidgets(HasStaticInitialiser.class.getName(), null);
+
+        assertTrue(loaded.isEmpty());
+        assertTrue(getErrAndClear().contains("does not implement"));
+        assertEquals(0, InitialisationProbe.count, "static initialiser of a non-widget class must not run");
+    }
+
+    /** Separate holder so that reading the counter does not itself initialise the class under test. */
+    static class InitialisationProbe {
+        static int count;
+    }
+
+    public static class HasStaticInitialiser {
+        static {
+            InitialisationProbe.count++;
+        }
+    }
+
     public static class NoArgConstructorMissing implements NRGWidget {
         public NoArgConstructorMissing(String required) {/**/}
 
