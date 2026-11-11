@@ -57,7 +57,28 @@ final class TranslationParityChecker {
     }
 
     private void run(String[] lines) {
-        List<TaggedLine> group = new ArrayList<>();
+        boolean[] skipped = skippedLines(lines);
+        for (int i = 0; i < lines.length; i++) {
+            if (!skipped[i]) {
+                Set<String> tags = languageTags(lines[i], languages);
+                checkLanguageConstructs(lines[i], i + 1, tags.isEmpty() ? languages : tags);
+            }
+        }
+        for (List<Integer> lineNumbers : groupLineNumbers(lines, languages)) {
+            List<TaggedLine> group = new ArrayList<>();
+            for (Integer n : lineNumbers) {
+                group.add(new TaggedLine(n, languageTags(lines[n - 1], languages), lines[n - 1]));
+            }
+            closeGroup(group);
+        }
+    }
+
+    /**
+     * Lines that neither belong to a group nor end one: ignore markers and blocks, and lines
+     * carrying {@code <!--nrg.parity.ignore-->}.
+     */
+    static boolean[] skippedLines(String[] lines) {
+        boolean[] skipped = new boolean[lines.length];
         boolean inIgnoreBlock = false;
         for (int i = 0; i < lines.length; i++) {
             String line = lines[i];
@@ -65,27 +86,46 @@ final class TranslationParityChecker {
             if (IGNORE_BEGIN.matcher(line).find()) {
                 inIgnoreBlock = true;
             }
-            boolean skipped = inIgnoreBlock || ignoreMarker || IGNORE_INLINE.matcher(line).find()
+            skipped[i] = inIgnoreBlock || ignoreMarker || IGNORE_INLINE.matcher(line).find()
                     || line.contains(NRGConstants.PARITY_IGNORE_MARKER);
             if (IGNORE_END.matcher(line).find()) {
                 inIgnoreBlock = false;
             }
-            if (skipped) {
-                continue; // neutral: neither part of a group nor ending one
+        }
+        return skipped;
+    }
+
+    /**
+     * The translation groups of a template, as the 1-based line numbers of their tagged lines:
+     * a group is a run of language-tagged lines that blank lines (and lines rendering nothing)
+     * do not interrupt and any other untagged line ends. Shared with
+     * {@link StaleTranslationFinder}, so both checks see the same groups.
+     */
+    static List<List<Integer>> groupLineNumbers(String[] lines, List<String> languages) {
+        List<List<Integer>> groups = new ArrayList<>();
+        boolean[] skipped = skippedLines(lines);
+        List<Integer> group = new ArrayList<>();
+        for (int i = 0; i < lines.length; i++) {
+            if (skipped[i]) {
+                continue;
             }
-            Set<String> tags = tagsOf(line);
-            checkLanguageConstructs(line, i + 1, tags.isEmpty() ? languages : tags);
-            if (!tags.isEmpty()) {
-                group.add(new TaggedLine(i + 1, tags, line));
-            } else if (!rendersNothing(line)) {
-                closeGroup(group);
+            if (!languageTags(lines[i], languages).isEmpty()) {
+                group.add(i + 1);
+            } else if (!rendersNothing(lines[i])) {
+                if (!group.isEmpty()) {
+                    groups.add(group);
+                }
                 group = new ArrayList<>();
             }
         }
-        closeGroup(group);
+        if (!group.isEmpty()) {
+            groups.add(group);
+        }
+        return groups;
     }
 
-    private Set<String> tagsOf(String line) {
+    /** Declared languages whose marker ({@code <!--en-->}) the line carries. */
+    static Set<String> languageTags(String line, List<String> languages) {
         Set<String> tags = new LinkedHashSet<>();
         Matcher m = MARKER.matcher(line);
         while (m.find()) {
@@ -247,7 +287,17 @@ final class TranslationParityChecker {
      * or {@code null} when the text there is not a language construct.
      */
     static List<String> parseConstructKeys(String s, int pos) {
-        List<String> keys = new ArrayList<>();
+        Map<String, String> values = parseConstruct(s, pos);
+        return values == null ? null : new ArrayList<>(values.keySet());
+    }
+
+    /**
+     * Entries of the language construct whose body starts at {@code pos} (just after {@code ${}),
+     * language to text with doubled quotes undone, or {@code null} when the text there is not a
+     * language construct.
+     */
+    static Map<String, String> parseConstruct(String s, int pos) {
+        Map<String, String> values = new LinkedHashMap<>();
         int i = pos;
         while (true) {
             i = skipSpaces(s, i);
@@ -265,27 +315,30 @@ final class TranslationParityChecker {
             }
             char quote = s.charAt(i);
             i++;
+            StringBuilder text = new StringBuilder();
             while (true) {
                 if (i >= s.length()) {
                     return null;
                 }
                 if (s.charAt(i) == quote) {
                     if (i + 1 < s.length() && s.charAt(i + 1) == quote) {
+                        text.append(quote);
                         i += 2; // doubled quote is a literal one
                         continue;
                     }
                     i++;
                     break;
                 }
+                text.append(s.charAt(i));
                 i++;
             }
-            keys.add(key.group());
+            values.put(key.group(), text.toString());
             i = skipSpaces(s, i);
             if (i < s.length() && s.charAt(i) == ',') {
                 i++;
                 continue;
             }
-            return i < s.length() && s.charAt(i) == '}' ? keys : null;
+            return i < s.length() && s.charAt(i) == '}' ? values : null;
         }
     }
 

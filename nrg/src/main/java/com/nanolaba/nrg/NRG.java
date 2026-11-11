@@ -242,6 +242,10 @@ public class NRG {
                 "print the template line that produces a line of a generated file (FILE:LINE or FILE:FIRST-LAST)");
         locate.setArgName("file:line");
         options.addOption(locate);
+        Option staleTranslations = new Option(null, "stale-translations", true,
+                "report places where some languages changed since the git revision and others did not; exit 1 if any");
+        staleTranslations.setArgName("git-ref");
+        options.addOption(staleTranslations);
         Option agentRules = new Option(null, "agent-rules", false,
                 "print the instructions block for AGENTS.md / CLAUDE.md computed from the templates");
         options.addOption(agentRules);
@@ -387,7 +391,7 @@ public class NRG {
         }
         if (cmd.hasOption(agentRules)) {
             if (toStdout || validateMode || cmd.hasOption(manifest) || cmd.hasOption(isGenerated)
-                    || cmd.hasOption(affected) || cmd.hasOption(locate)) {
+                    || cmd.hasOption(affected) || cmd.hasOption(locate) || cmd.hasOption(staleTranslations)) {
                 throw new ParseException("--agent-rules cannot be combined with other modes");
             }
             if (checkMode && !cmd.hasOption(write)) {
@@ -409,13 +413,14 @@ public class NRG {
         }
 
         int queryModes = (cmd.hasOption(manifest) ? 1 : 0) + (cmd.hasOption(isGenerated) ? 1 : 0)
-                + (cmd.hasOption(affected) ? 1 : 0) + (cmd.hasOption(locate) ? 1 : 0);
+                + (cmd.hasOption(affected) ? 1 : 0) + (cmd.hasOption(locate) ? 1 : 0)
+                + (cmd.hasOption(staleTranslations) ? 1 : 0);
         if (queryModes > 1) {
-            throw new ParseException("--manifest, --is-generated, --affected and --locate are mutually exclusive");
+            throw new ParseException("--manifest, --is-generated, --affected, --locate and --stale-translations are mutually exclusive");
         }
         if (queryModes == 1 && (toStdout || checkMode || validateMode)) {
-            throw new ParseException("--manifest, --is-generated, --affected and --locate cannot be combined with "
-                    + "--stdout, --check or --validate");
+            throw new ParseException("--manifest, --is-generated, --affected, --locate and --stale-translations cannot be "
+                    + "combined with --stdout, --check or --validate");
         }
 
         List<File> sources = collectSourceFiles(cmd, file);
@@ -429,6 +434,10 @@ public class NRG {
                 ManifestCommand query = new ManifestCommand(sourceCharset, widgetsForQuery).load(sources);
                 if (cmd.hasOption(locate)) {
                     return query.printLocate(cmd.getOptionValue(locate), outputFormat);
+                }
+                if (cmd.hasOption(staleTranslations)) {
+                    return query.printStaleTranslations(cmd.getOptionValue(staleTranslations), outputFormat,
+                            ManifestCommand::gitShow);
                 }
                 if (cmd.hasOption(isGenerated)) {
                     return query.printIsGenerated(new File(cmd.getOptionValue(isGenerated)), outputFormat);

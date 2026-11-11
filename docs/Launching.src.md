@@ -176,6 +176,37 @@ A line meant for one language only is left out of the translation checks with<!-
 маркером `<\!--nrg.parity.ignore-->` (из вывода он удаляется);<!--ru-->
 `<\!--\@nrg.validate.parity=false-->` отключает эти проверки для шаблона и импортируемых им файлов.<!--ru-->
 
+#### ${en:'Translations that fell behind', ru:'Отставшие переводы'}
+
+`--validate` notices a missing translation, not an outdated one: the English sentence is<!--en-->
+rewritten, the Russian line next to it stays as it was, and every check is green.<!--en-->
+`--stale-translations <git-ref>` compares each template and the template fragments it imports<!--en-->
+with their version at a git revision — typically the base of a pull request — and reports every<!--en-->
+translation group, and every `\${en:'…', ru:'…'}` construct, where some languages changed and<!--en-->
+others did not, with the old and the new text of the changed side:<!--en-->
+`--validate` замечает пропущенный перевод, но не устаревший: английское предложение переписали,<!--ru-->
+русская строка рядом осталась прежней, и все проверки зелёные. `--stale-translations <git-ref>`<!--ru-->
+сравнивает каждый шаблон и импортируемые им фрагменты с их версией в git-ревизии — обычно с<!--ru-->
+базой pull request — и сообщает о каждой группе переводов и каждой конструкции<!--ru-->
+`\${en:'…', ru:'…'}`, где одни языки изменились, а другие нет, показывая старый и новый текст<!--ru-->
+изменённой стороны:<!--ru-->
+
+```text
+$ nrg --stale-translations origin/main -f README.src.md
+docs/Overview.src.md:22-25: 'en' changed since origin/main, 'ru' did not
+    en was: Fast README generator
+    en now: Fast and safe README generator
+```
+
+The run exits with `1` when it reports anything, so it works as a pull request gate (the<!--en-->
+checkout needs the history: `fetch-depth: 0`). A one-sided edit that needs no counterpart — a<!--en-->
+typo fix — is acknowledged with `<\!--nrg.translation.ok-->` on the line (removed from the output).<!--en-->
+`--format json` prints `{"findings": [{"file", "line", "lastLine", "kind", "changed", "unchanged", "old", "new"}]}`.<!--en-->
+Запуск завершается с кодом `1`, если что-то найдено, поэтому подходит как проверка pull request<!--ru-->
+(checkout нужна история: `fetch-depth: 0`). Одностороннюю правку, которой не нужна пара, — например,<!--ru-->
+исправление опечатки — подтверждают маркером `<\!--nrg.translation.ok-->` в строке (из вывода он удаляется).<!--ru-->
+`--format json` печатает `{"findings": [{"file", "line", "lastLine", "kind", "changed", "unchanged", "old", "new"}]}`.<!--ru-->
+
 #### ${en:'Print to stdout', ru:'Вывод в stdout'}
 
 Use `--stdout` to stream generated output to standard output instead<!--en-->

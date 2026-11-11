@@ -5,17 +5,21 @@ import com.nanolaba.nrg.core.Generator;
 import com.nanolaba.nrg.core.LineEndings;
 import com.nanolaba.nrg.core.NRGConstants;
 import com.nanolaba.nrg.core.SourceOrigin;
+import com.nanolaba.nrg.core.StaleTranslationFinder;
 import com.nanolaba.nrg.core.TemplateManifest;
 import com.nanolaba.nrg.widgets.NRGWidget;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.*;
 import java.util.regex.Matcher;
+import java.util.function.BiFunction;
 import java.util.regex.Pattern;
 
 /**
@@ -264,6 +268,127 @@ final class ManifestCommand {
             firstLink = false;
         }
         return sb.append("]}").toString();
+    }
+
+    /**
+     * {@code --stale-translations REF}: compares every template and the template fragments it
+     * imports with their version at the git revision {@code REF} and reports the places where some
+     * languages changed and others did not.
+     *
+     * @param oldVersion reads a file as it was at {@code REF}; {@code null} when it did not exist then
+     * @return 0 when nothing is reported, 1 when something is, 64 when {@code REF} cannot be read
+     */
+    int printStaleTranslations(String ref, RunReport.Format format, BiFunction<File, String, String> oldVersion)
+            throws IOException {
+        Map<File, List<String>> files = new LinkedHashMap<>();
+        for (TemplateManifest m : manifests) {
+            List<String> languages = new ArrayList<>(m.getOutputs().keySet());
+            for (File input : m.getInputs()) {
+                if (input.getName().endsWith("." + NRGConstants.DEFAULT_SOURCE_EXTENSION)) {
+                    files.putIfAbsent(input, languages);
+                }
+            }
+        }
+        List<StaleTranslationFinder.Finding> findings = new ArrayList<>();
+        for (Map.Entry<File, List<String>> e : files.entrySet()) {
+            File file = e.getKey();
+            String before = oldVersion.apply(file, ref);
+            if (before == null) {
+                if (roots().contains(file)) {
+                    System.err.println("--stale-translations: cannot read " + path(file) + " at '" + ref
+                            + "' (is it a valid revision, and was the file there? CI checkouts may need fetch-depth: 0)");
+                    return NRG.EXIT_USAGE;
+                }
+                continue; // a fragment added since REF has nothing to be stale against
+            }
+            findings.addAll(StaleTranslationFinder.find(file, before, FileUtils.readFileToString(file, charset), e.getValue()));
+        }
+        if (format == RunReport.Format.JSON) {
+            StringBuilder sb = new StringBuilder("{\"version\": ").append(RunReport.str(NRG.getVersion().trim()))
+                    .append(", \"mode\": \"stale-translations\", \"base\": ").append(RunReport.str(ref))
+                    .append(", \"findings\": [");
+            for (int i = 0; i < findings.size(); i++) {
+                StaleTranslationFinder.Finding f = findings.get(i);
+                sb.append(i == 0 ? "\n  " : ",\n  ").append("{\"file\": ").append(RunReport.str(path(f.getFile())))
+                        .append(", \"line\": ").append(f.getFirstLine()).append(", \"lastLine\": ").append(f.getLastLine())
+                        .append(", \"kind\": ").append(RunReport.str(f.getKind()))
+                        .append(", \"changed\": ").append(array(new ArrayList<>(f.getChanged())))
+                        .append(", \"unchanged\": ").append(array(new ArrayList<>(f.getUnchanged())))
+                        .append(", \"old\": ").append(object(f.getOldText()))
+                        .append(", \"new\": ").append(object(f.getNewText())).append('}');
+            }
+            System.out.println(sb.append(findings.isEmpty() ? "]}" : "\n]}"));
+        } else {
+            for (StaleTranslationFinder.Finding f : findings) {
+                String range = f.getFirstLine() == f.getLastLine() ? String.valueOf(f.getFirstLine())
+                        : f.getFirstLine() + "-" + f.getLastLine();
+                System.out.println(path(f.getFile()) + ":" + range + ": " + quoted(f.getChanged()) + " changed since "
+                        + ref + ", " + quoted(f.getUnchanged()) + " did not"
+                        + ("construct".equals(f.getKind()) ? " (in a ${...} language construct)" : ""));
+                for (String language : f.getChanged()) {
+                    printIndented("    " + language + " was: ", f.getOldText().get(language));
+                    printIndented("    " + language + " now: ", f.getNewText().get(language));
+                }
+            }
+            if (!findings.isEmpty()) {
+                System.err.println("Update the other languages, or mark an intentional one-sided edit with "
+                        + NRGConstants.TRANSLATION_OK_MARKER);
+            }
+        }
+        return findings.isEmpty() ? NRG.EXIT_OK : NRG.EXIT_DRIFT;
+    }
+
+    private Set<File> roots() {
+        Set<File> roots = new HashSet<>();
+        manifests.forEach(m -> roots.add(m.getSource()));
+        return roots;
+    }
+
+    private static void printIndented(String prefix, String text) {
+        if (text == null || text.isEmpty()) {
+            System.out.println(prefix + "(nothing)");
+            return;
+        }
+        String[] lines = text.split("\n", -1);
+        System.out.println(prefix + lines[0]);
+        String pad = new String(new char[prefix.length()]).replace('\0', ' ');
+        for (int i = 1; i < lines.length; i++) {
+            System.out.println(pad + lines[i]);
+        }
+    }
+
+    private static String quoted(Collection<String> names) {
+        List<String> q = new ArrayList<>();
+        names.forEach(n -> q.add("'" + n + "'"));
+        return String.join(", ", q);
+    }
+
+    private static String object(Map<String, String> values) {
+        StringBuilder sb = new StringBuilder("{");
+        int k = 0;
+        for (Map.Entry<String, String> e : values.entrySet()) {
+            sb.append(k++ == 0 ? "" : ", ").append(RunReport.str(e.getKey())).append(": ").append(RunReport.str(e.getValue()));
+        }
+        return sb.append('}').toString();
+    }
+
+    /** {@code git show REF:./NAME} run in the file's directory; {@code null} when git cannot provide it. */
+    static String gitShow(File file, String ref) {
+        try {
+            Process p = new ProcessBuilder("git", "show", ref + ":./" + file.getName())
+                    .directory(file.getAbsoluteFile().getParentFile())
+                    .redirectErrorStream(false)
+                    .start();
+            p.getOutputStream().close();
+            byte[] out = IOUtils.toByteArray(p.getInputStream());
+            IOUtils.toByteArray(p.getErrorStream());
+            return p.waitFor() == 0 ? new String(out, StandardCharsets.UTF_8) : null;
+        } catch (IOException e) {
+            return null;
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return null;
+        }
     }
 
     static final String RULES_BEGIN = "<!-- nrg:agent-rules:begin -->";

@@ -64,23 +64,25 @@ This very README is generated with NRG — see [`README.src.md`](README.src.md).
 	- 2.4 [Other agents](#other-agents)
 	- 2.5 [Guarding generated files with a hook](#guarding-generated-files-with-a-hook)
 	- 2.6 [One template for every agent](#one-template-for-every-agent)
-	- 2.7 [Running unattended](#running-unattended)
+	- 2.7 [Reviewing translations](#reviewing-translations)
+	- 2.8 [Running unattended](#running-unattended)
 - 3 [Usage](#usage)
 	- 3.1 [Using the Command Line Interface](#using-the-command-line-interface)
 		- 3.1.1 [Pinned wrapper: nrgw](#pinned-wrapper-nrgw)
 		- 3.1.2 [Verifying generated files (CI mode)](#verifying-generated-files-ci-mode)
 		- 3.1.3 [Validating source templates](#validating-source-templates)
-		- 3.1.4 [Print to stdout](#print-to-stdout)
-		- 3.1.5 [Machine-readable output](#machine-readable-output)
-		- 3.1.6 [Exit codes](#exit-codes)
-		- 3.1.7 [What a template writes and reads](#what-a-template-writes-and-reads)
-		- 3.1.8 [Logging verbosity](#logging-verbosity)
-		- 3.1.9 [Customising output filenames](#customising-output-filenames)
-		- 3.1.10 [Project root](#project-root)
-		- 3.1.11 [Untrusted templates](#untrusted-templates)
-		- 3.1.12 [Line endings](#line-endings)
-		- 3.1.13 [Header customisation](#header-customisation)
-		- 3.1.14 [Multiple files and glob patterns](#multiple-files-and-glob-patterns)
+		- 3.1.4 [Translations that fell behind](#translations-that-fell-behind)
+		- 3.1.5 [Print to stdout](#print-to-stdout)
+		- 3.1.6 [Machine-readable output](#machine-readable-output)
+		- 3.1.7 [Exit codes](#exit-codes)
+		- 3.1.8 [What a template writes and reads](#what-a-template-writes-and-reads)
+		- 3.1.9 [Logging verbosity](#logging-verbosity)
+		- 3.1.10 [Customising output filenames](#customising-output-filenames)
+		- 3.1.11 [Project root](#project-root)
+		- 3.1.12 [Untrusted templates](#untrusted-templates)
+		- 3.1.13 [Line endings](#line-endings)
+		- 3.1.14 [Header customisation](#header-customisation)
+		- 3.1.15 [Multiple files and glob patterns](#multiple-files-and-glob-patterns)
 	- 3.2 [Use as maven plugin](#use-as-maven-plugin)
 	- 3.3 [Use as a GitHub Action](#use-as-a-github-action)
 		- 3.3.1 [Quickstart](#quickstart)
@@ -382,6 +384,10 @@ Everyone except Copilot.<!--variant:!copilot-->
 
 `nrg -f AGENTS.src.md` writes all four files: untagged lines go to every variant, tagged lines to the variants they name. With `import`, the instruction files and the README can share a fragment — the build commands, for instance — and can no longer contradict each other. Variants combine with languages, so a translated `AGENTS.ru.md` is one more line in `nrg.languages`.
 
+### Reviewing translations
+
+An agent that rewrites a paragraph tends to rewrite it in one language. `nrg --stale-translations origin/main` turns "keep the translations in sync" from an instruction it may forget into a failing check with a precise work list: every group and construct where one language changed and another did not, with the old and the new text — exactly the context needed to update the translation. See [Translations that fell behind](#translations-that-fell-behind).
+
 ### Running unattended
 
 An agent runs commands on templates it did not write — a pull request, a freshly cloned repository. **Nanolaba Readme Generator (NRG)** treats a template as untrusted data: every path it names must stay inside the [project root](#project-root), and no command is executed unless `--allow-exec` is given on the command line.
@@ -503,6 +509,27 @@ exclusive with `--check` and `--stdout`.
 A line meant for one language only is left out of the translation checks with
 `<!--nrg.parity.ignore-->` (the marker is removed from the output);
 `<!--@nrg.validate.parity=false-->` turns them off for a template and the files it imports.
+
+#### Translations that fell behind
+
+`--validate` notices a missing translation, not an outdated one: the English sentence is
+rewritten, the Russian line next to it stays as it was, and every check is green.
+`--stale-translations <git-ref>` compares each template and the template fragments it imports
+with their version at a git revision — typically the base of a pull request — and reports every
+translation group, and every `${en:'…', ru:'…'}` construct, where some languages changed and
+others did not, with the old and the new text of the changed side:
+
+```text
+$ nrg --stale-translations origin/main -f README.src.md
+docs/Overview.src.md:22-25: 'en' changed since origin/main, 'ru' did not
+    en was: Fast README generator
+    en now: Fast and safe README generator
+```
+
+The run exits with `1` when it reports anything, so it works as a pull request gate (the
+checkout needs the history: `fetch-depth: 0`). A one-sided edit that needs no counterpart — a
+typo fix — is acknowledged with `<!--nrg.translation.ok-->` on the line (removed from the output).
+`--format json` prints `{"findings": [{"file", "line", "lastLine", "kind", "changed", "unchanged", "old", "new"}]}`.
 
 #### Print to stdout
 
@@ -889,6 +916,7 @@ list — README maintenance becomes a single workflow step.
 | `mode` | Operation mode: `generate`, `check`, or `validate`. | `generate` |
 | `check-paths` | Multi-line list of glob patterns (one per line) limiting which generated outputs `mode: check` compares against on-disk files. Requires `mode: check`. | — |
 | `root` | Directory the templates are confined to — see [Project root](#project-root). Needs NRG `v1.3` or newer. | nearest ancestor with `.git` |
+| `stale-translations-base` | Git revision to compare the templates with (e.g. `${{ github.event.pull_request.base.sha }}`); fails the step when some languages changed since it and others did not — see [Translations that fell behind](#translations-that-fell-behind). Needs `fetch-depth: 0` on checkout and NRG `v1.4` or newer. | |
 | `sandbox` | `"true"` for templates you do not trust, e.g. on `pull_request` from forks: no environment variables, no remote imports — see [Untrusted templates](#untrusted-templates). Needs NRG `v1.4` or newer. | `false` |
 | `nrg-version` | NRG release tag (e.g. `v1.0`) or `latest`. | `latest` |
 | `nrg-sha256` | Expected sha256 of the downloaded release zip; a mismatch fails the run before the jar is executed. Use with a fixed `nrg-version`. | — |
@@ -1934,7 +1962,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 11.11.2026 04:09:31
+Last updated: 11.11.2026 04:16:38
 ```
 
 </td></tr>
@@ -2391,7 +2419,7 @@ ${widget:endDetails}
 <details>
 <summary>Advanced</summary>
 
-inner *markdown* and 11.11.2026 04:09:31
+inner *markdown* and 11.11.2026 04:16:38
 
 </details>
 ```
@@ -2548,6 +2576,7 @@ This section summarises the main user-visible changes in each release. For full 
 - **Claude Code plugin, Agent Skill, syntax card and `llms.txt`**: the repository is now a Claude Code plugin marketplace (`/plugin marketplace add nanolaba/readme-generator`, `/plugin install nrg@nanolaba`). The plugin ships the NRG Agent Skill (`skills/nrg/SKILL.md`) with a one-page syntax card (`skills/nrg/SYNTAX.md`, generated by NRG from the widget documentation, so it follows the README), and hooks built on the new `--claude-hook pre-edit|post-edit`: an edit of a generated file is refused with the name of its template, and an edited template is validated and regenerated. `nrg --help syntax` prints the card bundled with the installed version; `llms.txt` points language models to the docs. Closes [#76](https://github.com/nanolaba/readme-generator/issues/76).
 - **`--sandbox`, `--no-env`, `--env-allow`, `--offline`** for templates you do not trust: `--no-env` hides every environment variable from `${env.NAME}` (property values included; fallbacks still apply), `--env-allow NAME,PREFIX_*` exposes only the listed ones, `--offline` refuses remote imports even when the template sets `nrg.allowRemoteImports=true` (a `sha256`-pinned URL already in the cache still works), and `--sandbox` is both and rejects `--allow-exec`. Only the caller sets them — no template property can lift them. Maven plugin: `<sandbox>`, `<noEnv>`, `<envAllow>`, `<offline>`; GitHub Action: `sandbox` input. Closes [#77](https://github.com/nanolaba/readme-generator/issues/77).
 - **Output variants**: `<!--@nrg.variants=agents,claude,copilot-->` generates one template once per variant and per language — `AGENTS.md`, `CLAUDE.md` and `.github/copilot-instructions.md` from one source, or a user and a developer edition of a guide. `<!--variant:a,b-->` / `<!--variant:!c-->` select lines, `${nrg.variant}` names the current variant, file name patterns accept `<variant>` / `<VARIANT>`, `nrg.variant.<name>.file` sets one variant's file, and variants that would write the same file stop the run. `--stdout --variant <name>`, `--validate`, `--manifest`, `--is-generated` and `--locate` know about variants. Closes [#78](https://github.com/nanolaba/readme-generator/issues/78).
+- **`--stale-translations <git-ref>`**: compares each template and the template fragments it imports with their version at a git revision (via `git show`) and reports every translation group and every `${en:'…', ru:'…'}` construct where some languages changed and others did not, with the old and the new text of the changed side; exit code `1` when anything is reported, `--format json` for agents. `<!--nrg.translation.ok-->` acknowledges an intentional one-sided edit. GitHub Action: `stale-translations-base` input. Closes [#79](https://github.com/nanolaba/readme-generator/issues/79).
 
 - **Updated runtime dependencies**: `commons-cli` 1.9.0 → 1.11.0, `commons-lang3` 3.18.0 → 3.21.0, `commons-text` 1.12.0 → 1.15.0, `commons-io` 2.17.0 → 2.22.0, `nanolog` 1.0 → 1.1. Java 8 remains the minimum, and `nrg-maven-plugin` still runs on Maven 3.9.9 and newer.
 - **GitHub Action sets up Java with `actions/setup-java` 6.2.0** (was 4.9.1): runs no longer carry the `Node.js 20 is deprecated` and `setup-java v4 is deprecated` warnings. Reaches users with the action release that accompanies NRG 1.4.

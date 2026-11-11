@@ -30,6 +30,9 @@ inputs:
     description: 'Set to "true" for templates you do not trust (for example on pull_request): templates cannot read environment variables and remote imports are refused. Needs NRG v1.4 or newer.'
     required: false
     default: 'false'
+  stale-translations-base:
+    description: 'Git revision (e.g. origin/main or the pull request base SHA) to compare the templates with; the step fails when some languages changed since it and others did not. The checkout needs the history (fetch-depth: 0). Needs NRG v1.4 or newer.'
+    required: false
   nrg-version:
     description: 'NRG release tag (e.g. v1.1) or "latest".'
     required: false
@@ -88,6 +91,7 @@ runs:
         INPUT_CHECK_PATHS: ${{ inputs.check-paths }}
         INPUT_ROOT: ${{ inputs.root }}
         INPUT_SANDBOX: ${{ inputs.sandbox }}
+        INPUT_STALE_TRANSLATIONS_BASE: ${{ inputs.stale-translations-base }}
         INPUT_NRG_VERSION: ${{ inputs.nrg-version }}
         INPUT_NRG_SHA256: ${{ inputs.nrg-sha256 }}
         INPUT_LOG_LEVEL: ${{ inputs.log-level }}

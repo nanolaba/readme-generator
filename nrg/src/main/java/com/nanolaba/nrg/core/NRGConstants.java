@@ -38,6 +38,9 @@ public class NRGConstants {
     /** Leaves a line out of the translation-parity checks of {@code --validate}; stripped from the output. */
     public static final String PARITY_IGNORE_MARKER = "<!--nrg.parity.ignore-->";
 
+    /** Acknowledges a one-sided edit of a translated line for {@code --stale-translations}; stripped from the output. */
+    public static final String TRANSLATION_OK_MARKER = "<!--nrg.translation.ok-->";
+
     public static final String FREEZE_OPEN_MARKER_NAME = "nrg.freeze";
     public static final String FREEZE_CLOSE_MARKER_NAME = "/nrg.freeze";
     public static final String FREEZE_ATTR_ID = "id";

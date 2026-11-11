@@ -33,3 +33,5 @@ installed version.
 - `nrg --manifest` — every template, its outputs and the files it reads.
 - `nrg --affected FILE` — the templates to regenerate after FILE changed.
 - `nrg --agent-rules --write AGENTS.md` — keep the project's agent instructions in sync.
+- `nrg --stale-translations origin/main` — the places where you changed one language and not
+  the others since `origin/main`; update them before you finish.

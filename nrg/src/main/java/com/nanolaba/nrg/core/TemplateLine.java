@@ -96,7 +96,7 @@ public class TemplateLine {
         for (String language : config.getLanguages()) {
             line = line.replaceAll("<!-- *" + Pattern.quote(language) + " *-->", "");
         }
-        line = line.replace(NRGConstants.PARITY_IGNORE_MARKER, "");
+        line = line.replace(NRGConstants.PARITY_IGNORE_MARKER, "").replace(NRGConstants.TRANSLATION_OK_MARKER, "");
         if (line.contains("variant:")) {
             line = VARIANT_MARKER.matcher(line).replaceAll("");
         }

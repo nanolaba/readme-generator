@@ -60,6 +60,7 @@ ${widget:import(path='../../docs/TemplateSyntax.src.md', region='escapes')}
 <\!--nrg.freeze id="x"--> … <\!--/nrg.freeze-->   keep what the output file already has here
 <\!--toc.ignore-->                        keep this heading out of the table of contents
 <\!--nrg.parity.ignore-->                 this line is meant for one language only
+<\!--nrg.translation.ok-->                this one-sided edit needs no translation (--stale-translations)
 <\!--variant:a,b--> / <\!--variant:!c-->   keep the line in variants a and b / everywhere but c
 ```
 

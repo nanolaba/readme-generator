@@ -146,6 +146,11 @@ Everyone except Copilot.<\!--variant:!copilot-->
 `nrg -f AGENTS.src.md` writes all four files: untagged lines go to every variant, tagged lines to the variants they name. With `import`, the instruction files and the README can share a fragment — the build commands, for instance — and can no longer contradict each other. Variants combine with languages, so a translated `AGENTS.ru.md` is one more line in `nrg.languages`.<!--en-->
 `nrg -f AGENTS.src.md` запишет все четыре файла: строки без маркера попадут в каждый вариант, строки с маркером — в названные в нём. Через `import` файлы инструкций и README могут использовать общий фрагмент — например, команды сборки — и больше не будут противоречить друг другу. Варианты сочетаются с языками, так что переведённый `AGENTS.ru.md` — это просто ещё один язык в `nrg.languages`.<!--ru-->
 
+### ${en:'Reviewing translations', ru:'Проверка переводов при ревью'}
+
+An agent that rewrites a paragraph tends to rewrite it in one language. `nrg --stale-translations origin/main` turns "keep the translations in sync" from an instruction it may forget into a failing check with a precise work list: every group and construct where one language changed and another did not, with the old and the new text — exactly the context needed to update the translation. See [Translations that fell behind](#translations-that-fell-behind).<!--en-->
+Агент, переписывающий абзац, обычно переписывает его на одном языке. `nrg --stale-translations origin/main` превращает «поддерживай переводы в синхроне» из инструкции, которую можно забыть, в падающую проверку с точным списком работы: каждая группа и конструкция, где один язык изменился, а другой нет, со старым и новым текстом — ровно то, что нужно, чтобы обновить перевод. См. [«Отставшие переводы»](#отставшие-переводы).<!--ru-->
+
 ### ${en:'Running unattended', ru:'Запуск без присмотра'}
 
 An agent runs commands on templates it did not write — a pull request, a freshly cloned repository. ${name} treats a template as untrusted data: every path it names must stay inside the [project root](#project-root), and no command is executed unless `--allow-exec` is given on the command line.<!--en-->
