@@ -48,7 +48,7 @@ Using **Nanolaba Readme Generator (NRG)**, you can:
 > 💡 **Nanolaba Readme Generator (NRG)** is written in Java and requires **Java 8** or higher to run.
 
 The latest stable version of the program is **1.3**.
-The current development version is **1.4**.
+The current development version is **1.5-SNAPSHOT**.
 
 ### Used by
 
@@ -328,7 +328,7 @@ This repository is also a Claude Code plugin marketplace. The plugin brings the 
 /plugin install nrg@nanolaba
 ```
 
-The hooks need NRG 1.4 or newer: `nrg` from `PATH`, or the command line in the `NRG_HOOK_COMMAND` environment variable (for example `java -jar /opt/nrg/nrg.jar`). They run in every project you open, so they never execute anything the project supplies — not even its `./nrgw`: a repository you clone must not be able to run code through an installed plugin. In a project without `*.src.md` files they do nothing and start no JVM. The same syntax card is printed offline, for the installed version, by `nrg --help syntax`; other tools find the docs through [llms.txt](llms.txt).
+The hooks need NRG 1.5-SNAPSHOT or newer: `nrg` from `PATH`, or the command line in the `NRG_HOOK_COMMAND` environment variable (for example `java -jar /opt/nrg/nrg.jar`). They run in every project you open, so they never execute anything the project supplies — not even its `./nrgw`: a repository you clone must not be able to run code through an installed plugin. In a project without `*.src.md` files they do nothing and start no JVM. The same syntax card is printed offline, for the installed version, by `nrg --help syntax`; other tools find the docs through [llms.txt](llms.txt).
 
 ### Other agents
 
@@ -560,7 +560,7 @@ nrg --check --format json -f README.src.md
 
 ```json
 {
-  "version": "1.4",
+  "version": "1.5-SNAPSHOT",
   "mode": "check",
   "ok": false,
   "exitCode": 1,
@@ -1962,7 +1962,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 11.11.2026 04:33:14
+Last updated: 11.11.2026 04:50:22
 ```
 
 </td></tr>
@@ -2419,7 +2419,7 @@ ${widget:endDetails}
 <details>
 <summary>Advanced</summary>
 
-inner *markdown* and 11.11.2026 04:33:14
+inner *markdown* and 11.11.2026 04:50:22
 
 </details>
 ```
@@ -2561,6 +2561,8 @@ Other tools in the same space — useful if **Nanolaba Readme Generator (NRG)** 
 ## Changelog
 
 This section summarises the main user-visible changes in each release. For full details, see the git history.
+
+### Unreleased (1.5-SNAPSHOT)
 
 ### 1.4
 
