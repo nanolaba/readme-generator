@@ -3,7 +3,7 @@
 
 # NRG syntax card
 
-Everything needed to edit a Nanolaba Readme Generator (NRG) template, in one page. NRG 1.4-SNAPSHOT; full documentation: https://github.com/nanolaba/readme-generator
+Everything needed to edit a Nanolaba Readme Generator (NRG) template, in one page. NRG 1.4; full documentation: https://github.com/nanolaba/readme-generator
 
 ## Rules
 

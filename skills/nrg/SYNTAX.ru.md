@@ -3,7 +3,7 @@
 
 # Шпаргалка по синтаксису NRG
 
-Всё, что нужно для правки шаблона Nanolaba Readme Generator (NRG), на одной странице. NRG 1.4-SNAPSHOT; полная документация: https://github.com/nanolaba/readme-generator
+Всё, что нужно для правки шаблона Nanolaba Readme Generator (NRG), на одной странице. NRG 1.4; полная документация: https://github.com/nanolaba/readme-generator
 
 ## Правила
 
