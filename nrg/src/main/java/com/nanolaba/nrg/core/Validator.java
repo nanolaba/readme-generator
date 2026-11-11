@@ -273,14 +273,7 @@ public final class Validator {
          */
         private GeneratorConfig childConfig(File importedFile, GeneratorConfig parent) {
             try {
-                GeneratorConfig child = new GeneratorConfig(importedFile, readSafe(importedFile), extraWidgets);
-                parent.passRunContextTo(child);
-                parent.getProperties().forEach((key, value) -> {
-                    if (!child.getProperties().containsKey(key)) {
-                        child.getProperties().setProperty(key.toString(), String.valueOf(value));
-                    }
-                });
-                return child;
+                return parent.forImportedTemplate(importedFile, readSafe(importedFile), extraWidgets);
             } catch (RuntimeException e) {
                 return parent;
             }

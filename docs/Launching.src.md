@@ -264,6 +264,33 @@ text-mode `--check` ends with the command that fixes it (`Regenerate with: nrg -
 При нескольких исходных файлах запуск завершается с наибольшим из их кодов. Неудачный<!--ru-->
 `--check` в текстовом режиме заканчивается командой, которая всё исправит (`Regenerate with: nrg -f README.src.md`).<!--ru-->
 
+#### ${en:'What a template writes and reads', ru:'Что шаблон пишет и читает'}
+
+Three read-only queries answer, without generating anything, what a tool has to know before<!--en-->
+it edits a file:<!--en-->
+Три запроса, ничего не генерируя, отвечают на вопросы, которые инструмент задаёт, прежде чем<!--ru-->
+править файл:<!--ru-->
+
+```bash
+nrg --manifest                          # outputs and inputs of every template
+nrg --is-generated README.ru.md         # exit 0 and print README.src.md; exit 1 for a file NRG does not write
+nrg --affected docs/Overview.src.md     # templates to regenerate after this file changed
+```
+
+- `--manifest` lists, for each template, the output file of every language and its inputs: the template, every file it imports (transitively), the directories `fileTree` lists and the descriptors behind `\${pom.…}` / `\${npm.…}` / `\${gradle.…}`. What cannot be listed as a file is reported as `dynamic`: `url:…` (remote import), `exec:…`, `env:NAME`, `date`. `--format json` prints `{"templates": [{"source", "outputs", "inputs", "dynamic"}]}`.<!--en-->
+- `--is-generated <file>` exits `0` and prints the template when the file is an output, `1` otherwise.<!--en-->
+- `--affected <file>…` prints the templates that read any of the files; a file inside a directory listed by `fileTree` counts. The output can be passed straight back to NRG: `nrg $(nrg --affected docs/Overview.src.md)`.<!--en-->
+- `--manifest` для каждого шаблона перечисляет выходной файл каждого языка и входы: сам шаблон, все импортируемые им файлы (транзитивно), каталоги, которые показывает `fileTree`, и дескрипторы за `\${pom.…}` / `\${npm.…}` / `\${gradle.…}`. То, что нельзя назвать файлом, выводится как `dynamic`: `url:…` (удалённый импорт), `exec:…`, `env:NAME`, `date`. С `--format json` печатается `{"templates": [{"source", "outputs", "inputs", "dynamic"}]}`.<!--ru-->
+- `--is-generated <file>` завершается с кодом `0` и печатает шаблон, если файл — результат генерации, иначе с кодом `1`.<!--ru-->
+- `--affected <file>…` печатает шаблоны, которые читают любой из файлов; файл внутри каталога, который показывает `fileTree`, тоже считается. Вывод можно сразу передать NRG: `nrg $(nrg --affected docs/Overview.src.md)`.<!--ru-->
+
+The templates are the source files given with `-f` or as arguments; without them NRG takes every<!--en-->
+`*.src.md` below the current directory that no other template imports (hidden directories,<!--en-->
+`node_modules`, `target` and `build` are skipped).<!--en-->
+Шаблоны — это исходные файлы, переданные через `-f` или аргументами; без них NRG берёт все<!--ru-->
+`*.src.md` ниже текущего каталога, которые не импортирует другой шаблон (скрытые каталоги,<!--ru-->
+`node_modules`, `target` и `build` пропускаются).<!--ru-->
+
 #### ${en:'Logging verbosity', ru:'Уровень логирования'}
 
 Control how much NRG prints to the console with `--log-level`. Accepted<!--en-->

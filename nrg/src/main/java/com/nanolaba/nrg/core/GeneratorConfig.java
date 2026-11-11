@@ -383,6 +383,23 @@ public class GeneratorConfig {
      * <p>Widgets are not covered here: they have to be passed to the child's constructor,
      * see {@link #getCallerWidgets()} and {@link #getInheritableWidgets()}.
      */
+    /**
+     * Configuration of a template imported by this one, set up the way {@code ImportWidget}
+     * sets up its child generator — same run context, the parent's properties where the child
+     * declares none — so that static tools ({@code --validate}, {@code --manifest}) resolve
+     * descriptor paths and properties of a fragment exactly as generation does.
+     */
+    public GeneratorConfig forImportedTemplate(File importedFile, String body, List<NRGWidget> widgets) {
+        GeneratorConfig child = new GeneratorConfig(importedFile, body, widgets);
+        passRunContextTo(child);
+        getProperties().forEach((key, value) -> {
+            if (!child.getProperties().containsKey(key)) {
+                child.getProperties().setProperty(key.toString(), String.valueOf(value));
+            }
+        });
+        return child;
+    }
+
     public void passRunContextTo(GeneratorConfig child) {
         child.setRootSourceFile(rootSourceFile);
         child.setProjectRoot(getProjectRoot());
@@ -441,6 +458,28 @@ public class GeneratorConfig {
 
     public Set<String> getWarnedMissingPomPaths() {
         return warnedMissingPomPaths;
+    }
+
+    /**
+     * The files behind {@code ${kind.…}} references — {@code pom.xml}, {@code package.json}, or
+     * {@code gradle.properties} plus the build script — resolved exactly as the readers resolve
+     * them (honouring {@code nrg.pom.path} and friends). Files that do not exist are left out.
+     * Used by {@code --manifest} to list what a template depends on.
+     *
+     * @param kind {@code pom}, {@code npm} or {@code gradle}
+     * @throws ProjectRoot.OutsideProjectRootException when the configured path leaves the project root
+     */
+    public List<File> getDescriptorFiles(String kind) {
+        List<File> files = new ArrayList<>();
+        if ("pom".equals(kind)) {
+            files.add(resolvePomFile());
+        } else if ("npm".equals(kind)) {
+            files.add(resolveNpmFile());
+        } else if ("gradle".equals(kind)) {
+            files.addAll(Arrays.asList(resolveGradleLocation()));
+        }
+        files.removeIf(f -> f == null || !f.isFile());
+        return files;
     }
 
     private File resolvePomFile() {
