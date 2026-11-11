@@ -47,7 +47,7 @@ Using **Nanolaba Readme Generator (NRG)**, you can:
 
 > 💡 **Nanolaba Readme Generator (NRG)** is written in Java and requires **Java 8** or higher to run.
 
-The latest stable version of the program is **1.3**.
+The latest stable version of the program is **1.4**.
 The current development version is **1.5-SNAPSHOT**.
 
 ### Used by
@@ -153,7 +153,7 @@ Lines tagged `<!--en-->` go to `README.md`; lines tagged `<!--ru-->` go to `READ
 
 **Step 2: Generate the files**
 
-**Option A — CLI.** [Download](https://github.com/nanolaba/readme-generator/releases/tag/v1.3) the standalone jar, unzip it, then run:
+**Option A — CLI.** [Download](https://github.com/nanolaba/readme-generator/releases/tag/v1.4) the standalone jar, unzip it, then run:
 
 ```bash
 nrg -f /path/to/README.src.md
@@ -165,7 +165,7 @@ nrg -f /path/to/README.src.md
 <plugin>
     <groupId>com.nanolaba</groupId>
     <artifactId>nrg-maven-plugin</artifactId>
-    <version>1.3</version>
+    <version>1.4</version>
     <configuration>
         <file><item>README.src.md</item></file>
     </configuration>
@@ -401,7 +401,7 @@ Two more channels are closed with `--sandbox`: `${env.NAME}` can read any enviro
 **Nanolaba Readme Generator (NRG)** is written in Java and requires **Java 8** or higher to run.
 [Install](https://www.java.com/en/download/) Java if it’s not already present on your system.
 
-[Download](https://github.com/nanolaba/readme-generator/releases/tag/v1.3) the latest
+[Download](https://github.com/nanolaba/readme-generator/releases/tag/v1.4) the latest
 stable version of the application.
 
 Unzip the downloaded archive. If you're using a Unix-like system, make the `nrg.sh` file executable:
@@ -430,7 +430,7 @@ anyone who clones the repository — a contributor, a CI job, a coding agent in 
 runs that exact NRG with one command and nothing installed but Java, the same idea as `mvnw` / `gradlew`:
 
 ```bash
-nrg --init-wrapper --wrapper-version 1.3
+nrg --init-wrapper --wrapper-version 1.4
 ./nrgw -f README.src.md        # nrgw.cmd -f README.src.md on Windows
 ```
 
@@ -784,7 +784,7 @@ Add the following code to your `pom.xml`:
     <plugin>
         <groupId>com.nanolaba</groupId>
         <artifactId>nrg-maven-plugin</artifactId>
-        <version>1.3</version>
+        <version>1.4</version>
         <configuration>
             <file>
                 <item>README.src.md</item>
@@ -1037,8 +1037,8 @@ Pinning the action does not pin the NRG jar it downloads. For that, fix `nrg-ver
 - uses: nanolaba/nrg-action@v1
   with:
     file: README.src.md
-    nrg-version: v1.3
-    nrg-sha256: 9d5d58490703be4b575b489811baf4788c1a187e26d563b26d393f3591f52c62
+    nrg-version: v1.4
+    nrg-sha256: ff9ccd7efee599299c4d02f847a36bb3c3471720722837b0d87a56f039aff38a
 ```
 
 Without `nrg-sha256` the action checks the download against the `.sha256` file published with the release (NRG `v1.3` and later); for older releases it prints the checksum of what it downloaded so you can pin it.
@@ -1062,19 +1062,19 @@ The action is published as a standalone repository [`nanolaba/nrg-action`](https
 <dependency>
     <groupId>com.nanolaba</groupId>
     <artifactId>readme-generator</artifactId>
-    <version>1.3</version>
+    <version>1.4</version>
 </dependency>  
 ```
 
 **Gradle (build.gradle)**
 
 ```groovy
-implementation 'com.nanolaba:readme-generator:1.3'
+implementation 'com.nanolaba:readme-generator:1.4'
 ```
 
 **Manual download**
 
-Get the JAR from [Maven Central](https://repo1.maven.org/maven2/com/nanolaba/readme-generator/1.3).
+Get the JAR from [Maven Central](https://repo1.maven.org/maven2/com/nanolaba/readme-generator/1.4).
 Add it to your project's classpath.
 
 After this, you can call the file generation function in your project by passing 
@@ -1962,7 +1962,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 11.11.2026 04:50:22
+Last updated: 11.11.2026 04:50:51
 ```
 
 </td></tr>
@@ -2419,7 +2419,7 @@ ${widget:endDetails}
 <details>
 <summary>Advanced</summary>
 
-inner *markdown* and 11.11.2026 04:50:22
+inner *markdown* and 11.11.2026 04:50:51
 
 </details>
 ```

@@ -15,8 +15,8 @@ Security fixes are issued for the latest stable release. Older releases do not r
 
 | Version | Supported |
 | --- | --- |
-| `1.3.x` | Yes |
-| < `1.3` | No |
+| `1.4.x` | Yes |
+| < `1.4` | No |
 
 If you are running an older version, please upgrade before reporting — the issue may already be fixed on the current release.
 

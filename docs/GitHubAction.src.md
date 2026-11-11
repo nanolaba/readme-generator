@@ -151,8 +151,8 @@ ${en:'Pinning the action does not pin the NRG jar it downloads. For that, fix `n
 - uses: nanolaba/nrg-action@v1
   with:
     file: README.src.md
-    nrg-version: v1.3
-    nrg-sha256: 9d5d58490703be4b575b489811baf4788c1a187e26d563b26d393f3591f52c62
+    nrg-version: v1.4
+    nrg-sha256: ff9ccd7efee599299c4d02f847a36bb3c3471720722837b0d87a56f039aff38a
 ```
 
 ${en:'Without `nrg-sha256` the action checks the download against the `.sha256` file published with the release (NRG `v1.3` and later); for older releases it prints the checksum of what it downloaded so you can pin it.', ru:'Без `nrg-sha256` action сверяет загрузку с файлом `.sha256`, опубликованным вместе с релизом (NRG `v1.3` и новее); для более старых релизов он печатает контрольную сумму скачанного, чтобы её можно было закрепить.'}
