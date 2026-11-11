@@ -27,6 +27,13 @@ public class NRGConstants {
     public static final String PROPERTY_NO_HEADER = "nrg.noHeader";
     public static final String PROPERTY_HEADER_TEXT = "nrg.headerText";
     public static final String PROPERTY_VALIDATE_PARITY = "nrg.validate.parity";
+    /** Comma-separated output variants (e.g. {@code agents,claude,gemini}); each is generated in every language. */
+    public static final String PROPERTY_VARIANTS = "nrg.variants";
+    /** The variant being generated; set by NRG, readable in templates as {@code ${nrg.variant}}. */
+    public static final String PROPERTY_VARIANT = "nrg.variant";
+    /** {@code nrg.variant.<name>.file} — output path pattern of one variant. */
+    public static final String PROPERTY_VARIANT_FILE_PREFIX = "nrg.variant.";
+    public static final String PROPERTY_VARIANT_FILE_SUFFIX = ".file";
 
     /** Leaves a line out of the translation-parity checks of {@code --validate}; stripped from the output. */
     public static final String PARITY_IGNORE_MARKER = "<!--nrg.parity.ignore-->";

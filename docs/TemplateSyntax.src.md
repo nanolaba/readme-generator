@@ -410,6 +410,34 @@ To escape quotes, use character doubling, for example:<!--en-->
 `--validate` checks that the languages stay together (see [Validating source templates](#validating-source-templates)): every run of language-tagged lines must have lines for each language in `nrg.languages`, and every `\${en:…, ru:…}` construct must name each language the line is shown in. A line that is meant for one language only is marked with `<\!--nrg.parity.ignore-->` (removed from the output); `<\!--\@nrg.validate.parity=false-->` turns these checks off for a template.<!--en-->
 `--validate` проверяет, что языки не расходятся (см. [«Валидация исходных шаблонов»](#валидация-исходных-шаблонов)): у каждой серии строк с языковыми маркерами должны быть строки для каждого языка из `nrg.languages`, а каждая конструкция `\${en:…, ru:…}` должна содержать все языки, в которых строка выводится. Строку, предназначенную только для одного языка, помечают `<\!--nrg.parity.ignore-->` (маркер удаляется из вывода); `<\!--\@nrg.validate.parity=false-->` отключает эти проверки для шаблона.<!--ru-->
 
+### ${en:'Output variants', ru:'Варианты вывода'}
+
+Languages are one axis of a template; `nrg.variants` adds a second one — several documents that<!--en-->
+share most of their text, such as instruction files for different coding agents or a user and a<!--en-->
+contributor edition of a guide. The template is generated once per variant, each time in every<!--en-->
+language:<!--en-->
+Языки — одна ось шаблона; `nrg.variants` добавляет вторую — несколько документов с почти общим<!--ru-->
+текстом, например файлы инструкций для разных ИИ-агентов или версии руководства для пользователей<!--ru-->
+и для разработчиков. Шаблон генерируется по разу для каждого варианта, и каждый раз на всех языках:<!--ru-->
+
+```markdown
+<\!--@nrg.variants=user,dev-->
+
+Shown in every variant.
+Only in the dev edition.<\!--variant:dev-->
+Everywhere but the dev edition.<\!--variant:!dev-->
+This is the \${nrg.variant} edition.
+```
+
+- `<\!--variant:a,b-->` keeps a line in variants `a` and `b`; `<\!--variant:!c-->` keeps it everywhere but `c`. The markers are removed from the output and work in imported fragments too.<!--en-->
+- `\${nrg.variant}` is the variant being generated — also in conditions: `\${widget:if(cond='\${nrg.variant} == dev')}`.<!--en-->
+- Output names: without a pattern `<base>.<variant>.md` and `<base>.<variant>.<lang>.md`; file name patterns accept `<variant>` / `<VARIANT>`; `<\!--@nrg.variant.<name>.file=path-->` names the file of one variant. Two variants that would write the same file stop the run.<!--en-->
+- `--stdout --variant <name>` prints one variant; `--validate` reports markers that name an undeclared variant; `--manifest` lists every variant's outputs.<!--en-->
+- `<\!--variant:a,b-->` оставляет строку в вариантах `a` и `b`; `<\!--variant:!c-->` — везде, кроме `c`. Маркеры удаляются из вывода и работают и в импортируемых фрагментах.<!--ru-->
+- `\${nrg.variant}` — генерируемый сейчас вариант, в том числе в условиях: `\${widget:if(cond='\${nrg.variant} == dev')}`.<!--ru-->
+- Имена файлов: без паттерна — `<base>.<variant>.md` и `<base>.<variant>.<lang>.md`; паттерны имён понимают `<variant>` / `<VARIANT>`; `<\!--@nrg.variant.<name>.file=path-->` задаёт файл одного варианта. Если два варианта пишут в один файл, запуск останавливается.<!--ru-->
+- `--stdout --variant <name>` печатает один вариант; `--validate` сообщает о маркерах с необъявленным вариантом; `--manifest` перечисляет выходные файлы всех вариантов.<!--ru-->
+
 ### ${en:'Ignoring content', ru:'Игнорирование фрагментов'}
 
 To mark a fragment as an author note that must not appear in any generated file,<!--en-->

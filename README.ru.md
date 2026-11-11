@@ -105,21 +105,22 @@
 	- 4.7 [Значения из package.json](#значения-из-packagejson)
 	- 4.8 [Значения из Gradle](#значения-из-gradle)
 	- 4.9 [Multilanguage support](#multilanguage-support)
-	- 4.10 [Игнорирование фрагментов](#игнорирование-фрагментов)
-	- 4.11 [Замороженные области](#замороженные-области)
-	- 4.12 [Виджеты](#виджеты)
-		- 4.12.1 [Виджет 'languages'](#виджет-languages)
-		- 4.12.2 [Виджет 'import'](#виджет-import)
-		- 4.12.3 [Виджет 'tableOfContents'](#виджет-tableofcontents)
-		- 4.12.4 [Виджет 'date'](#виджет-date)
-		- 4.12.5 [Виджет 'todo'](#виджет-todo)
-		- 4.12.6 [Виджет 'alert'](#виджет-alert)
-		- 4.12.7 [Виджет 'badge'](#виджет-badge)
-		- 4.12.8 [Виджет 'math'](#виджет-math)
-		- 4.12.9 [Виджет 'exec'](#виджет-exec)
-		- 4.12.10 [Виджет 'if'](#виджет-if)
-		- 4.12.11 [Виджет 'fileTree'](#виджет-filetree)
-		- 4.12.12 [Виджет 'details'](#виджет-details)
+	- 4.10 [Варианты вывода](#варианты-вывода)
+	- 4.11 [Игнорирование фрагментов](#игнорирование-фрагментов)
+	- 4.12 [Замороженные области](#замороженные-области)
+	- 4.13 [Виджеты](#виджеты)
+		- 4.13.1 [Виджет 'languages'](#виджет-languages)
+		- 4.13.2 [Виджет 'import'](#виджет-import)
+		- 4.13.3 [Виджет 'tableOfContents'](#виджет-tableofcontents)
+		- 4.13.4 [Виджет 'date'](#виджет-date)
+		- 4.13.5 [Виджет 'todo'](#виджет-todo)
+		- 4.13.6 [Виджет 'alert'](#виджет-alert)
+		- 4.13.7 [Виджет 'badge'](#виджет-badge)
+		- 4.13.8 [Виджет 'math'](#виджет-math)
+		- 4.13.9 [Виджет 'exec'](#виджет-exec)
+		- 4.13.10 [Виджет 'if'](#виджет-if)
+		- 4.13.11 [Виджет 'fileTree'](#виджет-filetree)
+		- 4.13.12 [Виджет 'details'](#виджет-details)
 - 5 [Расширенные возможности](#расширенные-возможности)
 	- 5.1 [Создание виджета](#создание-виджета)
 - 6 [Похожие проекты](#похожие-проекты)
@@ -364,21 +365,22 @@ nrg --agent-rules --write AGENTS.md --check    # exit 1 and a diff when the bloc
 
 ### Один шаблон для всех агентов
 
-Агенты читают разные файлы — `AGENTS.md`, `CLAUDE.md`, `GEMINI.md`, — а содержимое у них почти одинаковое. «Языки» шаблона не обязаны быть человеческими:
+Агенты читают разные файлы — `AGENTS.md`, `CLAUDE.md`, `GEMINI.md`, `.github/copilot-instructions.md`, — а содержимое у них почти одинаковое. Объявите их [вариантами вывода](#варианты-вывода) одного шаблона:
 
 ```markdown
-<!--@nrg.languages=agents,claude,gemini-->
-<!--@nrg.fileNamePattern=<LANG>.md-->
+<!--@nrg.variants=agents,claude,gemini,copilot-->
+<!--@nrg.fileNamePattern=<VARIANT>.md-->
+<!--@nrg.variant.copilot.file=.github/copilot-instructions.md-->
 
 # Project rules
 
 ${widget:import(path='docs/build.md')}
 
-A note for Claude Code only.<!--claude-->
-A note for Gemini CLI only.<!--gemini-->
+A note for Claude Code and Gemini CLI.<!--variant:claude,gemini-->
+Everyone except Copilot.<!--variant:!copilot-->
 ```
 
-`nrg -f AGENTS.src.md` запишет `AGENTS.md`, `CLAUDE.md` и `GEMINI.md`: строки без маркера попадут во все три файла, строки с маркером — в один. Через `import` файлы инструкций и README могут использовать общий фрагмент — например, команды сборки — и больше не будут противоречить друг другу.
+`nrg -f AGENTS.src.md` запишет все четыре файла: строки без маркера попадут в каждый вариант, строки с маркером — в названные в нём. Через `import` файлы инструкций и README могут использовать общий фрагмент — например, команды сборки — и больше не будут противоречить друг другу. Варианты сочетаются с языками, так что переведённый `AGENTS.ru.md` — это просто ещё один язык в `nrg.languages`.
 
 ### Запуск без присмотра
 
@@ -1392,6 +1394,26 @@ ${en:'Some text', ru:'Некоторый текст'}
 
 `--validate` проверяет, что языки не расходятся (см. [«Валидация исходных шаблонов»](#валидация-исходных-шаблонов)): у каждой серии строк с языковыми маркерами должны быть строки для каждого языка из `nrg.languages`, а каждая конструкция `${en:…, ru:…}` должна содержать все языки, в которых строка выводится. Строку, предназначенную только для одного языка, помечают `<!--nrg.parity.ignore-->` (маркер удаляется из вывода); `<!--@nrg.validate.parity=false-->` отключает эти проверки для шаблона.
 
+### Варианты вывода
+
+Языки — одна ось шаблона; `nrg.variants` добавляет вторую — несколько документов с почти общим
+текстом, например файлы инструкций для разных ИИ-агентов или версии руководства для пользователей
+и для разработчиков. Шаблон генерируется по разу для каждого варианта, и каждый раз на всех языках:
+
+```markdown
+<!--@nrg.variants=user,dev-->
+
+Shown in every variant.
+Only in the dev edition.<!--variant:dev-->
+Everywhere but the dev edition.<!--variant:!dev-->
+This is the ${nrg.variant} edition.
+```
+
+- `<!--variant:a,b-->` оставляет строку в вариантах `a` и `b`; `<!--variant:!c-->` — везде, кроме `c`. Маркеры удаляются из вывода и работают и в импортируемых фрагментах.
+- `${nrg.variant}` — генерируемый сейчас вариант, в том числе в условиях: `${widget:if(cond='${nrg.variant} == dev')}`.
+- Имена файлов: без паттерна — `<base>.<variant>.md` и `<base>.<variant>.<lang>.md`; паттерны имён понимают `<variant>` / `<VARIANT>`; `<!--@nrg.variant.<name>.file=path-->` задаёт файл одного варианта. Если два варианта пишут в один файл, запуск останавливается.
+- `--stdout --variant <name>` печатает один вариант; `--validate` сообщает о маркерах с необъявленным вариантом; `--manifest` перечисляет выходные файлы всех вариантов.
+
 ### Игнорирование фрагментов
 
 Чтобы пометить фрагмент как авторскую заметку, которая не должна попасть ни в один
@@ -1921,7 +1943,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 11.11.2026 04:03:44
+Last updated: 11.11.2026 04:09:32
 ```
 
 </td></tr>
@@ -2379,7 +2401,7 @@ ${widget:endDetails}
 <details>
 <summary>Advanced</summary>
 
-inner *markdown* and 11.11.2026 04:03:44
+inner *markdown* and 11.11.2026 04:09:32
 
 </details>
 ```
@@ -2534,6 +2556,7 @@ nrg --classpath my-widgets.jar --widgets com.acme.widgets.Tag,com.acme.widgets.B
 - **`--agent-rules`**: печатает блок инструкций для `AGENTS.md` / `CLAUDE.md`, вычисленный по шаблонам, — сгенерированные файлы и их шаблоны, фрагменты для правки, исходники, встроенные в документацию, языки и точные команды проверки и генерации (`./nrgw`, если есть обёртка). `--write AGENTS.md` вставляет или заменяет блок между `<!-- nrg:agent-rules:begin -->` / `<!-- nrg:agent-rules:end -->`, не трогая остальной файл; с `--check` завершается с кодом `1` и печатает diff, если блок устарел. Закрывает [#75](https://github.com/nanolaba/readme-generator/issues/75).
 - **Плагин для Claude Code, Agent Skill, шпаргалка по синтаксису и `llms.txt`**: репозиторий теперь ещё и маркетплейс плагинов Claude Code (`/plugin marketplace add nanolaba/readme-generator`, `/plugin install nrg@nanolaba`). Плагин содержит навык NRG (`skills/nrg/SKILL.md`) с одностраничной шпаргалкой (`skills/nrg/SYNTAX.md`, генерируется NRG из документации виджетов и потому не отстаёт от README) и хуки на основе новой опции `--claude-hook pre-edit|post-edit`: правка сгенерированного файла отклоняется с указанием его шаблона, а изменённый шаблон проверяется и перегенерируется. `nrg --help syntax` печатает шпаргалку, вложенную в установленную версию; `llms.txt` указывает языковым моделям путь к документации. Закрывает [#76](https://github.com/nanolaba/readme-generator/issues/76).
 - **`--sandbox`, `--no-env`, `--env-allow`, `--offline`** для шаблонов, которым вы не доверяете: `--no-env` скрывает от `${env.NAME}` все переменные окружения (и в значениях свойств; fallback-значения работают), `--env-allow NAME,PREFIX_*` открывает только перечисленные, `--offline` отклоняет удалённый импорт, даже если шаблон задаёт `nrg.allowRemoteImports=true` (URL, закреплённый по `sha256` и уже лежащий в кэше, работает), а `--sandbox` включает оба режима и отклоняет `--allow-exec`. Их задаёт только вызывающая сторона — никакое свойство шаблона их не снимет. Maven-плагин: `<sandbox>`, `<noEnv>`, `<envAllow>`, `<offline>`; GitHub Action: вход `sandbox`. Закрывает [#77](https://github.com/nanolaba/readme-generator/issues/77).
+- **Варианты вывода**: `<!--@nrg.variants=agents,claude,copilot-->` генерирует шаблон по разу для каждого варианта и каждого языка — `AGENTS.md`, `CLAUDE.md` и `.github/copilot-instructions.md` из одного источника или версии руководства для пользователей и разработчиков. `<!--variant:a,b-->` / `<!--variant:!c-->` отбирают строки, `${nrg.variant}` называет текущий вариант, паттерны имён файлов понимают `<variant>` / `<VARIANT>`, `nrg.variant.<name>.file` задаёт файл одного варианта, а если два варианта пишут в один файл, запуск останавливается. Варианты поддерживают `--stdout --variant <name>`, `--validate`, `--manifest`, `--is-generated` и `--locate`. Закрывает [#78](https://github.com/nanolaba/readme-generator/issues/78).
 
 - **Обновлены runtime-зависимости**: `commons-cli` 1.9.0 → 1.11.0, `commons-lang3` 3.18.0 → 3.21.0, `commons-text` 1.12.0 → 1.15.0, `commons-io` 2.17.0 → 2.22.0, `nanolog` 1.0 → 1.1. Минимальной версией Java остаётся 8, а `nrg-maven-plugin` по-прежнему работает на Maven 3.9.9 и новее.
 - **GitHub Action устанавливает Java через `actions/setup-java` 6.2.0** (было 4.9.1): в запусках больше нет предупреждений `Node.js 20 is deprecated` и `setup-java v4 is deprecated`. До пользователей дойдёт с выпуском action, сопровождающим NRG 1.4.

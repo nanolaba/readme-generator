@@ -37,7 +37,7 @@ ${env.NAME:fallback}               environment variable
 ${pom.version} ${pom.properties.x} ${npm.version} ${gradle.version}   build descriptors, with :fallback
 ```
 
-- Свойства `nrg.*` настраивают NRG: `nrg.languages`, `nrg.defaultLanguage`, `nrg.fileNamePattern` (плейсхолдеры `<base>`, `<lang>`, `<LANG>`), `nrg.defaultLanguageFileNamePattern`, `nrg.fileNamePattern.<lang>`, `nrg.widgets`, `nrg.pom.path` / `nrg.npm.path` / `nrg.gradle.path`, `nrg.noHeader`, `nrg.headerText`, `nrg.allowRemoteImports`, `nrg.validate.parity`.
+- Свойства `nrg.*` настраивают NRG: `nrg.languages`, `nrg.defaultLanguage`, `nrg.fileNamePattern` (плейсхолдеры `<base>`, `<lang>`, `<LANG>`), `nrg.defaultLanguageFileNamePattern`, `nrg.fileNamePattern.<lang>`, `nrg.widgets`, `nrg.pom.path` / `nrg.npm.path` / `nrg.gradle.path`, `nrg.noHeader`, `nrg.headerText`, `nrg.allowRemoteImports`, `nrg.validate.parity`, `nrg.variants` (варианты вывода; `${nrg.variant}` — текущий вариант, `<variant>` — его плейсхолдер в имени файла, `nrg.variant.<name>.file` — его файл).
 
 ## Экранирование
 
@@ -56,6 +56,7 @@ ${pom.version} ${pom.properties.x} ${npm.version} ${gradle.version}   build desc
 <!--nrg.freeze id="x"--> … <!--/nrg.freeze-->   keep what the output file already has here
 <!--toc.ignore-->                        keep this heading out of the table of contents
 <!--nrg.parity.ignore-->                 this line is meant for one language only
+<!--variant:a,b--> / <!--variant:!c-->   keep the line in variants a and b / everywhere but c
 ```
 
 ## Виджеты

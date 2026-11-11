@@ -105,21 +105,22 @@ This very README is generated with NRG — see [`README.src.md`](README.src.md).
 	- 4.7 [npm package values](#npm-package-values)
 	- 4.8 [Gradle values](#gradle-values)
 	- 4.9 [Multilanguage support](#multilanguage-support)
-	- 4.10 [Ignoring content](#ignoring-content)
-	- 4.11 [Frozen regions](#frozen-regions)
-	- 4.12 [Widgets](#widgets)
-		- 4.12.1 [Widget 'languages'](#widget-languages)
-		- 4.12.2 [Widget 'import'](#widget-import)
-		- 4.12.3 [Widget 'tableOfContents'](#widget-tableofcontents)
-		- 4.12.4 [Widget 'date'](#widget-date)
-		- 4.12.5 [Widget 'todo'](#widget-todo)
-		- 4.12.6 [Widget 'alert'](#widget-alert)
-		- 4.12.7 [Widget 'badge'](#widget-badge)
-		- 4.12.8 [Widget 'math'](#widget-math)
-		- 4.12.9 [Widget 'exec'](#widget-exec)
-		- 4.12.10 [Widget 'if'](#widget-if)
-		- 4.12.11 [Widget 'fileTree'](#widget-filetree)
-		- 4.12.12 [Widget 'details'](#widget-details)
+	- 4.10 [Output variants](#output-variants)
+	- 4.11 [Ignoring content](#ignoring-content)
+	- 4.12 [Frozen regions](#frozen-regions)
+	- 4.13 [Widgets](#widgets)
+		- 4.13.1 [Widget 'languages'](#widget-languages)
+		- 4.13.2 [Widget 'import'](#widget-import)
+		- 4.13.3 [Widget 'tableOfContents'](#widget-tableofcontents)
+		- 4.13.4 [Widget 'date'](#widget-date)
+		- 4.13.5 [Widget 'todo'](#widget-todo)
+		- 4.13.6 [Widget 'alert'](#widget-alert)
+		- 4.13.7 [Widget 'badge'](#widget-badge)
+		- 4.13.8 [Widget 'math'](#widget-math)
+		- 4.13.9 [Widget 'exec'](#widget-exec)
+		- 4.13.10 [Widget 'if'](#widget-if)
+		- 4.13.11 [Widget 'fileTree'](#widget-filetree)
+		- 4.13.12 [Widget 'details'](#widget-details)
 - 5 [Advanced features](#advanced-features)
 	- 5.1 [Creating a widget](#creating-a-widget)
 - 6 [Related projects](#related-projects)
@@ -364,21 +365,22 @@ Instructions can be overlooked; a hook cannot. Without the plugin, the same two 
 
 ### One template for every agent
 
-Agents read different files — `AGENTS.md`, `CLAUDE.md`, `GEMINI.md` — whose content is mostly the same. The "languages" of a template do not have to be human languages:
+Agents read different files — `AGENTS.md`, `CLAUDE.md`, `GEMINI.md`, `.github/copilot-instructions.md` — whose content is mostly the same. Declare them as [output variants](#output-variants) of one template:
 
 ```markdown
-<!--@nrg.languages=agents,claude,gemini-->
-<!--@nrg.fileNamePattern=<LANG>.md-->
+<!--@nrg.variants=agents,claude,gemini,copilot-->
+<!--@nrg.fileNamePattern=<VARIANT>.md-->
+<!--@nrg.variant.copilot.file=.github/copilot-instructions.md-->
 
 # Project rules
 
 ${widget:import(path='docs/build.md')}
 
-A note for Claude Code only.<!--claude-->
-A note for Gemini CLI only.<!--gemini-->
+A note for Claude Code and Gemini CLI.<!--variant:claude,gemini-->
+Everyone except Copilot.<!--variant:!copilot-->
 ```
 
-`nrg -f AGENTS.src.md` writes `AGENTS.md`, `CLAUDE.md` and `GEMINI.md`: untagged lines go to all three, tagged lines to one. With `import`, the instruction files and the README can share a fragment — the build commands, for instance — and can no longer contradict each other.
+`nrg -f AGENTS.src.md` writes all four files: untagged lines go to every variant, tagged lines to the variants they name. With `import`, the instruction files and the README can share a fragment — the build commands, for instance — and can no longer contradict each other. Variants combine with languages, so a translated `AGENTS.ru.md` is one more line in `nrg.languages`.
 
 ### Running unattended
 
@@ -1384,6 +1386,27 @@ To escape quotes, use character doubling, for example:
 
 `--validate` checks that the languages stay together (see [Validating source templates](#validating-source-templates)): every run of language-tagged lines must have lines for each language in `nrg.languages`, and every `${en:…, ru:…}` construct must name each language the line is shown in. A line that is meant for one language only is marked with `<!--nrg.parity.ignore-->` (removed from the output); `<!--@nrg.validate.parity=false-->` turns these checks off for a template.
 
+### Output variants
+
+Languages are one axis of a template; `nrg.variants` adds a second one — several documents that
+share most of their text, such as instruction files for different coding agents or a user and a
+contributor edition of a guide. The template is generated once per variant, each time in every
+language:
+
+```markdown
+<!--@nrg.variants=user,dev-->
+
+Shown in every variant.
+Only in the dev edition.<!--variant:dev-->
+Everywhere but the dev edition.<!--variant:!dev-->
+This is the ${nrg.variant} edition.
+```
+
+- `<!--variant:a,b-->` keeps a line in variants `a` and `b`; `<!--variant:!c-->` keeps it everywhere but `c`. The markers are removed from the output and work in imported fragments too.
+- `${nrg.variant}` is the variant being generated — also in conditions: `${widget:if(cond='${nrg.variant} == dev')}`.
+- Output names: without a pattern `<base>.<variant>.md` and `<base>.<variant>.<lang>.md`; file name patterns accept `<variant>` / `<VARIANT>`; `<!--@nrg.variant.<name>.file=path-->` names the file of one variant. Two variants that would write the same file stop the run.
+- `--stdout --variant <name>` prints one variant; `--validate` reports markers that name an undeclared variant; `--manifest` lists every variant's outputs.
+
 ### Ignoring content
 
 To mark a fragment as an author note that must not appear in any generated file,
@@ -1911,7 +1934,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 11.11.2026 04:03:43
+Last updated: 11.11.2026 04:09:31
 ```
 
 </td></tr>
@@ -2368,7 +2391,7 @@ ${widget:endDetails}
 <details>
 <summary>Advanced</summary>
 
-inner *markdown* and 11.11.2026 04:03:43
+inner *markdown* and 11.11.2026 04:09:31
 
 </details>
 ```
@@ -2524,6 +2547,7 @@ This section summarises the main user-visible changes in each release. For full 
 - **`--agent-rules`**: prints the instruction block for `AGENTS.md` / `CLAUDE.md` computed from the templates — the generated files and their templates, the fragments to edit, the source files embedded in the docs, the languages and the exact validate / generate commands (`./nrgw` when the wrapper is present). `--write AGENTS.md` inserts or replaces the block between `<!-- nrg:agent-rules:begin -->` / `<!-- nrg:agent-rules:end -->` and keeps the rest of the file; with `--check` it exits `1` and prints a diff when the block is out of date. Closes [#75](https://github.com/nanolaba/readme-generator/issues/75).
 - **Claude Code plugin, Agent Skill, syntax card and `llms.txt`**: the repository is now a Claude Code plugin marketplace (`/plugin marketplace add nanolaba/readme-generator`, `/plugin install nrg@nanolaba`). The plugin ships the NRG Agent Skill (`skills/nrg/SKILL.md`) with a one-page syntax card (`skills/nrg/SYNTAX.md`, generated by NRG from the widget documentation, so it follows the README), and hooks built on the new `--claude-hook pre-edit|post-edit`: an edit of a generated file is refused with the name of its template, and an edited template is validated and regenerated. `nrg --help syntax` prints the card bundled with the installed version; `llms.txt` points language models to the docs. Closes [#76](https://github.com/nanolaba/readme-generator/issues/76).
 - **`--sandbox`, `--no-env`, `--env-allow`, `--offline`** for templates you do not trust: `--no-env` hides every environment variable from `${env.NAME}` (property values included; fallbacks still apply), `--env-allow NAME,PREFIX_*` exposes only the listed ones, `--offline` refuses remote imports even when the template sets `nrg.allowRemoteImports=true` (a `sha256`-pinned URL already in the cache still works), and `--sandbox` is both and rejects `--allow-exec`. Only the caller sets them — no template property can lift them. Maven plugin: `<sandbox>`, `<noEnv>`, `<envAllow>`, `<offline>`; GitHub Action: `sandbox` input. Closes [#77](https://github.com/nanolaba/readme-generator/issues/77).
+- **Output variants**: `<!--@nrg.variants=agents,claude,copilot-->` generates one template once per variant and per language — `AGENTS.md`, `CLAUDE.md` and `.github/copilot-instructions.md` from one source, or a user and a developer edition of a guide. `<!--variant:a,b-->` / `<!--variant:!c-->` select lines, `${nrg.variant}` names the current variant, file name patterns accept `<variant>` / `<VARIANT>`, `nrg.variant.<name>.file` sets one variant's file, and variants that would write the same file stop the run. `--stdout --variant <name>`, `--validate`, `--manifest`, `--is-generated` and `--locate` know about variants. Closes [#78](https://github.com/nanolaba/readme-generator/issues/78).
 
 - **Updated runtime dependencies**: `commons-cli` 1.9.0 → 1.11.0, `commons-lang3` 3.18.0 → 3.21.0, `commons-text` 1.12.0 → 1.15.0, `commons-io` 2.17.0 → 2.22.0, `nanolog` 1.0 → 1.1. Java 8 remains the minimum, and `nrg-maven-plugin` still runs on Maven 3.9.9 and newer.
 - **GitHub Action sets up Java with `actions/setup-java` 6.2.0** (was 4.9.1): runs no longer carry the `Node.js 20 is deprecated` and `setup-java v4 is deprecated` warnings. Reaches users with the action release that accompanies NRG 1.4.

@@ -57,6 +57,7 @@ public class GeneratorConfig {
     private File projectRoot;
     private List<String> importChain;
     private List<String> languages = Collections.singletonList("en");
+    private List<String> variants = Collections.emptyList();
     private String defaultLanguage;
     private String widgetsProperty;
     private boolean rootGenerator = true;
@@ -193,6 +194,11 @@ public class GeneratorConfig {
         String widgetsProp = raw.get(PROPERTY_WIDGETS);
         if (widgetsProp != null && !widgetsProp.isEmpty()) {
             widgetsProperty = widgetsProp;
+        }
+        String variantsProp = raw.get(PROPERTY_VARIANTS);
+        if (variantsProp != null && !variantsProp.isEmpty()) {
+            variants = Arrays.stream(variantsProp.split(",")).map(String::trim)
+                    .filter(v -> !v.isEmpty()).collect(Collectors.toList());
         }
     }
 
@@ -360,6 +366,32 @@ public class GeneratorConfig {
         return languages;
     }
 
+    /**
+     * Output variants declared with {@code nrg.variants}; empty when the template has none. A
+     * template with variants is generated once per variant, each time in every language.
+     */
+    public List<String> getVariants() {
+        return variants;
+    }
+
+    /** The variant being generated, or {@code null} for a template without variants. */
+    public String getVariant() {
+        return properties.getProperty(PROPERTY_VARIANT);
+    }
+
+    /**
+     * Selects the variant to generate: lines tagged {@code <!--variant:…-->} are filtered for it,
+     * output names gain it ({@code <variant>}, {@code nrg.variant.<name>.file}), and templates
+     * read it as {@code ${nrg.variant}}.
+     */
+    public void setVariant(String variant) {
+        if (variant == null) {
+            properties.remove(PROPERTY_VARIANT);
+        } else {
+            properties.setProperty(PROPERTY_VARIANT, variant);
+        }
+    }
+
     public void setLanguages(List<String> languages) {
         this.languages = languages;
     }
@@ -487,6 +519,7 @@ public class GeneratorConfig {
     }
 
     public void passRunContextTo(GeneratorConfig child) {
+        child.setVariant(getVariant());
         child.setCollectSourceMap(collectSourceMap);
         child.setEnvRestricted(envRestricted);
         child.setOffline(offline);

@@ -89,6 +89,7 @@ public final class Validator {
         private final Set<String> declaredProperties = new HashSet<>();
         private final List<VariableReference> variableReferences = new ArrayList<>();
         private List<String> rootLanguages;
+        private List<String> rootVariants;
         private GeneratorConfig rootConfig;
 
         List<Diagnostic> validate() {
@@ -109,6 +110,10 @@ public final class Validator {
                 }
             }
             rootLanguages = readDeclaredLanguages(body);
+            rootVariants = rootConfig.getVariants();
+            if (!rootVariants.isEmpty()) {
+                declaredProperties.add(NRGConstants.PROPERTY_VARIANT);
+            }
             validateFile(rootSourceFile, rootConfig, rootLanguages, true);
             checkVariableReferences();
             sortByFileAndLine();
@@ -152,6 +157,7 @@ public final class Validator {
 
                 checkWidgets(file, config, line, lineNo, ignored, declaredLanguages, parity);
                 checkLanguageMarkers(file, line, lineNo, declaredLanguages);
+                checkVariantMarkers(file, line, lineNo);
 
                 if (IGNORE_BEGIN_PATTERN.matcher(line).find()) {
                     if (ignoreBeginLine >= 0) {
@@ -290,6 +296,28 @@ public final class Validator {
                             "language marker '" + marker + "' is not declared in nrg.languages", suggestion != null
                             ? "did you mean '" + suggestion + "'?"
                             : "add it to nrg.languages or remove the marker");
+                }
+            }
+        }
+
+        private void checkVariantMarkers(File file, String line, int lineNo) {
+            if (!line.contains("variant:")) {
+                return;
+            }
+            Matcher m = TemplateLine.VARIANT_MARKER.matcher(line);
+            while (m.find()) {
+                if (rootVariants.isEmpty()) {
+                    error(file, lineNo, "undeclared-variant", "variant marker <!--variant:" + m.group(1).trim()
+                            + "--> in a template without nrg.variants", "declare the variants with <!--@nrg.variants=a,b-->");
+                    continue;
+                }
+                for (String raw : m.group(1).split(",")) {
+                    String name = raw.trim().startsWith("!") ? raw.trim().substring(1).trim() : raw.trim();
+                    if (!name.isEmpty() && !rootVariants.contains(name)) {
+                        String suggestion = Suggestions.closest(name, rootVariants);
+                        error(file, lineNo, "undeclared-variant", "variant '" + name + "' is not declared in nrg.variants",
+                                suggestion != null ? "did you mean '" + suggestion + "'?" : "add it to nrg.variants or fix the marker");
+                    }
                 }
             }
         }

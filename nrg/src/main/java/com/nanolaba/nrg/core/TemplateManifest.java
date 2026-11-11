@@ -34,16 +34,18 @@ public final class TemplateManifest {
     private final Set<File> inputs = new LinkedHashSet<>();
     private final Set<String> dynamic = new LinkedHashSet<>();
     private final Charset charset;
+    private final String variant;
 
-    private TemplateManifest(File source, Charset charset) {
+    private TemplateManifest(File source, Charset charset, String variant) {
         this.source = normalise(source);
         this.charset = charset;
+        this.variant = variant;
     }
 
     /** Builds the manifest of the template behind {@code generator} (nothing is rendered). */
     public static TemplateManifest of(Generator generator, Charset charset) {
         GeneratorConfig config = generator.getConfig();
-        TemplateManifest manifest = new TemplateManifest(config.getSourceFile(), charset);
+        TemplateManifest manifest = new TemplateManifest(config.getSourceFile(), charset, config.getVariant());
         for (String language : config.getLanguages()) {
             manifest.outputs.put(language, normalise(OutputFileNameResolver.resolve(
                     config.getSourceFile(), config.getDefaultLanguage(), language, config.getProperties())));
@@ -146,6 +148,11 @@ public final class TemplateManifest {
 
     private static File normalise(File file) {
         return file.getAbsoluteFile().toPath().normalize().toFile();
+    }
+
+    /** The output variant this manifest describes ({@code nrg.variants}), or {@code null}. */
+    public String getVariant() {
+        return variant;
     }
 
     /** The root template, as an absolute normalised path. */

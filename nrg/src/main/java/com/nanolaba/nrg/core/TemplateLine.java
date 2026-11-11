@@ -70,6 +70,8 @@ public class TemplateLine {
 
     /** A line break inside a widget body that is followed by a non-empty line. */
     private static final Pattern CONTINUATION_LINE_START = Pattern.compile("(\\r\\n|\\r|\\n)(?=[^\\r\\n])");
+    /** {@code <!--variant:a,!b-->}; group 1 is the list. */
+    public static final Pattern VARIANT_MARKER = Pattern.compile("<!--\\s*variant:([^>]*?)\\s*-->");
     private static final Pattern ENV_TAG_PATTERN = Pattern.compile("\\$\\{\\s*env\\.([A-Za-z_][A-Za-z0-9_]*)(?::([^}]*))?\\s*}");
     private static final Pattern POM_TAG_PATTERN = Pattern.compile("\\$\\{\\s*pom\\.([A-Za-z_][A-Za-z0-9_.\\-]*?)(?::([^}]*))?\\s*}");
     private static final Pattern POM_INTERNAL_REF = Pattern.compile("\\$\\{\\s*([A-Za-z_][A-Za-z0-9_.\\-]*)(?::([^}]*))?\\s*}");
@@ -95,6 +97,9 @@ public class TemplateLine {
             line = line.replaceAll("<!-- *" + Pattern.quote(language) + " *-->", "");
         }
         line = line.replace(NRGConstants.PARITY_IGNORE_MARKER, "");
+        if (line.contains("variant:")) {
+            line = VARIANT_MARKER.matcher(line).replaceAll("");
+        }
         return NRGUtil.stripPropertyComments(line);
     }
 
@@ -117,6 +122,7 @@ public class TemplateLine {
         for (String language : config.getLanguages()) {
             visible = visible.replaceAll("<!-- *" + Pattern.quote(language) + " *-->", "");
         }
+        visible = VARIANT_MARKER.matcher(visible).replaceAll("");
         for (int i = 0; i < visible.length(); i++) {
             char c = visible.charAt(i);
             if (Character.isLetterOrDigit(c) || c == '_') {
@@ -131,7 +137,46 @@ public class TemplateLine {
         boolean hasCurrentLanguageMark = line.matches(".*<!-- *" + Pattern.quote(language) + " *-->.*");
         boolean hasOnlyPropertyDefinition = hasOnlyPropertyDefinitions();
 
-        return (!hasLanguageMark || hasCurrentLanguageMark) && !hasOnlyPropertyDefinition;
+        return (!hasLanguageMark || hasCurrentLanguageMark) && !hasOnlyPropertyDefinition && isVisibleInVariant();
+    }
+
+    /**
+     * {@code <!--variant:a,b-->} shows a line in variants {@code a} and {@code b};
+     * {@code <!--variant:!c-->} shows it everywhere but {@code c}. Without a current variant (the
+     * template declares none) the markers select nothing; {@code --validate} reports them.
+     */
+    private boolean isVisibleInVariant() {
+        String variant = config.getVariant();
+        if (variant == null || !line.contains("variant:")) {
+            return true;
+        }
+        Matcher m = VARIANT_MARKER.matcher(line);
+        while (m.find()) {
+            if (!variantListSelects(m.group(1), variant)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    static boolean variantListSelects(String list, String variant) {
+        boolean anyPositive = false;
+        boolean positiveMatch = false;
+        for (String raw : list.split(",")) {
+            String entry = raw.trim();
+            if (entry.isEmpty()) {
+                continue;
+            }
+            if (entry.startsWith("!")) {
+                if (entry.substring(1).trim().equals(variant)) {
+                    return false;
+                }
+            } else {
+                anyPositive = true;
+                positiveMatch |= entry.equals(variant);
+            }
+        }
+        return !anyPositive || positiveMatch;
     }
 
     public Properties readProperties(String language) {

@@ -3,6 +3,7 @@ package com.nanolaba.nrg.core;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
+import java.util.Locale;
 import java.util.Properties;
 
 /**
@@ -27,22 +28,32 @@ import java.util.Properties;
  *       filename if it doesn't end in {@code .src.md}).</li>
  *   <li>{@code <lang>} — language code as written.</li>
  *   <li>{@code <LANG>} — language code uppercased.</li>
+ *   <li>{@code <variant>} / {@code <VARIANT>} — the output variant being generated
+ *       ({@code nrg.variants}), as written / uppercased; empty without variants.</li>
  * </ul>
+ *
+ * <p>With a variant, {@code nrg.variant.<name>.file} beats every other pattern, and the built-in
+ * names become {@code <base>.<variant>.md} / {@code <base>.<variant>.<lang>.md}.
  */
 public final class OutputFileNameResolver {
 
     private OutputFileNameResolver() {/**/}
 
     public static File resolve(File sourceFile, String defaultLanguage, String language, Properties properties) {
-        String pattern = pickPattern(defaultLanguage, language, properties);
+        String variant = properties.getProperty(NRGConstants.PROPERTY_VARIANT);
+        String pattern = variant == null ? null : properties.getProperty(
+                NRGConstants.PROPERTY_VARIANT_FILE_PREFIX + variant + NRGConstants.PROPERTY_VARIANT_FILE_SUFFIX);
+        if (pattern == null) {
+            pattern = pickPattern(defaultLanguage, language, properties);
+        }
         if (pattern != null) {
             if (pattern.isEmpty()) {
                 throw new IllegalStateException(
                         "Empty file name pattern for language '" + language + "'");
             }
-            return applyPattern(sourceFile, language, pattern);
+            return applyPattern(sourceFile, language, variant, pattern);
         }
-        return legacyFile(sourceFile, defaultLanguage, language);
+        return legacyFile(sourceFile, defaultLanguage, language, variant);
     }
 
     private static String pickPattern(String defaultLanguage, String language, Properties properties) {
@@ -61,20 +72,24 @@ public final class OutputFileNameResolver {
         return properties.getProperty(NRGConstants.PROPERTY_FILE_NAME_PATTERN);
     }
 
-    private static File applyPattern(File sourceFile, String language, String pattern) {
+    private static File applyPattern(File sourceFile, String language, String variant, String pattern) {
         String base = baseName(sourceFile);
         String lang = language == null ? "" : language;
+        String var = variant == null ? "" : variant;
         String resolved = pattern
                 .replace("<base>", base)
-                .replace("<LANG>", lang.toUpperCase(java.util.Locale.ROOT))
-                .replace("<lang>", lang);
+                .replace("<LANG>", lang.toUpperCase(Locale.ROOT))
+                .replace("<lang>", lang)
+                .replace("<VARIANT>", var.toUpperCase(Locale.ROOT))
+                .replace("<variant>", var);
         File parent = sourceFile.getAbsoluteFile().getParentFile();
         return parent == null ? new File(resolved) : new File(parent, resolved);
     }
 
-    private static File legacyFile(File sourceFile, String defaultLanguage, String language) {
+    private static File legacyFile(File sourceFile, String defaultLanguage, String language, String variant) {
         String path = StringUtils.substringBeforeLast(sourceFile.getAbsolutePath(),
                 "." + NRGConstants.DEFAULT_SOURCE_EXTENSION) +
+                (variant == null ? "" : "." + variant) +
                 (language != null && language.equals(defaultLanguage) ? ".md" : "." + language + ".md");
         return new File(path);
     }

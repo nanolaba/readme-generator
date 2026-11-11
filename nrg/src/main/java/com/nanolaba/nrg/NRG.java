@@ -32,7 +32,9 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
@@ -147,6 +149,10 @@ public class NRG {
                 "when combined with --stdout, print only the given language variant");
         language.setArgName("code");
         options.addOption(language);
+        Option variantOption = new Option(null, "variant", true,
+                "when combined with --stdout, print only the given output variant (nrg.variants)");
+        variantOption.setArgName("name");
+        options.addOption(variantOption);
         Option widgets = new Option(null, "widgets", true,
                 "comma-separated fully-qualified class names of custom NRGWidget implementations");
         widgets.setArgName("FQCN,FQCN,...");
@@ -341,6 +347,11 @@ public class NRG {
             LOG.warn("--language has no effect without --stdout; ignoring");
             langValue = null;
         }
+        String variantValue = cmd.getOptionValue(variantOption);
+        if (variantValue != null && !toStdout) {
+            LOG.warn("--variant has no effect without --stdout; ignoring");
+            variantValue = null;
+        }
         String fileNamePatternValue = cmd.getOptionValue(fileNamePattern);
         String defaultLangFileNamePatternValue = cmd.getOptionValue(defaultLangFileNamePattern);
         boolean noHeaderFlag = cmd.hasOption(noHeader);
@@ -459,7 +470,7 @@ public class NRG {
                         totalOutputs > 1, lineEndingMode,
                         noHeaderFlag, headerTextValue,
                         checkPathFilter, checkMatchTracker, rootDir, report, outputFormat,
-                        envProvider, offlineFlag);
+                        envProvider, offlineFlag, variantValue);
             }
             // Codes are ordered by severity, so the batch reports the worst one.
             aggregateCode = Math.max(aggregateCode, code);
@@ -719,76 +730,52 @@ public class NRG {
                                 boolean noHeaderOverride, String headerTextOverride,
                                 PathPatternMatcher checkPathFilter, MatchTracker checkMatchTracker,
                                 File rootDir, RunReport report, RunReport.Format format,
-                                Function<String, String> envProvider, boolean offline) {
+                                Function<String, String> envProvider, boolean offline, String variantFilter) {
         if (!sourceFile.exists()) {
             return missingSource(sourceFile, report);
         }
         try {
-            List<NRGWidget> widgets = new ArrayList<>();
-            if (cliWidgets != null) {
-                widgets.addAll(cliWidgets);
+            Generator first = newGenerator(sourceFile, charset, cliWidgets, envProvider, offline, rootDir,
+                    fileNamePatternOverride, defaultLangFileNamePatternOverride, noHeaderOverride, headerTextOverride);
+            List<String> variants = first.getConfig().getVariants();
+            if (variants.isEmpty()) {
+                return processGenerator(first, sourceFile, charset, toStdout, languageFilter, checkMode, allowExec,
+                        perFileStdoutHeader, lineEndingMode, checkPathFilter, checkMatchTracker, report, format);
             }
-            widgets.addAll(additionalWidgets);
-            Generator generator = envProvider == null
-                    ? new Generator(sourceFile, charset, widgets)
-                    : new Generator(sourceFile, FileUtils.readFileToString(sourceFile, charset), widgets, envProvider);
-            generator.getConfig().setEnvRestricted(envProvider != null);
-            generator.getConfig().setOffline(offline);
-            if (rootDir != null) {
-                generator.getConfig().setProjectRoot(rootDir);
-            }
-            if (fileNamePatternOverride != null) {
-                generator.getConfig().getProperties().setProperty(
-                        NRGConstants.PROPERTY_FILE_NAME_PATTERN, fileNamePatternOverride);
-            }
-            if (defaultLangFileNamePatternOverride != null) {
-                generator.getConfig().getProperties().setProperty(
-                        NRGConstants.PROPERTY_DEFAULT_LANGUAGE_FILE_NAME_PATTERN,
-                        defaultLangFileNamePatternOverride);
-            }
-            if (noHeaderOverride) {
-                generator.getConfig().getProperties().setProperty(
-                        NRGConstants.PROPERTY_NO_HEADER, "true");
-            }
-            if (headerTextOverride != null) {
-                generator.getConfig().getProperties().setProperty(
-                        NRGConstants.PROPERTY_HEADER_TEXT, headerTextOverride);
-            }
-            Optional<String> patternError = OutputFileNameValidator.findError(
-                    sourceFile, generator.getConfig().getDefaultLanguage(),
-                    generator.getConfig().getLanguages(), generator.getConfig().getProperties(),
-                    generator.getConfig().getProjectRoot());
-            if (patternError.isPresent()) {
-                LOG.error("File name pattern error: {}", patternError.get());
-                return generationFailed(sourceFile, report, "file-name-pattern", patternError.get());
-            }
-            List<Validator.Diagnostic> freezeDiags = FreezeValidator.validate(
-                    sourceFile,
-                    FileUtils.readFileToString(sourceFile, charset),
-                    generator.getConfig().getLanguages());
-            boolean hasFreezeError = false;
-            for (Validator.Diagnostic d : freezeDiags) {
-                if (d.isError()) {
-                    if (format == RunReport.Format.TEXT) {
-                        System.err.println(d);
-                    }
-                    report.addDiagnostic(d);
-                    hasFreezeError = true;
-                }
-            }
-            if (hasFreezeError) {
-                return EXIT_TEMPLATE_ERROR;
-            }
-            generator.getConfig().setExecAllowed(allowExec);
-            if (checkMode) {
-                return performCheck(generator, lineEndingMode, checkPathFilter, checkMatchTracker, report, format);
-            }
-            if (toStdout) {
-                printToStdout(generator, languageFilter, perFileStdoutHeader);
+            if (variantFilter != null && !variants.contains(variantFilter)) {
+                System.err.println("WARN: --variant '" + variantFilter + "' not declared in " + sourceFile.getName()
+                        + " (available: " + variants + "); skipping");
                 return EXIT_OK;
             }
-            createFiles(generator, lineEndingMode, report);
-            return EXIT_OK;
+            // Every variant is a full generation of its own; their outputs must not overlap.
+            Map<File, String> claimed = new HashMap<>();
+            int worst = EXIT_OK;
+            Generator generator = first;
+            for (String variant : variants) {
+                if (variantFilter != null && !variant.equals(variantFilter)) {
+                    continue;
+                }
+                if (generator == null) {
+                    generator = newGenerator(sourceFile, charset, cliWidgets, envProvider, offline, rootDir,
+                            fileNamePatternOverride, defaultLangFileNamePatternOverride, noHeaderOverride, headerTextOverride);
+                }
+                generator.getConfig().setVariant(variant);
+                for (String language : generator.getConfig().getLanguages()) {
+                    File out = getReadmeFile(language, generator.getConfig()).getAbsoluteFile().toPath().normalize().toFile();
+                    String previous = claimed.put(out, variant);
+                    if (previous != null && !previous.equals(variant)) {
+                        String message = "variants '" + previous + "' and '" + variant + "' write the same file " + out.getPath()
+                                + "; put <variant> in nrg.fileNamePattern or set nrg.variant.<name>.file";
+                        LOG.error("File name pattern error: {}", message);
+                        return generationFailed(sourceFile, report, "file-name-pattern", message);
+                    }
+                }
+                worst = Math.max(worst, processGenerator(generator, sourceFile, charset, toStdout, languageFilter,
+                        checkMode, allowExec, perFileStdoutHeader || (variants.size() > 1 && variantFilter == null), lineEndingMode,
+                        checkPathFilter, checkMatchTracker, report, format));
+                generator = null;
+            }
+            return worst;
         } catch (IOException e) {
             LOG.error(e, () -> "Generation failed: " + sourceFile.getAbsolutePath());
             return generationFailed(sourceFile, report, "generation-failed", String.valueOf(e.getMessage()));
@@ -800,6 +787,84 @@ public class NRG {
             return generationFailed(sourceFile, report, "generation-failed",
                     e.getMessage() != null ? e.getMessage() : e.toString());
         }
+    }
+
+    /** A generator for {@code sourceFile} with every caller-side setting applied. */
+    private static Generator newGenerator(File sourceFile, Charset charset, List<NRGWidget> cliWidgets,
+                                          Function<String, String> envProvider, boolean offline, File rootDir,
+                                          String fileNamePatternOverride, String defaultLangFileNamePatternOverride,
+                                          boolean noHeaderOverride, String headerTextOverride) throws IOException {
+        List<NRGWidget> widgets = new ArrayList<>();
+        if (cliWidgets != null) {
+            widgets.addAll(cliWidgets);
+        }
+        widgets.addAll(additionalWidgets);
+        Generator generator = envProvider == null
+                ? new Generator(sourceFile, charset, widgets)
+                : new Generator(sourceFile, FileUtils.readFileToString(sourceFile, charset), widgets, envProvider);
+        GeneratorConfig config = generator.getConfig();
+        config.setEnvRestricted(envProvider != null);
+        config.setOffline(offline);
+        if (rootDir != null) {
+            config.setProjectRoot(rootDir);
+        }
+        if (fileNamePatternOverride != null) {
+            config.getProperties().setProperty(NRGConstants.PROPERTY_FILE_NAME_PATTERN, fileNamePatternOverride);
+        }
+        if (defaultLangFileNamePatternOverride != null) {
+            config.getProperties().setProperty(
+                    NRGConstants.PROPERTY_DEFAULT_LANGUAGE_FILE_NAME_PATTERN, defaultLangFileNamePatternOverride);
+        }
+        if (noHeaderOverride) {
+            config.getProperties().setProperty(NRGConstants.PROPERTY_NO_HEADER, "true");
+        }
+        if (headerTextOverride != null) {
+            config.getProperties().setProperty(NRGConstants.PROPERTY_HEADER_TEXT, headerTextOverride);
+        }
+        return generator;
+    }
+
+    /** Checks, then generates / checks / prints one generator (one variant of a template). */
+    private static int processGenerator(Generator generator, File sourceFile, Charset charset, boolean toStdout,
+                                        String languageFilter, boolean checkMode, boolean allowExec,
+                                        boolean perFileStdoutHeader, LineEndings.Mode lineEndingMode,
+                                        PathPatternMatcher checkPathFilter, MatchTracker checkMatchTracker,
+                                        RunReport report, RunReport.Format format) throws IOException {
+        Optional<String> patternError = OutputFileNameValidator.findError(
+                sourceFile, generator.getConfig().getDefaultLanguage(),
+                generator.getConfig().getLanguages(), generator.getConfig().getProperties(),
+                generator.getConfig().getProjectRoot());
+        if (patternError.isPresent()) {
+            LOG.error("File name pattern error: {}", patternError.get());
+            return generationFailed(sourceFile, report, "file-name-pattern", patternError.get());
+        }
+        List<Validator.Diagnostic> freezeDiags = FreezeValidator.validate(
+                sourceFile,
+                FileUtils.readFileToString(sourceFile, charset),
+                generator.getConfig().getLanguages());
+        boolean hasFreezeError = false;
+        for (Validator.Diagnostic d : freezeDiags) {
+            if (d.isError()) {
+                if (format == RunReport.Format.TEXT) {
+                    System.err.println(d);
+                }
+                report.addDiagnostic(d);
+                hasFreezeError = true;
+            }
+        }
+        if (hasFreezeError) {
+            return EXIT_TEMPLATE_ERROR;
+        }
+        generator.getConfig().setExecAllowed(allowExec);
+        if (checkMode) {
+            return performCheck(generator, lineEndingMode, checkPathFilter, checkMatchTracker, report, format);
+        }
+        if (toStdout) {
+            printToStdout(generator, languageFilter, perFileStdoutHeader);
+            return EXIT_OK;
+        }
+        createFiles(generator, lineEndingMode, report);
+        return EXIT_OK;
     }
 
     private static int performCheck(Generator generator, LineEndings.Mode lineEndingMode,

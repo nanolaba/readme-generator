@@ -127,23 +127,24 @@ Instructions can be overlooked; a hook cannot. Without the plugin, the same two 
 
 ### ${en:'One template for every agent', ru:'Один шаблон для всех агентов'}
 
-Agents read different files — `AGENTS.md`, `CLAUDE.md`, `GEMINI.md` — whose content is mostly the same. The "languages" of a template do not have to be human languages:<!--en-->
-Агенты читают разные файлы — `AGENTS.md`, `CLAUDE.md`, `GEMINI.md`, — а содержимое у них почти одинаковое. «Языки» шаблона не обязаны быть человеческими:<!--ru-->
+Agents read different files — `AGENTS.md`, `CLAUDE.md`, `GEMINI.md`, `.github/copilot-instructions.md` — whose content is mostly the same. Declare them as [output variants](#output-variants) of one template:<!--en-->
+Агенты читают разные файлы — `AGENTS.md`, `CLAUDE.md`, `GEMINI.md`, `.github/copilot-instructions.md`, — а содержимое у них почти одинаковое. Объявите их [вариантами вывода](#варианты-вывода) одного шаблона:<!--ru-->
 
 ```markdown
-<\!--@nrg.languages=agents,claude,gemini-->
-<\!--@nrg.fileNamePattern=<LANG>.md-->
+<\!--@nrg.variants=agents,claude,gemini,copilot-->
+<\!--@nrg.fileNamePattern=<VARIANT>.md-->
+<\!--@nrg.variant.copilot.file=.github/copilot-instructions.md-->
 
 # Project rules
 
 \${widget:import(path='docs/build.md')}
 
-A note for Claude Code only.<\!--claude-->
-A note for Gemini CLI only.<\!--gemini-->
+A note for Claude Code and Gemini CLI.<\!--variant:claude,gemini-->
+Everyone except Copilot.<\!--variant:!copilot-->
 ```
 
-`nrg -f AGENTS.src.md` writes `AGENTS.md`, `CLAUDE.md` and `GEMINI.md`: untagged lines go to all three, tagged lines to one. With `import`, the instruction files and the README can share a fragment — the build commands, for instance — and can no longer contradict each other.<!--en-->
-`nrg -f AGENTS.src.md` запишет `AGENTS.md`, `CLAUDE.md` и `GEMINI.md`: строки без маркера попадут во все три файла, строки с маркером — в один. Через `import` файлы инструкций и README могут использовать общий фрагмент — например, команды сборки — и больше не будут противоречить друг другу.<!--ru-->
+`nrg -f AGENTS.src.md` writes all four files: untagged lines go to every variant, tagged lines to the variants they name. With `import`, the instruction files and the README can share a fragment — the build commands, for instance — and can no longer contradict each other. Variants combine with languages, so a translated `AGENTS.ru.md` is one more line in `nrg.languages`.<!--en-->
+`nrg -f AGENTS.src.md` запишет все четыре файла: строки без маркера попадут в каждый вариант, строки с маркером — в названные в нём. Через `import` файлы инструкций и README могут использовать общий фрагмент — например, команды сборки — и больше не будут противоречить друг другу. Варианты сочетаются с языками, так что переведённый `AGENTS.ru.md` — это просто ещё один язык в `nrg.languages`.<!--ru-->
 
 ### ${en:'Running unattended', ru:'Запуск без присмотра'}
 
