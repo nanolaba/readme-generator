@@ -133,7 +133,7 @@ public class CheckPathsCliTest extends DefaultNRGTest {
 
         int code = NRG.run("--check-paths", "README.md", "-f", src.toString());
 
-        assertEquals(1, code);
+        assertEquals(NRG.EXIT_USAGE, code);
         String err = getErrAndClear();
         assertTrue(err.contains("--check-paths requires --check"), err);
     }

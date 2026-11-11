@@ -59,7 +59,7 @@ class TranslationParityCheckerTest extends DefaultNRGTest {
         assertTrue(d.get(0).isError());
         assertEquals(3, d.get(0).getLine());
         assertTrue(d.get(0).getMessage().startsWith("lines 3-4 exist for 'en' but not for 'ru'"), d.get(0).getMessage());
-        assertTrue(d.get(0).getMessage().contains("<!--nrg.parity.ignore-->"), d.get(0).getMessage());
+        assertTrue(d.get(0).toString().contains("<!--nrg.parity.ignore-->"), d.get(0).getMessage());
     }
 
     @Test
@@ -79,7 +79,7 @@ class TranslationParityCheckerTest extends DefaultNRGTest {
         assertEquals(1, d.size(), d.toString());
         assertTrue(d.get(0).isWarning());
         assertEquals(3, d.get(0).getLine());
-        assertTrue(d.get(0).getMessage().contains("'en' has a list item (line 3) where 'ru' has nothing more"),
+        assertTrue(d.get(0).toString().contains("'en' has a list item (line 3) where 'ru' has nothing more"),
                 d.get(0).getMessage());
     }
 
@@ -88,7 +88,7 @@ class TranslationParityCheckerTest extends DefaultNRGTest {
         List<Validator.Diagnostic> d = validate(HEAD + "## Title<!--en-->\n### Заголовок<!--ru-->\n");
 
         assertEquals(1, d.size(), d.toString());
-        assertTrue(d.get(0).getMessage().contains("level-2 heading (line 2) where 'ru' has a level-3 heading (line 3)"),
+        assertTrue(d.get(0).toString().contains("level-2 heading (line 2) where 'ru' has a level-3 heading (line 3)"),
                 d.get(0).getMessage());
     }
 
@@ -107,7 +107,7 @@ class TranslationParityCheckerTest extends DefaultNRGTest {
 
         assertEquals(1, d.size(), d.toString());
         assertTrue(d.get(0).isError());
-        assertTrue(d.get(0).getMessage().contains("no text for 'ru'"), d.get(0).getMessage());
+        assertTrue(d.get(0).toString().contains("no text for 'ru'"), d.get(0).getMessage());
     }
 
     @Test
@@ -122,7 +122,7 @@ class TranslationParityCheckerTest extends DefaultNRGTest {
         List<Validator.Diagnostic> d = validate(HEAD + "Title ${en:'a', ru:'б', de:'c'}\n");
 
         assertEquals(1, d.size(), d.toString());
-        assertTrue(d.get(0).getMessage().contains("names 'de', which is not in nrg.languages"), d.get(0).getMessage());
+        assertTrue(d.get(0).toString().contains("names 'de', which is not in nrg.languages"), d.get(0).getMessage());
     }
 
     @Test

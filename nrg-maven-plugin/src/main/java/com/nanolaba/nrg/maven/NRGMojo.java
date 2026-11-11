@@ -83,6 +83,13 @@ public class NRGMojo extends AbstractMojo {
     @Parameter(property = "root")
     private String root;
 
+    /**
+     * Output style passed to {@code --format}: {@code text} (default), {@code json} (one JSON
+     * report on stdout) or {@code github} (GitHub Actions workflow annotations).
+     */
+    @Parameter(property = "format")
+    private String format;
+
     public void setFileNamePattern(String fileNamePattern) {
         this.fileNamePattern = fileNamePattern;
     }
@@ -134,6 +141,10 @@ public class NRGMojo extends AbstractMojo {
 
     public void setFailFast(boolean failFast) {
         this.failFast = failFast;
+    }
+
+    public void setFormat(String format) {
+        this.format = format;
     }
 
     @Override
@@ -203,6 +214,10 @@ public class NRGMojo extends AbstractMojo {
             args.add("--root");
             args.add(root);
         }
+        if (format != null && !format.isEmpty()) {
+            args.add("--format");
+            args.add(format);
+        }
         if (checkPaths != null) {
             for (String p : checkPaths) {
                 if (p != null && !p.isEmpty()) {
@@ -218,15 +233,19 @@ public class NRGMojo extends AbstractMojo {
         }
 
         int code = NRG.run(args.toArray(new String[0]));
-        if (code == 0) {
+        if (code == NRG.EXIT_OK) {
             return;
+        }
+        if (code == NRG.EXIT_USAGE) {
+            throw new MojoExecutionException(
+                    "Invalid plugin configuration or missing source files (see errors above).");
         }
         if (validate) {
             throw new MojoExecutionException(
                     "Template validation reported errors (see diagnostics above). " +
                             "Fix the source templates or remove <validate>.");
         }
-        if (check) {
+        if (check && code == NRG.EXIT_DRIFT) {
             throw new MojoExecutionException(
                     "Generated output differs from files on disk (see diff above). " +
                             "Regenerate README files by running the plugin without <check>.");

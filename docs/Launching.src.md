@@ -127,7 +127,7 @@ Each diagnostic is printed as `ERROR: file.src.md:LINE: message` or<!--en-->
 `WARNING: file.src.md:LINE: message`; where there is an obvious fix, the<!--en-->
 message ends with it (`unknown widget 'tocc'; did you mean 'toc'?`).<!--en-->
 With no diagnostics, NRG exits silently with status `0`. All diagnostics<!--en-->
-go to stderr; the process exits with status `1` when at least one of them<!--en-->
+go to stderr; the process exits with status `2` when at least one of them<!--en-->
 is an error. An import with `run-generator='false'` is only checked for<!--en-->
 existence — its content is not a template. `--validate` is mutually<!--en-->
 exclusive with `--check` and `--stdout`.<!--en-->
@@ -135,7 +135,7 @@ exclusive with `--check` and `--stdout`.<!--en-->
 `WARNING: file.src.md:LINE: text`; если исправление очевидно, сообщение<!--ru-->
 заканчивается им (`unknown widget 'tocc'; did you mean 'toc'?`). Без<!--ru-->
 диагностик NRG молча завершается с кодом `0`. Все сообщения печатаются<!--ru-->
-в stderr; процесс завершается с кодом `1`, если среди них есть хотя бы<!--ru-->
+в stderr; процесс завершается с кодом `2`, если среди них есть хотя бы<!--ru-->
 одна ошибка. Импорт с `run-generator='false'` проверяется только на<!--ru-->
 наличие файла — его содержимое не является шаблоном. `--validate`<!--ru-->
 несовместим с `--check` и `--stdout`.<!--ru-->
@@ -169,6 +169,71 @@ The `--language` flag is only meaningful with `--stdout` — using it<!--en-->
 on its own logs a warning and the flag is ignored.<!--en-->
 Флаг `--language` имеет смысл только вместе с `--stdout` — в одиночку<!--ru-->
 он логируется как предупреждение и игнорируется.<!--ru-->
+
+#### ${en:'Machine-readable output', ru:'Машиночитаемый вывод'}
+
+`--format json` turns a run into one JSON document on stdout — for coding agents,<!--en-->
+hooks and CI steps that need to know what happened without parsing log lines.<!--en-->
+Logging moves to stderr (the `--check` diff stays there too). It works with<!--en-->
+generation, `--check` and `--validate`, and cannot be combined with `--stdout`.<!--en-->
+`--format json` превращает запуск в один JSON-документ в stdout — для ИИ-агентов,<!--ru-->
+хуков и шагов CI, которым нужно знать, что произошло, не разбирая строки лога.<!--ru-->
+Логирование уходит в stderr (туда же по-прежнему печатается diff `--check`).<!--ru-->
+Режим работает с генерацией, `--check` и `--validate` и несовместим с `--stdout`.<!--ru-->
+
+```bash
+nrg --check --format json -f README.src.md
+```
+
+```json
+{
+  "version": "${devVersion}",
+  "mode": "check",
+  "ok": false,
+  "exitCode": 1,
+  "files": [
+    {"source": "README.src.md", "output": "README.md", "language": "en", "status": "ok"},
+    {"source": "README.src.md", "output": "README.ru.md", "language": "ru", "status": "stale"}
+  ],
+  "diagnostics": [
+    {"severity": "error", "code": "unknown-widget", "file": "docs/Widgets.src.md", "line": 12, "message": "unknown widget 'tocc'", "hint": "did you mean 'toc'?"}
+  ]
+}
+```
+
+- `files[].status`: `written` / `unchanged` (generation), `ok` / `stale` / `missing` (`--check`), `ok` / `invalid` (`--validate`, one entry per source file).<!--en-->
+- `diagnostics[].code` is stable — match on it, not on `message`: `unknown-widget`, `unknown-parameter`, `undeclared-language`, `import-not-found`, `import-outside-root`, `unbalanced-ignore`, `unbalanced-block`, `undefined-variable`, `unresolved-reference`, `cosmetic-escape`, `missing-translation`, `language-construct`, `structure-mismatch`, `freeze-block`, `file-name-pattern`, `generation-failed`, `source-not-found`, `check-paths-unmatched`, `config-error`, `descriptor-error`. `hint` is the suggested fix or `null`.<!--en-->
+- Paths are relative to the working directory, with `/` separators.<!--en-->
+- On a usage error (exit code `64`) nothing is written to stdout; the message is on stderr.<!--en-->
+- `files[].status`: `written` / `unchanged` (генерация), `ok` / `stale` / `missing` (`--check`), `ok` / `invalid` (`--validate`, по записи на исходный файл).<!--ru-->
+- `diagnostics[].code` стабилен — ориентируйтесь на него, а не на `message`: `unknown-widget`, `unknown-parameter`, `undeclared-language`, `import-not-found`, `import-outside-root`, `unbalanced-ignore`, `unbalanced-block`, `undefined-variable`, `unresolved-reference`, `cosmetic-escape`, `missing-translation`, `language-construct`, `structure-mismatch`, `freeze-block`, `file-name-pattern`, `generation-failed`, `source-not-found`, `check-paths-unmatched`, `config-error`, `descriptor-error`. `hint` — предлагаемое исправление или `null`.<!--ru-->
+- Пути указаны относительно рабочего каталога, с разделителем `/`.<!--ru-->
+- При ошибке в аргументах (код `64`) в stdout ничего не пишется; сообщение — в stderr.<!--ru-->
+
+`--format github` prints the same findings as GitHub Actions workflow commands<!--en-->
+(`::error file=…,line=…::…`, `::warning …`), so a CI step shows them next to the<!--en-->
+offending lines of a pull request; a stale or missing output is reported on the output file.<!--en-->
+`--format github` печатает те же находки как команды GitHub Actions<!--ru-->
+(`::error file=…,line=…::…`, `::warning …`) — шаг CI показывает их прямо у нужных<!--ru-->
+строк pull request; устаревший или отсутствующий выходной файл отмечается на нём самом.<!--ru-->
+
+```bash
+nrg --validate --format github "**/*.src.md"
+```
+
+#### ${en:'Exit codes', ru:'Коды возврата'}
+
+| ${en:'Code', ru:'Код'} | ${en:'Meaning', ru:'Значение'} |
+|:-:|---|
+| `0` | ${en:'Success. Warnings alone do not change it.', ru:'Успех. Одни лишь предупреждения на него не влияют.'} |
+| `1` | ${en:'`--check`: a generated file differs from the template or is missing — regenerate.', ru:'`--check`: сгенерированный файл расходится с шаблоном или отсутствует — перегенерируйте.'} |
+| `2` | ${en:'A template is invalid (`--validate` found an error) or generation failed — fix the template.', ru:'Шаблон некорректен (`--validate` нашёл ошибку) или генерация не удалась — исправьте шаблон.'} |
+| `64` | ${en:'The command line is wrong: unknown or conflicting options, a source file that does not exist, patterns that match nothing.', ru:'Неверная командная строка: неизвестные или конфликтующие опции, несуществующий исходный файл, паттерны без совпадений.'} |
+
+With several source files the run exits with the highest code among them. A failed<!--en-->
+text-mode `--check` ends with the command that fixes it (`Regenerate with: nrg -f README.src.md`).<!--en-->
+При нескольких исходных файлах запуск завершается с наибольшим из их кодов. Неудачный<!--ru-->
+`--check` в текстовом режиме заканчивается командой, которая всё исправит (`Regenerate with: nrg -f README.src.md`).<!--ru-->
 
 #### ${en:'Logging verbosity', ru:'Уровень логирования'}
 
@@ -329,20 +394,20 @@ behavior is identical on Windows, Linux, and macOS regardless of the shell.<!--e
 Quote the pattern to keep it from being expanded by the shell first.<!--en-->
 The legacy `-f <file>` flag is still supported as a single-file alias and<!--en-->
 is mutually exclusive with positional arguments — passing both prints<!--en-->
-an error and exits with status `1`.<!--en-->
+an error and exits with status `64`.<!--en-->
 Раскрытие glob-паттерна выполняется через `java.nio.file.PathMatcher`<!--ru-->
 с синтаксисом `glob:` — поведение одинаково на Windows, Linux и macOS<!--ru-->
 независимо от командной оболочки. Заключайте паттерн в кавычки, чтобы<!--ru-->
 сначала его не раскрыл сам шелл. Старый флаг `-f <file>` остаётся как<!--ru-->
 алиас для единственного файла и несовместим с позиционными аргументами —<!--ru-->
-их совместная передача приводит к ошибке и коду возврата `1`.<!--ru-->
+их совместная передача приводит к ошибке и коду возврата `64`.<!--ru-->
 
 By default each input is processed independently: an error on one file<!--en-->
-is logged but the rest still run, and the overall exit code is `1` if<!--en-->
-any file failed. Pass `--fail-fast` to stop on the first non-zero result.<!--en-->
+is logged but the rest still run, and the overall exit code is the most<!--en-->
+severe one of all files (see [Exit codes](#exit-codes)). Pass `--fail-fast` to stop on the first non-zero result.<!--en-->
 По умолчанию каждый файл обрабатывается независимо: ошибка на одном<!--ru-->
-логируется, но остальные продолжают выполняться, а общий код возврата<!--ru-->
-равен `1`, если упал хотя бы один. Флаг `--fail-fast` останавливает<!--ru-->
+логируется, но остальные продолжают выполняться, а общий код возврата —<!--ru-->
+самый серьёзный из кодов всех файлов (см. [«Коды возврата»](#коды-возврата)). Флаг `--fail-fast` останавливает<!--ru-->
 обработку на первом ненулевом результате.<!--ru-->
 
 ```bash
@@ -350,10 +415,10 @@ nrg --fail-fast "docs/**/*.src.md"
 ```
 
 A pattern that matches no files logs a warning. If the entire input set<!--en-->
-matches nothing, the run exits with status `1` and the message<!--en-->
+matches nothing, the run exits with status `64` and the message<!--en-->
 `No source files matched any of the supplied patterns`.<!--en-->
 Паттерн без совпадений логируется как предупреждение. Если ни один из<!--ru-->
-входов не нашёл файлов, программа завершается с кодом `1` и сообщением<!--ru-->
+входов не нашёл файлов, программа завершается с кодом `64` и сообщением<!--ru-->
 `No source files matched any of the supplied patterns`.<!--ru-->
 
 ### ${en:'Use as maven plugin', ru:'Использование как плагина для maven'}
@@ -478,6 +543,13 @@ when an error is reported; warnings are only logged. Mutually exclusive with `<c
 [«Валидация исходных шаблонов»](#валидация-исходных-шаблонов)) без генерации<!--ru-->
 файлов. Сборка падает с `MojoExecutionException`, если найдена ошибка;<!--ru-->
 предупреждения только выводятся в лог. Несовместим с `<check>`.<!--ru-->
+
+`<format>json</format>` (or `-Dformat=json`) passes `--format` through — see<!--en-->
+[Machine-readable output](#machine-readable-output). The build fails on exit code `1`<!--en-->
+(`<check>`), `2` and `64` with a message that names which of them it was.<!--en-->
+`<format>json</format>` (или `-Dformat=json`) передаёт `--format` — см.<!--ru-->
+[«Машиночитаемый вывод»](#машиночитаемый-вывод). Сборка падает на кодах `1`<!--ru-->
+(`<check>`), `2` и `64` с сообщением, называющим, какой из них это был.<!--ru-->
 
 `<fileNamePattern>` and `<defaultLanguageFileNamePattern>` (or<!--en-->
 `-DfileNamePattern=...` / `-DdefaultLanguageFileNamePattern=...`) mirror<!--en-->

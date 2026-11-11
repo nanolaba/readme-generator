@@ -55,7 +55,7 @@ class FileNamePatternEndToEndTest extends DefaultNRGTest {
                 "Hello\n").getBytes(StandardCharsets.UTF_8));
 
         int code = NRG.run("-f", src.toAbsolutePath().toString());
-        assertEquals(1, code, "expected non-zero exit on collision");
+        assertEquals(NRG.EXIT_TEMPLATE_ERROR, code, "expected non-zero exit on collision");
         assertFalse(tmp.resolve("README.md").toFile().exists(),
                 "no file should be written when validation fails");
     }
@@ -71,7 +71,7 @@ class FileNamePatternEndToEndTest extends DefaultNRGTest {
 
         int code = NRG.run("-f", src.toAbsolutePath().toString());
 
-        assertEquals(1, code);
+        assertEquals(NRG.EXIT_TEMPLATE_ERROR, code);
         assertFalse(tmp.resolve("outside").toFile().exists(), "nothing may be created outside the root");
         String out = getOutAndClear() + getErrAndClear();
         assertTrue(out.contains("outside the project root"), out);
@@ -83,8 +83,8 @@ class FileNamePatternEndToEndTest extends DefaultNRGTest {
         Path src = Files.createDirectories(tmp.resolve("repo")).resolve("a.src.md");
         Files.write(src, ("<!--@nrg.fileNamePattern=../<base>.md-->\nHello\n").getBytes(StandardCharsets.UTF_8));
 
-        assertEquals(1, NRG.run("-f", src.toAbsolutePath().toString(), "--check"));
-        assertEquals(1, NRG.run("-f", src.toAbsolutePath().toString(), "--stdout"));
+        assertEquals(NRG.EXIT_TEMPLATE_ERROR, NRG.run("-f", src.toAbsolutePath().toString(), "--check"));
+        assertEquals(NRG.EXIT_TEMPLATE_ERROR, NRG.run("-f", src.toAbsolutePath().toString(), "--stdout"));
     }
 
     @Test
@@ -102,7 +102,7 @@ class FileNamePatternEndToEndTest extends DefaultNRGTest {
         Path src = Files.createDirectories(tmp.resolve("plain/docs")).resolve("README.src.md");
         Files.write(src, ("<!--@nrg.fileNamePattern=../<base>.md-->\nHello\n").getBytes(StandardCharsets.UTF_8));
 
-        assertEquals(1, NRG.run("-f", src.toAbsolutePath().toString()));
+        assertEquals(NRG.EXIT_TEMPLATE_ERROR, NRG.run("-f", src.toAbsolutePath().toString()));
         assertEquals(0, NRG.run("-f", src.toAbsolutePath().toString(),
                 "--root", tmp.resolve("plain").toString()));
         assertTrue(tmp.resolve("plain/README.md").toFile().isFile());
@@ -113,7 +113,7 @@ class FileNamePatternEndToEndTest extends DefaultNRGTest {
         Path src = tmp.resolve("README.src.md");
         Files.write(src, "Hello\n".getBytes(StandardCharsets.UTF_8));
 
-        assertEquals(1, NRG.run("-f", src.toAbsolutePath().toString(),
+        assertEquals(NRG.EXIT_USAGE, NRG.run("-f", src.toAbsolutePath().toString(),
                 "--root", tmp.resolve("missing").toString()));
         assertTrue(getErrAndClear().contains("--root is not a directory"));
     }

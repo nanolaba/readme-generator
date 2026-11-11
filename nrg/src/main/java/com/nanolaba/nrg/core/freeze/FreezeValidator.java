@@ -28,12 +28,12 @@ public final class FreezeValidator {
             if (m.getSourceLang().isPresent()) {
                 String lang = m.getSourceLang().get();
                 if (declaredLanguages != null && !declaredLanguages.contains(lang)) {
-                    out.add(new Validator.Diagnostic(file, m.getOpenLineIndex() + 1,
-                            "freeze id='" + m.getId() + "' at line " + (m.getOpenLineIndex() + 1)
+                    out.add(new Validator.Diagnostic(file, m.getOpenLineIndex() + 1, Validator.Severity.ERROR,
+                            "freeze-block", "freeze id='" + m.getId() + "' at line " + (m.getOpenLineIndex() + 1)
                                     + ": source-lang '" + lang + "' is not declared in nrg.languages "
                                     + "(available: " + (declaredLanguages == null
                                             ? "<none>" : String.join(", ", declaredLanguages)) + ")",
-                            Validator.Severity.ERROR));
+                            null));
                 }
             }
         }

@@ -152,7 +152,7 @@ public final class FreezeBlockParser {
     }
 
     private static Validator.Diagnostic error(File file, int line, String message) {
-        return new Validator.Diagnostic(file, line, message, Validator.Severity.ERROR);
+        return new Validator.Diagnostic(file, line, Validator.Severity.ERROR, "freeze-block", message, null);
     }
 
     public static final class Result {

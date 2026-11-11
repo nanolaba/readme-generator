@@ -101,7 +101,7 @@ public class CustomWidgetCliTest extends DefaultNRGTest {
     public void testContextClassLoaderIsRestoredAfterAFailedRun() {
         ClassLoader before = Thread.currentThread().getContextClassLoader();
 
-        assertEquals(1, NRG.run("--classpath", tempDir.toString(), "--no-such-option"));
+        assertEquals(NRG.EXIT_USAGE, NRG.run("--classpath", tempDir.toString(), "--no-such-option"));
         assertSame(before, Thread.currentThread().getContextClassLoader());
     }
 }

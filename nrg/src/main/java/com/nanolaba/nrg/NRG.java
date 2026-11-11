@@ -2,6 +2,7 @@ package com.nanolaba.nrg;
 
 import com.nanolaba.logging.ConsoleLogger;
 import com.nanolaba.logging.LOG;
+import com.nanolaba.logging.LogEntry;
 import com.nanolaba.nrg.core.Generator;
 import com.nanolaba.nrg.core.GeneratorConfig;
 import com.nanolaba.nrg.core.LineEndings;
@@ -22,6 +23,7 @@ import org.apache.commons.io.IOUtils;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.PrintStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -58,6 +60,15 @@ public class NRG {
 
     public static final String ENV_LOG_LEVEL = "NRG_LOG_LEVEL";
 
+    /** Exit status: everything is fine. */
+    public static final int EXIT_OK = 0;
+    /** Exit status of {@code --check}: a generated file differs from the template or is missing. */
+    public static final int EXIT_DRIFT = 1;
+    /** Exit status: a template is invalid ({@code --validate}) or generation failed. */
+    public static final int EXIT_TEMPLATE_ERROR = 2;
+    /** Exit status: the command line is wrong — unknown or conflicting options, no source files. */
+    public static final int EXIT_USAGE = 64;
+
     public enum LogLevel {
         TRACE, DEBUG, INFO, WARN, ERROR;
 
@@ -92,7 +103,7 @@ public class NRG {
         } catch (ParseException e) {
             System.err.println("Incorrect command line arguments: " + e.getMessage());
             System.err.println("To view help, run with the -h option");
-            return 1;
+            return EXIT_USAGE;
         } finally {
             // --classpath installs its own loader for the run. run() is also called in-process
             // (the Maven plugin, library users, tests), so the caller's loader is put back and
@@ -159,7 +170,7 @@ public class NRG {
                 "allow the 'exec' widget to run external commands (disabled by default)");
         options.addOption(allowExec);
         Option validate = new Option(null, "validate", false,
-                "validate the source template and imports without generating output; exit 1 on errors");
+                "validate the source template and imports without generating output; exit 2 on errors");
         options.addOption(validate);
         Option fileNamePattern = new Option(null, "file-name-pattern", true,
                 "output filename pattern with placeholders <base>, <lang>, <LANG> (overrides nrg.fileNamePattern)");
@@ -189,11 +200,20 @@ public class NRG {
                 "replace the default head comment with this text (\\n, \\r, \\t, \\\\ are interpreted)");
         headerText.setArgName("text");
         options.addOption(headerText);
+        Option format = new Option(null, "format", true,
+                "output style: text (default), json (one JSON report on stdout, logs on stderr) " +
+                        "or github (workflow annotations on stdout)");
+        format.setArgName("text|json|github");
+        options.addOption(format);
 
         CommandLineParser parser = new DefaultParser();
         CommandLine cmd = parser.parse(options, args);
 
-        applyLogLevel(resolveLogLevel(cmd.getOptionValue(logLevel)));
+        RunReport.Format outputFormat = RunReport.Format.parse(cmd.getOptionValue(format));
+        if (outputFormat == null) {
+            throw new ParseException("Invalid format: '" + cmd.getOptionValue(format) + "' (expected text|json|github)");
+        }
+        applyLogLevel(resolveLogLevel(cmd.getOptionValue(logLevel)), outputFormat == RunReport.Format.JSON);
 
         if (cmd.hasOption(version)) {
             printVersion();
@@ -222,6 +242,9 @@ public class NRG {
         }
         if (validateMode && (toStdout || checkMode)) {
             throw new ParseException("--validate is mutually exclusive with --stdout and --check");
+        }
+        if (toStdout && outputFormat != RunReport.Format.TEXT) {
+            throw new ParseException("--format " + cmd.getOptionValue(format) + " cannot be combined with --stdout");
         }
         String[] checkPathsValues = cmd.getOptionValues(checkPaths);
         List<String> checkPathsList = checkPathsValues == null
@@ -266,41 +289,52 @@ public class NRG {
 
         List<File> sources = collectSourceFiles(cmd, file);
         if (sources == null) {
-            return 1;
+            return EXIT_USAGE;
         }
         if (sources.isEmpty()) {
-            return 0;
+            return EXIT_OK;
         }
 
+        RunReport report = new RunReport(validateMode ? "validate" : checkMode ? "check" : "generate",
+                new File("."));
         boolean failFastFlag = cmd.hasOption(failFast);
         int totalOutputs = 0;
         if (toStdout) {
             totalOutputs = countTotalOutputs(sources, sourceCharset, cliWidgets, langValue);
         }
-        int aggregateCode = 0;
+        int aggregateCode = EXIT_OK;
         MatchTracker checkMatchTracker = new MatchTracker();
         for (File sourceFile : sources) {
             int code;
             if (validateMode) {
-                code = runValidation(sourceFile, rootDir, cliWidgets);
+                code = runValidation(sourceFile, rootDir, cliWidgets, report, outputFormat);
             } else {
                 code = generate(sourceFile, sourceCharset, toStdout, langValue, cliWidgets,
                         checkMode, cmd.hasOption(allowExec),
                         fileNamePatternValue, defaultLangFileNamePatternValue,
                         totalOutputs > 1, lineEndingMode,
                         noHeaderFlag, headerTextValue,
-                        checkPathFilter, checkMatchTracker, rootDir);
+                        checkPathFilter, checkMatchTracker, rootDir, report, outputFormat);
             }
-            if (code != 0) {
-                aggregateCode = 1;
-                if (failFastFlag) {
-                    return 1;
-                }
+            // Codes are ordered by severity, so the batch reports the worst one.
+            aggregateCode = Math.max(aggregateCode, code);
+            if (code != EXIT_OK && failFastFlag) {
+                break;
             }
         }
         if (checkMode && hasCheckPathsFilter && !checkMatchTracker.anyMatched()) {
-            System.err.println("WARN: --check-paths matched no generated outputs (patterns: "
-                    + checkPathFilter.getPatterns() + ")");
+            String message = "--check-paths matched no generated outputs (patterns: " + checkPathFilter.getPatterns() + ")";
+            if (outputFormat == RunReport.Format.TEXT) {
+                System.err.println("WARN: " + message);
+            } else {
+                report.addDiagnostic(new Validator.Diagnostic(null, 0, Validator.Severity.WARNING,
+                        "check-paths-unmatched", message, "fix the patterns; nothing was checked"));
+            }
+        }
+        if (outputFormat == RunReport.Format.JSON) {
+            System.out.println(report.toJson(aggregateCode));
+        } else if (outputFormat == RunReport.Format.GITHUB) {
+            report.toGithubAnnotations().forEach(System.out::println);
         }
         return aggregateCode;
     }
@@ -402,10 +436,10 @@ public class NRG {
         return total;
     }
 
-    private static int runValidation(File sourceFile, File rootDir, List<NRGWidget> cliWidgets) {
+    private static int runValidation(File sourceFile, File rootDir, List<NRGWidget> cliWidgets,
+                                     RunReport report, RunReport.Format format) {
         if (!sourceFile.exists()) {
-            LOG.error("Source file does not exist: {}", sourceFile.getAbsolutePath());
-            return 1;
+            return missingSource(sourceFile, report);
         }
         List<NRGWidget> widgets = new ArrayList<>();
         if (cliWidgets != null) {
@@ -413,15 +447,29 @@ public class NRG {
         }
         widgets.addAll(additionalWidgets);
         List<Validator.Diagnostic> diagnostics = new Validator(sourceFile, rootDir, widgets).validate();
-        if (diagnostics.isEmpty()) {
-            return 0;
-        }
         boolean anyError = false;
         for (Validator.Diagnostic d : diagnostics) {
-            System.err.println(d.toString());
+            if (format == RunReport.Format.TEXT) {
+                System.err.println(d.toString());
+            }
             if (d.isError()) anyError = true;
         }
-        return anyError ? 1 : 0;
+        report.addDiagnostics(diagnostics);
+        report.addFile(sourceFile, null, null, anyError ? "invalid" : "ok");
+        return anyError ? EXIT_TEMPLATE_ERROR : EXIT_OK;
+    }
+
+    private static int missingSource(File sourceFile, RunReport report) {
+        LOG.error("Source file does not exist: {}", sourceFile.getAbsolutePath());
+        report.addDiagnostic(new Validator.Diagnostic(sourceFile, 0, Validator.Severity.ERROR, "source-not-found",
+                "source file does not exist: " + sourceFile.getPath(), null));
+        return EXIT_USAGE;
+    }
+
+    /** Records a failure that stops generation of {@code sourceFile}; text mode has already logged it. */
+    private static int generationFailed(File sourceFile, RunReport report, String code, String message) {
+        report.addDiagnostic(new Validator.Diagnostic(sourceFile, 0, Validator.Severity.ERROR, code, message, null));
+        return EXIT_TEMPLATE_ERROR;
     }
 
     private static ClassLoader buildExtraClassLoader(String classpathValue) {
@@ -467,8 +515,24 @@ public class NRG {
     }
 
     public static void applyLogLevel(LogLevel level) {
+        applyLogLevel(level, false);
+    }
+
+    /**
+     * @param everythingToStderr send every level to stderr — {@code --format json} keeps stdout
+     *                           for the report alone, while the stock logger prints below ERROR
+     *                           to stdout
+     */
+    private static void applyLogLevel(LogLevel level, boolean everythingToStderr) {
         int threshold = level.ordinal();
-        ConsoleLogger logger = new ConsoleLogger();
+        ConsoleLogger logger = everythingToStderr
+                ? new ConsoleLogger() {
+                    @Override
+                    protected PrintStream getOutputStream(LogEntry entry) {
+                        return System.err;
+                    }
+                }
+                : new ConsoleLogger();
         logger.setTraceEnabled(LogLevel.TRACE.ordinal() >= threshold);
         logger.setDebugEnabled(LogLevel.DEBUG.ordinal() >= threshold);
         logger.setInfoEnabled(LogLevel.INFO.ordinal() >= threshold);
@@ -483,10 +547,9 @@ public class NRG {
                                 boolean perFileStdoutHeader, LineEndings.Mode lineEndingMode,
                                 boolean noHeaderOverride, String headerTextOverride,
                                 PathPatternMatcher checkPathFilter, MatchTracker checkMatchTracker,
-                                File rootDir) {
+                                File rootDir, RunReport report, RunReport.Format format) {
         if (!sourceFile.exists()) {
-            LOG.error("Source file does not exist: {}", sourceFile.getAbsolutePath());
-            return 1;
+            return missingSource(sourceFile, report);
         }
         try {
             List<NRGWidget> widgets = new ArrayList<>();
@@ -521,7 +584,7 @@ public class NRG {
                     generator.getConfig().getProjectRoot());
             if (patternError.isPresent()) {
                 LOG.error("File name pattern error: {}", patternError.get());
-                return 1;
+                return generationFailed(sourceFile, report, "file-name-pattern", patternError.get());
             }
             List<Validator.Diagnostic> freezeDiags = FreezeValidator.validate(
                     sourceFile,
@@ -530,33 +593,45 @@ public class NRG {
             boolean hasFreezeError = false;
             for (Validator.Diagnostic d : freezeDiags) {
                 if (d.isError()) {
-                    System.err.println(d);
+                    if (format == RunReport.Format.TEXT) {
+                        System.err.println(d);
+                    }
+                    report.addDiagnostic(d);
                     hasFreezeError = true;
                 }
             }
             if (hasFreezeError) {
-                return 1;
+                return EXIT_TEMPLATE_ERROR;
             }
             generator.getConfig().setExecAllowed(allowExec);
             if (checkMode) {
-                return performCheck(generator, lineEndingMode, checkPathFilter, checkMatchTracker);
+                return performCheck(generator, lineEndingMode, checkPathFilter, checkMatchTracker, report, format);
             }
             if (toStdout) {
                 printToStdout(generator, languageFilter, perFileStdoutHeader);
-                return 0;
+                return EXIT_OK;
             }
-            createFiles(generator, lineEndingMode);
-            return 0;
+            createFiles(generator, lineEndingMode, report);
+            return EXIT_OK;
         } catch (IOException e) {
             LOG.error(e, () -> "Generation failed: " + sourceFile.getAbsolutePath());
-            return 1;
+            return generationFailed(sourceFile, report, "generation-failed", String.valueOf(e.getMessage()));
+        } catch (RuntimeException e) {
+            // A widget or the template itself gave up (an import outside the project root, a
+            // failed remote fetch, ...). Reported as a failed generation of this file instead of
+            // escaping run(), so a batch still reports the other files and its exit status.
+            LOG.error(e, () -> "Generation failed: " + sourceFile.getAbsolutePath());
+            return generationFailed(sourceFile, report, "generation-failed",
+                    e.getMessage() != null ? e.getMessage() : e.toString());
         }
     }
 
     private static int performCheck(Generator generator, LineEndings.Mode lineEndingMode,
-                                    PathPatternMatcher filter, MatchTracker tracker)
+                                    PathPatternMatcher filter, MatchTracker tracker,
+                                    RunReport report, RunReport.Format format)
             throws IOException {
         boolean failed = false;
+        File sourceFile = generator.getConfig().getSourceFile();
         for (String language : generator.getConfig().getLanguages()) {
             File readmeFile = getReadmeFile(language, generator.getConfig());
             // Force rendering for every declared language so widget/template errors continue to
@@ -568,6 +643,7 @@ public class NRG {
             tracker.record();
             if (!readmeFile.exists()) {
                 System.err.println("Missing file: " + readmeFile.getName() + " (would be created by generation)");
+                report.addFile(sourceFile, readmeFile, language, "missing");
                 failed = true;
                 continue;
             }
@@ -579,10 +655,16 @@ public class NRG {
             String existing = FileUtils.readFileToString(readmeFile, StandardCharsets.UTF_8);
             if (!generated.equals(existing)) {
                 System.err.print(unifiedDiff(existing, generated, readmeFile.getName()));
+                report.addFile(sourceFile, readmeFile, language, "stale");
                 failed = true;
+            } else {
+                report.addFile(sourceFile, readmeFile, language, "ok");
             }
         }
-        return failed ? 1 : 0;
+        if (failed && format == RunReport.Format.TEXT) {
+            System.err.println("Regenerate with: nrg -f " + sourceFile.getPath());
+        }
+        return failed ? EXIT_DRIFT : EXIT_OK;
     }
 
     /**
@@ -640,7 +722,9 @@ public class NRG {
         return new ArrayList<>(Arrays.asList(s.split("\\R", -1)));
     }
 
-    private static void createFiles(Generator generator, LineEndings.Mode lineEndingMode) throws IOException {
+    private static void createFiles(Generator generator, LineEndings.Mode lineEndingMode, RunReport report)
+            throws IOException {
+        File sourceFile = generator.getConfig().getSourceFile();
         for (String language : generator.getConfig().getLanguages()) {
             File readmeFile = getReadmeFile(language, generator.getConfig());
             LOG.debug("Generating file for language \"{}\" - {}", language, readmeFile.getAbsolutePath());
@@ -648,13 +732,18 @@ public class NRG {
             if (parent != null && !parent.exists()) {
                 if (!parent.mkdirs() && !parent.isDirectory()) {
                     LOG.error("Cannot create directory for output file: {}", parent.getAbsolutePath());
+                    report.addDiagnostic(new Validator.Diagnostic(sourceFile, 0, Validator.Severity.ERROR,
+                            "generation-failed", "cannot create directory " + parent.getPath(), null));
                     continue;
                 }
             }
             String targetEnding = LineEndings.resolve(lineEndingMode, readmeFile, StandardCharsets.UTF_8);
             String content = LineEndings.applyTo(
                     generator.getResult(language).getContent(), targetEnding);
+            boolean unchanged = readmeFile.isFile()
+                    && content.equals(FileUtils.readFileToString(readmeFile, StandardCharsets.UTF_8));
             FileUtils.write(readmeFile, content, StandardCharsets.UTF_8);
+            report.addFile(sourceFile, readmeFile, language, unchanged ? "unchanged" : "written");
             LOG.info("File \"{}\" created, total size {}", readmeFile.getName(), FileUtils.byteCountToDisplaySize(readmeFile.length()));
         }
     }

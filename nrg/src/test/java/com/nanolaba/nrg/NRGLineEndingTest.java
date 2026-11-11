@@ -96,7 +96,7 @@ public class NRGLineEndingTest extends DefaultNRGTest {
         Path src = writeBytes("R.src.md", "<!--@nrg.languages=en-->\nLine A\n");
 
         int code = NRG.run("--line-ending", "cr", "-f", src.toString());
-        assertEquals(1, code);
+        assertEquals(NRG.EXIT_USAGE, code);
         String err = getErrAndClear();
         assertTrue(err.contains("Invalid line-ending mode"),
                 "expected diagnostic about invalid mode, got: " + err);

@@ -97,7 +97,7 @@ public class CheckCliTest extends DefaultNRGTest {
 
         int code = NRG.run("--check", "--stdout", "-f", src.toString());
 
-        assertEquals(1, code);
+        assertEquals(NRG.EXIT_USAGE, code);
         String err = getErrAndClear();
         assertTrue(err.contains("--stdout and --check are mutually exclusive"), err);
     }

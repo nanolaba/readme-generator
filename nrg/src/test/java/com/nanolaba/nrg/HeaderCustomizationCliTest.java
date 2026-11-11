@@ -76,7 +76,7 @@ public class HeaderCustomizationCliTest extends DefaultNRGTest {
 
         int code = NRG.run("--no-header", "--header-text", "anything", "-f", src.toString());
 
-        assertEquals(1, code);
+        assertEquals(NRG.EXIT_USAGE, code);
         String err = getErrAndClear();
         assertTrue(err.contains("--no-header and --header-text are mutually exclusive"),
                 "expected mutual-exclusion error, got: " + err);

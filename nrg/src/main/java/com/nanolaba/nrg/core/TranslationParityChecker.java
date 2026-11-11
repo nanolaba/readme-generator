@@ -121,10 +121,11 @@ final class TranslationParityChecker {
         List<String> missing = new ArrayList<>(languages);
         missing.removeAll(present);
         if (!missing.isEmpty()) {
-            diagnostics.add(new Validator.Diagnostic(file, first, range + (first == last ? " exists" : " exist") + " for " + quoteAll(present)
-                    + " but not for " + quoteAll(missing) + "; add the translation next to them, or mark a line"
-                    + " that is meant for one language only with " + NRGConstants.PARITY_IGNORE_MARKER,
-                    Validator.Severity.ERROR));
+            diagnostics.add(new Validator.Diagnostic(file, first, Validator.Severity.ERROR, "missing-translation",
+                    range + (first == last ? " exists" : " exist") + " for " + quoteAll(present)
+                            + " but not for " + quoteAll(missing),
+                    "add the translation next to them, or mark a line that is meant for one language only with "
+                            + NRGConstants.PARITY_IGNORE_MARKER));
             return;
         }
         compareSkeletons(group, range);
@@ -148,10 +149,10 @@ final class TranslationParityChecker {
                     continue;
                 }
                 int at = b != null ? b.lineNo : a != null ? a.lineNo : group.get(0).lineNo;
-                diagnostics.add(new Validator.Diagnostic(file, at, "translations in " + range
-                        + " differ in structure: '" + reference + "' has " + describe(a) + " where '"
-                        + language + "' has " + describe(b) + "; check that nothing was added to or left out of one language",
-                        Validator.Severity.WARNING));
+                diagnostics.add(new Validator.Diagnostic(file, at, Validator.Severity.WARNING, "structure-mismatch",
+                        "translations in " + range + " differ in structure: '" + reference + "' has " + describe(a)
+                                + " where '" + language + "' has " + describe(b),
+                        "check that nothing was added to or left out of one language"));
                 break;
             }
         }
@@ -220,10 +221,11 @@ final class TranslationParityChecker {
                 }
             }
             if (!undeclared.isEmpty()) {
-                diagnostics.add(new Validator.Diagnostic(file, lineNo, "language construct names "
-                        + quoteAll(undeclared) + ", which " + (undeclared.size() == 1 ? "is" : "are")
-                        + " not in nrg.languages, so the whole construct is left in the output as written;"
-                        + " declare the language or remove the entry", Validator.Severity.ERROR));
+                diagnostics.add(new Validator.Diagnostic(file, lineNo, Validator.Severity.ERROR, "language-construct",
+                        "language construct names " + quoteAll(undeclared) + ", which "
+                                + (undeclared.size() == 1 ? "is" : "are")
+                                + " not in nrg.languages, so the whole construct is left in the output as written",
+                        "declare the language or remove the entry"));
                 continue;
             }
             List<String> missing = new ArrayList<>();
@@ -233,9 +235,9 @@ final class TranslationParityChecker {
                 }
             }
             if (!missing.isEmpty()) {
-                diagnostics.add(new Validator.Diagnostic(file, lineNo, "language construct has no text for "
-                        + quoteAll(missing) + " and renders empty there; add " + missing.get(0)
-                        + ":'...' (or " + missing.get(0) + ":'' if empty is intended)", Validator.Severity.ERROR));
+                diagnostics.add(new Validator.Diagnostic(file, lineNo, Validator.Severity.ERROR, "language-construct",
+                        "language construct has no text for " + quoteAll(missing) + " and renders empty there",
+                        "add " + missing.get(0) + ":'...' (or " + missing.get(0) + ":'' if empty is intended)"));
             }
         }
     }

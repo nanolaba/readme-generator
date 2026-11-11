@@ -48,7 +48,7 @@ class ValidatorAuthoringRulesTest extends DefaultNRGTest {
         List<Validator.Diagnostic> d = validate(write("README.src.md", "${widget:tocc}\n"));
 
         assertEquals(1, d.size(), d.toString());
-        assertTrue(d.get(0).getMessage().contains("did you mean 'toc'?"), d.get(0).getMessage());
+        assertTrue(d.get(0).toString().contains("did you mean 'toc'?"), d.get(0).getMessage());
     }
 
     @Test
@@ -58,8 +58,8 @@ class ValidatorAuthoringRulesTest extends DefaultNRGTest {
         assertEquals(1, d.size(), d.toString());
         assertTrue(d.get(0).isError());
         assertEquals(1, d.get(0).getLine());
-        assertTrue(d.get(0).getMessage().contains("widget 'toc' has no parameter 'maxDepth'"), d.get(0).getMessage());
-        assertTrue(d.get(0).getMessage().contains("did you mean 'max-depth'?"), d.get(0).getMessage());
+        assertTrue(d.get(0).toString().contains("widget 'toc' has no parameter 'maxDepth'"), d.get(0).getMessage());
+        assertTrue(d.get(0).toString().contains("did you mean 'max-depth'?"), d.get(0).getMessage());
     }
 
     @Test
@@ -68,8 +68,8 @@ class ValidatorAuthoringRulesTest extends DefaultNRGTest {
                 "${widget:date(format='yyyy')}\n${widget:languages(x='1')}\n"));
 
         assertEquals(2, d.size(), d.toString());
-        assertTrue(d.get(0).getMessage().contains("known parameters: pattern"), d.get(0).getMessage());
-        assertTrue(d.get(1).getMessage().contains("takes no parameters"), d.get(1).getMessage());
+        assertTrue(d.get(0).toString().contains("known parameters: pattern"), d.get(0).getMessage());
+        assertTrue(d.get(1).toString().contains("takes no parameters"), d.get(1).getMessage());
     }
 
     @Test
@@ -109,7 +109,7 @@ class ValidatorAuthoringRulesTest extends DefaultNRGTest {
         assertEquals(1, d.size(), d.toString());
         assertTrue(d.get(0).isError());
         assertEquals(2, d.get(0).getLine());
-        assertTrue(d.get(0).getMessage().contains("did you mean 'stableVersion'?"), d.get(0).getMessage());
+        assertTrue(d.get(0).toString().contains("did you mean 'stableVersion'?"), d.get(0).getMessage());
     }
 
     @Test
@@ -119,7 +119,7 @@ class ValidatorAuthoringRulesTest extends DefaultNRGTest {
 
         assertTrue(errors(d).isEmpty(), d.toString());
         assertEquals(1, warnings(d).size(), d.toString());
-        assertTrue(d.get(0).getMessage().contains("\\${HOME}"), d.get(0).getMessage());
+        assertTrue(d.get(0).toString().contains("\\${HOME}"), d.get(0).getMessage());
     }
 
     @Test
@@ -161,10 +161,10 @@ class ValidatorAuthoringRulesTest extends DefaultNRGTest {
 
         assertEquals(2, d.size(), d.toString());
         assertEquals(1, d.get(0).getLine());
-        assertTrue(d.get(0).getMessage().contains("unclosed ${widget:if}"), d.get(0).getMessage());
-        assertTrue(d.get(0).getMessage().contains("${widget:endIf}"), d.get(0).getMessage());
+        assertTrue(d.get(0).toString().contains("unclosed ${widget:if}"), d.get(0).getMessage());
+        assertTrue(d.get(0).toString().contains("${widget:endIf}"), d.get(0).getMessage());
         assertEquals(3, d.get(1).getLine());
-        assertTrue(d.get(1).getMessage().contains("${widget:endDetails} without a matching ${widget:details}"),
+        assertTrue(d.get(1).toString().contains("${widget:endDetails} without a matching ${widget:details}"),
                 d.get(1).getMessage());
     }
 
@@ -189,7 +189,7 @@ class ValidatorAuthoringRulesTest extends DefaultNRGTest {
         assertTrue(errors(d).isEmpty(), d.toString());
         assertEquals(1, warnings(d).size(), d.toString());
         assertEquals(3, d.get(0).getLine());
-        assertTrue(d.get(0).getMessage().contains("<\\!--@nrg.languages"), d.get(0).getMessage());
+        assertTrue(d.get(0).toString().contains("<\\!--@nrg.languages"), d.get(0).getMessage());
     }
 
     @Test
@@ -200,7 +200,7 @@ class ValidatorAuthoringRulesTest extends DefaultNRGTest {
 
         assertEquals(1, d.size(), d.toString());
         assertTrue(d.get(0).isWarning());
-        assertTrue(d.get(0).getMessage().contains("${pom.artifactId}"), d.get(0).getMessage());
+        assertTrue(d.get(0).toString().contains("${pom.artifactId}"), d.get(0).getMessage());
     }
 
     @Test

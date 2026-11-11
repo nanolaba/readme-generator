@@ -29,8 +29,8 @@ nrg -f README.src.md              # ${en:'regenerate every language', ru:'пер
 nrg --check -f README.src.md      # ${en:'exit 1 and a unified diff when files on disk are stale', ru:'код 1 и unified diff, если файлы на диске устарели'}
 ```
 
-`--validate`, `--check` and `--stdout` never write files. Add `--log-level warn` to keep the output — and the agent's context — short. Details: [Validating source templates](#validating-source-templates), [Verifying generated files](#verifying-generated-files-ci-mode).<!--en-->
-`--validate`, `--check` и `--stdout` никогда не пишут файлы. С `--log-level warn` вывод — а значит, и контекст агента — остаётся коротким. Подробнее: [«Валидация исходных шаблонов»](#валидация-исходных-шаблонов), [«Проверка сгенерированных файлов»](#проверка-сгенерированных-файлов-режим-ci).<!--ru-->
+`--validate`, `--check` and `--stdout` never write files. The exit code tells the agent what to do next: `1` — regenerate, `2` — fix the template, `64` — fix the command ([Exit codes](#exit-codes)). Add `--format json` to get files and diagnostics (with a stable `code` and a `hint` naming the fix) as one JSON document instead of log lines — see [Machine-readable output](#machine-readable-output). Details: [Validating source templates](#validating-source-templates), [Verifying generated files](#verifying-generated-files-ci-mode).<!--en-->
+`--validate`, `--check` и `--stdout` никогда не пишут файлы. Код возврата подсказывает агенту следующий шаг: `1` — перегенерировать, `2` — исправить шаблон, `64` — исправить команду ([«Коды возврата»](#коды-возврата)). С `--format json` файлы и диагностики (со стабильным `code` и подсказкой `hint`) приходят одним JSON-документом вместо строк лога — см. [«Машиночитаемый вывод»](#машиночитаемый-вывод). Подробнее: [«Валидация исходных шаблонов»](#валидация-исходных-шаблонов), [«Проверка сгенерированных файлов»](#проверка-сгенерированных-файлов-режим-ci).<!--ru-->
 
 ### ${en:'Instructions for the agent', ru:'Инструкция для агента'}
 

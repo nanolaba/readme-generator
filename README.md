@@ -67,12 +67,14 @@ This very README is generated with NRG — see [`README.src.md`](README.src.md).
 		- 3.1.1 [Verifying generated files (CI mode)](#verifying-generated-files-ci-mode)
 		- 3.1.2 [Validating source templates](#validating-source-templates)
 		- 3.1.3 [Print to stdout](#print-to-stdout)
-		- 3.1.4 [Logging verbosity](#logging-verbosity)
-		- 3.1.5 [Customising output filenames](#customising-output-filenames)
-		- 3.1.6 [Project root](#project-root)
-		- 3.1.7 [Line endings](#line-endings)
-		- 3.1.8 [Header customisation](#header-customisation)
-		- 3.1.9 [Multiple files and glob patterns](#multiple-files-and-glob-patterns)
+		- 3.1.4 [Machine-readable output](#machine-readable-output)
+		- 3.1.5 [Exit codes](#exit-codes)
+		- 3.1.6 [Logging verbosity](#logging-verbosity)
+		- 3.1.7 [Customising output filenames](#customising-output-filenames)
+		- 3.1.8 [Project root](#project-root)
+		- 3.1.9 [Line endings](#line-endings)
+		- 3.1.10 [Header customisation](#header-customisation)
+		- 3.1.11 [Multiple files and glob patterns](#multiple-files-and-glob-patterns)
 	- 3.2 [Use as maven plugin](#use-as-maven-plugin)
 	- 3.3 [Use as a GitHub Action](#use-as-a-github-action)
 		- 3.3.1 [Quickstart](#quickstart)
@@ -271,7 +273,7 @@ nrg -f README.src.md              # regenerate every language
 nrg --check -f README.src.md      # exit 1 and a unified diff when files on disk are stale
 ```
 
-`--validate`, `--check` and `--stdout` never write files. Add `--log-level warn` to keep the output — and the agent's context — short. Details: [Validating source templates](#validating-source-templates), [Verifying generated files](#verifying-generated-files-ci-mode).
+`--validate`, `--check` and `--stdout` never write files. The exit code tells the agent what to do next: `1` — regenerate, `2` — fix the template, `64` — fix the command ([Exit codes](#exit-codes)). Add `--format json` to get files and diagnostics (with a stable `code` and a `hint` naming the fix) as one JSON document instead of log lines — see [Machine-readable output](#machine-readable-output). Details: [Validating source templates](#validating-source-templates), [Verifying generated files](#verifying-generated-files-ci-mode).
 
 ### Instructions for the agent
 
@@ -410,7 +412,7 @@ Each diagnostic is printed as `ERROR: file.src.md:LINE: message` or
 `WARNING: file.src.md:LINE: message`; where there is an obvious fix, the
 message ends with it (`unknown widget 'tocc'; did you mean 'toc'?`).
 With no diagnostics, NRG exits silently with status `0`. All diagnostics
-go to stderr; the process exits with status `1` when at least one of them
+go to stderr; the process exits with status `2` when at least one of them
 is an error. An import with `run-generator='false'` is only checked for
 existence — its content is not a template. `--validate` is mutually
 exclusive with `--check` and `--stdout`.
@@ -434,6 +436,58 @@ nrg --stdout --language en -f README.src.md
 
 The `--language` flag is only meaningful with `--stdout` — using it
 on its own logs a warning and the flag is ignored.
+
+#### Machine-readable output
+
+`--format json` turns a run into one JSON document on stdout — for coding agents,
+hooks and CI steps that need to know what happened without parsing log lines.
+Logging moves to stderr (the `--check` diff stays there too). It works with
+generation, `--check` and `--validate`, and cannot be combined with `--stdout`.
+
+```bash
+nrg --check --format json -f README.src.md
+```
+
+```json
+{
+  "version": "1.4-SNAPSHOT",
+  "mode": "check",
+  "ok": false,
+  "exitCode": 1,
+  "files": [
+    {"source": "README.src.md", "output": "README.md", "language": "en", "status": "ok"},
+    {"source": "README.src.md", "output": "README.ru.md", "language": "ru", "status": "stale"}
+  ],
+  "diagnostics": [
+    {"severity": "error", "code": "unknown-widget", "file": "docs/Widgets.src.md", "line": 12, "message": "unknown widget 'tocc'", "hint": "did you mean 'toc'?"}
+  ]
+}
+```
+
+- `files[].status`: `written` / `unchanged` (generation), `ok` / `stale` / `missing` (`--check`), `ok` / `invalid` (`--validate`, one entry per source file).
+- `diagnostics[].code` is stable — match on it, not on `message`: `unknown-widget`, `unknown-parameter`, `undeclared-language`, `import-not-found`, `import-outside-root`, `unbalanced-ignore`, `unbalanced-block`, `undefined-variable`, `unresolved-reference`, `cosmetic-escape`, `missing-translation`, `language-construct`, `structure-mismatch`, `freeze-block`, `file-name-pattern`, `generation-failed`, `source-not-found`, `check-paths-unmatched`, `config-error`, `descriptor-error`. `hint` is the suggested fix or `null`.
+- Paths are relative to the working directory, with `/` separators.
+- On a usage error (exit code `64`) nothing is written to stdout; the message is on stderr.
+
+`--format github` prints the same findings as GitHub Actions workflow commands
+(`::error file=…,line=…::…`, `::warning …`), so a CI step shows them next to the
+offending lines of a pull request; a stale or missing output is reported on the output file.
+
+```bash
+nrg --validate --format github "**/*.src.md"
+```
+
+#### Exit codes
+
+| Code | Meaning |
+|:-:|---|
+| `0` | Success. Warnings alone do not change it. |
+| `1` | `--check`: a generated file differs from the template or is missing — regenerate. |
+| `2` | A template is invalid (`--validate` found an error) or generation failed — fix the template. |
+| `64` | The command line is wrong: unknown or conflicting options, a source file that does not exist, patterns that match nothing. |
+
+With several source files the run exits with the highest code among them. A failed
+text-mode `--check` ends with the command that fixes it (`Regenerate with: nrg -f README.src.md`).
 
 #### Logging verbosity
 
@@ -545,18 +599,18 @@ behavior is identical on Windows, Linux, and macOS regardless of the shell.
 Quote the pattern to keep it from being expanded by the shell first.
 The legacy `-f <file>` flag is still supported as a single-file alias and
 is mutually exclusive with positional arguments — passing both prints
-an error and exits with status `1`.
+an error and exits with status `64`.
 
 By default each input is processed independently: an error on one file
-is logged but the rest still run, and the overall exit code is `1` if
-any file failed. Pass `--fail-fast` to stop on the first non-zero result.
+is logged but the rest still run, and the overall exit code is the most
+severe one of all files (see [Exit codes](#exit-codes)). Pass `--fail-fast` to stop on the first non-zero result.
 
 ```bash
 nrg --fail-fast "docs/**/*.src.md"
 ```
 
 A pattern that matches no files logs a warning. If the entire input set
-matches nothing, the run exits with status `1` and the message
+matches nothing, the run exits with status `64` and the message
 `No source files matched any of the supplied patterns`.
 
 ### Use as maven plugin
@@ -644,6 +698,10 @@ the templates for authoring mistakes (the checks listed in
 [Validating source templates](#validating-source-templates)) without
 generating any output. The build fails with a `MojoExecutionException`
 when an error is reported; warnings are only logged. Mutually exclusive with `<check>`.
+
+`<format>json</format>` (or `-Dformat=json`) passes `--format` through — see
+[Machine-readable output](#machine-readable-output). The build fails on exit code `1`
+(`<check>`), `2` and `64` with a message that names which of them it was.
 
 `<fileNamePattern>` and `<defaultLanguageFileNamePattern>` (or
 `-DfileNamePattern=...` / `-DdefaultLanguageFileNamePattern=...`) mirror
@@ -1720,7 +1778,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 11.11.2026 03:04:12
+Last updated: 11.11.2026 03:15:31
 ```
 
 </td></tr>
@@ -2176,7 +2234,7 @@ ${widget:endDetails}
 <details>
 <summary>Advanced</summary>
 
-inner *markdown* and 11.11.2026 03:04:12
+inner *markdown* and 11.11.2026 03:15:31
 
 </details>
 ```
@@ -2324,6 +2382,8 @@ This section summarises the main user-visible changes in each release. For full 
 - **The header of a generated file names its template**: the default comment at the top of every output now reads `This file was automatically generated by Nanolaba Readme Generator (NRG) from README.src.md` and `Do not edit it by hand: change README.src.md and regenerate`, with the template path relative to the output file. Whoever opens the generated file first — a contributor or a coding agent — learns which file to edit. The NRG version is no longer part of the default header, so upgrading NRG no longer changes every generated file and no longer fails `--check`. `--header-text` / `nrg.headerText` / `<headerText>` accept the placeholders `<source>`, `<lang>` and `<version>`, and `--\>` in the header text produces `-->`, so a template can set a header that is itself an HTML comment. **Behaviour change:** the first two lines of every generated file change once — regenerate after upgrading. Closes [#68](https://github.com/nanolaba/readme-generator/issues/68).
 - **`--validate` catches near-miss syntax**: new errors for a parameter a built-in widget does not have (`${widget:toc(maxDepth='2')}`), for an unclosed `${widget:if(...)}` / `${widget:details(...)}` block or a stray closer, and for an undefined `${name}` that is one or two edits away from a declared property (`${stableVerison}`). New warnings — reported without failing the run — for other undefined `${name}` references (they stay in the output as written), for `${pom.…}` / `${npm.…}` / `${gradle.…}` references that render empty, and for <code>&lt;!--&#92;@nrg.languages=…--&gt;</code>-style examples, which declare the property for real. Unknown widget names, widget parameters and language markers get a "did you mean …?" hint. Widgets passed with `--widgets` are now known to `--validate`, and an import with `run-generator='false'` is no longer scanned as a template. Custom widgets opt into the parameter check by overriding the new `NRGWidget.getParameterNames()`. Closes [#69](https://github.com/nanolaba/readme-generator/issues/69).
 - **`--validate` checks that translations stay together**: a run of language-tagged lines (blank lines do not end it) that has no line for one of the languages in `nrg.languages` is an error, and so is a `${en:'…'}` construct that lacks an entry for a language the line is shown in (it renders empty there) or names an undeclared language (the whole construct is left in the output as written). Inside such a run, a different sequence of headings, list items, table rows, code blocks or paragraphs between languages is reported as a warning. A line meant for one language only is marked with the new `<!--nrg.parity.ignore-->` marker (removed from the output); `nrg.validate.parity=false` turns the checks off. **Behaviour change:** templates with one-language content now fail `--validate` until it is translated or marked. Closes [#70](https://github.com/nanolaba/readme-generator/issues/70).
+- **`--format json` and `--format github`**: `--format json` prints one JSON document on stdout — the files a run wrote or checked with their status (`written` / `unchanged` / `ok` / `stale` / `missing` / `invalid`) and every diagnostic with a stable `code` and a separate `hint` — and moves all logging to stderr, so agents, hooks and CI steps no longer parse log lines. `--format github` prints the same findings as GitHub Actions `::error` / `::warning` annotations. Maven plugin: `<format>`. Closes [#71](https://github.com/nanolaba/readme-generator/issues/71).
+- **Distinct exit codes**: `1` now means only that `--check` found a stale or missing file; `2` — a template is invalid (`--validate`) or generation failed; `64` — the command line is wrong (unknown or conflicting options, a missing source file, patterns that match nothing). A batch exits with the highest code. An exception thrown while rendering (for example an import outside the project root) no longer escapes `NRG.run` — it fails that file with code `2`. A failed text-mode `--check` ends with `Regenerate with: nrg -f …`. **Behaviour change** for scripts that test for exit code `1` specifically.
 
 - **Updated runtime dependencies**: `commons-cli` 1.9.0 → 1.11.0, `commons-lang3` 3.18.0 → 3.21.0, `commons-text` 1.12.0 → 1.15.0, `commons-io` 2.17.0 → 2.22.0, `nanolog` 1.0 → 1.1. Java 8 remains the minimum, and `nrg-maven-plugin` still runs on Maven 3.9.9 and newer.
 - **GitHub Action sets up Java with `actions/setup-java` 6.2.0** (was 4.9.1): runs no longer carry the `Node.js 20 is deprecated` and `setup-java v4 is deprecated` warnings. Reaches users with the action release that accompanies NRG 1.4.

@@ -69,7 +69,7 @@ public class NRGMultiFileTest extends DefaultNRGTest {
 
         int code = NRG.run("-f", a.toString(), tempDir.resolve("B.src.md").toString());
 
-        assertEquals(1, code);
+        assertEquals(NRG.EXIT_USAGE, code);
         String err = getErrAndClear();
         assertTrue(err.contains("-f") && err.contains("positional"),
                 "expected mutual-exclusion message, got: " + err);
@@ -78,9 +78,9 @@ public class NRGMultiFileTest extends DefaultNRGTest {
     }
 
     @Test
-    public void testTotalZeroMatchExitsOne() {
+    public void testTotalZeroMatchIsAUsageError() {
         int code = NRG.run(tempDir.toString() + "/nope/**/*.src.md");
-        assertEquals(1, code);
+        assertEquals(NRG.EXIT_USAGE, code);
         String err = getErrAndClear();
         assertTrue(err.contains("No source files matched"),
                 "expected total-zero error, got: " + err);
@@ -115,14 +115,14 @@ public class NRGMultiFileTest extends DefaultNRGTest {
                 tempDir.resolve("A.src.md").toString(),
                 tempDir.resolve("B.src.md").toString());
 
-        assertEquals(1, code);
+        assertEquals(NRG.EXIT_TEMPLATE_ERROR, code);
         String err = getErrAndClear();
         assertTrue(err.contains("A.src.md"), "expected A diagnostic, got: " + err);
         assertFalse(err.contains("B.src.md"), "fail-fast must skip B, got: " + err);
     }
 
     @Test
-    public void testDefaultModeAggregatesAndReturnsOne() throws IOException {
+    public void testDefaultModeAggregatesAndReturnsWorstCode() throws IOException {
         writeSource("A.src.md",
                 "<!--@nrg.languages=en-->\nbad-line<!--zz-->\n");
         writeSource("B.src.md",
@@ -132,7 +132,7 @@ public class NRGMultiFileTest extends DefaultNRGTest {
                 tempDir.resolve("A.src.md").toString(),
                 tempDir.resolve("B.src.md").toString());
 
-        assertEquals(1, code);
+        assertEquals(NRG.EXIT_TEMPLATE_ERROR, code);
         String err = getErrAndClear();
         assertTrue(err.contains("A.src.md"), "expected A diagnostic, got: " + err);
         assertTrue(err.contains("B.src.md"), "expected B diagnostic too (no fail-fast), got: " + err);

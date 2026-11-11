@@ -71,10 +71,9 @@ public final class Validator {
     public List<Diagnostic> validate() {
         if (rootSourceFile == null || !rootSourceFile.isFile()) {
             List<Diagnostic> diagnostics = new ArrayList<>();
-            diagnostics.add(new Diagnostic(rootSourceFile, 0,
+            diagnostics.add(new Diagnostic(rootSourceFile, 0, Severity.ERROR, "source-not-found",
                     "source file does not exist: "
-                            + (rootSourceFile == null ? "<null>" : rootSourceFile.getAbsolutePath()),
-                    Severity.ERROR));
+                            + (rootSourceFile == null ? "<null>" : rootSourceFile.getAbsolutePath()), null));
             return diagnostics;
         }
         return new Run().validate();
@@ -98,8 +97,8 @@ public final class Validator {
                 rootConfig = new GeneratorConfig(rootSourceFile, body, extraWidgets);
                 rootConfig.setProjectRoot(projectRoot);
             } catch (RuntimeException e) {
-                diagnostics.add(new Diagnostic(rootSourceFile, 0,
-                        "cannot read the template configuration: " + e.getMessage(), Severity.ERROR));
+                error(rootSourceFile, 0, "config-error",
+                        "cannot read the template configuration: " + e.getMessage(), null);
                 return diagnostics;
             }
             for (NRGWidget w : rootConfig.getWidgets()) {
@@ -156,14 +155,16 @@ public final class Validator {
 
                 if (IGNORE_BEGIN_PATTERN.matcher(line).find()) {
                     if (ignoreBeginLine >= 0) {
-                        error(file, lineNo, "nested <!--nrg.ignore.begin--> without preceding <!--nrg.ignore.end-->");
+                        error(file, lineNo, "unbalanced-ignore",
+                                "nested <!--nrg.ignore.begin--> without preceding <!--nrg.ignore.end-->", null);
                     } else {
                         ignoreBeginLine = lineNo;
                     }
                 }
                 if (IGNORE_END_PATTERN.matcher(line).find()) {
                     if (ignoreBeginLine < 0) {
-                        error(file, lineNo, "stray <!--nrg.ignore.end--> without matching <!--nrg.ignore.begin-->");
+                        error(file, lineNo, "unbalanced-ignore",
+                                "stray <!--nrg.ignore.end--> without matching <!--nrg.ignore.begin-->", null);
                     } else {
                         ignoreBeginLine = -1;
                     }
@@ -184,12 +185,14 @@ public final class Validator {
             }
 
             if (ignoreBeginLine >= 0) {
-                error(file, ignoreBeginLine, "unclosed <!--nrg.ignore.begin--> (missing <!--nrg.ignore.end-->)");
+                error(file, ignoreBeginLine, "unbalanced-ignore",
+                        "unclosed <!--nrg.ignore.begin--> (missing <!--nrg.ignore.end-->)", null);
             }
             for (Map.Entry<BlockWidget, Deque<Integer>> e : openBlocks.entrySet()) {
                 for (Integer openerLine : e.getValue()) {
-                    error(file, openerLine, "unclosed ${widget:" + e.getKey().getName() + "} block; add ${widget:"
-                            + e.getKey().getCloserName() + "} on its own line after the block");
+                    error(file, openerLine, "unbalanced-block",
+                            "unclosed ${widget:" + e.getKey().getName() + "} block",
+                            "add ${widget:" + e.getKey().getCloserName() + "} on its own line after the block");
                 }
             }
         }
@@ -206,9 +209,9 @@ public final class Validator {
                 String params = widgetMatcher.group(3);
                 if (!knownWidgetNames.contains(name)) {
                     String suggestion = Suggestions.closest(name, knownWidgetNames);
-                    error(file, lineNo, "unknown widget '" + name + "'" + (suggestion != null
-                            ? "; did you mean '" + suggestion + "'?"
-                            : "; register it with nrg.widgets / --widgets, or fix the name"));
+                    error(file, lineNo, "unknown-widget", "unknown widget '" + name + "'", suggestion != null
+                            ? "did you mean '" + suggestion + "'?"
+                            : "register it with nrg.widgets / --widgets, or fix the name");
                     continue;
                 }
                 if (!ignored) {
@@ -233,13 +236,13 @@ public final class Validator {
                 String suggestion = Suggestions.closest(key, allowed);
                 String hint;
                 if (suggestion != null) {
-                    hint = "; did you mean '" + suggestion + "'?";
+                    hint = "did you mean '" + suggestion + "'?";
                 } else if (allowed.isEmpty()) {
-                    hint = "; it takes no parameters";
+                    hint = "it takes no parameters";
                 } else {
-                    hint = "; known parameters: " + String.join(", ", allowed);
+                    hint = "known parameters: " + String.join(", ", allowed);
                 }
-                error(file, lineNo, "widget '" + name + "' has no parameter '" + key + "'" + hint);
+                error(file, lineNo, "unknown-parameter", "widget '" + name + "' has no parameter '" + key + "'", hint);
             }
         }
 
@@ -253,9 +256,11 @@ public final class Validator {
             if (!ProjectRoot.contains(projectRoot, importedFile)) {
                 // Reported without touching the file: following it would let a
                 // template probe and parse files outside the project.
-                error(file, lineNo, "import path is outside the project root: '" + path + "'");
+                error(file, lineNo, "import-outside-root", "import path is outside the project root: '" + path + "'",
+                        "keep imports inside the project, or widen the root with --root");
             } else if (!importedFile.isFile()) {
-                error(file, lineNo, "import path not found: '" + path + "'");
+                error(file, lineNo, "import-not-found", "import path not found: '" + path + "'",
+                        "paths are relative to the importing file");
             } else if (!"false".equals(NRGUtil.parseParametersLine(params).get("run-generator"))) {
                 validateFile(importedFile, childConfig(importedFile, config), declaredLanguages, parity);
             }
@@ -288,10 +293,10 @@ public final class Validator {
                 if (isReservedMarker(marker)) continue;
                 if (declaredLanguages != null && !declaredLanguages.contains(marker)) {
                     String suggestion = Suggestions.closest(marker, declaredLanguages);
-                    error(file, lineNo, "language marker '" + marker + "' is not declared in nrg.languages"
-                            + (suggestion != null
-                            ? "; did you mean '" + suggestion + "'?"
-                            : "; add it to nrg.languages or remove the marker"));
+                    error(file, lineNo, "undeclared-language",
+                            "language marker '" + marker + "' is not declared in nrg.languages", suggestion != null
+                            ? "did you mean '" + suggestion + "'?"
+                            : "add it to nrg.languages or remove the marker");
                 }
             }
         }
@@ -303,8 +308,9 @@ public final class Validator {
                 } else if (w.isBlockCloserLine(line)) {
                     Deque<Integer> stack = openBlocks.get(w);
                     if (stack == null || stack.isEmpty()) {
-                        error(file, lineNo, "${widget:" + w.getCloserName() + "} without a matching ${widget:"
-                                + w.getName() + "}; remove it or add the opener above it");
+                        error(file, lineNo, "unbalanced-block", "${widget:" + w.getCloserName()
+                                + "} without a matching ${widget:" + w.getName() + "}",
+                                "remove it or add the opener above it");
                     } else {
                         stack.pop();
                     }
@@ -354,12 +360,13 @@ public final class Validator {
                 }
                 String suggestion = Suggestions.closest(ref.name, declaredProperties);
                 if (suggestion != null) {
-                    error(ref.file, ref.line, "undefined variable '" + ref.name + "'; did you mean '" + suggestion + "'?");
+                    error(ref.file, ref.line, "undefined-variable", "undefined variable '" + ref.name + "'",
+                            "did you mean '" + suggestion + "'?");
                 } else {
-                    diagnostics.add(new Diagnostic(ref.file, ref.line, "undefined variable '" + ref.name
-                            + "' is left in the output as written; declare it with <!--@" + ref.name
-                            + "=...--> or write \\${" + ref.name + "} if the text is meant literally",
-                            Severity.WARNING));
+                    warning(ref.file, ref.line, "undefined-variable",
+                            "undefined variable '" + ref.name + "' is left in the output as written",
+                            "declare it with <!--@" + ref.name + "=...--> or write \\${" + ref.name
+                                    + "} if the text is meant literally");
                 }
             }
         }
@@ -368,9 +375,9 @@ public final class Validator {
             Matcher m = COSMETIC_NRG_PROPERTY_PATTERN.matcher(line);
             while (m.find()) {
                 String key = m.group(1);
-                diagnostics.add(new Diagnostic(file, lineNo, "<!--\\@" + key + "=...--> sets " + key
-                        + " for this template even inside an example; write <\\!--@" + key
-                        + "=...--> to show it without declaring it", Severity.WARNING));
+                warning(file, lineNo, "cosmetic-escape",
+                        "<!--\\@" + key + "=...--> sets " + key + " for this template even inside an example",
+                        "write <\\!--@" + key + "=...--> to show it without declaring it");
             }
         }
 
@@ -382,18 +389,22 @@ public final class Validator {
             try {
                 unresolved = new TemplateLine(config, line, lineNo - 1).findUnresolvedDescriptorReferences();
             } catch (RuntimeException e) {
-                error(file, lineNo, e.getMessage());
+                error(file, lineNo, "descriptor-error", e.getMessage(), null);
                 return;
             }
             for (String ref : unresolved) {
-                diagnostics.add(new Diagnostic(file, lineNo, "${" + ref + "} is not defined in the descriptor"
-                        + " and renders empty; fix the path or give a fallback: ${" + ref + ":...}",
-                        Severity.WARNING));
+                warning(file, lineNo, "unresolved-reference",
+                        "${" + ref + "} is not defined in the descriptor and renders empty",
+                        "fix the path or give a fallback: ${" + ref + ":...}");
             }
         }
 
-        private void error(File file, int line, String message) {
-            diagnostics.add(new Diagnostic(file, line, message, Severity.ERROR));
+        private void error(File file, int line, String code, String message, String hint) {
+            diagnostics.add(new Diagnostic(file, line, Severity.ERROR, code, message, hint));
+        }
+
+        private void warning(File file, int line, String code, String message, String hint) {
+            diagnostics.add(new Diagnostic(file, line, Severity.WARNING, code, message, hint));
         }
 
         /** Groups diagnostics by file in the order the files were read, then by line. */
@@ -477,17 +488,48 @@ public final class Validator {
 
     public enum Severity {ERROR, WARNING}
 
+    /**
+     * One finding of {@code --validate} (or of the checks generation runs first). Besides the
+     * location it carries a stable {@link #getCode() code} — what tools match on, since the
+     * wording of {@link #getMessage()} may change — and an optional {@link #getHint() hint}
+     * naming the fix. {@link #toString()} joins message and hint with {@code "; "}, which is the
+     * text form printed by the CLI.
+     */
     public static final class Diagnostic {
+        /** Code of diagnostics created without one (the four-argument constructor). */
+        public static final String DEFAULT_CODE = "template-error";
+
         private final File file;
         private final int line;
         private final String message;
         private final Severity severity;
+        private final String code;
+        private final String hint;
 
         public Diagnostic(File file, int line, String message, Severity severity) {
+            this(file, line, severity, null, message, null);
+        }
+
+        /**
+         * @param code stable kebab-case identifier of the rule ({@code unknown-widget}, …);
+         *             {@code null} means {@link #DEFAULT_CODE}
+         * @param hint how to fix it, or {@code null}
+         */
+        public Diagnostic(File file, int line, Severity severity, String code, String message, String hint) {
             this.file = file;
             this.line = line;
             this.message = message;
             this.severity = severity;
+            this.code = code == null ? DEFAULT_CODE : code;
+            this.hint = hint;
+        }
+
+        public String getCode() {
+            return code;
+        }
+
+        public String getHint() {
+            return hint;
         }
 
         public File getFile() {
@@ -517,7 +559,8 @@ public final class Validator {
         @Override
         public String toString() {
             return (severity == Severity.ERROR ? "ERROR" : "WARNING") + ": "
-                    + (file == null ? "<unknown>" : file.getName()) + ":" + line + ": " + message;
+                    + (file == null ? "<unknown>" : file.getName()) + ":" + line + ": " + message
+                    + (hint == null ? "" : "; " + hint);
         }
     }
 
