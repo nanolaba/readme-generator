@@ -3,8 +3,12 @@
 # Usage: nrg-hook pre-edit|post-edit   (the hook JSON arrives on stdin)
 #
 # Runs `nrg --claude-hook <mode>` for projects that use NRG and does nothing elsewhere:
-# a project without *.src.md templates never starts a JVM. NRG is taken from the project's
-# ./nrgw wrapper, else from `nrg` on PATH; without either the hook is a no-op.
+# a project without *.src.md templates never starts a JVM.
+#
+# The hook runs in every project the user opens, including repositories they do not trust,
+# so it never executes anything the project supplies (such as its ./nrgw wrapper): it uses
+# the command in $NRG_HOOK_COMMAND, set by the user, or else `nrg` from PATH. Without
+# either it is a no-op.
 mode=$1
 dir=${CLAUDE_PROJECT_DIR:-.}
 
@@ -15,8 +19,10 @@ else
 fi
 [ -n "$templates" ] || exit 0
 
-if [ -f "$dir/nrgw" ] && [ -f "$dir/.nrg/wrapper.properties" ]; then
-  set -- sh "$dir/nrgw"
+if [ -n "$NRG_HOOK_COMMAND" ]; then
+  # Word-split on purpose: the variable holds a command line such as "java -jar /opt/nrg/nrg.jar".
+  # shellcheck disable=SC2086
+  set -- $NRG_HOOK_COMMAND
 elif command -v nrg >/dev/null 2>&1; then
   set -- nrg
 else

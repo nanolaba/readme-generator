@@ -324,7 +324,7 @@ This repository is also a Claude Code plugin marketplace. The plugin brings the 
 /plugin install nrg@nanolaba
 ```
 
-The hooks run NRG 1.4-SNAPSHOT or newer from the project's `./nrgw`, or `nrg` from `PATH`; in a project without `*.src.md` files they do nothing and start no JVM. The same syntax card is printed offline, for the installed version, by `nrg --help syntax`; other tools find the docs through [llms.txt](llms.txt).
+The hooks need NRG 1.4-SNAPSHOT or newer: `nrg` from `PATH`, or the command line in the `NRG_HOOK_COMMAND` environment variable (for example `java -jar /opt/nrg/nrg.jar`). They run in every project you open, so they never execute anything the project supplies — not even its `./nrgw`: a repository you clone must not be able to run code through an installed plugin. In a project without `*.src.md` files they do nothing and start no JVM. The same syntax card is printed offline, for the installed version, by `nrg --help syntax`; other tools find the docs through [llms.txt](llms.txt).
 
 ### Other agents
 
@@ -1892,7 +1892,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 11.11.2026 03:55:42
+Last updated: 11.11.2026 03:58:42
 ```
 
 </td></tr>
@@ -2349,7 +2349,7 @@ ${widget:endDetails}
 <details>
 <summary>Advanced</summary>
 
-inner *markdown* and 11.11.2026 03:55:42
+inner *markdown* and 11.11.2026 03:58:43
 
 </details>
 ```

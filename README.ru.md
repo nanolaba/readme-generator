@@ -324,7 +324,7 @@ nrg --agent-rules --write AGENTS.md --check    # exit 1 and a diff when the bloc
 /plugin install nrg@nanolaba
 ```
 
-Хуки запускают NRG 1.4-SNAPSHOT или новее — из `./nrgw` проекта или `nrg` из `PATH`; в проекте без файлов `*.src.md` они ничего не делают и не запускают JVM. Ту же шпаргалку для установленной версии без сети печатает `nrg --help syntax`; другие инструменты находят документацию через [llms.txt](llms.txt).
+Хукам нужен NRG 1.4-SNAPSHOT или новее: `nrg` из `PATH` или командная строка из переменной окружения `NRG_HOOK_COMMAND` (например, `java -jar /opt/nrg/nrg.jar`). Они срабатывают в каждом открытом проекте, поэтому никогда не запускают ничего, что поставляет сам проект, — даже его `./nrgw`: склонированный репозиторий не должен получить возможность выполнить код через установленный плагин. В проекте без файлов `*.src.md` они ничего не делают и не запускают JVM. Ту же шпаргалку для установленной версии без сети печатает `nrg --help syntax`; другие инструменты находят документацию через [llms.txt](llms.txt).
 
 ### Другие агенты
 
@@ -1902,7 +1902,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 11.11.2026 03:55:43
+Last updated: 11.11.2026 03:58:44
 ```
 
 </td></tr>
@@ -2360,7 +2360,7 @@ ${widget:endDetails}
 <details>
 <summary>Advanced</summary>
 
-inner *markdown* and 11.11.2026 03:55:43
+inner *markdown* and 11.11.2026 03:58:44
 
 </details>
 ```

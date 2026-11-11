@@ -83,8 +83,8 @@ This repository is also a Claude Code plugin marketplace. The plugin brings the 
 /plugin install nrg@nanolaba
 ```
 
-The hooks run NRG ${devVersion} or newer from the project's `./nrgw`, or `nrg` from `PATH`; in a project without `*.src.md` files they do nothing and start no JVM. The same syntax card is printed offline, for the installed version, by `nrg --help syntax`; other tools find the docs through [llms.txt](llms.txt).<!--en-->
-Хуки запускают NRG ${devVersion} или новее — из `./nrgw` проекта или `nrg` из `PATH`; в проекте без файлов `*.src.md` они ничего не делают и не запускают JVM. Ту же шпаргалку для установленной версии без сети печатает `nrg --help syntax`; другие инструменты находят документацию через [llms.txt](llms.txt).<!--ru-->
+The hooks need NRG ${devVersion} or newer: `nrg` from `PATH`, or the command line in the `NRG_HOOK_COMMAND` environment variable (for example `java -jar /opt/nrg/nrg.jar`). They run in every project you open, so they never execute anything the project supplies — not even its `./nrgw`: a repository you clone must not be able to run code through an installed plugin. In a project without `*.src.md` files they do nothing and start no JVM. The same syntax card is printed offline, for the installed version, by `nrg --help syntax`; other tools find the docs through [llms.txt](llms.txt).<!--en-->
+Хукам нужен NRG ${devVersion} или новее: `nrg` из `PATH` или командная строка из переменной окружения `NRG_HOOK_COMMAND` (например, `java -jar /opt/nrg/nrg.jar`). Они срабатывают в каждом открытом проекте, поэтому никогда не запускают ничего, что поставляет сам проект, — даже его `./nrgw`: склонированный репозиторий не должен получить возможность выполнить код через установленный плагин. В проекте без файлов `*.src.md` они ничего не делают и не запускают JVM. Ту же шпаргалку для установленной версии без сети печатает `nrg --help syntax`; другие инструменты находят документацию через [llms.txt](llms.txt).<!--ru-->
 
 ### ${en:'Other agents', ru:'Другие агенты'}
 
