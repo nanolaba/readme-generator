@@ -90,6 +90,22 @@ public class NRGMojo extends AbstractMojo {
     @Parameter(property = "format")
     private String format;
 
+    /** {@code --sandbox}: no environment variables, no remote imports; rejects {@code <allowExec>}. */
+    @Parameter(property = "sandbox", defaultValue = "false")
+    private boolean sandbox;
+
+    /** {@code --no-env}: every {@code ${env.NAME}} renders its fallback or empty. */
+    @Parameter(property = "noEnv", defaultValue = "false")
+    private boolean noEnv;
+
+    /** {@code --env-allow}: the only environment variables templates may read (comma-separated, {@code PREFIX_*}). */
+    @Parameter(property = "envAllow")
+    private String envAllow;
+
+    /** {@code --offline}: refuse remote imports whatever the template says. */
+    @Parameter(property = "offline", defaultValue = "false")
+    private boolean offline;
+
     public void setFileNamePattern(String fileNamePattern) {
         this.fileNamePattern = fileNamePattern;
     }
@@ -145,6 +161,14 @@ public class NRGMojo extends AbstractMojo {
 
     public void setFormat(String format) {
         this.format = format;
+    }
+
+    public void setSandbox(boolean sandbox) {
+        this.sandbox = sandbox;
+    }
+
+    public void setEnvAllow(String envAllow) {
+        this.envAllow = envAllow;
     }
 
     @Override
@@ -217,6 +241,19 @@ public class NRGMojo extends AbstractMojo {
         if (format != null && !format.isEmpty()) {
             args.add("--format");
             args.add(format);
+        }
+        if (sandbox) {
+            args.add("--sandbox");
+        }
+        if (noEnv) {
+            args.add("--no-env");
+        }
+        if (envAllow != null && !envAllow.isEmpty()) {
+            args.add("--env-allow");
+            args.add(envAllow);
+        }
+        if (offline) {
+            args.add("--offline");
         }
         if (checkPaths != null) {
             for (String p : checkPaths) {

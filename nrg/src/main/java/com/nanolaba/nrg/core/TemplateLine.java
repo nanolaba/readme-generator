@@ -258,7 +258,11 @@ public class TemplateLine {
                 replacement = fallback;
             } else {
                 if (config.getWarnedMissingEnvVars().add(name)) {
-                    LOG.warn("Environment variable '{}' is not set; rendering empty", name);
+                    if (config.isEnvRestricted()) {
+                        LOG.warn("Environment variable '{}' is not available under --no-env / --env-allow; rendering empty", name);
+                    } else {
+                        LOG.warn("Environment variable '{}' is not set; rendering empty", name);
+                    }
                 }
                 replacement = "";
             }

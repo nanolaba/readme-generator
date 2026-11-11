@@ -77,9 +77,10 @@ This very README is generated with NRG — see [`README.src.md`](README.src.md).
 		- 3.1.8 [Logging verbosity](#logging-verbosity)
 		- 3.1.9 [Customising output filenames](#customising-output-filenames)
 		- 3.1.10 [Project root](#project-root)
-		- 3.1.11 [Line endings](#line-endings)
-		- 3.1.12 [Header customisation](#header-customisation)
-		- 3.1.13 [Multiple files and glob patterns](#multiple-files-and-glob-patterns)
+		- 3.1.11 [Untrusted templates](#untrusted-templates)
+		- 3.1.12 [Line endings](#line-endings)
+		- 3.1.13 [Header customisation](#header-customisation)
+		- 3.1.14 [Multiple files and glob patterns](#multiple-files-and-glob-patterns)
 	- 3.2 [Use as maven plugin](#use-as-maven-plugin)
 	- 3.3 [Use as a GitHub Action](#use-as-a-github-action)
 		- 3.3.1 [Quickstart](#quickstart)
@@ -383,7 +384,7 @@ A note for Gemini CLI only.<!--gemini-->
 
 An agent runs commands on templates it did not write — a pull request, a freshly cloned repository. **Nanolaba Readme Generator (NRG)** treats a template as untrusted data: every path it names must stay inside the [project root](#project-root), and no command is executed unless `--allow-exec` is given on the command line.
 
-Two things remain yours to control: `${env.NAME}` reads any environment variable of the process, and a template can switch remote imports on for itself (`nrg.allowRemoteImports`). For a template you do not trust, keep secrets out of the environment and run without network access.
+Two more channels are closed with `--sandbox`: `${env.NAME}` can read any environment variable of the process, and a template can switch remote imports on for itself (`nrg.allowRemoteImports`). With `--sandbox` no variable is visible and no connection is opened — see [Untrusted templates](#untrusted-templates). An agent harness can pass it on every run that touches a pull request.
 
 ## Usage
 
@@ -639,12 +640,29 @@ nrg --file-name-pattern 'docs/<lang>/<base>.md' --default-language-file-name-pat
 A template is confined to a **project root**: every path it names must stay inside that directory — the output files it asks for, the files it imports (`import`), the directories it lists (`fileTree`), and the descriptors behind `${pom.*}` / `${npm.*}` / `${gradle.*}` (`nrg.pom.path`, `nrg.npm.path`, `nrg.gradle.path`).
 The root is the nearest ancestor of the source file that contains a `.git` entry, or the source file's own directory when there is none. It is never taken from the template.
 A path that resolves outside the root (for example `../../somewhere/<base>.md` as a file name pattern, or `path='../../other-project/file.md'` in an import) stops the run with an error; nothing is read from there and nothing is written. `--validate` reports such imports as errors without opening the files.
-This is what keeps a template you did not write — a pull request, a freshly cloned repository — from copying your files into a README or overwriting files on your machine. Environment variables are a different matter: `${env.NAME}` reads any variable of the process, so do not run NRG on untrusted templates with secrets in the environment.
+This is what keeps a template you did not write — a pull request, a freshly cloned repository — from copying your files into a README or overwriting files on your machine. Environment variables are a different matter: `${env.NAME}` reads any variable of the process — run untrusted templates with `--sandbox` (see [Untrusted templates](#untrusted-templates)).
 If your layout legitimately needs a wider root, name it explicitly with `--root <dir>` (Maven plugin: `<root>`, GitHub Action: `root`).
 
 ```bash
 nrg --root /path/to/workspace -f docs/README.src.md
 ```
+
+#### Untrusted templates
+
+The project root keeps a template away from your files. Two switches, set on the command line
+only — no template property can turn them off — close the remaining channels when you run NRG on
+a template you did not write, such as a pull request:
+
+- `--no-env` — templates cannot read environment variables: every `${env.NAME}` renders its fallback or nothing. `--env-allow NAME,PREFIX_*` makes only the listed variables visible.
+- `--offline` — remote imports are refused even when the template sets `nrg.allowRemoteImports=true`; a `sha256`-pinned URL that is already in the cache with matching bytes is still served from it.
+- `--sandbox` — both of the above; it cannot be combined with `--allow-exec`.
+
+```bash
+nrg --check --sandbox -f README.src.md
+nrg --env-allow 'CI,GITHUB_*' -f README.src.md
+```
+
+Maven plugin: `<sandbox>`, `<noEnv>`, `<envAllow>`, `<offline>`; GitHub Action: `sandbox: true`.
 
 #### Line endings
 
@@ -869,6 +887,7 @@ list — README maintenance becomes a single workflow step.
 | `mode` | Operation mode: `generate`, `check`, or `validate`. | `generate` |
 | `check-paths` | Multi-line list of glob patterns (one per line) limiting which generated outputs `mode: check` compares against on-disk files. Requires `mode: check`. | — |
 | `root` | Directory the templates are confined to — see [Project root](#project-root). Needs NRG `v1.3` or newer. | nearest ancestor with `.git` |
+| `sandbox` | `"true"` for templates you do not trust, e.g. on `pull_request` from forks: no environment variables, no remote imports — see [Untrusted templates](#untrusted-templates). Needs NRG `v1.4` or newer. | `false` |
 | `nrg-version` | NRG release tag (e.g. `v1.0`) or `latest`. | `latest` |
 | `nrg-sha256` | Expected sha256 of the downloaded release zip; a mismatch fails the run before the jar is executed. Use with a fixed `nrg-version`. | — |
 | `java-version` | JDK version for `actions/setup-java`. Ignored when `setup-java=false`. | `17` |
@@ -1892,7 +1911,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 11.11.2026 03:58:42
+Last updated: 11.11.2026 04:03:43
 ```
 
 </td></tr>
@@ -2349,7 +2368,7 @@ ${widget:endDetails}
 <details>
 <summary>Advanced</summary>
 
-inner *markdown* and 11.11.2026 03:58:43
+inner *markdown* and 11.11.2026 04:03:43
 
 </details>
 ```
@@ -2504,6 +2523,7 @@ This section summarises the main user-visible changes in each release. For full 
 - **`--locate FILE:LINE[-LAST]`**: names the template line that produces a line of a generated file, with the chain of imports that led there — `README.ru.md:340: docs/Launching.src.md:45 <- imported at README.src.md:36` — through ignore blocks, `if` / `details` blocks, imports with `lines=` / `region=` / `wrap=` / `heading-offset=`, and frozen regions; widget output that cannot be traced further names the widget's line. `--format json` for agents. Library users get the same map from `GeneratorConfig.setCollectSourceMap(true)` and `GenerationResult.getSourceMap()`; without it nothing is collected and the output is unchanged. Closes [#74](https://github.com/nanolaba/readme-generator/issues/74).
 - **`--agent-rules`**: prints the instruction block for `AGENTS.md` / `CLAUDE.md` computed from the templates — the generated files and their templates, the fragments to edit, the source files embedded in the docs, the languages and the exact validate / generate commands (`./nrgw` when the wrapper is present). `--write AGENTS.md` inserts or replaces the block between `<!-- nrg:agent-rules:begin -->` / `<!-- nrg:agent-rules:end -->` and keeps the rest of the file; with `--check` it exits `1` and prints a diff when the block is out of date. Closes [#75](https://github.com/nanolaba/readme-generator/issues/75).
 - **Claude Code plugin, Agent Skill, syntax card and `llms.txt`**: the repository is now a Claude Code plugin marketplace (`/plugin marketplace add nanolaba/readme-generator`, `/plugin install nrg@nanolaba`). The plugin ships the NRG Agent Skill (`skills/nrg/SKILL.md`) with a one-page syntax card (`skills/nrg/SYNTAX.md`, generated by NRG from the widget documentation, so it follows the README), and hooks built on the new `--claude-hook pre-edit|post-edit`: an edit of a generated file is refused with the name of its template, and an edited template is validated and regenerated. `nrg --help syntax` prints the card bundled with the installed version; `llms.txt` points language models to the docs. Closes [#76](https://github.com/nanolaba/readme-generator/issues/76).
+- **`--sandbox`, `--no-env`, `--env-allow`, `--offline`** for templates you do not trust: `--no-env` hides every environment variable from `${env.NAME}` (property values included; fallbacks still apply), `--env-allow NAME,PREFIX_*` exposes only the listed ones, `--offline` refuses remote imports even when the template sets `nrg.allowRemoteImports=true` (a `sha256`-pinned URL already in the cache still works), and `--sandbox` is both and rejects `--allow-exec`. Only the caller sets them — no template property can lift them. Maven plugin: `<sandbox>`, `<noEnv>`, `<envAllow>`, `<offline>`; GitHub Action: `sandbox` input. Closes [#77](https://github.com/nanolaba/readme-generator/issues/77).
 
 - **Updated runtime dependencies**: `commons-cli` 1.9.0 → 1.11.0, `commons-lang3` 3.18.0 → 3.21.0, `commons-text` 1.12.0 → 1.15.0, `commons-io` 2.17.0 → 2.22.0, `nanolog` 1.0 → 1.1. Java 8 remains the minimum, and `nrg-maven-plugin` still runs on Maven 3.9.9 and newer.
 - **GitHub Action sets up Java with `actions/setup-java` 6.2.0** (was 4.9.1): runs no longer carry the `Node.js 20 is deprecated` and `setup-java v4 is deprecated` warnings. Reaches users with the action release that accompanies NRG 1.4.

@@ -36,6 +36,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.function.Function;
 import java.util.regex.Pattern;
 
 import static com.nanolaba.nrg.core.NRGConstants.DEFAULT_CHARSET;
@@ -242,6 +243,19 @@ public class NRG {
                 "with --agent-rules: write the block into this file between its markers (with --check: verify it)");
         write.setArgName("file");
         options.addOption(write);
+        Option noEnv = new Option(null, "no-env", false,
+                "templates cannot read environment variables: every ${env.NAME} renders its fallback or empty");
+        options.addOption(noEnv);
+        Option envAllow = new Option(null, "env-allow", true,
+                "templates may read only these environment variables (comma-separated; PREFIX_* matches a prefix)");
+        envAllow.setArgName("NAME,PREFIX_*");
+        options.addOption(envAllow);
+        Option offline = new Option(null, "offline", false,
+                "refuse remote imports whatever the template says (sha256-pinned URLs already in the cache still work)");
+        options.addOption(offline);
+        Option sandbox = new Option(null, "sandbox", false,
+                "for templates you do not trust: --no-env and --offline together; cannot be combined with --allow-exec");
+        options.addOption(sandbox);
         Option claudeHook = new Option(null, "claude-hook", true,
                 "run as a Claude Code hook (pre-edit: refuse edits of generated files; post-edit: validate and regenerate)");
         claudeHook.setArgName("pre-edit|post-edit");
@@ -341,6 +355,15 @@ public class NRG {
                 throw new ParseException("--root is not a directory: " + rootDir.getAbsolutePath());
             }
         }
+        boolean sandboxFlag = cmd.hasOption(sandbox);
+        if (sandboxFlag && cmd.hasOption(allowExec)) {
+            throw new ParseException("--sandbox cannot be combined with --allow-exec");
+        }
+        Function<String, String> envProvider = null;
+        if (sandboxFlag || cmd.hasOption(noEnv) || cmd.hasOption(envAllow)) {
+            envProvider = restrictedEnv(cmd.getOptionValue(envAllow));
+        }
+        boolean offlineFlag = sandboxFlag || cmd.hasOption(offline);
         LineEndings.Mode lineEndingMode;
         try {
             lineEndingMode = LineEndings.Mode.parse(cmd.getOptionValue(lineEnding));
@@ -435,7 +458,8 @@ public class NRG {
                         fileNamePatternValue, defaultLangFileNamePatternValue,
                         totalOutputs > 1, lineEndingMode,
                         noHeaderFlag, headerTextValue,
-                        checkPathFilter, checkMatchTracker, rootDir, report, outputFormat);
+                        checkPathFilter, checkMatchTracker, rootDir, report, outputFormat,
+                        envProvider, offlineFlag);
             }
             // Codes are ordered by severity, so the batch reports the worst one.
             aggregateCode = Math.max(aggregateCode, code);
@@ -580,6 +604,32 @@ public class NRG {
         return anyError ? EXIT_TEMPLATE_ERROR : EXIT_OK;
     }
 
+    /**
+     * Environment lookup for {@code --no-env} / {@code --env-allow} / {@code --sandbox}: only the
+     * names in {@code allowList} (comma-separated, {@code PREFIX_*} for a prefix) are visible.
+     */
+    static GeneratorConfig.RestrictedEnvProvider restrictedEnv(String allowList) {
+        List<String> allowed = new ArrayList<>();
+        if (allowList != null) {
+            for (String s : allowList.split(",")) {
+                if (!s.trim().isEmpty()) {
+                    allowed.add(s.trim());
+                }
+            }
+        }
+        return name -> {
+            for (String pattern : allowed) {
+                boolean match = pattern.endsWith("*")
+                        ? name.startsWith(pattern.substring(0, pattern.length() - 1))
+                        : name.equals(pattern);
+                if (match) {
+                    return System.getenv(name);
+                }
+            }
+            return null;
+        };
+    }
+
     private static int missingSource(File sourceFile, RunReport report) {
         LOG.error("Source file does not exist: {}", sourceFile.getAbsolutePath());
         report.addDiagnostic(new Validator.Diagnostic(sourceFile, 0, Validator.Severity.ERROR, "source-not-found",
@@ -668,7 +718,8 @@ public class NRG {
                                 boolean perFileStdoutHeader, LineEndings.Mode lineEndingMode,
                                 boolean noHeaderOverride, String headerTextOverride,
                                 PathPatternMatcher checkPathFilter, MatchTracker checkMatchTracker,
-                                File rootDir, RunReport report, RunReport.Format format) {
+                                File rootDir, RunReport report, RunReport.Format format,
+                                Function<String, String> envProvider, boolean offline) {
         if (!sourceFile.exists()) {
             return missingSource(sourceFile, report);
         }
@@ -678,7 +729,11 @@ public class NRG {
                 widgets.addAll(cliWidgets);
             }
             widgets.addAll(additionalWidgets);
-            Generator generator = new Generator(sourceFile, charset, widgets);
+            Generator generator = envProvider == null
+                    ? new Generator(sourceFile, charset, widgets)
+                    : new Generator(sourceFile, FileUtils.readFileToString(sourceFile, charset), widgets, envProvider);
+            generator.getConfig().setEnvRestricted(envProvider != null);
+            generator.getConfig().setOffline(offline);
             if (rootDir != null) {
                 generator.getConfig().setProjectRoot(rootDir);
             }

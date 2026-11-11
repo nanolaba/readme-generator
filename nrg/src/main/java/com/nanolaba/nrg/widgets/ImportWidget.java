@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -124,6 +125,9 @@ public class ImportWidget extends DefaultWidget {
                 throw new RuntimeException("import: file not found: " + sourceFile.getAbsolutePath());
             }
             rawBytes = FileUtils.readFileToByteArray(sourceFile);
+        } else if (config.isOffline()) {
+            rawBytes = fromCacheOffline(widgetConfig, config);
+            sourceFile = remoteSourceFile(widgetConfig, config);
         } else {
             if (!config.isAllowRemoteImports()) {
                 throw new RuntimeException("import: remote URLs disabled — set <!--@nrg.allowRemoteImports=true--> to enable (url=" + widgetConfig.getUrl() + ")");
@@ -165,15 +169,7 @@ public class ImportWidget extends DefaultWidget {
             } catch (IOException e) {
                 throw new RuntimeException("import: " + e.getMessage(), e);
             }
-            // Synthesize a file for downstream code (sub-Generator, ImportLanguageDetector, region not-found message).
-            String urlPath;
-            try {
-                urlPath = new URI(widgetConfig.getUrl()).getPath();
-                if (urlPath == null || urlPath.isEmpty()) urlPath = "remote";
-            } catch (URISyntaxException e) {
-                urlPath = "remote";
-            }
-            sourceFile = new File(config.getSourceFile().getParentFile(), new File(urlPath).getName());
+            sourceFile = remoteSourceFile(widgetConfig, config);
         }
 
         List<String> rawLines = new ArrayList<>(Arrays.asList(new String(rawBytes, charset).split("\\R", -1)));
@@ -313,6 +309,38 @@ public class ImportWidget extends DefaultWidget {
                     line >= 1 && line <= selectedLineNumbers.size() ? selectedLineNumbers.get(line - 1) : line));
         }
         return result;
+    }
+
+    /** Synthesizes a file for downstream code (sub-Generator, ImportLanguageDetector, region not-found message). */
+    private static File remoteSourceFile(Config widgetConfig, GeneratorConfig config) {
+        String urlPath;
+        try {
+            urlPath = new URI(widgetConfig.getUrl()).getPath();
+            if (urlPath == null || urlPath.isEmpty()) urlPath = "remote";
+        } catch (URISyntaxException e) {
+            urlPath = "remote";
+        }
+        return new File(config.getSourceFile().getParentFile(), new File(urlPath).getName());
+    }
+
+    /**
+     * {@code --offline}: no connection is opened. A {@code sha256}-pinned URL is served from the
+     * cache when the cached bytes match the pin — the pin makes them as good as a fresh fetch —
+     * and everything else fails, whatever {@code nrg.allowRemoteImports} says.
+     */
+    private static byte[] fromCacheOffline(Config widgetConfig, GeneratorConfig config) throws IOException {
+        String url = widgetConfig.getUrl();
+        String pin = widgetConfig.getSha256();
+        if (pin == null) {
+            throw new RuntimeException("import: remote imports are disabled by --offline / --sandbox (url=" + url
+                    + "); pin it with sha256='<hex>' and fetch it once without --offline to use it from the cache");
+        }
+        Optional<CacheStore.CachedEntry> cached = new CacheStore(config.getCacheDir()).lookup(url);
+        if (cached.isPresent() && pin.equalsIgnoreCase(Sha256Hex.hexOf(cached.get().getBytes()))) {
+            return cached.get().getBytes();
+        }
+        throw new RuntimeException("import: --offline / --sandbox: " + url + " is not in the cache with sha256 " + pin
+                + "; fetch it once without --offline");
     }
 
     /**

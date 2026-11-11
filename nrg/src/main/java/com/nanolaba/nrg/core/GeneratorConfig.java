@@ -48,6 +48,8 @@ public class GeneratorConfig {
     private final String templateText;
     private List<Integer> sourceLineNumbers;
     private boolean collectSourceMap = false;
+    private boolean envRestricted = false;
+    private boolean offline = false;
     private List<List<SourceOrigin>> pendingWidgetOrigins;
     private final Properties properties = new Properties();
 
@@ -382,6 +384,41 @@ public class GeneratorConfig {
         return Boolean.parseBoolean(properties.getProperty(PROPERTY_ALLOW_REMOTE_IMPORTS, "false"));
     }
 
+    /**
+     * True when the caller limited what {@code ${env.NAME}} may read ({@code --no-env},
+     * {@code --env-allow}, {@code --sandbox}); only changes the wording of the "renders empty"
+     * warning — the restriction itself lives in the {@link #getEnvProvider() env provider}.
+     * Set by the caller only: a template cannot lift it.
+     */
+    public boolean isEnvRestricted() {
+        return envRestricted || envProvider instanceof RestrictedEnvProvider;
+    }
+
+    /**
+     * Marks an env provider that hides variables on purpose. Recognised from the moment the
+     * config is built, so that property values rendered during construction already warn with
+     * the right reason.
+     */
+    public interface RestrictedEnvProvider extends Function<String, String> {
+    }
+
+    public void setEnvRestricted(boolean envRestricted) {
+        this.envRestricted = envRestricted;
+    }
+
+    /**
+     * {@code --offline} / {@code --sandbox}: remote imports are refused whatever
+     * {@code nrg.allowRemoteImports} says, except a {@code sha256}-pinned URL already in the cache.
+     * Set by the caller only: a template cannot lift it.
+     */
+    public boolean isOffline() {
+        return offline;
+    }
+
+    public void setOffline(boolean offline) {
+        this.offline = offline;
+    }
+
     public Path getCacheDir() {
         String configured = properties.getProperty(PROPERTY_CACHE_DIR);
         if (configured == null || configured.isEmpty()) {
@@ -451,6 +488,8 @@ public class GeneratorConfig {
 
     public void passRunContextTo(GeneratorConfig child) {
         child.setCollectSourceMap(collectSourceMap);
+        child.setEnvRestricted(envRestricted);
+        child.setOffline(offline);
         child.setRootSourceFile(rootSourceFile);
         child.setProjectRoot(getProjectRoot());
         child.setEnvProvider(envProvider);

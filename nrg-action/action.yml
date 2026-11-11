@@ -26,6 +26,10 @@ inputs:
   root:
     description: 'Directory the templates are confined to (imports, descriptors and output files must stay inside it). Defaults to the nearest ancestor of each template that contains .git. Needs NRG v1.3 or newer.'
     required: false
+  sandbox:
+    description: 'Set to "true" for templates you do not trust (for example on pull_request): templates cannot read environment variables and remote imports are refused. Needs NRG v1.4 or newer.'
+    required: false
+    default: 'false'
   nrg-version:
     description: 'NRG release tag (e.g. v1.1) or "latest".'
     required: false
@@ -83,6 +87,7 @@ runs:
         INPUT_MODE: ${{ inputs.mode }}
         INPUT_CHECK_PATHS: ${{ inputs.check-paths }}
         INPUT_ROOT: ${{ inputs.root }}
+        INPUT_SANDBOX: ${{ inputs.sandbox }}
         INPUT_NRG_VERSION: ${{ inputs.nrg-version }}
         INPUT_NRG_SHA256: ${{ inputs.nrg-sha256 }}
         INPUT_LOG_LEVEL: ${{ inputs.log-level }}

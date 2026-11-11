@@ -362,17 +362,41 @@ nrg --file-name-pattern 'docs/<lang>/<base>.md' --default-language-file-name-pat
 A template is confined to a **project root**: every path it names must stay inside that directory — the output files it asks for, the files it imports (`import`), the directories it lists (`fileTree`), and the descriptors behind `\${pom.*}` / `\${npm.*}` / `\${gradle.*}` (`nrg.pom.path`, `nrg.npm.path`, `nrg.gradle.path`).<!--en-->
 The root is the nearest ancestor of the source file that contains a `.git` entry, or the source file's own directory when there is none. It is never taken from the template.<!--en-->
 A path that resolves outside the root (for example `../../somewhere/<base>.md` as a file name pattern, or `path='../../other-project/file.md'` in an import) stops the run with an error; nothing is read from there and nothing is written. `--validate` reports such imports as errors without opening the files.<!--en-->
-This is what keeps a template you did not write — a pull request, a freshly cloned repository — from copying your files into a README or overwriting files on your machine. Environment variables are a different matter: `\${env.NAME}` reads any variable of the process, so do not run NRG on untrusted templates with secrets in the environment.<!--en-->
+This is what keeps a template you did not write — a pull request, a freshly cloned repository — from copying your files into a README or overwriting files on your machine. Environment variables are a different matter: `\${env.NAME}` reads any variable of the process — run untrusted templates with `--sandbox` (see [Untrusted templates](#untrusted-templates)).<!--en-->
 If your layout legitimately needs a wider root, name it explicitly with `--root <dir>` (Maven plugin: `<root>`, GitHub Action: `root`).<!--en-->
 Шаблон ограничен **корнем проекта**: любой путь, который он называет, должен оставаться внутри этого каталога — выходные файлы, импортируемые файлы (`import`), перечисляемые каталоги (`fileTree`) и дескрипторы, стоящие за `\${pom.*}` / `\${npm.*}` / `\${gradle.*}` (`nrg.pom.path`, `nrg.npm.path`, `nrg.gradle.path`).<!--ru-->
 Корень — ближайший предок исходного файла, содержащий `.git`, а если такого нет — каталог самого исходного файла. Из шаблона корень задать нельзя.<!--ru-->
 Путь, выводящий за пределы корня (например, `../../somewhere/<base>.md` в паттерне имени файла или `path='../../other-project/file.md'` в импорте), останавливает запуск с ошибкой: оттуда ничего не читается и туда ничего не записывается. `--validate` сообщает о таких импортах как об ошибках, не открывая файлы.<!--ru-->
-Именно это не даёт чужому шаблону — из pull request или только что склонированного репозитория — скопировать ваши файлы в README или перезаписать файлы на вашей машине. С переменными окружения иначе: `\${env.NAME}` читает любую переменную процесса, поэтому не запускайте NRG на недоверенных шаблонах, когда в окружении лежат секреты.<!--ru-->
+Именно это не даёт чужому шаблону — из pull request или только что склонированного репозитория — скопировать ваши файлы в README или перезаписать файлы на вашей машине. С переменными окружения иначе: `\${env.NAME}` читает любую переменную процесса — недоверенные шаблоны запускайте с `--sandbox` (см. [«Недоверенные шаблоны»](#недоверенные-шаблоны)).<!--ru-->
 Если раскладке проекта действительно нужен более широкий корень, задайте его явно: `--root <dir>` (Maven-плагин: `<root>`, GitHub Action: `root`).<!--ru-->
 
 ```bash
 nrg --root /path/to/workspace -f docs/README.src.md
 ```
+
+#### ${en:'Untrusted templates', ru:'Недоверенные шаблоны'}
+
+The project root keeps a template away from your files. Two switches, set on the command line<!--en-->
+only — no template property can turn them off — close the remaining channels when you run NRG on<!--en-->
+a template you did not write, such as a pull request:<!--en-->
+Корень проекта не подпускает шаблон к вашим файлам. Два переключателя, задаваемые только в<!--ru-->
+командной строке — никакое свойство шаблона их не отключит, — закрывают оставшиеся каналы, когда<!--ru-->
+NRG запускается на шаблоне, который писали не вы, например из pull request:<!--ru-->
+
+- `--no-env` — templates cannot read environment variables: every `\${env.NAME}` renders its fallback or nothing. `--env-allow NAME,PREFIX_*` makes only the listed variables visible.<!--en-->
+- `--offline` — remote imports are refused even when the template sets `nrg.allowRemoteImports=true`; a `sha256`-pinned URL that is already in the cache with matching bytes is still served from it.<!--en-->
+- `--sandbox` — both of the above; it cannot be combined with `--allow-exec`.<!--en-->
+- `--no-env` — шаблоны не видят переменные окружения: каждый `\${env.NAME}` выводит свой fallback или ничего. `--env-allow NAME,PREFIX_*` открывает только перечисленные переменные.<!--ru-->
+- `--offline` — удалённый импорт отклоняется, даже если шаблон задаёт `nrg.allowRemoteImports=true`; URL, закреплённый по `sha256`, чьи байты уже лежат в кэше и совпадают, по-прежнему берётся из кэша.<!--ru-->
+- `--sandbox` — оба режима сразу; несовместим с `--allow-exec`.<!--ru-->
+
+```bash
+nrg --check --sandbox -f README.src.md
+nrg --env-allow 'CI,GITHUB_*' -f README.src.md
+```
+
+Maven plugin: `<sandbox>`, `<noEnv>`, `<envAllow>`, `<offline>`; GitHub Action: `sandbox: true`.<!--en-->
+Maven-плагин: `<sandbox>`, `<noEnv>`, `<envAllow>`, `<offline>`; GitHub Action: `sandbox: true`.<!--ru-->
 
 #### ${en:'Line endings', ru:'Перевод строк'}
 
