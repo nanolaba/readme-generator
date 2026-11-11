@@ -11,12 +11,14 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Orchestrates the generation pipeline for a single source template.
@@ -32,6 +34,10 @@ import java.util.function.Function;
  * for visibility check, property/widget substitution, and final output assembly.
  */
 public class Generator {
+
+    /** Same shapes FreezeBlockParser accepts; used to keep the source map aligned across frozen regions. */
+    private static final Pattern FREEZE_OPEN = Pattern.compile("^\\s*<!--\\s*nrg\\.freeze(\\s+[^>]*?)?\\s*-->\\s*$");
+    private static final Pattern FREEZE_CLOSE = Pattern.compile("^\\s*<!--\\s*/nrg\\.freeze\\s*-->\\s*$");
 
     private final GeneratorConfig config;
     private Map<String, GenerationResult> results;
@@ -84,19 +90,49 @@ public class Generator {
 
     private GenerationResult generateContent(String language) {
         GenerationResult result = new GenerationResult(language);
-        result.getContent().append(generateHeadComment(language));
+        String head = generateHeadComment(language);
+        result.getContent().append(head);
 
-        String body = BlockDispatcher.process(config.getSourceFileBody(), config, language);
-        AtomicInteger counter = new AtomicInteger(0);
-        new BufferedReader(new StringReader(body))
-                .lines()
-                .map(s -> new TemplateLine(config, s, counter.getAndIncrement()))
-                .filter(t -> t.isLineVisible(language))
-                .map(t -> t.generateLine(language))
-                .forEachOrdered(line -> result.getContent().append(line).append(System.lineSeparator()));
+        // With collectSourceMap on, one origin per output line is recorded next to the content;
+        // otherwise the bookkeeping below is skipped and the output is the same either way.
+        boolean collect = config.isCollectSourceMap();
+        List<SourceOrigin> map = collect ? new ArrayList<>() : null;
+        List<SourceOrigin> bodyOrigins = null;
+        if (collect) {
+            for (int i = 0; i < lineCount(head); i++) {
+                map.add(SourceOrigin.note("head comment"));
+            }
+            bodyOrigins = new ArrayList<>();
+            for (Integer n : config.getSourceLineNumbers()) {
+                bodyOrigins.add(SourceOrigin.of(config.getSourceFile(), n));
+            }
+        }
+
+        String body = BlockDispatcher.process(config.getSourceFileBody(), config, language, bodyOrigins);
+        int index = 0;
+        for (String raw : (Iterable<String>) new BufferedReader(new StringReader(body)).lines()::iterator) {
+            TemplateLine line = new TemplateLine(config, raw, index);
+            SourceOrigin origin = collect && index < bodyOrigins.size() ? bodyOrigins.get(index) : null;
+            index++;
+            if (!line.isLineVisible(language)) {
+                continue;
+            }
+            if (collect) {
+                config.takeWidgetOrigins();
+            }
+            String rendered = line.generateLine(language);
+            result.getContent().append(rendered).append(System.lineSeparator());
+            if (collect) {
+                mapRenderedLine(map, rendered, origin, raw, config.takeWidgetOrigins());
+            }
+        }
 
         if (config.isRootGenerator()) {
-            String resolved = FreezeBlockProcessor.resolve(result.getContent().toString(), config, language);
+            String rendered = result.getContent().toString();
+            String resolved = FreezeBlockProcessor.resolve(rendered, config, language);
+            if (collect && !resolved.equals(rendered)) {
+                map = remapFrozenRegions(rendered, resolved, map);
+            }
             resolved = resolved
                     .replace("\\$", "$")
                     .replace("<\\!--", "<!--")
@@ -105,7 +141,78 @@ public class Generator {
             result.getContent().append(resolved);
         }
 
+        result.setSourceMap(map);
         return result;
+    }
+
+    private static int lineCount(String text) {
+        return text.isEmpty() ? 0 : text.split("\\R", -1).length - (text.endsWith("\n") || text.endsWith("\r") ? 1 : 0);
+    }
+
+    /**
+     * Origins of the physical lines one template line rendered to. An {@code import} on the line
+     * reports where each line of its output comes from; when that report covers the rendered
+     * text exactly, those origins are used (seen through this line's import). Anything else a
+     * widget produced is attributed to this template line and the widget.
+     */
+    private static void mapRenderedLine(List<SourceOrigin> map, String rendered, SourceOrigin origin, String raw,
+                                        List<List<SourceOrigin>> reports) {
+        SourceOrigin here = origin != null ? origin : SourceOrigin.note("unknown");
+        String[] physical = rendered.split("\\R", -1);
+        List<SourceOrigin> traced = reports.size() == 1 && reports.get(0).size() == physical.length
+                ? reports.get(0) : null;
+        String widget = firstWidgetName(raw);
+        for (int k = 0; k < physical.length; k++) {
+            SourceOrigin inner = traced != null ? traced.get(k) : null;
+            if (inner != null) {
+                map.add(inner.importedVia(here));
+            } else {
+                map.add(widget != null ? here.producedBy(widget) : here);
+            }
+        }
+    }
+
+    private static String firstWidgetName(String raw) {
+        Matcher m = TemplateLine.WIDGET_TAG_PATTERN.matcher(raw);
+        while (m.find()) {
+            if (m.start() == 0 || raw.charAt(m.start() - 1) != '\\') {
+                return m.group(1);
+            }
+        }
+        return null;
+    }
+
+    /**
+     * A frozen region takes its body from the file on disk, so the number of lines between its
+     * markers can change. Lines outside the regions keep their origins in order; lines inside
+     * get the origin of the region's opening marker.
+     */
+    private static List<SourceOrigin> remapFrozenRegions(String before, String after, List<SourceOrigin> map) {
+        String[] a = before.split("\\R", -1);
+        String[] b = after.split("\\R", -1);
+        int linesAfter = b.length - (after.endsWith("\n") ? 1 : 0);
+        List<SourceOrigin> out = new ArrayList<>(linesAfter);
+        int i = 0;
+        int j = 0;
+        while (j < linesAfter) {
+            SourceOrigin origin = i < map.size() ? map.get(i) : SourceOrigin.note("unknown");
+            out.add(origin);
+            if (FREEZE_OPEN.matcher(b[j]).find()) {
+                i++;
+                j++;
+                while (i < a.length && !FREEZE_CLOSE.matcher(a[i]).find()) {
+                    i++;
+                }
+                while (j < linesAfter && !FREEZE_CLOSE.matcher(b[j]).find()) {
+                    out.add(origin.withNote("frozen region: content kept from the file on disk"));
+                    j++;
+                }
+                continue;
+            }
+            i++;
+            j++;
+        }
+        return out;
     }
 
     /**

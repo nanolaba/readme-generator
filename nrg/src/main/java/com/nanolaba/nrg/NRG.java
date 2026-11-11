@@ -231,6 +231,10 @@ public class NRG {
                 .build();
         affected.setArgs(Option.UNLIMITED_VALUES);
         options.addOption(affected);
+        Option locate = new Option(null, "locate", true,
+                "print the template line that produces a line of a generated file (FILE:LINE or FILE:FIRST-LAST)");
+        locate.setArgName("file:line");
+        options.addOption(locate);
 
         CommandLineParser parser = new DefaultParser();
         CommandLine cmd = parser.parse(options, args);
@@ -326,12 +330,12 @@ public class NRG {
         }
 
         int queryModes = (cmd.hasOption(manifest) ? 1 : 0) + (cmd.hasOption(isGenerated) ? 1 : 0)
-                + (cmd.hasOption(affected) ? 1 : 0);
+                + (cmd.hasOption(affected) ? 1 : 0) + (cmd.hasOption(locate) ? 1 : 0);
         if (queryModes > 1) {
-            throw new ParseException("--manifest, --is-generated and --affected are mutually exclusive");
+            throw new ParseException("--manifest, --is-generated, --affected and --locate are mutually exclusive");
         }
         if (queryModes == 1 && (toStdout || checkMode || validateMode)) {
-            throw new ParseException("--manifest, --is-generated and --affected cannot be combined with "
+            throw new ParseException("--manifest, --is-generated, --affected and --locate cannot be combined with "
                     + "--stdout, --check or --validate");
         }
 
@@ -344,6 +348,9 @@ public class NRG {
             widgetsForQuery.addAll(additionalWidgets);
             try {
                 ManifestCommand query = new ManifestCommand(sourceCharset, widgetsForQuery).load(sources);
+                if (cmd.hasOption(locate)) {
+                    return query.printLocate(cmd.getOptionValue(locate), outputFormat);
+                }
                 if (cmd.hasOption(isGenerated)) {
                     return query.printIsGenerated(new File(cmd.getOptionValue(isGenerated)), outputFormat);
                 }

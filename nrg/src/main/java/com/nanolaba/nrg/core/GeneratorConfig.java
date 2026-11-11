@@ -44,6 +44,11 @@ public class GeneratorConfig {
 
     private final File sourceFile;
     private final String sourceFileBody;
+    /** The template as given, before ignore blocks are stripped; kept for {@link #getSourceLineNumbers()}. */
+    private final String templateText;
+    private List<Integer> sourceLineNumbers;
+    private boolean collectSourceMap = false;
+    private List<List<SourceOrigin>> pendingWidgetOrigins;
     private final Properties properties = new Properties();
 
     private File rootSourceFile;
@@ -91,6 +96,7 @@ public class GeneratorConfig {
                            Function<String, String> envProvider, PomReader pomReader,
                            NpmReader npmReader, GradleReader gradleReader) {
         this.sourceFile = sourceFile;
+        this.templateText = templateText;
         this.sourceFileBody = IgnoreBlockStripper.strip(templateText);
         this.rootSourceFile = sourceFile;
         if (envProvider != null) {
@@ -216,7 +222,8 @@ public class GeneratorConfig {
                         // Names only. A value may come from ${env.…} (a token, a password), and a
                         // debug log is routinely pasted into issues or kept by CI.
                         LOG.debug("properties (names only): {}", new TreeSet<>(properties.stringPropertyNames()));
-                    } else if (!field.getName().equals("sourceFileBody")) {
+                    } else if (!field.getName().equals("sourceFileBody") && !field.getName().equals("templateText")
+                            && !field.getName().equals("sourceLineNumbers")) {
                         LOG.debug("{}: {}", field.getName(), Code.run(() -> field.get(this)));
                     }
                 }
@@ -243,6 +250,48 @@ public class GeneratorConfig {
 
     public File getSourceFile() {
         return sourceFile;
+    }
+
+    /**
+     * Line {@code i} of {@link #getSourceFileBody()} is line {@code getSourceLineNumbers().get(i)}
+     * (1-based) of the template as written — ignore blocks shift the two apart.
+     */
+    public List<Integer> getSourceLineNumbers() {
+        if (sourceLineNumbers == null) {
+            sourceLineNumbers = Collections.unmodifiableList(IgnoreBlockStripper.keptLineNumbers(templateText));
+        }
+        return sourceLineNumbers;
+    }
+
+    /** Whether generation records a {@link SourceOrigin} per output line ({@code --locate}). */
+    public boolean isCollectSourceMap() {
+        return collectSourceMap;
+    }
+
+    public void setCollectSourceMap(boolean collectSourceMap) {
+        this.collectSourceMap = collectSourceMap;
+    }
+
+    /**
+     * Called by a widget whose multi-line output can be traced further than the widget's own
+     * line (an {@code import}): one origin per line of the returned body, {@code null} for a
+     * line the widget itself adds. The generator collects the report after rendering the line.
+     */
+    public void reportWidgetOrigins(List<SourceOrigin> origins) {
+        if (collectSourceMap) {
+            if (pendingWidgetOrigins == null) {
+                pendingWidgetOrigins = new ArrayList<>();
+            }
+            pendingWidgetOrigins.add(origins);
+        }
+    }
+
+    /** Returns and clears the reports made since the last call (never {@code null}). */
+    List<List<SourceOrigin>> takeWidgetOrigins() {
+        List<List<SourceOrigin>> taken = pendingWidgetOrigins == null
+                ? Collections.<List<SourceOrigin>>emptyList() : pendingWidgetOrigins;
+        pendingWidgetOrigins = null;
+        return taken;
     }
 
     public File getRootSourceFile() {
@@ -401,6 +450,7 @@ public class GeneratorConfig {
     }
 
     public void passRunContextTo(GeneratorConfig child) {
+        child.setCollectSourceMap(collectSourceMap);
         child.setRootSourceFile(rootSourceFile);
         child.setProjectRoot(getProjectRoot());
         child.setEnvProvider(envProvider);

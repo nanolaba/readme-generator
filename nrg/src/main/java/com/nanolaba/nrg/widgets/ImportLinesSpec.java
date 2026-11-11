@@ -24,8 +24,9 @@ final class ImportLinesSpec {
         return ranges;
     }
 
-    List<String> apply(List<String> sourceLines) {
-        List<String> result = new ArrayList<>();
+    /** Generic so that the same selection can be applied to line numbers (source maps). */
+    <T> List<T> apply(List<T> sourceLines) {
+        List<T> result = new ArrayList<>();
         int total = sourceLines.size();
         for (int[] range : ranges) {
             int start = range[0];

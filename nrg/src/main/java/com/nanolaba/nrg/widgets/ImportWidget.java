@@ -5,6 +5,7 @@ import com.nanolaba.nrg.core.GenerationResult;
 import com.nanolaba.nrg.core.Generator;
 import com.nanolaba.nrg.core.GeneratorConfig;
 import com.nanolaba.nrg.core.NRGUtil;
+import com.nanolaba.nrg.core.SourceOrigin;
 import com.nanolaba.nrg.core.TemplateLine;
 import org.apache.commons.io.FileUtils;
 
@@ -181,8 +182,14 @@ public class ImportWidget extends DefaultWidget {
             rawLines.remove(rawLines.size() - 1);
         }
 
-        // 3. Apply lines / region selection (raw text)
+        // 3. Apply lines / region selection (raw text). selectedLineNumbers keeps, for each
+        //    selected line, its 1-based line in the imported file (for the source map).
+        List<Integer> allLineNumbers = new ArrayList<>(rawLines.size());
+        for (int i = 1; i <= rawLines.size(); i++) {
+            allLineNumbers.add(i);
+        }
         List<String> selected;
+        List<Integer> selectedLineNumbers;
         if (widgetConfig.getLines() != null) {
             ImportLinesSpec spec;
             try {
@@ -191,15 +198,23 @@ public class ImportWidget extends DefaultWidget {
                 throw new RuntimeException("import: " + e.getMessage(), e);
             }
             selected = spec.apply(rawLines);
+            selectedLineNumbers = spec.apply(allLineNumbers);
         } else if (widgetConfig.getRegion() != null) {
-            selected = ImportRegionExtractor.extract(rawLines, widgetConfig.getRegion());
-            if (selected == null) {
+            List<Integer> indices = ImportRegionExtractor.extractIndices(rawLines, widgetConfig.getRegion());
+            if (indices == null) {
                 String sourceLabel = widgetConfig.getPath() != null ? widgetConfig.getPath() : widgetConfig.getUrl();
                 throw new RuntimeException("import: region '" + widgetConfig.getRegion()
                         + "' not found or unclosed in " + sourceLabel);
             }
+            selected = new ArrayList<>(indices.size());
+            selectedLineNumbers = new ArrayList<>(indices.size());
+            for (Integer i : indices) {
+                selected.add(rawLines.get(i));
+                selectedLineNumbers.add(i + 1);
+            }
         } else {
             selected = rawLines;
+            selectedLineNumbers = allLineNumbers;
         }
 
         // 4. Apply dedent
@@ -210,6 +225,13 @@ public class ImportWidget extends DefaultWidget {
 
         // 5. Run-generator processing (if enabled) — over the joined extracted text
         String content = String.join(System.lineSeparator(), selected);
+        List<SourceOrigin> origins = null;
+        if (config.isCollectSourceMap()) {
+            origins = new ArrayList<>(selectedLineNumbers.size());
+            for (Integer n : selectedLineNumbers) {
+                origins.add(SourceOrigin.of(sourceFile, n));
+            }
+        }
         if (widgetConfig.isRunGenerator()) {
             List<String> chain = new ArrayList<>(config.getImportChain());
             String key = importKey(sourceFile, widgetConfig);
@@ -222,6 +244,19 @@ public class ImportWidget extends DefaultWidget {
             subGenerator.getConfig().setImportChain(chain);
             GenerationResult subResult = subGenerator.getResult(language);
             content = subResult == null ? "" : subResult.getContent().toString();
+            if (origins != null) {
+                origins = toImportedFileLines(subResult == null ? null : subResult.getSourceMap(), selectedLineNumbers);
+                if (content.endsWith(System.lineSeparator())) {
+                    origins.add(null); // the empty piece after the final line separator
+                }
+            }
+        }
+        if (origins != null && widgetConfig.getUrl() != null) {
+            List<SourceOrigin> remote = new ArrayList<>(origins.size());
+            for (SourceOrigin o : origins) {
+                remote.add(o == null ? null : o.withNote("remote import " + widgetConfig.getUrl()));
+            }
+            origins = remote;
         }
 
         // 5b. Apply heading-offset (post-sub-generator so chained imports / language blocks
@@ -243,13 +278,41 @@ public class ImportWidget extends DefaultWidget {
             // Strip any trailing newline so the closing fence hugs the content
             if (content.endsWith(System.lineSeparator())) {
                 content = content.substring(0, content.length() - System.lineSeparator().length());
+                if (origins != null && !origins.isEmpty()) {
+                    origins.remove(origins.size() - 1);
+                }
             }
             String lang = "auto".equals(widgetConfig.getLang())
                     ? ImportLanguageDetector.detectFromFilename(sourceFile.getName())
                     : widgetConfig.getLang();
+            if (origins != null) {
+                origins.add(0, null);
+                origins.add(null);
+                config.reportWidgetOrigins(origins);
+            }
             return "```" + lang + System.lineSeparator() + content + System.lineSeparator() + "```";
         }
+        if (origins != null) {
+            config.reportWidgetOrigins(origins);
+        }
         return content;
+    }
+
+    /**
+     * The child generator renders the selected text, so its source map counts lines of that
+     * text; this turns them back into lines of the imported file. Only the outermost link of
+     * each origin refers to the selected text — deeper links name files the child imported.
+     */
+    private static List<SourceOrigin> toImportedFileLines(List<SourceOrigin> childMap, List<Integer> selectedLineNumbers) {
+        List<SourceOrigin> result = new ArrayList<>();
+        if (childMap == null) {
+            return result;
+        }
+        for (SourceOrigin o : childMap) {
+            result.add(o == null ? null : o.mapOutermostLine(line ->
+                    line >= 1 && line <= selectedLineNumbers.size() ? selectedLineNumbers.get(line - 1) : line));
+        }
+        return result;
     }
 
     /**

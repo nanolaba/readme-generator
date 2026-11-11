@@ -27,6 +27,39 @@ public final class IgnoreBlockStripper {
 
     private IgnoreBlockStripper() {/**/}
 
+    /**
+     * 1-based line numbers, in {@code body}, of the lines {@link #strip} keeps — line {@code i}
+     * of the stripped text is line {@code result.get(i)} of the original. Mirrors {@link #strip}
+     * rule for rule (without its error logging) so the two can never disagree.
+     */
+    public static List<Integer> keptLineNumbers(String body) {
+        List<Integer> kept = new ArrayList<>();
+        if (body == null || body.isEmpty()) {
+            kept.add(1);
+            return kept;
+        }
+        String[] lines = body.split("\\R", -1);
+        boolean inBlock = false;
+        for (int i = 0; i < lines.length; i++) {
+            String line = lines[i];
+            if (inBlock) {
+                if (END.matcher(line).find()) {
+                    inBlock = false;
+                }
+                continue;
+            }
+            if (BEGIN.matcher(line).find()) {
+                inBlock = true;
+                continue;
+            }
+            if (END.matcher(line).find() || INLINE.matcher(line).find()) {
+                continue;
+            }
+            kept.add(i + 1);
+        }
+        return kept;
+    }
+
     public static String strip(String body) {
         if (body == null || body.isEmpty()) {
             return body;

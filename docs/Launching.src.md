@@ -266,16 +266,37 @@ text-mode `--check` ends with the command that fixes it (`Regenerate with: nrg -
 
 #### ${en:'What a template writes and reads', ru:'Что шаблон пишет и читает'}
 
-Three read-only queries answer, without generating anything, what a tool has to know before<!--en-->
-it edits a file:<!--en-->
-Три запроса, ничего не генерируя, отвечают на вопросы, которые инструмент задаёт, прежде чем<!--ru-->
-править файл:<!--ru-->
+Four read-only queries answer what a tool has to know before it edits a file; none of them<!--en-->
+writes anything:<!--en-->
+Четыре запроса только на чтение отвечают на вопросы, которые инструмент задаёт, прежде чем<!--ru-->
+править файл; ни один из них ничего не записывает:<!--ru-->
 
 ```bash
 nrg --manifest                          # outputs and inputs of every template
 nrg --is-generated README.ru.md         # exit 0 and print README.src.md; exit 1 for a file NRG does not write
 nrg --affected docs/Overview.src.md     # templates to regenerate after this file changed
+nrg --locate README.ru.md:340           # the template line that produces line 340
 ```
+
+`--locate FILE:LINE` (or `FILE:FIRST-LAST`) renders the template behind the file and prints, for<!--en-->
+each line, where it comes from — the line to edit and the chain of imports that led there:<!--en-->
+`--locate FILE:LINE` (или `FILE:FIRST-LAST`) рендерит шаблон, из которого получается файл, и для<!--ru-->
+каждой строки печатает, откуда она взялась, — строку, которую нужно править, и цепочку импортов:<!--ru-->
+
+```text
+README.ru.md:340: docs/Launching.src.md:45 <- imported at README.src.md:36
+README.ru.md:64: README.src.md:32 (widget tableOfContents)
+README.ru.md:1: head comment
+```
+
+A line a widget produced and that cannot be traced further names the widget's own line;<!--en-->
+lines of a frozen region name its opening marker. `--format json` prints<!--en-->
+`{"lines": [{"line", "text", "origin": {"file", "line", "widget", "note", "importChain"}}]}`.<!--en-->
+The position refers to the file as NRG would generate it now, so regenerate first if it is stale.<!--en-->
+Строка, которую создал виджет и которую дальше не проследить, указывает на строку самого виджета;<!--ru-->
+строки замороженной области — на её открывающий маркер. `--format json` печатает<!--ru-->
+`{"lines": [{"line", "text", "origin": {"file", "line", "widget", "note", "importChain"}}]}`.<!--ru-->
+Номер строки относится к файлу в том виде, в каком NRG сгенерировал бы его сейчас, поэтому устаревший файл сначала перегенерируйте.<!--ru-->
 
 - `--manifest` lists, for each template, the output file of every language and its inputs: the template, every file it imports (transitively), the directories `fileTree` lists and the descriptors behind `\${pom.…}` / `\${npm.…}` / `\${gradle.…}`. What cannot be listed as a file is reported as `dynamic`: `url:…` (remote import), `exec:…`, `env:NAME`, `date`. `--format json` prints `{"templates": [{"source", "outputs", "inputs", "dynamic"}]}`.<!--en-->
 - `--is-generated <file>` exits `0` and prints the template when the file is an output, `1` otherwise.<!--en-->

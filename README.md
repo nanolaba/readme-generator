@@ -534,14 +534,29 @@ text-mode `--check` ends with the command that fixes it (`Regenerate with: nrg -
 
 #### What a template writes and reads
 
-Three read-only queries answer, without generating anything, what a tool has to know before
-it edits a file:
+Four read-only queries answer what a tool has to know before it edits a file; none of them
+writes anything:
 
 ```bash
 nrg --manifest                          # outputs and inputs of every template
 nrg --is-generated README.ru.md         # exit 0 and print README.src.md; exit 1 for a file NRG does not write
 nrg --affected docs/Overview.src.md     # templates to regenerate after this file changed
+nrg --locate README.ru.md:340           # the template line that produces line 340
 ```
+
+`--locate FILE:LINE` (or `FILE:FIRST-LAST`) renders the template behind the file and prints, for
+each line, where it comes from — the line to edit and the chain of imports that led there:
+
+```text
+README.ru.md:340: docs/Launching.src.md:45 <- imported at README.src.md:36
+README.ru.md:64: README.src.md:32 (widget tableOfContents)
+README.ru.md:1: head comment
+```
+
+A line a widget produced and that cannot be traced further names the widget's own line;
+lines of a frozen region name its opening marker. `--format json` prints
+`{"lines": [{"line", "text", "origin": {"file", "line", "widget", "note", "importChain"}}]}`.
+The position refers to the file as NRG would generate it now, so regenerate first if it is stale.
 
 - `--manifest` lists, for each template, the output file of every language and its inputs: the template, every file it imports (transitively), the directories `fileTree` lists and the descriptors behind `${pom.…}` / `${npm.…}` / `${gradle.…}`. What cannot be listed as a file is reported as `dynamic`: `url:…` (remote import), `exec:…`, `env:NAME`, `date`. `--format json` prints `{"templates": [{"source", "outputs", "inputs", "dynamic"}]}`.
 - `--is-generated <file>` exits `0` and prints the template when the file is an output, `1` otherwise.
@@ -1840,7 +1855,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 11.11.2026 03:31:54
+Last updated: 11.11.2026 03:43:01
 ```
 
 </td></tr>
@@ -2297,7 +2312,7 @@ ${widget:endDetails}
 <details>
 <summary>Advanced</summary>
 
-inner *markdown* and 11.11.2026 03:31:54
+inner *markdown* and 11.11.2026 03:43:01
 
 </details>
 ```
@@ -2449,6 +2464,7 @@ This section summarises the main user-visible changes in each release. For full 
 - **Distinct exit codes**: `1` now means only that `--check` found a stale or missing file; `2` — a template is invalid (`--validate`) or generation failed; `64` — the command line is wrong (unknown or conflicting options, a missing source file, patterns that match nothing). A batch exits with the highest code. An exception thrown while rendering (for example an import outside the project root) no longer escapes `NRG.run` — it fails that file with code `2`. A failed text-mode `--check` ends with `Regenerate with: nrg -f …`. **Behaviour change** for scripts that test for exit code `1` specifically.
 - **`nrgw` wrapper**: `nrg --init-wrapper [--wrapper-version X] [--wrapper-sha256 HEX]` writes `nrgw`, `nrgw.cmd` and `.nrg/wrapper.properties` (release version and the sha256 of its zip, taken from the checksum published with the release). Committed to a repository, `./nrgw` downloads that release once into `~/.nrg/wrapper/`, verifies it and runs it — the same command for a contributor, a CI job and a coding agent in a fresh sandbox, with only Java installed. Exit code `69` when the wrapper cannot provide NRG. Closes [#72](https://github.com/nanolaba/readme-generator/issues/72).
 - **`--manifest`, `--is-generated`, `--affected`**: read-only queries that answer what a template writes and reads without generating anything. `--manifest` lists each template's output per language and its inputs — imported files (transitively), `fileTree` directories, the descriptors behind `${pom.…}` / `${npm.…}` / `${gradle.…}` — plus `dynamic` sources (remote imports, `exec`, environment variables, the date); `--format json` for tools. `--is-generated <file>` exits `0` and names the template when the file is generated (a hook can block edits to it), `--affected <file>…` prints the templates to regenerate. Without sources, every `*.src.md` that no other template imports is used. Closes [#73](https://github.com/nanolaba/readme-generator/issues/73).
+- **`--locate FILE:LINE[-LAST]`**: names the template line that produces a line of a generated file, with the chain of imports that led there — `README.ru.md:340: docs/Launching.src.md:45 <- imported at README.src.md:36` — through ignore blocks, `if` / `details` blocks, imports with `lines=` / `region=` / `wrap=` / `heading-offset=`, and frozen regions; widget output that cannot be traced further names the widget's line. `--format json` for agents. Library users get the same map from `GeneratorConfig.setCollectSourceMap(true)` and `GenerationResult.getSourceMap()`; without it nothing is collected and the output is unchanged. Closes [#74](https://github.com/nanolaba/readme-generator/issues/74).
 
 - **Updated runtime dependencies**: `commons-cli` 1.9.0 → 1.11.0, `commons-lang3` 3.18.0 → 3.21.0, `commons-text` 1.12.0 → 1.15.0, `commons-io` 2.17.0 → 2.22.0, `nanolog` 1.0 → 1.1. Java 8 remains the minimum, and `nrg-maven-plugin` still runs on Maven 3.9.9 and newer.
 - **GitHub Action sets up Java with `actions/setup-java` 6.2.0** (was 4.9.1): runs no longer carry the `Node.js 20 is deprecated` and `setup-java v4 is deprecated` warnings. Reaches users with the action release that accompanies NRG 1.4.

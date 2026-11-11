@@ -3,6 +3,7 @@ package com.nanolaba.nrg.widgets;
 import com.nanolaba.logging.LOG;
 import com.nanolaba.nrg.core.GeneratorConfig;
 import com.nanolaba.nrg.core.NRGUtil;
+import com.nanolaba.nrg.core.SourceOrigin;
 import com.nanolaba.nrg.core.TemplateLine;
 
 import java.util.ArrayDeque;
@@ -103,6 +104,17 @@ public abstract class BlockWidget extends DefaultWidget {
      * Subclasses do not override.
      */
     public final String processBlocks(String body, GeneratorConfig config, String language) {
+        return processBlocks(body, config, language, null);
+    }
+
+    /**
+     * Same as {@link #processBlocks(String, GeneratorConfig, String)}, keeping {@code origins}
+     * — one entry per line of {@code body} — in step with the rewritten body: kept lines keep
+     * theirs, lines an opener or closer emits take the marker's. {@code null} skips the
+     * bookkeeping.
+     */
+    public final String processBlocks(String body, GeneratorConfig config, String language,
+                                      List<SourceOrigin> origins) {
         if (body == null) {
             return null;
         }
@@ -114,6 +126,7 @@ public abstract class BlockWidget extends DefaultWidget {
 
         String[] lines = body.split("\n", -1);
         List<String> output = new ArrayList<>(lines.length);
+        List<SourceOrigin> outOrigins = origins == null ? null : new ArrayList<>(lines.length);
 
         Deque<Frame> stack = new ArrayDeque<>();
         int outermostOpenIndexInOutput = -1;
@@ -126,6 +139,7 @@ public abstract class BlockWidget extends DefaultWidget {
                 Map<String, String> params = NRGUtil.parseParametersLine(openMatcher.group(1));
                 if (isInlineForm(params)) {
                     output.add(line);
+                    addOrigins(outOrigins, origins, i, 1);
                     continue;
                 }
                 boolean parentActive = stack.isEmpty() || stack.peek().active;
@@ -136,6 +150,7 @@ public abstract class BlockWidget extends DefaultWidget {
                 stack.push(new Frame(parentActive && opening.isContentActive()));
                 if (parentActive) {
                     output.addAll(opening.getEmittedLines());
+                    addOrigins(outOrigins, origins, i, opening.getEmittedLines().size());
                 }
                 continue;
             }
@@ -152,7 +167,9 @@ public abstract class BlockWidget extends DefaultWidget {
                 stack.pop();
                 boolean parentActiveAfterPop = stack.isEmpty() || stack.peek().active;
                 if (parentActiveAfterPop) {
-                    output.addAll(onBlockClose(i + 1));
+                    List<String> closing = onBlockClose(i + 1);
+                    output.addAll(closing);
+                    addOrigins(outOrigins, origins, i, closing.size());
                 }
                 if (stack.isEmpty()) {
                     outermostOpenIndexInOutput = -1;
@@ -164,6 +181,7 @@ public abstract class BlockWidget extends DefaultWidget {
                 continue;
             }
             output.add(line);
+            addOrigins(outOrigins, origins, i, 1);
         }
 
         if (!stack.isEmpty()) {
@@ -172,10 +190,26 @@ public abstract class BlockWidget extends DefaultWidget {
             if (outermostOpenIndexInOutput >= 0) {
                 while (output.size() > outermostOpenIndexInOutput) {
                     output.remove(output.size() - 1);
+                    if (outOrigins != null) {
+                        outOrigins.remove(outOrigins.size() - 1);
+                    }
                 }
             }
         }
+        if (origins != null) {
+            origins.clear();
+            origins.addAll(outOrigins);
+        }
         return String.join("\n", output);
+    }
+
+    private static void addOrigins(List<SourceOrigin> out, List<SourceOrigin> in, int index, int count) {
+        if (out != null) {
+            SourceOrigin origin = index < in.size() ? in.get(index) : null;
+            for (int k = 0; k < count; k++) {
+                out.add(origin);
+            }
+        }
     }
 
     /**

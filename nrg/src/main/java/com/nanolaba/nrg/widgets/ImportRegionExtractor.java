@@ -29,6 +29,22 @@ final class ImportRegionExtractor {
      * is missing.
      */
     static List<String> extract(List<String> sourceLines, String regionName) {
+        List<Integer> indices = extractIndices(sourceLines, regionName);
+        if (indices == null) {
+            return null;
+        }
+        List<String> result = new ArrayList<>(indices.size());
+        for (Integer i : indices) {
+            result.add(sourceLines.get(i));
+        }
+        return result;
+    }
+
+    /**
+     * 0-based indices, in {@code sourceLines}, of the lines {@link #extract} returns — the same
+     * selection, kept as positions so that a source map can name the imported file's lines.
+     */
+    static List<Integer> extractIndices(List<String> sourceLines, String regionName) {
         Pattern beginPattern = Pattern.compile("nrg:begin:" + Pattern.quote(regionName) + "(?![A-Za-z0-9_-])");
         Pattern endPattern = Pattern.compile("nrg:end:" + Pattern.quote(regionName) + "(?![A-Za-z0-9_-])");
 
@@ -52,13 +68,12 @@ final class ImportRegionExtractor {
         if (endIdx < 0) {
             return null;
         }
-        List<String> result = new ArrayList<>(endIdx - beginIdx - 1);
+        List<Integer> result = new ArrayList<>(endIdx - beginIdx - 1);
         for (int i = beginIdx + 1; i < endIdx; i++) {
-            String line = sourceLines.get(i);
-            if (ANY_MARKER.matcher(line).find()) {
+            if (ANY_MARKER.matcher(sourceLines.get(i)).find()) {
                 continue;
             }
-            result.add(line);
+            result.add(i);
         }
         return result;
     }

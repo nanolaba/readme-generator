@@ -128,6 +128,43 @@ public class ManifestCliTest extends DefaultNRGTest {
     }
 
     @Test
+    public void testLocate() throws IOException {
+        write("docs/part.src.md", "Part line\n");
+        Path src = write("README.src.md", "<!--@nrg.languages=en,ru-->\nHello<!--en-->\nПривет<!--ru-->\n"
+                + "${widget:import(path='docs/part.src.md')}\n");
+        String ru = tempDir.resolve("README.ru.md").toString();
+
+        assertEquals(NRG.EXIT_OK, NRG.run("--locate", ru + ":3-4", "-f", src.toString()));
+        String[] out = getOutAndClear().trim().split("\\R");
+        assertTrue(out[0].contains("README.ru.md:3: ") && out[0].endsWith("/README.src.md:3"), out[0]);
+        assertTrue(out[1].contains("part.src.md:1 <- imported at") && out[1].contains("README.src.md:4"), out[1]);
+
+        assertEquals(NRG.EXIT_OK, NRG.run("--locate", ru + ":1", "--format", "json", "-f", src.toString()));
+        @SuppressWarnings("unchecked")
+        Map<String, Object> report = (Map<String, Object>) MinimalJsonParser.parse(getOutAndClear());
+        assertEquals("locate", report.get("mode"));
+        assertEquals("ru", report.get("language"));
+        @SuppressWarnings("unchecked")
+        Map<String, Object> line = ((List<Map<String, Object>>) report.get("lines")).get(0);
+        @SuppressWarnings("unchecked")
+        Map<String, Object> origin = (Map<String, Object>) line.get("origin");
+        assertEquals("head comment", origin.get("note"));
+        assertTrue(((String) line.get("text")).startsWith("<!--"), line.toString());
+    }
+
+    @Test
+    public void testLocateErrors() throws IOException {
+        Path src = write("README.src.md", "Hello\n");
+        String md = tempDir.resolve("README.md").toString();
+
+        assertEquals(NRG.EXIT_USAGE, NRG.run("--locate", md + ":999", "-f", src.toString()));
+        assertTrue(getErrAndClear().contains("does not exist"));
+        assertEquals(NRG.EXIT_USAGE, NRG.run("--locate", md + ":x", "-f", src.toString()));
+        assertEquals(1, NRG.run("--locate", tempDir.resolve("other.md") + ":1", "-f", src.toString()));
+        assertTrue(getErrAndClear().contains("is not generated"));
+    }
+
+    @Test
     public void testQueryModesAreExclusive() throws IOException {
         Path src = project();
         assertEquals(NRG.EXIT_USAGE, NRG.run("--manifest", "--check", "-f", src.toString()));

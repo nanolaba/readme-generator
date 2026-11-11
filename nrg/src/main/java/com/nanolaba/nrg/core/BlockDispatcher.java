@@ -3,6 +3,8 @@ package com.nanolaba.nrg.core;
 import com.nanolaba.nrg.widgets.BlockWidget;
 import com.nanolaba.nrg.widgets.NRGWidget;
 
+import java.util.List;
+
 /**
  * Runs every registered {@link BlockWidget}'s pre-pass over the source body, in widget
  * registration order, before per-line rendering. Replaces the historical if / details
@@ -17,9 +19,14 @@ final class BlockDispatcher {
     private BlockDispatcher() {/* utility */}
 
     static String process(String body, GeneratorConfig config, String language) {
+        return process(body, config, language, null);
+    }
+
+    /** @param origins one origin per body line, kept in step with the rewritten body; may be {@code null} */
+    static String process(String body, GeneratorConfig config, String language, List<SourceOrigin> origins) {
         for (NRGWidget w : config.getWidgets()) {
             if (w instanceof BlockWidget && w.isEnabled()) {
-                body = ((BlockWidget) w).processBlocks(body, config, language);
+                body = ((BlockWidget) w).processBlocks(body, config, language, origins);
             }
         }
         return body;
