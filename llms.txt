@@ -1,0 +1,21 @@
+# Nanolaba Readme Generator (NRG)
+
+> Java 8+ tool that generates README.md, README.ru.md and any other localized Markdown file from one `*.src.md` template, and fails CI when the generated files drift from it. Ships as a CLI, a Maven plugin, a GitHub Action and a Java library. Latest release: 1.3.
+
+Templates are `*.src.md` files; the `*.md` files they produce are build output and must not be edited by hand. Validate a template with `nrg --validate -f README.src.md`, regenerate with `nrg -f README.src.md`, find the template line behind a generated line with `nrg --locate README.md:LINE`. Add `--format json` for machine-readable results.
+
+## Docs
+
+- [Syntax card](https://raw.githubusercontent.com/nanolaba/readme-generator/main/skills/nrg/SYNTAX.md): the whole template syntax and every widget's parameters on one page
+- [Using NRG with AI coding agents](https://github.com/nanolaba/readme-generator#using-nrg-with-ai-coding-agents): the validate / generate / check loop, an AGENTS.md block, edit-guard hooks, the nrgw wrapper
+- [README](https://raw.githubusercontent.com/nanolaba/readme-generator/main/README.md): full documentation
+- [Template syntax](https://github.com/nanolaba/readme-generator#template-syntax): languages, properties, escapes, ignore and frozen regions
+- [Widgets](https://github.com/nanolaba/readme-generator#widgets): import, tableOfContents, if, details, alert, badge, date, todo, math, exec, fileTree, languages
+- [Command line](https://github.com/nanolaba/readme-generator#using-the-command-line-interface): every CLI option, exit codes, JSON output
+
+## Optional
+
+- [Agent Skill](https://raw.githubusercontent.com/nanolaba/readme-generator/main/skills/nrg/SKILL.md): the NRG skill for Claude Code and other Agent Skills hosts
+- [Maven plugin](https://github.com/nanolaba/readme-generator#use-as-maven-plugin)
+- [GitHub Action](https://github.com/nanolaba/readme-generator#use-as-a-github-action)
+- [Changelog](https://github.com/nanolaba/readme-generator#changelog)

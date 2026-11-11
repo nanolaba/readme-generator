@@ -36,6 +36,7 @@ Optionally selects a fragment by line range or named region, and wraps the resul
 
 ${en:'Widget parameters', ru:'Свойства виджета'}:
 
+<!-- nrg:begin:reference --><!--nrg.ignore-->
 | ${en:'Name', ru:'Наименование'} | ${en:'Description', ru:'Описание'}                                                                                                                                            | ${en:'Default value', ru:'Значение по умолчанию'} |
 |:-------------------------------:|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:-------------------------------------------------:|
 |              path               | ${en:'Path to the imported file, relative to the importing file. Must lie inside the [project root](#project-root)', ru:'Путь к импортируемому файлу относительно импортирующего файла. Должен лежать внутри [корня проекта](#корень-проекта)'} |                                                   |
@@ -51,6 +52,7 @@ ${en:'Widget parameters', ru:'Свойства виджета'}:
 |              cache              | ${en:'Cache TTL: `<int>{s,m,h,d}` or `none` (e.g. `1h`, `7d`)', ru:'TTL кэша: `<int>{s,m,h,d}` или `none` (например `1h`, `7d`)'}                                             |                      `none`                       |
 |             timeout             | ${en:'HTTP timeout: `<int>{s,m,h,d}` (cannot be `none`)', ru:'HTTP-тайм-аут: `<int>{s,m,h,d}` (не может быть `none`)'}                                                        |                      `60s`                        |
 |             sha256              | ${en:'64 hex chars; verifies fetched bytes; recommended for reproducibility', ru:'64 шестнадцатеричных символа; проверяет загруженные данные; рекомендуется для воспроизводимости'} |                                                   |
+<!-- nrg:end:reference --><!--nrg.ignore-->
 
 When importing a template file, generation is performed using variables declared in the parent file.<!--en-->
 This allows defining global variables in the root file and reusing them across all imported templates.<!--en-->

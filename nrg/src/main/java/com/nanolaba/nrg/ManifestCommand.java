@@ -448,7 +448,12 @@ final class ManifestCommand {
         return result;
     }
 
-    private String path(File file) {
+    List<TemplateManifest> getManifests() {
+        return Collections.unmodifiableList(manifests);
+    }
+
+    /** {@code file} relative to the working directory, with {@code /} separators (absolute when outside it). */
+    String path(File file) {
         Path absolute = file.getAbsoluteFile().toPath().normalize();
         Path base = workingDirectory.toPath().normalize();
         String result = absolute.startsWith(base) ? base.relativize(absolute).toString() : absolute.toString();

@@ -39,10 +39,12 @@ ${widget:alert(type = 'warning', text = 'Line 1\nLine 2')}
 
 ${en:'Widget parameters', ru:'Свойства виджета'}:
 
+<!-- nrg:begin:reference --><!--nrg.ignore-->
 | ${en:'Name', ru:'Наименование'} | ${en:'Description', ru:'Описание'}                                                                                                                                                                                                                                                                                                                                                                                                                       | ${en:'Default value', ru:'Значение по умолчанию'} |
 |:-------------------------------:|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:-------------------------------------------------:|
 |              type               | ${en:'Alert kind: `note`, `tip`, `important`, `warning`, or `caution` (case-insensitive). Unknown values log an error and produce empty output.', ru:'Тип блока: `note`, `tip`, `important`, `warning` или `caution` (регистр не важен). Неизвестное значение приводит к ошибке и пустому выводу.'}                                                                                                                                                      |                                                   |
 |              text               | ${en:'Body of the alert. Use `\n` to split into multiple quoted lines and `\\` for a literal backslash. Language-substitution constructs in the outer template are resolved before the widget runs, so per-language text works naturally.', ru:'Текст блока. Используйте `\n` для перевода строки и `\\` для литерального обратного слэша. Языковые конструкции внешнего шаблона раскрываются до запуска виджета — перевод текста работает как обычно.'} |                       `''`                        |
+<!-- nrg:end:reference --><!--nrg.ignore-->
 
 ---
 

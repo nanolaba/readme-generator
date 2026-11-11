@@ -1,0 +1,13 @@
+{
+  "name": "nrg",
+  "version": "1.4",
+  "description": "Nanolaba Readme Generator for Claude Code: the NRG skill with the template syntax, a hook that refuses edits of generated files and names the template instead, and a hook that validates and regenerates after a template changes.",
+  "author": {
+    "name": "Nanolaba",
+    "url": "https://github.com/nanolaba"
+  },
+  "homepage": "https://github.com/nanolaba/readme-generator#using-nrg-with-ai-coding-agents",
+  "repository": "https://github.com/nanolaba/readme-generator",
+  "license": "Apache-2.0",
+  "keywords": ["readme", "markdown", "i18n", "documentation", "nrg"]
+}

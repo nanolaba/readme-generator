@@ -123,6 +123,15 @@
                 <targetPath>wrapper</targetPath>
                 <filtering>false</filtering>
             </resource>
+            <!-- The syntax card printed by the help syntax CLI option; generated from skills/nrg/SYNTAX.src.md. -->
+            <resource>
+                <directory>${project.basedir}/../skills/nrg</directory>
+                <targetPath>syntax</targetPath>
+                <filtering>false</filtering>
+                <includes>
+                    <include>SYNTAX.md</include>
+                </includes>
+            </resource>
         </resources>
     </build>
 </project>

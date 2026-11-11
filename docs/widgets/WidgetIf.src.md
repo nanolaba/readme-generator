@@ -51,6 +51,7 @@ ${en:'Inline form — short conditional snippet on one line:', ru:'Одноте�
 
 ${en:'Condition grammar (precedence low → high)', ru:'Грамматика условия (приоритет от низкого к высокому)'}:
 
+<!-- nrg:begin:reference --><!--nrg.ignore-->
 | ${en:'Form', ru:'Форма'} | ${en:'Meaning', ru:'Смысл'}                                                                                                                    |
 |--------------------------|------------------------------------------------------------------------------------------------------------------------------------------------|
 | `X`                      | ${en:'truthy — true iff `X.trim()` is non-empty', ru:'truthy — истина, если `X.trim()` не пуст'}                                               |
@@ -62,6 +63,7 @@ ${en:'Condition grammar (precedence low → high)', ru:'Грамматика у�
 | `(expr)`                 | ${en:'grouping', ru:'группировка'}                                                                                                             |
 | `startsWith(h, n)`       | ${en:'true iff `h.startsWith(n)`; case-sensitive', ru:'истина, если `h.startsWith(n)`; case-sensitive'}                                        |
 | `endsWith(h, n)`         | ${en:'true iff `h.endsWith(n)`; case-sensitive', ru:'истина, если `h.endsWith(n)`; case-sensitive'}                                            |
+<!-- nrg:end:reference --><!--nrg.ignore-->
 
 Operands are placeholders (`\${…}`), quoted strings (`'…'` or `"…"` with doubled-quote escape), or bare strings. Quoted strings preserve whitespace and protect operator characters; placeholders inside quoted strings are still resolved.<!--en-->
 Операнды — это плейсхолдеры (`\${…}`), quoted-строки (`'…'` или `"…"` с удвоением кавычки) или bare-строки. Quoted-строки сохраняют пробелы и защищают operator-символы; плейсхолдеры внутри quoted-строк всё равно разрешаются.<!--ru-->

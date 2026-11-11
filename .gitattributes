@@ -2,3 +2,4 @@
 # the shell script must keep LF line endings and the batch file CRLF, whatever core.autocrlf says.
 nrg/src/main/wrapper/nrgw      text eol=lf
 nrg/src/main/wrapper/nrgw.cmd  text eol=crlf
+hooks/nrg-hook                 text eol=lf

@@ -242,6 +242,10 @@ public class NRG {
                 "with --agent-rules: write the block into this file between its markers (with --check: verify it)");
         write.setArgName("file");
         options.addOption(write);
+        Option claudeHook = new Option(null, "claude-hook", true,
+                "run as a Claude Code hook (pre-edit: refuse edits of generated files; post-edit: validate and regenerate)");
+        claudeHook.setArgName("pre-edit|post-edit");
+        options.addOption(claudeHook);
 
         CommandLineParser parser = new DefaultParser();
         CommandLine cmd = parser.parse(options, args);
@@ -257,8 +261,16 @@ public class NRG {
             return 0;
         }
         if (cmd.hasOption(help)) {
+            if (Arrays.asList(cmd.getArgs()).contains("syntax")) {
+                return printSyntaxCard();
+            }
             printHelp(options);
             return 0;
+        }
+        if (cmd.hasOption(claudeHook)) {
+            List<NRGWidget> hookWidgets = new ArrayList<>(additionalWidgets);
+            return new ClaudeHook(cmd.getParsedOptionValue(charset, DEFAULT_CHARSET), hookWidgets)
+                    .run(cmd.getOptionValue(claudeHook), System.in);
         }
         if (cmd.hasOption(initWrapper)) {
             try {
@@ -922,6 +934,25 @@ public class NRG {
     private static void printHelp(Options options) {
         HelpFormatter formatter = new HelpFormatter();
         formatter.printHelp("nrg", null, options, null, true);
+    }
+
+    /**
+     * {@code nrg --help syntax}: the syntax card bundled into the jar (generated from
+     * {@code skills/nrg/SYNTAX.src.md}), so the reference matches the installed version and
+     * needs no network.
+     */
+    private static int printSyntaxCard() {
+        try (InputStream in = NRG.class.getResourceAsStream("/syntax/SYNTAX.md")) {
+            if (in == null) {
+                System.err.println("The syntax card is missing from this build of NRG");
+                return EXIT_TEMPLATE_ERROR;
+            }
+            System.out.print(IOUtils.toString(in, StandardCharsets.UTF_8));
+            return EXIT_OK;
+        } catch (IOException e) {
+            LOG.error(e, () -> "Cannot read the syntax card");
+            return EXIT_TEMPLATE_ERROR;
+        }
     }
 
     private static void printVersion() {

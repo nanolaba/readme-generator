@@ -1,0 +1,15 @@
+{
+  "name": "nanolaba",
+  "description": "Plugins from Nanolaba",
+  "owner": {
+    "name": "Nanolaba",
+    "url": "https://github.com/nanolaba"
+  },
+  "plugins": [
+    {
+      "name": "nrg",
+      "source": "./",
+      "description": "Keep generated multi-language READMEs in sync: NRG skill, edit guard and regeneration hooks."
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+#!/bin/sh
+# Claude Code hook launcher of the NRG plugin (see hooks/hooks.json).
+# Usage: nrg-hook pre-edit|post-edit   (the hook JSON arrives on stdin)
+#
+# Runs `nrg --claude-hook <mode>` for projects that use NRG and does nothing elsewhere:
+# a project without *.src.md templates never starts a JVM. NRG is taken from the project's
+# ./nrgw wrapper, else from `nrg` on PATH; without either the hook is a no-op.
+mode=$1
+dir=${CLAUDE_PROJECT_DIR:-.}
+
+if git -C "$dir" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+  templates=$(git -C "$dir" ls-files --cached --others --exclude-standard -- '*.src.md' 2>/dev/null | head -n 1)
+else
+  templates=$(find "$dir" -name '*.src.md' -not -path '*/node_modules/*' 2>/dev/null | head -n 1)
+fi
+[ -n "$templates" ] || exit 0
+
+if [ -f "$dir/nrgw" ] && [ -f "$dir/.nrg/wrapper.properties" ]; then
+  set -- sh "$dir/nrgw"
+elif command -v nrg >/dev/null 2>&1; then
+  set -- nrg
+else
+  exit 0
+fi
+
+cd "$dir" || exit 0
+exec "$@" --claude-hook "$mode"

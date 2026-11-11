@@ -35,9 +35,11 @@ ${widget:date(pattern= 'dd.MM.yyyy')}
 
 ${en:'Widget parameters', ru:'Свойства виджета'}:
 
+<!-- nrg:begin:reference --><!--nrg.ignore-->
 | ${en:'Name', ru:'Наименование'} | ${en:'Description', ru:'Описание'}                                                                                              | ${en:'Default value', ru:'Значение по умолчанию'} |
 |:-------------------------------:|---------------------------------------------------------------------------------------------------------------------------------|:-------------------------------------------------:|
 |             pattern             | ${en:'Pattern according to which the date will be formatted', ru:'Шаблон, в соответствии с котором будет отформатирована дата'} |               `dd.MM.yyyy HH:mm:ss`               |
+<!-- nrg:end:reference --><!--nrg.ignore-->
 
 You can read more about date pattern syntax in the<!--en-->
 [Java documentation](https://docs.oracle.com/javase/8/docs/api/java/text/SimpleDateFormat.html).<!--en-->

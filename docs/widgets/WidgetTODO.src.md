@@ -32,7 +32,9 @@ ${widget:todo(text="${en:'Example message', ru:'Пример сообщения'
 
 ${en:'Widget parameters', ru:'Свойства виджета'}:
 
+<!-- nrg:begin:reference --><!--nrg.ignore-->
 | ${en:'Name', ru:'Наименование'} | ${en:'Description', ru:'Описание'}              | ${en:'Default value', ru:'Значение по умолчанию'} |
 |:-------------------------------:|-------------------------------------------------|:-------------------------------------------------:|
 |              text               | ${en:'Displayed text', ru:'Отображаемый текст'} |                 `Not done yet...`                 |
+<!-- nrg:end:reference --><!--nrg.ignore-->
 

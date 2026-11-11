@@ -13,8 +13,11 @@ Repository layout:
 - `nrg/` — core library and CLI (artifact `com.nanolaba:readme-generator`).
 - `nrg-maven-plugin/` — Maven plugin wrapping the CLI.
 - `nrg-action/` — composite GitHub Action (`action.yml` + `run.sh`); not a Maven module.
-- `docs/` — README source fragments; `docs/Changelog.src.md` is the changelog.
-- `.github/workflows/` — `ci.yml` (build & test on JDK 8 and 17, then `--validate` over the repository's own templates with the freshly built jar), `action-test.yml` (action self-test matrix + dogfood validation of `README.src.md`) and `release-guard.yml` (runs `.github/scripts/release-preflight.sh` on every `v*` tag / published release: POM versions must match the tag and must not be `-SNAPSHOT`, and the `readme-generator-X.Y.zip` asset must be downloadable).
+- `docs/` — README source fragments; `docs/Changelog.src.md` is the changelog. The widget docs and `docs/TemplateSyntax.src.md` carry `nrg:begin:reference` / `nrg:begin:escapes` regions (on `<!--nrg.ignore-->` lines) that the syntax card imports.
+- `skills/nrg/` — the NRG Agent Skill: hand-written `SKILL.md` plus `SYNTAX.md` / `SYNTAX.ru.md`, generated from `SYNTAX.src.md`. `SYNTAX.md` is also bundled into the jar (`nrg --help syntax`).
+- `.claude-plugin/`, `hooks/` — the repository is a Claude Code plugin marketplace: `plugin.json`, `marketplace.json`, `hooks/hooks.json` and the `hooks/nrg-hook` launcher of `nrg --claude-hook`.
+- `llms.txt` — generated from `llms.src.md`.
+- `.github/workflows/` — `ci.yml` (build & test on JDK 8 and 17, then `--validate` over the repository's own templates with the freshly built jar and `--check` of the syntax card and `llms.txt`; a `wrapper` job runs `nrgw` / `nrgw.cmd` on Linux, macOS and Windows), `action-test.yml` (action self-test matrix + dogfood validation of `README.src.md`) and `release-guard.yml` (runs `.github/scripts/release-preflight.sh` on every `v*` tag / published release: POM versions must match the tag and must not be `-SNAPSHOT`, and the `readme-generator-X.Y.zip` asset must be downloadable).
 
 Versions: the development version is the POM `<version>` (currently `1.4-SNAPSHOT`); the last released version is the `stableVersion` property in the root `pom.xml`. `README.src.md` reads both via `${pom.version}` / `${pom.properties.stableVersion}`.
 
@@ -45,9 +48,12 @@ Regenerate the dogfooded docs after touching any `.src.md` (or an example class 
 
 ```bash
 mvn -pl nrg package -DskipTests -Dgpg.skip=true -Dmaven.javadoc.skip=true
-java -jar nrg/target/nrg.jar -f README.src.md
-java -jar nrg/target/nrg.jar -f README.src.md --validate   # what the CI dogfood job runs
+java -jar nrg/target/nrg.jar README.src.md CONTRIBUTING.src.md SECURITY.src.md CODE_OF_CONDUCT.src.md skills/nrg/SYNTAX.src.md llms.src.md
+java -jar nrg/target/nrg.jar --validate README.src.md CONTRIBUTING.src.md SECURITY.src.md CODE_OF_CONDUCT.src.md skills/nrg/SYNTAX.src.md llms.src.md   # what CI runs
+java -jar nrg/target/nrg.jar --check skills/nrg/SYNTAX.src.md llms.src.md   # CI also runs this: they render no date
 ```
+
+A change to a widget's parameter table, to the escapes table or to the POM version changes the syntax card: regenerate it, then rebuild the jar so the bundled copy matches.
 
 The README footer renders `${widget:date}`, so a regeneration always changes the "Last updated" line — that is expected, and it is also why CI gates the README with `--validate` rather than `--check`.
 

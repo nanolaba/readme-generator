@@ -62,11 +62,13 @@ output verbatim.<!--en-->
 проход и убирает обратный слэш только в этих трёх шаблонах; любая другая последовательность<!--ru-->
 `\\X` остаётся в выводе как есть.<!--ru-->
 
+<!-- nrg:begin:escapes --><!--nrg.ignore-->
 | ${en:'In your template', ru:'В шаблоне'} | ${en:'In the output', ru:'В выводе'} | ${en:'Use it to', ru:'Зачем нужно'} |
 |---|---|---|
 | <code>&#92;$</code>        | <code>$</code>        | ${en:'suppress any `\\${…}` reference (property / language / env / pom / npm / gradle / widget). Applies to **any** `\\$`, not only `\\${…}`.', ru:'подавить любую ссылку `\\${…}` (свойство / язык / env / pom / npm / gradle / widget). Срабатывает на **любое** `\\$`, не только на `\\${…}`.'} |
 | <code>&lt;&#92;!--</code>  | <code>&lt;!--</code>  | ${en:'suppress any HTML-comment marker — language tag, `nrg.ignore`, `nrg.freeze`, property declaration. Use it to put a literal `<\!--…-->` into the output.', ru:'подавить любой HTML-маркер — языковой тег, `nrg.ignore`, `nrg.freeze`, объявление свойства. Используется, чтобы вывести литерал `<\!--…-->`.'} |
 | <code>&lt;!--&#92;@</code> | <code>&lt;!--@</code> | ${en:'render `<\!--@key=value-->` cleanly inside an example — **cosmetic only**, does **not** stop NRG from parsing the line as a real property declaration. To actually suppress parsing, escape the comment opener with rule 2: <code>&lt;&#92;!--@key=value--&gt;</code>.', ru:'красиво вывести `<\!--@key=value-->` в примере — **только косметика**, **не** мешает NRG распарсить строку как настоящее объявление свойства. Чтобы реально подавить разбор, экранируйте открытие комментария по правилу 2: <code>&lt;&#92;!--@key=value--&gt;</code>.'} |
+<!-- nrg:end:escapes --><!--nrg.ignore-->
 
 Markdown's own escape sequences (`\(`, `\)`, `\_`, `\*`, `\\`, `` \` ``, etc.) are not on this<!--en-->
 list — they pass through NRG unchanged and reach the markdown renderer untouched.<!--en-->

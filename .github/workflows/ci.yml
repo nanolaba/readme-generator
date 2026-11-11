@@ -39,7 +39,12 @@ jobs:
       # --validate rather than --check: the README renders ${widget:date}, so a regeneration
       # never matches the committed file byte for byte.
       - name: Validate the repository's own templates
-        run: java -jar nrg/target/nrg.jar --validate README.src.md CONTRIBUTING.src.md SECURITY.src.md CODE_OF_CONDUCT.src.md
+        run: java -jar nrg/target/nrg.jar --validate README.src.md CONTRIBUTING.src.md SECURITY.src.md CODE_OF_CONDUCT.src.md skills/nrg/SYNTAX.src.md llms.src.md
+
+      # The syntax card and llms.txt render no date, so they are held to --check: a docs change
+      # that is not followed by their regeneration fails here (the card is also bundled in the jar).
+      - name: Check the syntax card and llms.txt are up to date
+        run: java -jar nrg/target/nrg.jar --check skills/nrg/SYNTAX.src.md llms.src.md
 
       - name: Upload surefire reports on failure
         if: failure()
