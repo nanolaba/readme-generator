@@ -110,13 +110,14 @@ public final class Validator {
                 }
             }
             rootLanguages = readDeclaredLanguages(body);
-            validateFile(rootSourceFile, rootConfig, rootLanguages);
+            validateFile(rootSourceFile, rootConfig, rootLanguages, true);
             checkVariableReferences();
             sortByFileAndLine();
             return diagnostics;
         }
 
-        private void validateFile(File file, GeneratorConfig config, List<String> inheritedLanguages) {
+        private void validateFile(File file, GeneratorConfig config, List<String> inheritedLanguages,
+                                  boolean inheritedParity) {
             File canonical;
             try {
                 canonical = file.getCanonicalFile();
@@ -134,6 +135,8 @@ public final class Validator {
             // imported file uses the parent's declaration (imports don't have to repeat it).
             List<String> ownDeclaration = readOwnDeclaredLanguages(body);
             List<String> declaredLanguages = ownDeclaration != null ? ownDeclaration : inheritedLanguages;
+            String ownParity = readOwnProperty(body, NRGConstants.PROPERTY_VALIDATE_PARITY);
+            boolean parity = ownParity != null ? !"false".equalsIgnoreCase(ownParity) : inheritedParity;
             String[] lines = body.split("\\R", -1);
 
             Map<BlockWidget, Deque<Integer>> openBlocks = new LinkedHashMap<>();
@@ -148,7 +151,7 @@ public final class Validator {
                         || IGNORE_END_PATTERN.matcher(line).find()
                         || IGNORE_LINE_PATTERN.matcher(line).find();
 
-                checkWidgets(file, config, line, lineNo, ignored, declaredLanguages);
+                checkWidgets(file, config, line, lineNo, ignored, declaredLanguages, parity);
                 checkLanguageMarkers(file, line, lineNo, declaredLanguages);
 
                 if (IGNORE_BEGIN_PATTERN.matcher(line).find()) {
@@ -176,6 +179,9 @@ public final class Validator {
             }
 
             diagnostics.addAll(FreezeValidator.validate(file, body, declaredLanguages));
+            if (parity) {
+                diagnostics.addAll(TranslationParityChecker.check(file, lines, declaredLanguages));
+            }
 
             if (ignoreBeginLine >= 0) {
                 error(file, ignoreBeginLine, "unclosed <!--nrg.ignore.begin--> (missing <!--nrg.ignore.end-->)");
@@ -189,7 +195,7 @@ public final class Validator {
         }
 
         private void checkWidgets(File file, GeneratorConfig config, String line, int lineNo, boolean ignored,
-                                  List<String> declaredLanguages) {
+                                  List<String> declaredLanguages, boolean parity) {
             Matcher widgetMatcher = TemplateLine.WIDGET_TAG_PATTERN.matcher(line);
             while (widgetMatcher.find()) {
                 int start = widgetMatcher.start();
@@ -209,7 +215,7 @@ public final class Validator {
                     checkWidgetParameters(file, name, params, lineNo);
                 }
                 if ("import".equals(name)) {
-                    checkImport(file, config, params, lineNo, declaredLanguages);
+                    checkImport(file, config, params, lineNo, declaredLanguages, parity);
                 }
             }
         }
@@ -238,7 +244,7 @@ public final class Validator {
         }
 
         private void checkImport(File file, GeneratorConfig config, String params, int lineNo,
-                                 List<String> declaredLanguages) {
+                                 List<String> declaredLanguages, boolean parity) {
             String path = extractImportPath(params);
             if (path == null) {
                 return;
@@ -251,7 +257,7 @@ public final class Validator {
             } else if (!importedFile.isFile()) {
                 error(file, lineNo, "import path not found: '" + path + "'");
             } else if (!"false".equals(NRGUtil.parseParametersLine(params).get("run-generator"))) {
-                validateFile(importedFile, childConfig(importedFile, config), declaredLanguages);
+                validateFile(importedFile, childConfig(importedFile, config), declaredLanguages, parity);
             }
         }
 
@@ -418,6 +424,18 @@ public final class Validator {
     private static List<String> readDeclaredLanguages(String body) {
         List<String> own = readOwnDeclaredLanguages(body);
         return own != null ? own : Collections.singletonList("en");
+    }
+
+    /** Raw value of the first {@code <!--@key=...-->} declared in this file, or {@code null}. */
+    private static String readOwnProperty(String body, String key) {
+        if (body == null) return null;
+        for (String line : body.split("\\R", -1)) {
+            String value = NRGUtil.extractRawPropertyMarkers(line).get(key);
+            if (value != null) {
+                return value;
+            }
+        }
+        return null;
     }
 
     /** Returns the {@code nrg.languages} declared in this file, or {@code null} if absent. */

@@ -68,12 +68,13 @@ class ValidatorTest extends DefaultNRGTest {
         Path src = writeSource("README.src.md",
                 "<!--@nrg.languages=en,ru-->\n" +
                         "English<!--en-->\n" +
+                        "Русский<!--ru-->\n" +
                         "Spanish<!--es-->\n");
 
         List<Validator.Diagnostic> diags = validate(src);
         assertEquals(1, diags.size(), diags.toString());
         assertTrue(diags.get(0).isError());
-        assertEquals(3, diags.get(0).getLine());
+        assertEquals(4, diags.get(0).getLine());
         assertTrue(diags.get(0).getMessage().contains("'es'"));
         assertTrue(diags.get(0).getMessage().contains("nrg.languages"));
     }

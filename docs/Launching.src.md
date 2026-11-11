@@ -96,21 +96,25 @@ generating any output. Errors:<!--en-->
 - `\${widget:import(path='...')}` paths that do not exist on disk or leave the project root,<!--en-->
 - unbalanced `<\!--nrg.ignore.begin-->` / `<\!--nrg.ignore.end-->` pairs,<!--en-->
 - unclosed or stray block widgets (`\${widget:if(...)}` without `\${widget:endIf}`, a lone `\${widget:endDetails}`),<!--en-->
-- a `\${name}` reference that is not declared but is one or two edits away from a property that is (`\${stableVerison}`).<!--en-->
+- a `\${name}` reference that is not declared but is one or two edits away from a property that is (`\${stableVerison}`),<!--en-->
+- a missing translation: a run of language-tagged lines (blank lines do not end it) that has no line for one of the languages, or a `\${en:'…'}` construct without an entry for a language the line is shown in, or with an entry for an undeclared one.<!--en-->
 - незарегистрированные имена виджетов (`\${widget:doesNotExist}`),<!--ru-->
 - параметры, которых нет у встроенного виджета (`\${widget:toc(maxDepth='2')}` — параметр называется `max-depth`),<!--ru-->
 - языковые маркеры `<\!--xx-->`, чей код отсутствует в `nrg.languages`,<!--ru-->
 - пути в `\${widget:import(path='...')}`, которых нет на диске или которые выходят за корень проекта,<!--ru-->
 - несбалансированные пары `<\!--nrg.ignore.begin-->` / `<\!--nrg.ignore.end-->`,<!--ru-->
 - незакрытые или одинокие блочные виджеты (`\${widget:if(...)}` без `\${widget:endIf}`, отдельный `\${widget:endDetails}`),<!--ru-->
-- ссылка `\${name}` на необъявленное свойство, отличающаяся на одну-две правки от объявленного (`\${stableVerison}`).<!--ru-->
+- ссылка `\${name}` на необъявленное свойство, отличающаяся на одну-две правки от объявленного (`\${stableVerison}`),<!--ru-->
+- пропущенный перевод: серия строк с языковыми маркерами (пустые строки её не прерывают), где нет строк для одного из языков, или конструкция `\${en:'…'}` без записи для языка, в котором выводится строка, либо с записью для необъявленного языка.<!--ru-->
 
 Warnings (reported, but the exit status stays `0`):<!--en-->
 Предупреждения (выводятся, но код возврата остаётся `0`):<!--ru-->
 
+- translations whose structure differs: inside a run of tagged lines one language has a heading, list item, table row, code block or paragraph that another one lacks (a warning, because translations legitimately wrap text differently),<!--en-->
 - any other undefined `\${name}` — it stays in the output as written, which is right for a shell example like `\${HOME}` and wrong for a forgotten property,<!--en-->
 - `\${pom.…}` / `\${npm.…}` / `\${gradle.…}` without a `:fallback` that the descriptor does not define, so it renders empty,<!--en-->
 - <code>&lt;!--&#92;@nrg.languages=...--&gt;</code> and other `nrg.*` keys written with the cosmetic `\@` escape — such a line still declares the property (see [Backslash escapes](#backslash-escapes)); write <code>&lt;&#92;!--@...--&gt;</code> to show it in an example.<!--en-->
+- переводы с разной структурой: внутри серии строк с маркерами у одного языка есть заголовок, пункт списка, строка таблицы, блок кода или абзац, которого нет у другого (предупреждение, потому что переводы законно по-разному переносят текст),<!--ru-->
 - любой другой необъявленный `\${name}` — он остаётся в выводе как есть, что правильно для shell-примера вроде `\${HOME}` и неправильно для забытого свойства,<!--ru-->
 - `\${pom.…}` / `\${npm.…}` / `\${gradle.…}` без `:fallback`, которых нет в дескрипторе, — они рендерятся пустыми,<!--ru-->
 - <code>&lt;!--&#92;@nrg.languages=...--&gt;</code> и другие ключи `nrg.*`, записанные с косметическим экранированием `\@`, — такая строка всё равно объявляет свойство (см. [«Обратные слэши и экранирование»](#обратные-слэши-и-экранирование)); чтобы показать её в примере, пишите <code>&lt;&#92;!--@...--&gt;</code>.<!--ru-->
@@ -135,6 +139,13 @@ exclusive with `--check` and `--stdout`.<!--en-->
 одна ошибка. Импорт с `run-generator='false'` проверяется только на<!--ru-->
 наличие файла — его содержимое не является шаблоном. `--validate`<!--ru-->
 несовместим с `--check` и `--stdout`.<!--ru-->
+
+A line meant for one language only is left out of the translation checks with<!--en-->
+`<\!--nrg.parity.ignore-->` (the marker is removed from the output);<!--en-->
+`<\!--\@nrg.validate.parity=false-->` turns them off for a template and the files it imports.<!--en-->
+Строку, предназначенную только для одного языка, исключают из проверки переводов<!--ru-->
+маркером `<\!--nrg.parity.ignore-->` (из вывода он удаляется);<!--ru-->
+`<\!--\@nrg.validate.parity=false-->` отключает эти проверки для шаблона и импортируемых им файлов.<!--ru-->
 
 #### ${en:'Print to stdout', ru:'Вывод в stdout'}
 

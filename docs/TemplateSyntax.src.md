@@ -405,6 +405,9 @@ To escape quotes, use character doubling, for example:<!--en-->
 - `\${en:'It''s working'}` → `${en:'It''s working', ru:'It''s working'}`
 - `\${en:"Text with ""quotes"""}` → `${en:"Text with ""quotes""", ru:"Text with ""quotes"""}`
 
+`--validate` checks that the languages stay together (see [Validating source templates](#validating-source-templates)): every run of language-tagged lines must have lines for each language in `nrg.languages`, and every `\${en:…, ru:…}` construct must name each language the line is shown in. A line that is meant for one language only is marked with `<\!--nrg.parity.ignore-->` (removed from the output); `<\!--\@nrg.validate.parity=false-->` turns these checks off for a template.<!--en-->
+`--validate` проверяет, что языки не расходятся (см. [«Валидация исходных шаблонов»](#валидация-исходных-шаблонов)): у каждой серии строк с языковыми маркерами должны быть строки для каждого языка из `nrg.languages`, а каждая конструкция `\${en:…, ru:…}` должна содержать все языки, в которых строка выводится. Строку, предназначенную только для одного языка, помечают `<\!--nrg.parity.ignore-->` (маркер удаляется из вывода); `<\!--\@nrg.validate.parity=false-->` отключает эти проверки для шаблона.<!--ru-->
+
 ### ${en:'Ignoring content', ru:'Игнорирование фрагментов'}
 
 To mark a fragment as an author note that must not appear in any generated file,<!--en-->

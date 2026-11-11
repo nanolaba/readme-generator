@@ -26,6 +26,10 @@ public class NRGConstants {
     public static final String PROPERTY_REQUIRE_SHA256_FOR_REMOTE = "nrg.requireSha256ForRemote";
     public static final String PROPERTY_NO_HEADER = "nrg.noHeader";
     public static final String PROPERTY_HEADER_TEXT = "nrg.headerText";
+    public static final String PROPERTY_VALIDATE_PARITY = "nrg.validate.parity";
+
+    /** Leaves a line out of the translation-parity checks of {@code --validate}; stripped from the output. */
+    public static final String PARITY_IGNORE_MARKER = "<!--nrg.parity.ignore-->";
 
     public static final String FREEZE_OPEN_MARKER_NAME = "nrg.freeze";
     public static final String FREEZE_CLOSE_MARKER_NAME = "/nrg.freeze";

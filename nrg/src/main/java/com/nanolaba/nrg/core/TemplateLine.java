@@ -94,6 +94,7 @@ public class TemplateLine {
         for (String language : config.getLanguages()) {
             line = line.replaceAll("<!-- *" + Pattern.quote(language) + " *-->", "");
         }
+        line = line.replace(NRGConstants.PARITY_IGNORE_MARKER, "");
         return NRGUtil.stripPropertyComments(line);
     }
 
