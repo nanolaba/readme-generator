@@ -166,12 +166,13 @@ if [[ -n "$INPUT_CHECK_PATHS" ]]; then
 fi
 
 # Only forwarded when set: release jars up to v1.2 do not know the option.
-if [[ "$INPUT_SANDBOX" == "true" ]]; then
-  ARGS+=(--sandbox)
-fi
-
 if [[ -n "$INPUT_ROOT" ]]; then
   ARGS+=(--root "$INPUT_ROOT")
+fi
+
+# Only forwarded when "true": release jars up to v1.3 do not know the option.
+if [[ "$INPUT_SANDBOX" == "true" ]]; then
+  ARGS+=(--sandbox)
 fi
 
 EXIT_CODE=0
