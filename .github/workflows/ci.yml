@@ -121,3 +121,5 @@ jobs:
           set "NRG_WRAPPER_HOME=%RUNNER_TEMP%\nrgw-home-2"
           call nrgw.cmd --version
           if not "%ERRORLEVEL%"=="69" exit /b 1
+          rem The expected 69 is still in ERRORLEVEL; without this the step would fail on it.
+          exit /b 0
