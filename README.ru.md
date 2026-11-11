@@ -293,6 +293,15 @@ nrg --check -f README.src.md      # код 1 и unified diff, если файл�
 - Commit the template together with the regenerated files.
 ```
 
+Вместо того чтобы подгонять этот фрагмент вручную, поручите NRG написать его по реальной конфигурации — какие файлы генерируются, какие шаблоны и фрагменты править, какие исходники встроены в документацию, языки и точные команды:
+
+```bash
+nrg --agent-rules --write AGENTS.md            # insert or update the block, keep the rest of the file
+nrg --agent-rules --write AGENTS.md --check    # exit 1 and a diff when the block is out of date
+```
+
+Блок стоит между `<!-- nrg:agent-rules:begin -->` и `<!-- nrg:agent-rules:end -->`; без `--write` команда просто печатает его. Запускайте форму с `--check` в CI — и инструкции больше не разойдутся с шаблонами.
+
 `./nrgw` — это [обёртка с закреплённой версией](#обёртка-nrgw-с-закреплённой-версией): закоммитьте её один раз (`nrg --init-wrapper`), и инструкция заработает в любой песочнице с Java, без установленного NRG. Собственные инструкции для агентов в этом репозитории устроены так же — см. его [AGENTS.md](AGENTS.md).
 
 Агента, открывшего сначала `README.md`, к нужному файлу направляет заголовок самого сгенерированного файла — он называет шаблон и просит перегенерировать файл, а не править его:
@@ -1865,7 +1874,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 11.11.2026 03:43:02
+Last updated: 11.11.2026 03:46:34
 ```
 
 </td></tr>
@@ -2323,7 +2332,7 @@ ${widget:endDetails}
 <details>
 <summary>Advanced</summary>
 
-inner *markdown* and 11.11.2026 03:43:02
+inner *markdown* and 11.11.2026 03:46:34
 
 </details>
 ```
@@ -2475,6 +2484,7 @@ nrg --classpath my-widgets.jar --widgets com.acme.widgets.Tag,com.acme.widgets.B
 - **Обёртка `nrgw`**: `nrg --init-wrapper [--wrapper-version X] [--wrapper-sha256 HEX]` записывает `nrgw`, `nrgw.cmd` и `.nrg/wrapper.properties` (версия релиза и sha256 его архива, взятый из опубликованной с релизом контрольной суммы). Закоммиченная в репозиторий, `./nrgw` один раз скачивает этот релиз в `~/.nrg/wrapper/`, проверяет и запускает его — одна и та же команда для контрибьютора, задачи CI и ИИ-агента в свежей песочнице, где установлена только Java. Код `69`, если обёртка не может предоставить NRG. Закрывает [#72](https://github.com/nanolaba/readme-generator/issues/72).
 - **`--manifest`, `--is-generated`, `--affected`**: запросы только на чтение, которые без генерации отвечают, что шаблон пишет и что читает. `--manifest` перечисляет для каждого шаблона выходной файл каждого языка и входы — импортируемые файлы (транзитивно), каталоги `fileTree`, дескрипторы за `${pom.…}` / `${npm.…}` / `${gradle.…}`, — а также `dynamic`-источники (удалённый импорт, `exec`, переменные окружения, дата); для инструментов — `--format json`. `--is-generated <file>` завершается с кодом `0` и называет шаблон, если файл сгенерирован (хук может запретить его правку), `--affected <file>…` печатает шаблоны, которые нужно перегенерировать. Без исходников используются все `*.src.md`, которые не импортирует другой шаблон. Закрывает [#73](https://github.com/nanolaba/readme-generator/issues/73).
 - **`--locate FILE:LINE[-LAST]`**: называет строку шаблона, из которой получается строка сгенерированного файла, и цепочку импортов, которая к ней ведёт, — `README.ru.md:340: docs/Launching.src.md:45 <- imported at README.src.md:36`, — сквозь ignore-блоки, блоки `if` / `details`, импорты с `lines=` / `region=` / `wrap=` / `heading-offset=` и замороженные области; вывод виджета, который дальше не проследить, указывает на строку виджета. Для агентов — `--format json`. Пользователи библиотеки получают ту же карту через `GeneratorConfig.setCollectSourceMap(true)` и `GenerationResult.getSourceMap()`; без этого ничего не собирается и вывод не меняется. Закрывает [#74](https://github.com/nanolaba/readme-generator/issues/74).
+- **`--agent-rules`**: печатает блок инструкций для `AGENTS.md` / `CLAUDE.md`, вычисленный по шаблонам, — сгенерированные файлы и их шаблоны, фрагменты для правки, исходники, встроенные в документацию, языки и точные команды проверки и генерации (`./nrgw`, если есть обёртка). `--write AGENTS.md` вставляет или заменяет блок между `<!-- nrg:agent-rules:begin -->` / `<!-- nrg:agent-rules:end -->`, не трогая остальной файл; с `--check` завершается с кодом `1` и печатает diff, если блок устарел. Закрывает [#75](https://github.com/nanolaba/readme-generator/issues/75).
 
 - **Обновлены runtime-зависимости**: `commons-cli` 1.9.0 → 1.11.0, `commons-lang3` 3.18.0 → 3.21.0, `commons-text` 1.12.0 → 1.15.0, `commons-io` 2.17.0 → 2.22.0, `nanolog` 1.0 → 1.1. Минимальной версией Java остаётся 8, а `nrg-maven-plugin` по-прежнему работает на Maven 3.9.9 и новее.
 - **GitHub Action устанавливает Java через `actions/setup-java` 6.2.0** (было 4.9.1): в запусках больше нет предупреждений `Node.js 20 is deprecated` и `setup-java v4 is deprecated`. До пользователей дойдёт с выпуском action, сопровождающим NRG 1.4.

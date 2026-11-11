@@ -48,6 +48,17 @@ An agent does not know that `README.md` is generated until something tells it. P
 - Commit the template together with the regenerated files.
 ```
 
+Rather than adapting this snippet by hand, let NRG write it from the real configuration — which outputs exist, which templates and fragments to edit, which source files are embedded, the languages and the exact commands:<!--en-->
+Вместо того чтобы подгонять этот фрагмент вручную, поручите NRG написать его по реальной конфигурации — какие файлы генерируются, какие шаблоны и фрагменты править, какие исходники встроены в документацию, языки и точные команды:<!--ru-->
+
+```bash
+nrg --agent-rules --write AGENTS.md            # insert or update the block, keep the rest of the file
+nrg --agent-rules --write AGENTS.md --check    # exit 1 and a diff when the block is out of date
+```
+
+The block sits between `<\!-- nrg:agent-rules:begin -->` and `<\!-- nrg:agent-rules:end -->`; `--agent-rules` alone prints it. Run the `--check` form in CI and the instructions can no longer drift from the templates.<!--en-->
+Блок стоит между `<\!-- nrg:agent-rules:begin -->` и `<\!-- nrg:agent-rules:end -->`; без `--write` команда просто печатает его. Запускайте форму с `--check` в CI — и инструкции больше не разойдутся с шаблонами.<!--ru-->
+
 `./nrgw` is the [pinned wrapper](#pinned-wrapper-nrgw): commit it once (`nrg --init-wrapper`) and the instruction works in any sandbox that has Java, with no NRG installed. This repository's own agent instructions follow the same pattern — see its [AGENTS.md](AGENTS.md).<!--en-->
 `./nrgw` — это [обёртка с закреплённой версией](#обёртка-nrgw-с-закреплённой-версией): закоммитьте её один раз (`nrg --init-wrapper`), и инструкция заработает в любой песочнице с Java, без установленного NRG. Собственные инструкции для агентов в этом репозитории устроены так же — см. его [AGENTS.md](AGENTS.md).<!--ru-->
 

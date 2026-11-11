@@ -235,6 +235,13 @@ public class NRG {
                 "print the template line that produces a line of a generated file (FILE:LINE or FILE:FIRST-LAST)");
         locate.setArgName("file:line");
         options.addOption(locate);
+        Option agentRules = new Option(null, "agent-rules", false,
+                "print the instructions block for AGENTS.md / CLAUDE.md computed from the templates");
+        options.addOption(agentRules);
+        Option write = new Option(null, "write", true,
+                "with --agent-rules: write the block into this file between its markers (with --check: verify it)");
+        write.setArgName("file");
+        options.addOption(write);
 
         CommandLineParser parser = new DefaultParser();
         CommandLine cmd = parser.parse(options, args);
@@ -327,6 +334,32 @@ public class NRG {
             lineEndingMode = LineEndings.Mode.parse(cmd.getOptionValue(lineEnding));
         } catch (IllegalArgumentException e) {
             throw new ParseException(e.getMessage());
+        }
+
+        if (cmd.hasOption(write) && !cmd.hasOption(agentRules)) {
+            throw new ParseException("--write requires --agent-rules");
+        }
+        if (cmd.hasOption(agentRules)) {
+            if (toStdout || validateMode || cmd.hasOption(manifest) || cmd.hasOption(isGenerated)
+                    || cmd.hasOption(affected) || cmd.hasOption(locate)) {
+                throw new ParseException("--agent-rules cannot be combined with other modes");
+            }
+            if (checkMode && !cmd.hasOption(write)) {
+                throw new ParseException("--agent-rules --check needs --write <file> to know which file to verify");
+            }
+            List<File> ruleSources = collectSourceFiles(cmd, file);
+            if (ruleSources == null) {
+                return EXIT_USAGE;
+            }
+            List<NRGWidget> widgetsForRules = new ArrayList<>(cliWidgets == null ? Collections.emptyList() : cliWidgets);
+            widgetsForRules.addAll(additionalWidgets);
+            try {
+                return new ManifestCommand(sourceCharset, widgetsForRules).load(ruleSources)
+                        .agentRules(cmd.hasOption(write) ? new File(cmd.getOptionValue(write)) : null, checkMode);
+            } catch (IOException e) {
+                LOG.error(e, () -> "Cannot write the agent rules");
+                return EXIT_TEMPLATE_ERROR;
+            }
         }
 
         int queryModes = (cmd.hasOption(manifest) ? 1 : 0) + (cmd.hasOption(isGenerated) ? 1 : 0)
