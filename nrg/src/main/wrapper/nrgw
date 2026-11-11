@@ -1,0 +1,103 @@
+#!/bin/sh
+# NRG wrapper. Runs the Nanolaba Readme Generator release pinned in .nrg/wrapper.properties,
+# downloading it once into ~/.nrg/wrapper/<version>/ (or $NRG_WRAPPER_HOME/<version>/).
+# Created by `nrg --init-wrapper`; commit it together with .nrg/wrapper.properties.
+#
+# Exit status: whatever NRG returns, or 69 when the wrapper cannot provide NRG
+# (no Java, download failed, checksum mismatch).
+set -e
+
+die() {
+  echo "nrgw: $*" >&2
+  exit 69
+}
+
+script_dir=$(cd "$(dirname "$0")" && pwd)
+props="$script_dir/.nrg/wrapper.properties"
+[ -f "$props" ] || die "$props not found; run 'nrg --init-wrapper' to create it"
+
+prop() {
+  sed -n "s/^[[:space:]]*$1[[:space:]]*=[[:space:]]*//p" "$props" | tail -n 1 | tr -d '\r[:space:]'
+}
+
+version=$(prop version)
+sha256=$(prop sha256 | tr 'A-F' 'a-f')
+url=$(prop distributionUrl)
+[ -n "$version" ] || die "no version= in $props"
+[ -n "$url" ] || url="https://github.com/nanolaba/readme-generator/releases/download/v$version/readme-generator-$version.zip"
+
+home=${NRG_WRAPPER_HOME:-"$HOME/.nrg/wrapper"}
+mkdir -p "$home"
+home=$(cd "$home" && pwd)
+dir="$home/$version"
+jar="$dir/nrg.jar"
+
+if [ -n "$JAVA_HOME" ] && [ -x "$JAVA_HOME/bin/java" ]; then
+  java="$JAVA_HOME/bin/java"
+elif command -v java >/dev/null 2>&1; then
+  java=java
+else
+  die "NRG needs Java 8 or newer: install it or set JAVA_HOME"
+fi
+
+download() {
+  if command -v curl >/dev/null 2>&1; then
+    curl -fsSL -o "$2" "$1"
+  elif command -v wget >/dev/null 2>&1; then
+    wget -q -O "$2" "$1"
+  else
+    die "curl or wget is needed to download NRG"
+  fi
+}
+
+sha256_of() {
+  if command -v sha256sum >/dev/null 2>&1; then
+    sha256sum "$1" | awk '{print $1}'
+  elif command -v shasum >/dev/null 2>&1; then
+    shasum -a 256 "$1" | awk '{print $1}'
+  else
+    openssl dgst -sha256 "$1" | awk '{print $NF}'
+  fi
+}
+
+unpack() {
+  if command -v unzip >/dev/null 2>&1; then
+    unzip -qo "$1" -d "$2"
+  elif command -v bsdtar >/dev/null 2>&1; then
+    bsdtar -xf "$1" -C "$2"
+  elif command -v python3 >/dev/null 2>&1; then
+    python3 -m zipfile -e "$1" "$2"
+  elif command -v jar >/dev/null 2>&1; then
+    (cd "$2" && jar xf "$1")
+  else
+    die "unzip, bsdtar, python3 or jar is needed to unpack NRG"
+  fi
+}
+
+if [ ! -f "$jar" ]; then
+  tmp="$dir.download.$$"
+  rm -rf "$tmp"
+  mkdir -p "$tmp" "$dir"
+  trap 'rm -rf "$tmp"' EXIT
+  echo "nrgw: downloading NRG $version from $url" >&2
+  download "$url" "$tmp/nrg.zip" || die "download failed: $url"
+  actual=$(sha256_of "$tmp/nrg.zip")
+  if [ -z "$sha256" ]; then
+    # Without a pin, the checksum published next to the release still catches a broken
+    # download; pin it so that a replaced release asset is caught as well.
+    if download "$url.sha256" "$tmp/nrg.zip.sha256" 2>/dev/null; then
+      sha256=$(awk '{print $1}' "$tmp/nrg.zip.sha256" | tr 'A-F' 'a-f')
+    fi
+    [ -n "$sha256" ] || die "no sha256= in $props and no $url.sha256 to check the download against"
+    echo "nrgw: pin this download by adding sha256=$actual to $props" >&2
+  fi
+  [ "$actual" = "$sha256" ] || die "sha256 mismatch for $url: expected $sha256, got $actual"
+  unpack "$tmp/nrg.zip" "$tmp"
+  found=$(find "$tmp" -name nrg.jar | head -n 1)
+  [ -n "$found" ] || die "nrg.jar not found in $url"
+  mv -f "$found" "$jar"
+  rm -rf "$tmp"
+  trap - EXIT
+fi
+
+exec "$java" -Dfile.encoding=UTF-8 -cp "$jar" com.nanolaba.nrg.NRG "$@"

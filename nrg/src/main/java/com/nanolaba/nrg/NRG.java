@@ -205,6 +205,17 @@ public class NRG {
                         "or github (workflow annotations on stdout)");
         format.setArgName("text|json|github");
         options.addOption(format);
+        Option initWrapper = new Option(null, "init-wrapper", false,
+                "write nrgw, nrgw.cmd and .nrg/wrapper.properties into the current directory and exit");
+        options.addOption(initWrapper);
+        Option wrapperVersion = new Option(null, "wrapper-version", true,
+                "with --init-wrapper: the NRG release to pin (default: this NRG's version)");
+        wrapperVersion.setArgName("version");
+        options.addOption(wrapperVersion);
+        Option wrapperSha256 = new Option(null, "wrapper-sha256", true,
+                "with --init-wrapper: sha256 of the release zip (default: the checksum published with the release)");
+        wrapperSha256.setArgName("hex");
+        options.addOption(wrapperSha256);
 
         CommandLineParser parser = new DefaultParser();
         CommandLine cmd = parser.parse(options, args);
@@ -222,6 +233,18 @@ public class NRG {
         if (cmd.hasOption(help)) {
             printHelp(options);
             return 0;
+        }
+        if (cmd.hasOption(initWrapper)) {
+            try {
+                return new WrapperInstaller().install(new File("."),
+                        cmd.getOptionValue(wrapperVersion), cmd.getOptionValue(wrapperSha256));
+            } catch (IOException e) {
+                LOG.error(e, () -> "Cannot write the wrapper files");
+                return EXIT_TEMPLATE_ERROR;
+            }
+        }
+        if (cmd.hasOption(wrapperVersion) || cmd.hasOption(wrapperSha256)) {
+            throw new ParseException("--wrapper-version and --wrapper-sha256 require --init-wrapper");
         }
 
         Charset sourceCharset = cmd.getParsedOptionValue(charset, DEFAULT_CHARSET);

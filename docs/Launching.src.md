@@ -34,6 +34,35 @@ To see the list of available options for the console application, type:<!--en-->
 nrg --help
 ```
 
+#### ${en:'Pinned wrapper: nrgw', ru:'Обёртка nrgw с закреплённой версией'}
+
+`nrg --init-wrapper` writes three files into the current directory — `nrgw`, `nrgw.cmd` and<!--en-->
+`.nrg/wrapper.properties` with the release version and the sha256 of its zip. Commit them, and<!--en-->
+anyone who clones the repository — a contributor, a CI job, a coding agent in a fresh sandbox —<!--en-->
+runs that exact NRG with one command and nothing installed but Java, the same idea as `mvnw` / `gradlew`:<!--en-->
+`nrg --init-wrapper` записывает в текущий каталог три файла — `nrgw`, `nrgw.cmd` и<!--ru-->
+`.nrg/wrapper.properties` с версией релиза и sha256 его архива. Закоммитьте их — и любой, кто<!--ru-->
+склонирует репозиторий, — контрибьютор, задача CI, ИИ-агент в свежей песочнице, — запускает именно<!--ru-->
+эту версию NRG одной командой, установив только Java. Та же идея, что у `mvnw` / `gradlew`:<!--ru-->
+
+```bash
+nrg --init-wrapper --wrapper-version ${stableVersion}
+./nrgw -f README.src.md        # nrgw.cmd -f README.src.md on Windows
+```
+
+On the first run the wrapper downloads the release zip from GitHub into `~/.nrg/wrapper/<version>/`<!--en-->
+(`NRG_WRAPPER_HOME` overrides the location), checks it against the pinned sha256 and runs it;<!--en-->
+later runs work offline. A missing Java, a failed download or a checksum mismatch stops it with<!--en-->
+exit code `69`; otherwise it exits with NRG's own code. `--wrapper-version` defaults to the running<!--en-->
+NRG's version, and the checksum is taken from the `.sha256` file published with the release unless<!--en-->
+`--wrapper-sha256 <hex>` names it. Run `--init-wrapper` again to move to another release.<!--en-->
+При первом запуске обёртка скачивает архив релиза с GitHub в `~/.nrg/wrapper/<version>/`<!--ru-->
+(место переопределяет `NRG_WRAPPER_HOME`), сверяет его с закреплённым sha256 и запускает;<!--ru-->
+дальнейшие запуски работают без сети. Если нет Java, загрузка не удалась или не совпала контрольная<!--ru-->
+сумма, обёртка завершается с кодом `69`; иначе — с кодом самого NRG. По умолчанию `--wrapper-version` —<!--ru-->
+версия запущенного NRG, а контрольная сумма берётся из файла `.sha256`, опубликованного с релизом,<!--ru-->
+если её не указать через `--wrapper-sha256 <hex>`. Чтобы перейти на другой релиз, запустите `--init-wrapper` ещё раз.<!--ru-->
+
 #### ${en:'Verifying generated files (CI mode)', ru:'Проверка сгенерированных файлов (режим CI)'}
 
 Use `--check` to verify that files on disk match what NRG would<!--en-->

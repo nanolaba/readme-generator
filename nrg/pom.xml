@@ -117,6 +117,12 @@
                 <directory>src/main/resources</directory>
                 <filtering>true</filtering>
             </resource>
+            <!-- Wrapper scripts written by the init-wrapper CLI option: shell syntax, so never filtered. -->
+            <resource>
+                <directory>src/main/wrapper</directory>
+                <targetPath>wrapper</targetPath>
+                <filtering>false</filtering>
+            </resource>
         </resources>
     </build>
 </project>

@@ -48,3 +48,71 @@ jobs:
           name: surefire-reports-jdk${{ matrix.java }}
           path: '**/target/surefire-reports/'
           if-no-files-found: ignore
+
+  wrapper:
+    # nrgw / nrgw.cmd written by HEAD's --init-wrapper, run against the latest release on every
+    # platform: download, checksum check, cache reuse and refusal of a wrong checksum.
+    name: Wrapper (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ ubuntu-latest, macos-latest, windows-latest ]
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@77dd5b2ce225ea11469928ac317850245a74ae78 # v6.2.0
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: maven
+
+      - name: Build the jar
+        run: mvn --batch-mode --no-transfer-progress -pl nrg package -DskipTests -Dgpg.skip=true -Dmaven.javadoc.skip=true
+
+      - name: Create a wrapper for the stable release
+        run: |
+          STABLE="$(sed -n 's:.*<stableVersion>\(.*\)</stableVersion>.*:\1:p' pom.xml)"
+          test -n "$STABLE"
+          mkdir -p "$RUNNER_TEMP/proj"
+          cd "$RUNNER_TEMP/proj"
+          java -jar "$GITHUB_WORKSPACE/nrg/target/nrg.jar" --init-wrapper --wrapper-version "$STABLE"
+          grep -q "^sha256=[0-9a-f]\{64\}$" .nrg/wrapper.properties
+          printf '<!--@nrg.languages=en-->\nHello\n' > README.src.md
+          echo "STABLE=$STABLE" >> "$GITHUB_ENV"
+
+      - name: Run the shell wrapper
+        if: runner.os != 'Windows'
+        run: |
+          cd "$RUNNER_TEMP/proj"
+          export NRG_WRAPPER_HOME="$RUNNER_TEMP/nrgw-home"
+          ./nrgw --version | grep -F "$STABLE"
+          ./nrgw -f README.src.md
+          test -f README.md
+          ./nrgw --version | grep -F "$STABLE"   # second run: from the cache
+          sed -i.bak 's/^sha256=.*/sha256=0000000000000000000000000000000000000000000000000000000000000000/' .nrg/wrapper.properties
+          set +e
+          NRG_WRAPPER_HOME="$RUNNER_TEMP/nrgw-home-2" ./nrgw --version
+          code=$?
+          set -e
+          test "$code" = 69
+
+      - name: Run the batch wrapper
+        if: runner.os == 'Windows'
+        shell: cmd
+        run: |
+          cd /d "%RUNNER_TEMP%\proj"
+          set "NRG_WRAPPER_HOME=%RUNNER_TEMP%\nrgw-home"
+          call nrgw.cmd --version | findstr /c:"%STABLE%" || exit /b 1
+          call nrgw.cmd -f README.src.md || exit /b 1
+          if not exist README.md exit /b 1
+          call nrgw.cmd --version | findstr /c:"%STABLE%" || exit /b 1
+          powershell -NoProfile -Command "(Get-Content .nrg\wrapper.properties) -replace '^sha256=.*', ('sha256=' + ('0' * 64)) | Set-Content .nrg\wrapper.properties"
+          set "NRG_WRAPPER_HOME=%RUNNER_TEMP%\nrgw-home-2"
+          call nrgw.cmd --version
+          if not "%ERRORLEVEL%"=="69" exit /b 1
