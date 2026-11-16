@@ -39,7 +39,7 @@
 
         <junit5.version>5.14.4</junit5.version>
         <commons-cli.version>1.11.0</commons-cli.version>
-        <commons-lang3.version>3.21.0</commons-lang3.version>
+        <commons-lang3.version>3.22.0</commons-lang3.version>
         <commons-text.version>1.15.0</commons-text.version>
         <commons-io.version>2.22.0</commons-io.version>
 
