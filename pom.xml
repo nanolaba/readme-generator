@@ -35,7 +35,7 @@
 
         <!-- libs-->
         <nanolaba-sugar.version>1.0</nanolaba-sugar.version>
-        <nanolaba-nanolog.version>1.1</nanolaba-nanolog.version>
+        <nanolaba-nanolog.version>1.2</nanolaba-nanolog.version>
 
         <junit5.version>5.14.4</junit5.version>
         <commons-cli.version>1.11.0</commons-cli.version>
