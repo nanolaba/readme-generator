@@ -5,8 +5,8 @@ This section summarises the main user-visible changes in each release. For full 
 
 ### ${en:'Unreleased', ru:'В разработке'} (${devVersion})<!--toc.ignore-->
 
-- **Updated runtime dependencies**: `nanolog` 1.1 → 1.3. Log output, `--log-level` / `NRG_LOG_LEVEL` and the stderr-only logging of `--format json` are unchanged.<!--en-->
-- **Обновлены runtime-зависимости**: `nanolog` 1.1 → 1.3. Вывод лога, `--log-level` / `NRG_LOG_LEVEL` и логирование только в stderr при `--format json` не изменились.<!--ru-->
+- **Updated runtime dependencies**: `nanolog` 1.1 → 1.3, `commons-lang3` 3.21.0 → 3.22.0. Log output, `--log-level` / `NRG_LOG_LEVEL` and the stderr-only logging of `--format json` are unchanged.<!--en-->
+- **Обновлены runtime-зависимости**: `nanolog` 1.1 → 1.3, `commons-lang3` 3.21.0 → 3.22.0. Вывод лога, `--log-level` / `NRG_LOG_LEVEL` и логирование только в stderr при `--format json` не изменились.<!--ru-->
 
 ### 1.4<!--toc.ignore-->
 

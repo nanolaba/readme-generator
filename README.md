@@ -1962,7 +1962,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 17.11.2026 03:03:10
+Last updated: 17.11.2026 03:08:33
 ```
 
 </td></tr>
@@ -2419,7 +2419,7 @@ ${widget:endDetails}
 <details>
 <summary>Advanced</summary>
 
-inner *markdown* and 17.11.2026 03:03:10
+inner *markdown* and 17.11.2026 03:08:33
 
 </details>
 ```
@@ -2564,7 +2564,7 @@ This section summarises the main user-visible changes in each release. For full 
 
 ### Unreleased (1.5-SNAPSHOT)
 
-- **Updated runtime dependencies**: `nanolog` 1.1 → 1.3. Log output, `--log-level` / `NRG_LOG_LEVEL` and the stderr-only logging of `--format json` are unchanged.
+- **Updated runtime dependencies**: `nanolog` 1.1 → 1.3, `commons-lang3` 3.21.0 → 3.22.0. Log output, `--log-level` / `NRG_LOG_LEVEL` and the stderr-only logging of `--format json` are unchanged.
 
 ### 1.4
 
