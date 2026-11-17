@@ -1971,7 +1971,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 11.11.2026 04:50:52
+Last updated: 17.11.2026 03:03:10
 ```
 
 </td></tr>
@@ -1984,7 +1984,7 @@ ${widget:date(pattern = 'dd.MM.yyyy')}
 </td><td>
 
 ```markdown
-11.11.2026
+17.11.2026
 ```
 
 </td></tr>
@@ -2429,7 +2429,7 @@ ${widget:endDetails}
 <details>
 <summary>Advanced</summary>
 
-inner *markdown* and 11.11.2026 04:50:52
+inner *markdown* and 17.11.2026 03:03:11
 
 </details>
 ```
@@ -2572,6 +2572,8 @@ nrg --classpath my-widgets.jar --widgets com.acme.widgets.Tag,com.acme.widgets.B
 В разделе перечислены основные пользовательские изменения в каждой версии. Подробности — в истории коммитов.
 
 ### В разработке (1.5-SNAPSHOT)
+
+- **Обновлены runtime-зависимости**: `nanolog` 1.1 → 1.3. Вывод лога, `--log-level` / `NRG_LOG_LEVEL` и логирование только в stderr при `--format json` не изменились.
 
 ### 1.4
 
@@ -2718,4 +2720,4 @@ nrg --classpath my-widgets.jar --widgets com.acme.widgets.Tag,com.acme.widgets.B
 
 
 ---
-*Дата последнего обновления: 11.11.2026*
+*Дата последнего обновления: 17.11.2026*

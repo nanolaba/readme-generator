@@ -1962,7 +1962,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 11.11.2026 04:50:51
+Last updated: 17.11.2026 03:03:10
 ```
 
 </td></tr>
@@ -1975,7 +1975,7 @@ ${widget:date(pattern = 'dd.MM.yyyy')}
 </td><td>
 
 ```markdown
-11.11.2026
+17.11.2026
 ```
 
 </td></tr>
@@ -2419,7 +2419,7 @@ ${widget:endDetails}
 <details>
 <summary>Advanced</summary>
 
-inner *markdown* and 11.11.2026 04:50:51
+inner *markdown* and 17.11.2026 03:03:10
 
 </details>
 ```
@@ -2563,6 +2563,8 @@ Other tools in the same space — useful if **Nanolaba Readme Generator (NRG)** 
 This section summarises the main user-visible changes in each release. For full details, see the git history.
 
 ### Unreleased (1.5-SNAPSHOT)
+
+- **Updated runtime dependencies**: `nanolog` 1.1 → 1.3. Log output, `--log-level` / `NRG_LOG_LEVEL` and the stderr-only logging of `--format json` are unchanged.
 
 ### 1.4
 
@@ -2708,4 +2710,4 @@ If **Nanolaba Readme Generator (NRG)** keeps your multi-language READMEs in sync
 
 
 ---
-*Last updated: 11.11.2026*
+*Last updated: 17.11.2026*
