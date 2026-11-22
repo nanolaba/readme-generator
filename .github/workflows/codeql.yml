@@ -1,0 +1,41 @@
+# CodeQL: static analysis of the Java sources and of the workflows and nrg-action/action.yml; the alerts go
+# to the Security tab of the repository. Build mode none reads the sources without Maven, so the analysis
+# does not depend on the build or on the nanolog SNAPSHOT.
+name: CodeQL
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  schedule:
+    - cron: '23 5 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  analyze:
+    name: CodeQL ${{ matrix.language }}
+    runs-on: ubuntu-latest
+    permissions:
+      # upload the results to code scanning
+      security-events: write
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [ java-kotlin, actions ]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: github/codeql-action/init@1bd86f2fdb4b86187fa4059f16f31a3202acc9ea # v4.39.4
+        with:
+          languages: ${{ matrix.language }}
+          build-mode: none
+
+      - uses: github/codeql-action/analyze@1bd86f2fdb4b86187fa4059f16f31a3202acc9ea # v4.39.4
+        with:
+          category: /language:${{ matrix.language }}

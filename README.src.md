@@ -17,6 +17,7 @@ ${widget:badge(type='maven-central', coordinates='com.nanolaba:readme-generator'
 ${widget:badge(type='custom', label='javadoc', message='${stableVersion}', color='blue', url='${javadoc}/${stableVersion}', alt='NRG API documentation on javadoc.io')}
 ${widget:badge(type='custom', label='java', message='${pom.properties.maven.compiler.target}+', color='blue', url='https://adoptium.net/', alt='Java 8 or newer')}
 ${widget:badge(type='license', value='Apache-2.0', url='https://www.apache.org/licenses/LICENSE-2.0', alt='NRG is open source under the Apache 2.0 license')}
+[![OpenSSF Best Practices](https://www.bestpractices.dev/projects/17011/badge)](https://www.bestpractices.dev/projects/17011)
 ${widget:badge(type='github-stars', repo='nanolaba/readme-generator')}
 
 # Nanolaba Readme Generator (NRG): ${en:'one template for README in every language, for AI coding agents and CI', ru:'один шаблон для README на всех языках — для ИИ-агентов и CI'}

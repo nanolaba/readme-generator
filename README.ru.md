@@ -10,6 +10,7 @@
 [![NRG API documentation on javadoc.io](https://img.shields.io/badge/javadoc-1.4-blue.svg)](https://javadoc.io/doc/com.nanolaba/readme-generator/1.4)
 [![Java 8 or newer](https://img.shields.io/badge/java-8+-blue.svg)](https://adoptium.net/)
 [![NRG is open source under the Apache 2.0 license](https://img.shields.io/badge/License-Apache--2.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
+[![OpenSSF Best Practices](https://www.bestpractices.dev/projects/17011/badge)](https://www.bestpractices.dev/projects/17011)
 [![GitHub stars](https://img.shields.io/github/stars/nanolaba/readme-generator?style=social)](https://github.com/nanolaba/readme-generator)
 
 # Nanolaba Readme Generator (NRG): один шаблон для README на всех языках — для ИИ-агентов и CI
@@ -2087,7 +2088,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 22.11.2026 19:44:27
+Last updated: 22.11.2026 20:04:01
 ```
 
 </td></tr>
@@ -2545,7 +2546,7 @@ ${widget:endDetails}
 <details>
 <summary>Advanced</summary>
 
-inner *markdown* and 22.11.2026 19:44:27
+inner *markdown* and 22.11.2026 20:04:01
 
 </details>
 ```
