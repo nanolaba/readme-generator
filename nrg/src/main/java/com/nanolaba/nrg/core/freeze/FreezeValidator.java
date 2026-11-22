@@ -17,12 +17,14 @@ public final class FreezeValidator {
     private FreezeValidator() {
     }
 
+    /**
+     * A {@code null} body yields no diagnostics (the parser treats it as empty). A {@code null}
+     * {@code declaredLanguages} skips the {@code source-lang} check altogether: with nothing
+     * declared there is nothing to check against.
+     */
     public static List<Validator.Diagnostic> validate(File file, String body, List<String> declaredLanguages) {
-        List<Validator.Diagnostic> out = new ArrayList<>();
-        if (body == null) return out;
-
         FreezeBlockParser.Result parsed = FreezeBlockParser.parse(body, file);
-        out.addAll(parsed.getDiagnostics());
+        List<Validator.Diagnostic> out = new ArrayList<>(parsed.getDiagnostics());
 
         for (FreezeMarker m : parsed.getMarkers()) {
             if (m.getSourceLang().isPresent()) {
@@ -31,8 +33,7 @@ public final class FreezeValidator {
                     out.add(new Validator.Diagnostic(file, m.getOpenLineIndex() + 1, Validator.Severity.ERROR,
                             "freeze-block", "freeze id='" + m.getId() + "' at line " + (m.getOpenLineIndex() + 1)
                                     + ": source-lang '" + lang + "' is not declared in nrg.languages "
-                                    + "(available: " + (declaredLanguages == null
-                                            ? "<none>" : String.join(", ", declaredLanguages)) + ")",
+                                    + "(available: " + String.join(", ", declaredLanguages) + ")",
                             null));
                 }
             }

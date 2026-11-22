@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -87,5 +88,125 @@ class StaleTranslationFinderTest {
     @Test
     public void testSingleLanguageTemplateHasNothingToCompare() {
         assertTrue(StaleTranslationFinder.find(FILE, "a<!--en-->\n", "b<!--en-->\n", Arrays.asList("en")).isEmpty());
+        assertTrue(StaleTranslationFinder.find(FILE, "a<!--en-->\n", "b<!--en-->\n", null).isEmpty());
+    }
+
+    @Test
+    public void testAddedAndDeletedFilesHaveNothingStale() {
+        String body = "One<!--en-->\nОдин<!--ru-->\n";
+        assertTrue(find("", body).isEmpty(), "every language of a new file is added");
+        assertTrue(find(null, body).isEmpty());
+        assertTrue(find(body, "").isEmpty(), "nothing is left of a deleted file");
+        assertTrue(find(body, null).isEmpty());
+    }
+
+    @Test
+    public void testLastLineWithoutTrailingNewline() {
+        List<StaleTranslationFinder.Finding> f = find("One<!--en-->\nОдин<!--ru-->", "One<!--en-->\nОдин!<!--ru-->");
+
+        assertEquals(1, f.size());
+        assertEquals(FILE, f.get(0).getFile());
+        assertEquals(2, f.get(0).getLastLine());
+        assertEquals(Collections.singleton("ru"), f.get(0).getChanged());
+        assertEquals("Один", f.get(0).getOldText().get("ru"));
+        assertEquals("Один!", f.get(0).getNewText().get("ru"));
+    }
+
+    @Test
+    public void testRemovedLineRightBeforeAGroupBelongsToIt() {
+        List<StaleTranslationFinder.Finding> removed = find(
+                "Old<!--en-->\nOne<!--en-->\nОдин<!--ru-->\n",
+                "One<!--en-->\nОдин<!--ru-->\n");
+        assertEquals(1, removed.size());
+        assertEquals(Collections.singleton("en"), removed.get(0).getChanged());
+        assertEquals(Collections.singleton("ru"), removed.get(0).getUnchanged());
+        assertEquals("Old", removed.get(0).getOldText().get("en"));
+        assertEquals("", removed.get(0).getNewText().get("en"));
+
+        List<StaleTranslationFinder.Finding> replaced = find(
+                "Intro\nOld<!--en-->\nOne<!--en-->\nОдин<!--ru-->\n",
+                "Intro\nShared text\nOne<!--en-->\nОдин<!--ru-->\n");
+        assertEquals(1, replaced.size(), "a tagged line replaced by a shared one sits after its replacement");
+        assertEquals(3, replaced.get(0).getFirstLine());
+        assertEquals("Old", replaced.get(0).getOldText().get("en"));
+    }
+
+    @Test
+    public void testRepeatedLineAppendedOrRemovedAtTheEnd() {
+        List<StaleTranslationFinder.Finding> appended = find(
+                "One<!--en-->\nОдин<!--ru-->\n",
+                "One<!--en-->\nОдин<!--ru-->\nОдин<!--ru-->\n");
+        assertEquals(1, appended.size());
+        assertEquals(3, appended.get(0).getLastLine());
+        assertEquals(Collections.singleton("ru"), appended.get(0).getChanged());
+        assertEquals("Один", appended.get(0).getNewText().get("ru"));
+
+        List<StaleTranslationFinder.Finding> dropped = find(
+                "One<!--en-->\nОдин<!--ru-->\nОдин<!--ru-->\n",
+                "One<!--en-->\nОдин<!--ru-->\n");
+        assertEquals(1, dropped.size());
+        assertEquals(Collections.singleton("ru"), dropped.get(0).getChanged());
+        assertEquals("Один", dropped.get(0).getOldText().get("ru"));
+    }
+
+    @Test
+    public void testUnchangedGroupBetweenEditedSharedLines() {
+        assertTrue(find("Alpha<!--en-->\nАльфа<!--ru-->\nend one\n",
+                        "Intro\nAlpha<!--en-->\nАльфа<!--ru-->\nend two\n").isEmpty(),
+                "a line added before the group");
+        assertTrue(find("Intro\nAlpha<!--en-->\nАльфа<!--ru-->\nend one\n",
+                        "Alpha<!--en-->\nАльфа<!--ru-->\nend two\n").isEmpty(),
+                "a line removed before the group");
+        assertTrue(find("Intro\nAlpha<!--en-->\nold note\nАльфа<!--ru-->\n",
+                        "Alpha<!--en-->\n\nАльфа<!--ru-->\n").isEmpty(),
+                "a line removed before the group and a note inside it blanked");
+    }
+
+    @Test
+    public void testEditsArePairedWithinTheirOwnHunk() {
+        List<StaleTranslationFinder.Finding> f = find(
+                "Intro one\nShared\n${en:'Title', ru:'Заголовок'}\nEnd\n",
+                "Intro two\nShared\n${en:'New title', ru:'Заголовок'}\nEnd\n");
+        assertEquals(1, f.size());
+        assertEquals("construct", f.get(0).getKind());
+        assertEquals(3, f.get(0).getFirstLine());
+        assertEquals("Title", f.get(0).getOldText().get("en"));
+
+        assertTrue(find("${en:'Old', ru:'Старый'}\nShared\nEnd\n",
+                        "Shared\n${en:'New', ru:'Старый'}\nEnd\n").isEmpty(),
+                "a construct moved past an unchanged line is a removal and an addition, not an edit");
+    }
+
+    @Test
+    public void testConstructAtTheStartOfALine() {
+        List<StaleTranslationFinder.Finding> f = find(
+                "${en:'Title', ru:'Заголовок'}\n",
+                "${en:'New title', ru:'Заголовок'}\n");
+        assertEquals(1, f.size());
+        assertEquals("construct", f.get(0).getKind());
+        assertEquals(1, f.get(0).getFirstLine());
+    }
+
+    @Test
+    public void testEscapedConstructIsNotATranslation() {
+        assertTrue(find("\\${en:'Title', ru:'Заголовок'}\n", "\\${en:'New title', ru:'Заголовок'}\n").isEmpty());
+
+        List<StaleTranslationFinder.Finding> f = find(
+                "\\${x} ${en:'Title', ru:'Заголовок'}\n",
+                "\\${x} ${en:'New title', ru:'Заголовок'}\n");
+        assertEquals(1, f.size(), "a real construct after an escaped one still counts");
+    }
+
+    @Test
+    public void testFindingsAreSortedByLine() {
+        List<StaleTranslationFinder.Finding> f = find(
+                "# ${en:'Title', ru:'Заголовок'}\n\nFast<!--en-->\nБыстро<!--ru-->\n",
+                "# ${en:'New title', ru:'Заголовок'}\n\nFaster<!--en-->\nБыстро<!--ru-->\n");
+
+        assertEquals(2, f.size());
+        assertEquals("construct", f.get(0).getKind());
+        assertEquals(1, f.get(0).getFirstLine());
+        assertEquals("block", f.get(1).getKind());
+        assertEquals(3, f.get(1).getFirstLine());
     }
 }

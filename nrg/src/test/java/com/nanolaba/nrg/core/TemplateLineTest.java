@@ -1,18 +1,24 @@
 package com.nanolaba.nrg.core;
 
+import com.nanolaba.logging.MemoryLogger;
 import com.nanolaba.nrg.DefaultNRGTest;
 import com.nanolaba.nrg.widgets.DefaultWidget;
 import com.nanolaba.nrg.widgets.WidgetTag;
+import org.apache.commons.text.TextStringBuilder;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
+import static com.nanolaba.logging.LogEntry.LogEntryLevel.ERROR;
 import static com.nanolaba.nrg.core.NRGConstants.PROPERTY_LANGUAGES;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -31,6 +37,92 @@ class TemplateLineTest extends DefaultNRGTest {
     public void testLineCreation() {
         TemplateLine line = line("test");
         assertEquals("test", line.getLine());
+        assertEquals(7, new TemplateLine(line.getConfig(), "test", 7).getLineNumber());
+    }
+
+    @Test
+    public void testFillLineWithPropertiesSkipsAnInvisibleLine() {
+        assertNull(line("text <!--en-->", "en", "ru").fillLineWithProperties("ru"));
+        assertEquals("text <!--en-->", line("text <!--en-->", "en", "ru").fillLineWithProperties("en"));
+    }
+
+    @Test
+    public void testRenderLanguagePropertiesNeedsALanguage() {
+        TemplateLine l = line("", "en", "ru");
+        String construct = "${en:'a', ru:'b'}";
+        assertEquals(construct, l.renderLanguageProperties(construct, null));
+
+        l.getConfig().setLanguages(Collections.<String>emptyList());
+        assertEquals(construct, l.renderLanguageProperties(construct, "en"));
+    }
+
+    @Test
+    public void testBeforeRenderLineHookOfEnabledWidgets() {
+        TemplateLine l = line("draft text", "en");
+        DefaultWidget rewriter = new DefaultWidget() {
+            @Override
+            public String getName() {
+                return "rewriter";
+            }
+
+            @Override
+            public String getBody(WidgetTag tag, GeneratorConfig config, String language) {
+                return "";
+            }
+
+            @Override
+            public void beforeRenderLine(TextStringBuilder line) {
+                line.replaceAll("draft", "final");
+            }
+        };
+        l.getConfig().getWidgets().add(rewriter);
+        assertEquals("final text", l.generateLine("en"));
+
+        rewriter.setEnabled(false);
+        assertEquals("draft text", l.generateLine("en"));
+    }
+
+    @Test
+    public void testWidgetThatThrowsAnErrorIsLoggedAndLeftInPlace() {
+        GeneratorConfig config = line("", "en").getConfig();
+        config.getWidgets().add(new DefaultWidget() {
+            @Override
+            public String getName() {
+                return "broken";
+            }
+
+            @Override
+            public String getBody(WidgetTag tag, GeneratorConfig config, String language) {
+                throw new LinkageError("not loadable");
+            }
+        });
+        TemplateLine l = new TemplateLine(config, "a ${widget:broken} b", 7);
+
+        try (MemoryLogger log = MemoryLogger.capture()) {
+            assertEquals("a ${widget:broken} b", l.generateLine("en"));
+            log.assertLogged(ERROR, "Can't render widget 'broken' at the line #7 (a ${widget:broken} b)");
+        }
+    }
+
+    @Test
+    public void testDescriptorWithoutReaderRendersTheFallback() {
+        TemplateLine l = line("${pom.version:p} ${npm.version:n} ${gradle.version:g}", "en");
+        l.getConfig().setPomReader(null);
+        l.getConfig().setNpmReader(null);
+        l.getConfig().setGradleReader(null);
+        assertEquals("p n g", l.generateLine("en"));
+    }
+
+    @Test
+    public void testFindUnresolvedDescriptorReferences() {
+        GeneratorConfig config = new GeneratorConfig(new File("README.src.md"), "", null, null,
+                path -> "version".equals(path) ? Optional.of("1.0") : Optional.<String>empty(),
+                path -> Optional.<String>empty(),
+                path -> Optional.<String>empty());
+        TemplateLine l = new TemplateLine(config,
+                "${pom.version} ${pom.a} ${npm.b} ${npm.c:fallback} ${gradle.d} \\${gradle.e}", 0);
+
+        assertEquals(Arrays.asList("pom.a", "npm.b", "gradle.d"), l.findUnresolvedDescriptorReferences());
     }
 
     @Test
@@ -212,6 +304,10 @@ class TemplateLineTest extends DefaultNRGTest {
         assertEquals("  a\n\n  b\n", action.apply("  ${widget:test}", "a\n\nb\n"));
         assertEquals("  a\r\n\r\n  b\r\n", action.apply("  ${widget:test}", "a\r\n\r\nb\r\n"));
 
+        // A body that starts with its line break, also a lone carriage return.
+        assertEquals("  \n  b", action.apply("  ${widget:test}", "\nb"));
+        assertEquals("  \r  b", action.apply("  ${widget:test}", "\rb"));
+
         // Nothing to repeat: no indentation, a single-line body, or text before the tag.
         assertEquals("a\nb", action.apply("${widget:test}", "a\nb"));
         assertEquals("   a", action.apply("   ${widget:test}", "a"));
@@ -392,6 +488,7 @@ class TemplateLineTest extends DefaultNRGTest {
         assertEquals("", line("${en:'A'}${en:'B'}", "en", "ru").generateLine("ru"));
         assertEquals("AB", line("${en:'A'}${en:'B'}", "en", "ru").generateLine("en"));
         assertEquals("AB", line("${en:'A', ru:'Z'}${en:'B', ru:'X'}", "en", "ru").generateLine("en"));
+        assertEquals("a Yes b Too c", line("a ${en:'X', ru:'Yes'} b ${en:'Z', ru:'Too'} c", "en", "ru").generateLine("ru"));
     }
 
     @Test

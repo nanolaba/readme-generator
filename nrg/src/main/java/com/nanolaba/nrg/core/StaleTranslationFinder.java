@@ -88,13 +88,13 @@ public final class StaleTranslationFinder {
      * @param languages the languages the file is rendered in ({@code nrg.languages} of its root template)
      */
     public static List<Finding> find(File file, String oldBody, String newBody, List<String> languages) {
-        List<Finding> findings = new ArrayList<>();
         if (languages == null || languages.size() < 2) {
-            return findings;
+            return Collections.emptyList();
         }
         String[] a = lines(oldBody);
         String[] b = lines(newBody);
         Diff diff = new Diff(a, b);
+        List<Finding> findings = new ArrayList<>();
 
         for (List<Integer> group : TranslationParityChecker.groupLineNumbers(b, languages)) {
             int first = group.get(0);
@@ -243,6 +243,7 @@ public final class StaleTranslationFinder {
     private static final class Diff {
         final boolean[] oldMatched;
         final boolean[] newMatched;
+        /** For a removed old line, the 0-based index of the new line it sits before; not set for matched lines. */
         final int[] oldPositionInNew;
         final Map<Integer, Integer> pairedOld = new HashMap<>();
 
@@ -291,12 +292,6 @@ public final class StaleTranslationFinder {
                 }
             }
             pairHunk(removed, added);
-            for (int k = a.length - tail; k < a.length; k++) {
-                oldPositionInNew[k] = k - a.length + b.length;
-            }
-            for (int k = 0; k < head; k++) {
-                oldPositionInNew[k] = k;
-            }
         }
 
         private void pairHunk(List<Integer> removed, List<Integer> added) {

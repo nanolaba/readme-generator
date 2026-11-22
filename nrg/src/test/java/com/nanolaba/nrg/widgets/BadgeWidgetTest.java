@@ -210,4 +210,18 @@ class BadgeWidgetTest extends DefaultNRGTest {
         String body = render("${widget:badge(type='maven-central', coordinates='com.nanolaba:readme-generator', alt='')}");
         assertTrue(body.contains("[![Maven Central]"), body);
     }
+
+    @Test
+    public void testWorkflowNameKeepsAFileNameThatOnlyHasALeadingDot() {
+        String body = render("${widget:badge(type='github-workflow', repo='o/r', workflow='.yml')}");
+        assertTrue(body.contains("[![.yml](https://github.com/o/r/actions/workflows/.yml/badge.svg)]"), body);
+    }
+
+    @Test
+    public void testGithubStarsMissingRepo() {
+        String body = render("before ${widget:badge(type='github-stars')} after");
+        assertTrue(body.contains("before  after"), body);
+        assertFalse(body.contains("shields.io"), body);
+        assertTrue(getErrAndClear().contains("'github-stars' requires non-empty parameter 'repo'"));
+    }
 }

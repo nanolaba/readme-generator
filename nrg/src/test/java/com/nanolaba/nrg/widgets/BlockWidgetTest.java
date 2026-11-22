@@ -1,16 +1,22 @@
 package com.nanolaba.nrg.widgets;
 
+import com.nanolaba.logging.LogEntry;
+import com.nanolaba.logging.MemoryLogger;
 import com.nanolaba.nrg.DefaultNRGTest;
 import com.nanolaba.nrg.core.GeneratorConfig;
+import com.nanolaba.nrg.core.SourceOrigin;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class BlockWidgetTest extends DefaultNRGTest {
@@ -21,6 +27,9 @@ class BlockWidgetTest extends DefaultNRGTest {
      * and {@code inline='true'} (treated as inline form, opener line passed through).
      */
     private static final class EchoBlockWidget extends BlockWidget {
+        final List<Integer> openerLines = new ArrayList<>();
+        final List<Integer> closerLines = new ArrayList<>();
+
         @Override
         public String getName() {
             return "echo";
@@ -29,12 +38,14 @@ class BlockWidgetTest extends DefaultNRGTest {
         @Override
         protected BlockOpening onBlockOpen(Map<String, String> params, GeneratorConfig config,
                                            String language, boolean parentActive, int lineNo) {
+            openerLines.add(lineNo);
             boolean active = !"true".equals(params.get("drop"));
             return BlockOpening.of(Collections.singletonList("<<<echo>>>"), active);
         }
 
         @Override
         protected List<String> onBlockClose(int lineNo) {
+            closerLines.add(lineNo);
             return Collections.singletonList("<<</echo>>>");
         }
 
@@ -49,10 +60,20 @@ class BlockWidgetTest extends DefaultNRGTest {
         }
     }
 
+    private static GeneratorConfig config(String body) {
+        return new GeneratorConfig(new File("README.src.md"), body, null);
+    }
+
     private static String process(String body) {
-        GeneratorConfig cfg = new GeneratorConfig(new File("README.src.md"), body, null);
-        EchoBlockWidget echo = new EchoBlockWidget();
-        return echo.processBlocks(body, cfg, "en");
+        return new EchoBlockWidget().processBlocks(body, config(body), "en");
+    }
+
+    private static List<SourceOrigin> originsFor(int lines) {
+        List<SourceOrigin> origins = new ArrayList<>();
+        for (int i = 1; i <= lines; i++) {
+            origins.add(SourceOrigin.of(new File("README.src.md"), i));
+        }
+        return origins;
     }
 
     @Test
@@ -142,5 +163,90 @@ class BlockWidgetTest extends DefaultNRGTest {
         String body = "line 1\nline 2\nline 3\n";
         String out = process(body);
         assertEquals(body, out);
+    }
+
+    @Test
+    public void testNullBodyIsReturnedAsNull() {
+        assertNull(new EchoBlockWidget().processBlocks(null, config(""), "en"));
+    }
+
+    @Test
+    public void testBlockOpenerReachingPerLineDispatchLogsError() {
+        EchoBlockWidget echo = new EchoBlockWidget();
+        try (MemoryLogger log = MemoryLogger.capture()) {
+            assertEquals("", echo.getBody(new WidgetTag(null, "echo", "", 0, 0), config(""), "en"));
+            log.assertLogged(LogEntry.LogEntryLevel.ERROR,
+                    "echo widget: opener without inline-form parameter must be closed by");
+            log.assertLogged(LogEntry.LogEntryLevel.ERROR, "widget:endEcho");
+        }
+    }
+
+    @Test
+    public void testHooksReceiveOneBasedLineNumbers() {
+        EchoBlockWidget echo = new EchoBlockWidget();
+        String body = "before\n${widget:echo}\nINNER\n${widget:endEcho}\n";
+        echo.processBlocks(body, config(body), "en");
+        assertEquals(Collections.singletonList(2), echo.openerLines);
+        assertEquals(Collections.singletonList(4), echo.closerLines);
+    }
+
+    @Test
+    public void testStrayCloserReportsItsLineNumber() {
+        try (MemoryLogger log = MemoryLogger.capture()) {
+            process("before\n${widget:endEcho}\nafter\n");
+            log.assertLogged(LogEntry.LogEntryLevel.ERROR, "echo widget: unmatched stray");
+            log.assertLogged(LogEntry.LogEntryLevel.ERROR, "at line 2");
+        }
+    }
+
+    @Test
+    public void testUnclosedOuterBlockRollsBackPastClosedInnerBlock() {
+        String body = "before\n${widget:echo}\nX\n${widget:echo}\nY\n${widget:endEcho}\nZ";
+        assertEquals("before", process(body));
+    }
+
+    @Test
+    public void testUnclosedBlockOnFirstLineRollsBackEverything() {
+        assertEquals("", process("${widget:echo}\nINNER"));
+    }
+
+    @Test
+    public void testOriginsFollowRewrittenLines() {
+        String body = "a\n${widget:echo(inline='true')}\n${widget:echo}\nb\n${widget:endEcho}";
+        List<SourceOrigin> origins = originsFor(5);
+        List<SourceOrigin> expected = new ArrayList<>(origins);
+
+        String out = new EchoBlockWidget().processBlocks(body, config(body), "en", origins);
+
+        assertEquals("a\n${widget:echo(inline='true')}\n<<<echo>>>\nb\n<<</echo>>>", out);
+        assertEquals(expected, origins);
+    }
+
+    @Test
+    public void testOriginsOfRolledBackLinesAreDropped() {
+        String body = "a\n${widget:echo}\nb";
+        List<SourceOrigin> origins = originsFor(3);
+        SourceOrigin first = origins.get(0);
+
+        String out = new EchoBlockWidget().processBlocks(body, config(body), "en", origins);
+
+        assertEquals("a", out);
+        assertEquals(Collections.singletonList(first), origins);
+    }
+
+    @Test
+    public void testLinesBeyondTheOriginsListGetNoOrigin() {
+        String body = "a\n${widget:echo}\nb\n${widget:endEcho}";
+        List<SourceOrigin> origins = originsFor(1);
+        SourceOrigin first = origins.get(0);
+
+        new EchoBlockWidget().processBlocks(body, config(body), "en", origins);
+
+        assertEquals(Arrays.asList(first, null, null, null), origins);
+    }
+
+    @Test
+    public void testCloserNameIsTheOnlyAlias() {
+        assertEquals(Collections.singleton("endEcho"), new EchoBlockWidget().getAliases());
     }
 }

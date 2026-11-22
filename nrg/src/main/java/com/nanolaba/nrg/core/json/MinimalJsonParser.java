@@ -22,7 +22,6 @@ public final class MinimalJsonParser {
 
     public static Object parse(String text) {
         Cursor c = new Cursor(text);
-        c.skipWhitespace();
         Object value = parseValue(c);
         c.skipWhitespace();
         if (!c.eof()) {
@@ -57,7 +56,10 @@ public final class MinimalJsonParser {
             case 'f':
                 return parseBoolean(c);
             case 'n':
-                return parseNull(c);
+                if (!c.tryLiteral("null")) {
+                    throw c.error("expected null");
+                }
+                return null;
             default:
                 if (ch == '-' || (ch >= '0' && ch <= '9')) {
                     return parseNumber(c);
@@ -70,49 +72,46 @@ public final class MinimalJsonParser {
         c.expect('{');
         Map<String, Object> map = new LinkedHashMap<>();
         c.skipWhitespace();
-        if (c.tryConsume('}')) {
-            return map;
-        }
-        while (true) {
-            c.skipWhitespace();
-            String key = parseString(c);
-            c.skipWhitespace();
-            c.expect(':');
-            Object value = parseValue(c);
-            map.put(key, value);
-            c.skipWhitespace();
-            if (c.tryConsume(',')) {
+        if (!c.tryConsume('}')) {
+            do {
+                String key = parseString(c);
                 c.skipWhitespace();
-                if (!c.eof() && c.peek() == '}') {
-                    throw c.error("trailing comma in object");
-                }
-                continue;
-            }
-            c.expect('}');
-            return map;
+                c.expect(':');
+                map.put(key, parseValue(c));
+            } while (nextElement(c, '}', "object"));
         }
+        return map;
     }
 
     private static List<Object> parseArray(Cursor c) {
         c.expect('[');
         List<Object> list = new ArrayList<>();
         c.skipWhitespace();
-        if (c.tryConsume(']')) {
-            return list;
+        if (!c.tryConsume(']')) {
+            do {
+                list.add(parseValue(c));
+            } while (nextElement(c, ']', "array"));
         }
-        while (true) {
-            list.add(parseValue(c));
+        return list;
+    }
+
+    /**
+     * Called after each member of an object or array, with {@code close} the container's closing
+     * bracket. Returns {@code true} after consuming a comma (and the whitespace after it) that
+     * announces another member, {@code false} after consuming {@code close}. A comma directly
+     * followed by {@code close} is rejected as a trailing comma.
+     */
+    private static boolean nextElement(Cursor c, char close, String container) {
+        c.skipWhitespace();
+        if (c.tryConsume(',')) {
             c.skipWhitespace();
-            if (c.tryConsume(',')) {
-                c.skipWhitespace();
-                if (!c.eof() && c.peek() == ']') {
-                    throw c.error("trailing comma in array");
-                }
-                continue;
+            if (!c.eof() && c.peek() == close) {
+                throw c.error("trailing comma in " + container);
             }
-            c.expect(']');
-            return list;
+            return true;
         }
+        c.expect(close);
+        return false;
     }
 
     private static String parseString(Cursor c) {
@@ -203,13 +202,6 @@ public final class MinimalJsonParser {
             return Boolean.FALSE;
         }
         throw c.error("expected true/false");
-    }
-
-    private static Object parseNull(Cursor c) {
-        if (c.tryLiteral("null")) {
-            return null;
-        }
-        throw c.error("expected null");
     }
 
     private static final class Cursor {

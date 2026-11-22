@@ -1,6 +1,8 @@
 package com.nanolaba.nrg.core;
 
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Parser and evaluator for the {@code ${widget:if(cond='...')}} expression DSL.
@@ -23,9 +25,6 @@ import java.util.*;
  * happens at evaluation time only.
  */
 public final class IfCondition {
-
-    private static final Set<String> FUNCTIONS = Collections.unmodifiableSet(
-            new java.util.HashSet<>(Arrays.asList("startsWith", "endsWith")));
 
     private IfCondition() {/* utility */}
 
@@ -262,12 +261,32 @@ public final class IfCondition {
     }
 
     private static final class Lexer {
+        /** Alternatives are tried in order, so {@code !=} wins over {@code !}. */
+        private static final Pattern OPERATOR = Pattern.compile("&&|\\|\\||==|!=|[!(),]");
+        /** A function name only counts as one when the next non-blank character opens its argument list. */
+        private static final Pattern FUNCTION_CALL = Pattern.compile("(startsWith|endsWith)\\p{javaWhitespace}*\\(");
+        private static final Map<String, TokenKind> OPERATORS = new HashMap<>();
+
+        static {
+            OPERATORS.put("&&", TokenKind.AND);
+            OPERATORS.put("||", TokenKind.OR);
+            OPERATORS.put("==", TokenKind.EQ);
+            OPERATORS.put("!=", TokenKind.NEQ);
+            OPERATORS.put("!", TokenKind.NOT);
+            OPERATORS.put("(", TokenKind.LPAREN);
+            OPERATORS.put(")", TokenKind.RPAREN);
+            OPERATORS.put(",", TokenKind.COMMA);
+        }
+
         private final String src;
+        private final Matcher operator;
+        private final Matcher functionCall;
         private int pos;
 
         Lexer(String src) {
             this.src = src;
-            this.pos = 0;
+            this.operator = OPERATOR.matcher(src);
+            this.functionCall = FUNCTION_CALL.matcher(src);
         }
 
         List<Token> lex() {
@@ -282,84 +301,37 @@ public final class IfCondition {
         }
 
         private Token nextToken() {
+            if (matchesAtPos(operator)) {
+                pos = operator.end();
+                return new Token(OPERATORS.get(operator.group()), operator.group());
+            }
+            if (src.startsWith("${", pos)) return readPlaceholder();
             char c = src.charAt(pos);
-            char n = peek(1);
-
-            if (c == '(') {
-                pos++;
-                return new Token(TokenKind.LPAREN, "(");
-            }
-            if (c == ')') {
-                pos++;
-                return new Token(TokenKind.RPAREN, ")");
-            }
-            if (c == ',') {
-                pos++;
-                return new Token(TokenKind.COMMA, ",");
-            }
-            if (c == '&' && n == '&') {
-                pos += 2;
-                return new Token(TokenKind.AND, "&&");
-            }
-            if (c == '|' && n == '|') {
-                pos += 2;
-                return new Token(TokenKind.OR, "||");
-            }
-            if (c == '=' && n == '=') {
-                pos += 2;
-                return new Token(TokenKind.EQ, "==");
-            }
-            if (c == '!' && n == '=') {
-                pos += 2;
-                return new Token(TokenKind.NEQ, "!=");
-            }
-            if (c == '!') {
-                pos++;
-                return new Token(TokenKind.NOT, "!");
-            }
-            if (c == '$' && n == '{') return readPlaceholder();
             if (c == '\'' || c == '"') return readQuoted(c);
-
-            // function name (only if directly followed by '(' modulo whitespace)
-            for (String fn : FUNCTIONS) {
-                if (matchesIdent(fn)) {
-                    int after = pos + fn.length();
-                    int afterWS = after;
-                    while (afterWS < src.length() && Character.isWhitespace(src.charAt(afterWS))) afterWS++;
-                    if (afterWS < src.length() && src.charAt(afterWS) == '(') {
-                        pos = after;
-                        return new Token(TokenKind.FUNCTION, fn);
-                    }
-                }
+            if (matchesAtPos(functionCall)) {
+                pos = functionCall.end(1);
+                return new Token(TokenKind.FUNCTION, functionCall.group(1));
             }
-
             return readBare();
         }
 
-        private boolean matchesIdent(String name) {
-            if (!src.regionMatches(pos, name, 0, name.length())) return false;
-            int end = pos + name.length();
-            if (end >= src.length()) return true;
-            char after = src.charAt(end);
-            return !(Character.isLetterOrDigit(after) || after == '_');
+        private boolean matchesAtPos(Matcher matcher) {
+            return matcher.region(pos, src.length()).lookingAt();
         }
 
         private Token readPlaceholder() {
             int start = pos;
             pos += 2; // skip ${
-            int depth = 1;
-            while (pos < src.length() && depth > 0) {
+            for (int depth = 1; pos < src.length(); pos++) {
                 char c = src.charAt(pos);
-                if (c == '{') depth++;
-                else if (c == '}') depth--;
-                if (depth == 0) break;
-                pos++;
+                if (c == '{') {
+                    depth++;
+                } else if (c == '}' && --depth == 0) {
+                    pos++;
+                    return new Token(TokenKind.PLACEHOLDER, src.substring(start, pos));
+                }
             }
-            if (pos >= src.length()) {
-                throw new ParseException("Unterminated placeholder starting at position " + start);
-            }
-            pos++; // consume closing }
-            return new Token(TokenKind.PLACEHOLDER, src.substring(start, pos));
+            throw new ParseException("Unterminated placeholder starting at position " + start);
         }
 
         private Token readQuoted(char quote) {
@@ -383,48 +355,28 @@ public final class IfCondition {
             throw new ParseException("Unterminated quoted string starting at position " + start);
         }
 
+        /**
+         * Reached only where {@link #nextToken} found no other token, so the first character
+         * always belongs to the bare string; it runs to the next place where one does start.
+         */
         private Token readBare() {
             int start = pos;
-            while (pos < src.length() && !isTokenBoundary()) {
+            do {
                 pos++;
-            }
-            String raw = src.substring(start, pos);
-            return new Token(TokenKind.BARE, raw.trim());
+            } while (pos < src.length() && !isTokenBoundary());
+            return new Token(TokenKind.BARE, src.substring(start, pos).trim());
         }
 
+        /** Whether one of the tokens {@link #nextToken} reads before falling back to a bare string starts at {@code pos}. */
         private boolean isTokenBoundary() {
             char c = src.charAt(pos);
-            char n = peek(1);
-            if (c == '(' || c == ')' || c == ',') return true;
-            if (c == '&' && n == '&') return true;
-            if (c == '|' && n == '|') return true;
-            if (c == '=' && n == '=') return true;
-            if (c == '!' && n == '=') return true;
-            if (c == '!') return true;
-            if (c == '$' && n == '{') return true;
-            if (c == '\'' || c == '"') return true;
-            for (String fn : FUNCTIONS) {
-                if (matchesIdent(fn)) {
-                    int after = pos + fn.length();
-                    int afterWS = after;
-                    while (afterWS < src.length() && Character.isWhitespace(src.charAt(afterWS))) afterWS++;
-                    if (afterWS < src.length() && src.charAt(afterWS) == '(') {
-                        return true;
-                    }
-                }
-            }
-            return false;
+            return matchesAtPos(operator) || src.startsWith("${", pos) || c == '\'' || c == '"' || matchesAtPos(functionCall);
         }
 
         private void skipWhitespace() {
             while (pos < src.length() && Character.isWhitespace(src.charAt(pos))) {
                 pos++;
             }
-        }
-
-        private char peek(int offset) {
-            int idx = pos + offset;
-            return idx < src.length() ? src.charAt(idx) : '\0';
         }
     }
 

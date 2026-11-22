@@ -92,4 +92,17 @@ class ImportLinesSpecParserTest {
         ImportLinesSpec s = ImportLinesSpec.parse("5-10,7-12");
         assertEquals(2, s.getRanges().size());
     }
+
+    @Test
+    void rangeOfOneLineIsNotReversed() {
+        ImportLinesSpec s = ImportLinesSpec.parse("5-5");
+        assertEquals(5, s.getRanges().get(0)[0]);
+        assertEquals(5, s.getRanges().get(0)[1]);
+    }
+
+    @Test
+    void moreThanOneDashIsAnInvalidRange() {
+        IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> ImportLinesSpec.parse("1-2-3"));
+        assertEquals("invalid range '1-2-3' in lines spec '1-2-3'", e.getMessage());
+    }
 }

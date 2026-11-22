@@ -1,13 +1,24 @@
 package com.nanolaba.nrg.core;
 
+import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
+import java.nio.file.LinkOption;
 import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -58,11 +69,51 @@ class ProjectRootTest {
 
     /** Creates a symbolic link, or skips the test where the platform refuses (Windows without the privilege). */
     private static void symlink(Path link, Path target) {
+        symlinks(link.getParent(), Collections.singletonMap(link.getFileName().toString(), target));
+    }
+
+    /**
+     * Creates the symbolic links {@code dir/name -> target}, or skips the test where the platform
+     * refuses. JDK 8 cannot create one on Windows without the privilege even in Developer Mode,
+     * where {@code mklink} can, so Windows falls back to a single {@code mklink} batch.
+     */
+    private static void symlinks(Path dir, Map<String, Path> links) {
         try {
-            Files.createSymbolicLink(link, target);
+            for (Map.Entry<String, Path> link : links.entrySet()) {
+                Files.createSymbolicLink(dir.resolve(link.getKey()), link.getValue());
+            }
         } catch (IOException | UnsupportedOperationException | SecurityException e) {
-            Assumptions.assumeTrue(false, "symbolic links are not available here: " + e);
+            Assumptions.assumeTrue(isWindows() && mklink(dir, links), "symbolic links are not available here: " + e);
         }
+    }
+
+    private static boolean mklink(Path dir, Map<String, Path> links) {
+        List<String> command = new ArrayList<>(Arrays.asList("cmd", "/c"));
+        for (Map.Entry<String, Path> link : links.entrySet()) {
+            if (Files.exists(dir.resolve(link.getKey()), LinkOption.NOFOLLOW_LINKS)) {
+                continue;
+            }
+            if (command.size() > 2) {
+                command.add("&&");
+            }
+            command.add("mklink");
+            if (Files.isDirectory(dir.resolve(link.getValue()))) {
+                command.add("/D");
+            }
+            command.add(link.getKey());
+            command.add(link.getValue().toString());
+        }
+        try {
+            Process mklink = new ProcessBuilder(command).directory(dir.toFile()).redirectErrorStream(true).start();
+            IOUtils.toString(mklink.getInputStream(), Charset.defaultCharset());
+            return mklink.waitFor() == 0;
+        } catch (IOException | InterruptedException e) {
+            return false;
+        }
+    }
+
+    private static boolean isWindows() {
+        return System.getProperty("os.name").toLowerCase(Locale.ROOT).startsWith("windows");
     }
 
     @Test
@@ -128,10 +179,47 @@ class ProjectRootTest {
         symlink(tmp.resolve("repo/a"), tmp.resolve("repo/b"));
         symlink(tmp.resolve("repo/b"), tmp.resolve("repo/a"));
 
-        assertFalse(ProjectRoot.contains(root, new File(root, "a")));
+        File a = new File(root, "a");
+        assertFalse(ProjectRoot.contains(root, a));
         assertFalse(ProjectRoot.contains(root, new File(root, "a/x.md")));
-        assertThrows(ProjectRoot.OutsideProjectRootException.class,
-                () -> ProjectRoot.require(root, new File(root, "a"), "import path"));
+        ProjectRoot.OutsideProjectRootException e = assertThrows(ProjectRoot.OutsideProjectRootException.class,
+                () -> ProjectRoot.require(root, a, "import path"));
+        // Nothing to resolve it to, so the message names the path as written.
+        assertEquals(a.getAbsolutePath(), ProjectRoot.describe(a));
+        assertTrue(e.getMessage().contains(a.getAbsolutePath()), e.getMessage());
+    }
+
+    @Test
+    void unresolvableSourceDirectoryIsKeptAsWritten(@TempDir Path tmp) throws IOException {
+        // A root that cannot be resolved contains nothing, so every later check fails closed.
+        Files.createDirectories(tmp.resolve("repo/.git"));
+        symlink(tmp.resolve("repo/a"), tmp.resolve("repo/b"));
+        symlink(tmp.resolve("repo/b"), tmp.resolve("repo/a"));
+        File source = tmp.resolve("repo/a/README.src.md").toFile();
+
+        File root = ProjectRoot.detect(source);
+
+        assertEquals(source.getAbsoluteFile().getParentFile(), root);
+        assertFalse(ProjectRoot.contains(root, source));
+    }
+
+    @Test
+    void danglingLinksAreFollowedUpToTheHopLimit(@TempDir Path tmp) throws IOException {
+        File root = Files.createDirectories(tmp.resolve("repo")).toFile();
+        Map<String, Path> links = new LinkedHashMap<>();
+        addDanglingChain(links, "short", ProjectRoot.MAX_LINK_HOPS);
+        addDanglingChain(links, "long", ProjectRoot.MAX_LINK_HOPS + 1);
+        symlinks(root.toPath(), links);
+
+        assertTrue(ProjectRoot.contains(root, new File(root, "short0")));
+        assertFalse(ProjectRoot.contains(root, new File(root, "long0")));
+    }
+
+    /** {@code prefix0 -> prefix1 -> … -> prefix<count-1> -> prefix-target.md}, the target never created. */
+    private static void addDanglingChain(Map<String, Path> links, String prefix, int count) {
+        for (int i = 0; i < count; i++) {
+            links.put(prefix + i, Paths.get(i + 1 < count ? prefix + (i + 1) : prefix + "-target.md"));
+        }
     }
 
     @Test

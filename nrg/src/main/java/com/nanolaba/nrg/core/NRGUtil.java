@@ -2,6 +2,7 @@ package com.nanolaba.nrg.core;
 
 import com.nanolaba.logging.LOG;
 import com.nanolaba.nrg.widgets.NRGWidget;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -27,22 +28,24 @@ import java.util.regex.Pattern;
  */
 public class NRGUtil {
 
+    /** What {@code .} refuses to match in java.util.regex by default. */
+    private static final Pattern REGEX_LINE_TERMINATOR = Pattern.compile("[\\n\\r\\u0085\\u2028\\u2029]");
+
     private NRGUtil() {/**/}
 
     public static List<NRGWidget> loadWidgets(String commaSeparatedFqcns, ClassLoader classLoader) {
         List<NRGWidget> result = new ArrayList<>();
-        if (StringUtils.isBlank(commaSeparatedFqcns)) {
-            return result;
-        }
-        ClassLoader cl = classLoader != null ? classLoader : Thread.currentThread().getContextClassLoader();
-        for (String raw : commaSeparatedFqcns.split(",")) {
-            String fqcn = raw.trim();
-            if (fqcn.isEmpty()) {
-                continue;
-            }
-            NRGWidget widget = loadWidget(fqcn, cl);
-            if (widget != null) {
-                result.add(widget);
+        if (StringUtils.isNotBlank(commaSeparatedFqcns)) {
+            ClassLoader cl = classLoader != null ? classLoader : Thread.currentThread().getContextClassLoader();
+            for (String raw : commaSeparatedFqcns.split(",")) {
+                String fqcn = raw.trim();
+                if (fqcn.isEmpty()) {
+                    continue;
+                }
+                NRGWidget widget = loadWidget(fqcn, cl);
+                if (widget != null) {
+                    result.add(widget);
+                }
             }
         }
         return result;
@@ -119,11 +122,8 @@ public class NRGUtil {
      */
     public static Map<String, String> extractRawPropertyMarkers(String line) {
         Map<String, String> map = new LinkedHashMap<>();
-        String[] strings = StringUtils.substringsBetween(line, "<!--", "-->");
-        if (strings == null) {
-            return map;
-        }
-        for (String comment : strings) {
+        // substringsBetween gives null, not an empty array, for a line without comments
+        for (String comment : ArrayUtils.nullToEmpty(StringUtils.substringsBetween(line, "<!--", "-->"))) {
             String s = StringUtils.trimToEmpty(comment);
             if (!s.contains("@")) {
                 continue;
@@ -148,60 +148,47 @@ public class NRGUtil {
      * ran from the first property comment to the <em>last</em> {@code -->} on the line and
      * deleted whatever text stood between them. And on a line with many unterminated
      * {@code <!--@} it rescanned the rest of the line for every one of them — quadratic time
-     * that a 40 KB line turned into seconds. This scan is linear: the position of the next
-     * terminator is remembered instead of being searched for again.
+     * that a 40 KB line turned into seconds. This scan is linear: one pass from the end builds
+     * a table of where the terminator of a comment starting at each position lies, and every
+     * comment is then decided by a single lookup.
      */
     public static String stripPropertyComments(String text) {
         int open = text.indexOf("<!--");
         if (open < 0) {
             return text;
         }
+        int n = text.length();
+        // closeOnLine[p]: start of the first "-->" at or after p, or n when a line break (or the
+        // end of the text) comes first. Only positions from the first comment on are looked up.
+        int[] closeOnLine = new int[n + 1];
+        closeOnLine[n] = n;
+        for (int p = n - 1; p >= open; p--) {
+            char c = text.charAt(p);
+            if (c == '\n' || c == '\r') {
+                closeOnLine[p] = n;
+            } else {
+                closeOnLine[p] = text.startsWith("-->", p) ? p : closeOnLine[p + 1];
+            }
+        }
         StringBuilder out = null;
         int copied = 0;
-        int close = -1;     // start of the nearest "-->" at or after the current comment, once known
-        int lineBreak = -1; // nearest line break at or after the current comment, once known
         while (open >= 0) {
-            int at = open + 4;
-            while (at < text.length() && text.charAt(at) == ' ') {
-                at++;
-            }
-            if (at < text.length() && text.charAt(at) == '@') {
-                if (close < at) {
-                    close = text.indexOf("-->", at);
-                    if (close < 0) {
-                        break; // no terminator anywhere further on
-                    }
+            int at = skipSpaces(text, open + 4);
+            // No terminator can start within the "<!--" and the spaces before the '@', so the
+            // first one from the start of the comment is the first one after its '@'.
+            int close = closeOnLine[open];
+            if (at < n && text.charAt(at) == '@' && close < n) {
+                if (out == null) {
+                    out = new StringBuilder(n);
                 }
-                if (lineBreak < at) {
-                    lineBreak = nextLineBreak(text, at);
-                }
-                if (close < lineBreak) {
-                    if (out == null) {
-                        out = new StringBuilder(text.length());
-                    }
-                    out.append(text, copied, open);
-                    copied = close + 3;
-                    open = text.indexOf("<!--", copied);
-                    continue;
-                }
-            }
-            open = text.indexOf("<!--", open + 4);
-        }
-        if (out == null) {
-            return text;
-        }
-        return out.append(text, copied, text.length()).toString();
-    }
-
-    /** Index of the first line break at or after {@code from}, or the text length if none. */
-    private static int nextLineBreak(String text, int from) {
-        for (int i = from; i < text.length(); i++) {
-            char c = text.charAt(i);
-            if (c == '\n' || c == '\r') {
-                return i;
+                out.append(text, copied, open);
+                copied = close + 3;
+                open = text.indexOf("<!--", copied);
+            } else {
+                open = text.indexOf("<!--", open + 4);
             }
         }
-        return text.length();
+        return out == null ? text : out.append(text, copied, n).toString();
     }
 
     /**
@@ -219,50 +206,34 @@ public class NRGUtil {
      * so: in {@code title="T",ordered="true"} the whole of {@code title="T",ordered} was
      * taken as one name and both parameters were lost.
      *
-     * <p>The scan is a single pass. The tables built up front answer "where is the next
-     * quote" and "where does the line end" in constant time; the regex this replaced
-     * rescanned the rest of the text from every character and needed minutes for a 300 KB
-     * parameter.
+     * <p>The scan is linear. A value is searched for only up to its own closing quote, and no
+     * two candidate values open at the same quote, so the searches together cover the text
+     * at most once per kind of quote; the regex this replaced rescanned the rest of the text
+     * from every character and needed minutes for a 300 KB parameter.
      */
     public static Map<String, String> parseParametersLine(String parameters) {
         Map<String, String> map = new HashMap<>();
-        if (StringUtils.isEmpty(parameters)) {
-            return map;
-        }
-        final String text = parameters;
-        final int n = text.length();
-        int[] nextSingle = new int[n + 1];
-        int[] nextDouble = new int[n + 1];
-        int[] nextLineEnd = new int[n + 1];
-        nextSingle[n] = nextDouble[n] = nextLineEnd[n] = n;
-        for (int p = n - 1; p >= 0; p--) {
-            char c = text.charAt(p);
-            nextSingle[p] = c == '\'' ? p : nextSingle[p + 1];
-            nextDouble[p] = c == '"' ? p : nextDouble[p + 1];
-            nextLineEnd[p] = isRegexLineTerminator(c) ? p : nextLineEnd[p + 1];
-        }
-
+        int n = parameters == null ? 0 : parameters.length();
         int i = 0;
         while (i < n) {
-            if (!isParameterNameChar(text.charAt(i))) {
+            if (!isParameterNameChar(parameters.charAt(i))) {
                 i++;
                 continue;
             }
             int nameEnd = i;
-            while (nameEnd < n && isParameterNameChar(text.charAt(nameEnd))) {
+            while (nameEnd < n && isParameterNameChar(parameters.charAt(nameEnd))) {
                 nameEnd++;
             }
-            int equals = skipSpaces(text, nameEnd);
-            int openQuote = equals < n && text.charAt(equals) == '='
-                    ? openingQuoteAfter(text, equals, nextSingle, nextDouble, nextLineEnd)
-                    : -1;
-            if (openQuote < 0) {
+            int equals = skipSpaces(parameters, nameEnd);
+            boolean hasEquals = equals < n && parameters.charAt(equals) == '=';
+            int openQuote = hasEquals ? skipSpaces(parameters, equals + 1) : n;
+            int closeQuote = closingQuote(parameters, openQuote);
+            if (closeQuote == -1) {
                 i = nameEnd; // not a parameter: resume after this word
                 continue;
             }
-            int closeQuote = (text.charAt(openQuote) == '\'' ? nextSingle : nextDouble)[openQuote + 1];
-            map.put(text.substring(i, nameEnd), text.substring(openQuote + 1, closeQuote));
-            i = closeQuote + 1;
+            map.put(parameters.substring(i, nameEnd), parameters.substring(openQuote + 1, closeQuote));
+            i = closeQuote; // a quote is no name character, so the next round steps over it
         }
         return map;
     }
@@ -272,13 +243,11 @@ public class NRGUtil {
     }
 
     /**
-     * Given the position of an {@code =}, returns the position of the quote that opens the
-     * value — after optional spaces, and only if the same quote closes it before the line
-     * ends — or {@code -1}.
+     * Given the position where the value of a parameter should open, returns the position of
+     * the quote that closes it — the same kind of quote, later on the same line — or
+     * {@code -1} when there is no quote at {@code quote} or nothing closes it.
      */
-    private static int openingQuoteAfter(String text, int equals, int[] nextSingle, int[] nextDouble,
-                                         int[] nextLineEnd) {
-        int quote = skipSpaces(text, equals + 1);
+    private static int closingQuote(String text, int quote) {
         if (quote >= text.length()) {
             return -1;
         }
@@ -286,8 +255,8 @@ public class NRGUtil {
         if (q != '\'' && q != '"') {
             return -1;
         }
-        int close = (q == '\'' ? nextSingle : nextDouble)[quote + 1];
-        return close < text.length() && close < nextLineEnd[quote + 1] ? quote : -1;
+        int close = text.indexOf(q, quote + 1);
+        return close != -1 && !REGEX_LINE_TERMINATOR.matcher(text).region(quote, close).find() ? close : -1;
     }
 
     private static int skipSpaces(String text, int from) {
@@ -301,11 +270,6 @@ public class NRGUtil {
     /** {@code \s} of java.util.regex without UNICODE_CHARACTER_CLASS. */
     private static boolean isRegexWhitespace(char c) {
         return c == ' ' || c == '\t' || c == '\n' || c == 0x0B || c == '\f' || c == '\r';
-    }
-
-    /** What {@code .} refuses to match in java.util.regex by default. */
-    private static boolean isRegexLineTerminator(char c) {
-        return c == '\n' || c == '\r' || c == '\u0085' || c == ' ' || c == ' ';
     }
 
     public static String unwrapParameterValue(String wrapped) {

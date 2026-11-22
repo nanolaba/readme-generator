@@ -28,6 +28,11 @@ class IfConditionTest extends DefaultNRGTest {
     }
 
     @Test
+    public void testNullConditionIsFalse() {
+        assertFalse(IfCondition.evaluate(null, configWith(""), "en"));
+    }
+
+    @Test
     public void testTruthyNonEmptyLiteral() {
         GeneratorConfig cfg = configWith("");
         assertTrue(IfCondition.evaluate("yes", cfg, "en"));
@@ -89,11 +94,88 @@ class IfConditionTest extends DefaultNRGTest {
     }
 
     @Test
+    public void testEqualityTrimsResolvedPlaceholderValues() {
+        Map<String, String> env = new HashMap<>();
+        env.put("X", " abc ");
+        GeneratorConfig cfg = configWith("", env);
+        assertTrue(IfCondition.evaluate("${env.X}==abc", cfg, "en"));
+        assertTrue(IfCondition.evaluate("abc==${env.X}", cfg, "en"));
+        assertFalse(IfCondition.evaluate("${env.X}!=abc", cfg, "en"));
+    }
+
+    @Test
     public void testQuotedLiteralPreservesWhitespace() {
         Map<String, String> env = new HashMap<>();
         env.put("X", " abc ");
         GeneratorConfig cfg = configWith("", env);
         assertTrue(IfCondition.evaluate("\"${env.X}\" == \" abc \"", cfg, "en"));
+    }
+
+    @Test
+    public void testOneQuotedSideDisablesTrimming() {
+        Map<String, String> env = new HashMap<>();
+        env.put("X", " abc ");
+        GeneratorConfig cfg = configWith("", env);
+        assertFalse(IfCondition.evaluate("\" abc\" == abc", cfg, "en"));
+        assertFalse(IfCondition.evaluate("abc == \" abc\"", cfg, "en"));
+        assertFalse(IfCondition.evaluate("\"${env.X}\" == abc", cfg, "en"));
+        assertFalse(IfCondition.evaluate("${env.X} == \"abc\"", cfg, "en"));
+        assertTrue(IfCondition.evaluate("${env.X} == \" abc \"", cfg, "en"));
+    }
+
+    @Test
+    public void testOperatorsNeedNoSurroundingWhitespace() {
+        GeneratorConfig cfg = configWith("");
+        assertFalse(IfCondition.evaluate("yes&&\"\"", cfg, "en"));
+        assertTrue(IfCondition.evaluate("a==a&&b!=c", cfg, "en"));
+        assertTrue(IfCondition.evaluate("\"\"||!\"\"", cfg, "en"));
+        assertTrue(IfCondition.evaluate("!(a!=a)", cfg, "en"));
+        assertTrue(IfCondition.evaluate("startsWith(abc,a)&&endsWith(abc,c)", cfg, "en"));
+    }
+
+    @Test
+    public void testSingleOperatorCharactersStayInsideBareStrings() {
+        GeneratorConfig cfg = configWith("");
+        assertTrue(IfCondition.evaluate("a&b == a&b", cfg, "en"));
+        assertTrue(IfCondition.evaluate("a|b == a|b", cfg, "en"));
+        assertTrue(IfCondition.evaluate("a=b == a=b", cfg, "en"));
+        assertTrue(IfCondition.evaluate("a$b == a$b", cfg, "en"));
+        assertFalse(IfCondition.evaluate("a&b == a", cfg, "en"));
+    }
+
+    @Test
+    public void testQuotedStringWithDoubledQuotes() {
+        GeneratorConfig cfg = configWith("");
+        assertTrue(IfCondition.evaluate("'a''b' == \"a'b\"", cfg, "en"));
+        assertTrue(IfCondition.evaluate("\"say \"\"hi\"\"\" == 'say \"hi\"'", cfg, "en"));
+        assertTrue(IfCondition.evaluate("'' == \"\"", cfg, "en"));
+    }
+
+    @Test
+    public void testUnterminatedQuotedStringThrows() {
+        GeneratorConfig cfg = configWith("");
+        IfCondition.ParseException single = assertThrows(IfCondition.ParseException.class,
+                () -> IfCondition.evaluate("a == 'abc", cfg, "en"));
+        assertEquals("Unterminated quoted string starting at position 5", single.getMessage());
+        assertThrows(IfCondition.ParseException.class, () -> IfCondition.evaluate("\"abc", cfg, "en"));
+        assertThrows(IfCondition.ParseException.class, () -> IfCondition.evaluate("'abc''", cfg, "en"));
+    }
+
+    @Test
+    public void testPlaceholderWithNestedBraces() {
+        GeneratorConfig cfg = configWith("<!--@nrg.languages=en,ru-->");
+        assertTrue(IfCondition.evaluate("${en:'{a}', ru:'{b}'} == {a}", cfg, "en"));
+        assertTrue(IfCondition.evaluate("${en:'{a}', ru:'{b}'} == {b}", cfg, "ru"));
+    }
+
+    @Test
+    public void testUnterminatedPlaceholderThrows() {
+        GeneratorConfig cfg = configWith("");
+        IfCondition.ParseException e = assertThrows(IfCondition.ParseException.class,
+                () -> IfCondition.evaluate("a == ${env.X", cfg, "en"));
+        assertEquals("Unterminated placeholder starting at position 5", e.getMessage());
+        assertThrows(IfCondition.ParseException.class, () -> IfCondition.evaluate("${a{b}", cfg, "en"));
+        assertThrows(IfCondition.ParseException.class, () -> IfCondition.evaluate("${", cfg, "en"));
     }
 
     @Test
@@ -155,6 +237,25 @@ class IfConditionTest extends DefaultNRGTest {
         GeneratorConfig cfg = configWith("", env);
         assertTrue(IfCondition.evaluate(
                 "startsWith(${env.URL}, https://) || startsWith(${env.URL}, git@)", cfg, "en"));
+    }
+
+    @Test
+    public void testFunctionNameMayBeFollowedByWhitespace() {
+        GeneratorConfig cfg = configWith("");
+        assertTrue(IfCondition.evaluate("startsWith (abc, a)", cfg, "en"));
+        assertTrue(IfCondition.evaluate("endsWith\t(abc, c)", cfg, "en"));
+        assertFalse(IfCondition.evaluate("startsWith  (abc, c)", cfg, "en"));
+    }
+
+    @Test
+    public void testFunctionNameWithoutArgumentListIsABareString() {
+        GeneratorConfig cfg = configWith("");
+        assertTrue(IfCondition.evaluate("startsWith", cfg, "en"));
+        assertTrue(IfCondition.evaluate("endsWith ", cfg, "en"));
+        assertTrue(IfCondition.evaluate("endsWith == endsWith", cfg, "en"));
+        assertTrue(IfCondition.evaluate("a startsWith b == a startsWith b", cfg, "en"));
+        assertThrows(IfCondition.ParseException.class,
+                () -> IfCondition.evaluate("startsWithX(abc, a)", cfg, "en"));
     }
 
     @Test
@@ -249,5 +350,23 @@ class IfConditionTest extends DefaultNRGTest {
         assertTrue(IfCondition.evaluate("(yes)" + repeat(" && (yes)", 50_000), cfg, "en"));
         assertFalse(IfCondition.evaluate("\"\"" + repeat(" || \"\"", 50_000), cfg, "en"));
         assertTrue(IfCondition.evaluate("\"\"" + repeat(" || \"\"", 50_000) + " || yes", cfg, "en"));
+    }
+
+    @Test
+    public void testNestingLimitIsSixtyFourLevels() {
+        GeneratorConfig cfg = configWith("");
+
+        assertTrue(IfCondition.evaluate(repeat("(", 64) + "yes" + repeat(")", 64), cfg, "en"));
+        assertThrows(IfCondition.ParseException.class,
+                () -> IfCondition.evaluate(repeat("(", 65) + "yes" + repeat(")", 65), cfg, "en"));
+        assertTrue(IfCondition.evaluate(repeat("!", 64) + "yes", cfg, "en"));
+        assertThrows(IfCondition.ParseException.class,
+                () -> IfCondition.evaluate(repeat("!", 65) + "yes", cfg, "en"));
+    }
+
+    @Test
+    public void testSequentialNegationsDoNotAddDepth() {
+        GeneratorConfig cfg = configWith("");
+        assertTrue(IfCondition.evaluate("!\"\"" + repeat(" && !\"\"", 100), cfg, "en"));
     }
 }

@@ -144,13 +144,13 @@ public final class Validator {
             String[] lines = body.split("\\R", -1);
 
             Map<BlockWidget, Deque<Integer>> openBlocks = new LinkedHashMap<>();
-            int ignoreBeginLine = -1;
+            Integer ignoreBeginLine = null; // line of the <!--nrg.ignore.begin--> still open
             for (int i = 0; i < lines.length; i++) {
                 String line = lines[i];
                 int lineNo = i + 1;
                 // Lines that IgnoreBlockStripper drops before generation: they declare and
                 // reference nothing, so only the structural rules look at them.
-                boolean ignored = ignoreBeginLine >= 0
+                boolean ignored = ignoreBeginLine != null
                         || IGNORE_BEGIN_PATTERN.matcher(line).find()
                         || IGNORE_END_PATTERN.matcher(line).find()
                         || IGNORE_LINE_PATTERN.matcher(line).find();
@@ -160,7 +160,7 @@ public final class Validator {
                 checkVariantMarkers(file, line, lineNo);
 
                 if (IGNORE_BEGIN_PATTERN.matcher(line).find()) {
-                    if (ignoreBeginLine >= 0) {
+                    if (ignoreBeginLine != null) {
                         error(file, lineNo, "unbalanced-ignore",
                                 "nested <!--nrg.ignore.begin--> without preceding <!--nrg.ignore.end-->", null);
                     } else {
@@ -168,11 +168,11 @@ public final class Validator {
                     }
                 }
                 if (IGNORE_END_PATTERN.matcher(line).find()) {
-                    if (ignoreBeginLine < 0) {
+                    if (ignoreBeginLine == null) {
                         error(file, lineNo, "unbalanced-ignore",
                                 "stray <!--nrg.ignore.end--> without matching <!--nrg.ignore.begin-->", null);
                     } else {
-                        ignoreBeginLine = -1;
+                        ignoreBeginLine = null;
                     }
                 }
 
@@ -181,7 +181,7 @@ public final class Validator {
                     collectDeclaredProperties(line);
                     collectVariableReferences(file, line, lineNo);
                     checkCosmeticPropertyEscape(file, line, lineNo);
-                    checkDescriptorReferences(file, config, line, lineNo);
+                    checkDescriptorReferences(file, config, line, i);
                 }
             }
 
@@ -190,7 +190,7 @@ public final class Validator {
                 diagnostics.addAll(TranslationParityChecker.check(file, lines, declaredLanguages));
             }
 
-            if (ignoreBeginLine >= 0) {
+            if (ignoreBeginLine != null) {
                 error(file, ignoreBeginLine, "unbalanced-ignore",
                         "unclosed <!--nrg.ignore.begin--> (missing <!--nrg.ignore.end-->)", null);
             }
@@ -402,19 +402,20 @@ public final class Validator {
             }
         }
 
-        private void checkDescriptorReferences(File file, GeneratorConfig config, String line, int lineNo) {
+        /** {@code lineIndex} is 0-based, the way {@link TemplateLine} counts lines. */
+        private void checkDescriptorReferences(File file, GeneratorConfig config, String line, int lineIndex) {
             if (!line.contains("pom.") && !line.contains("npm.") && !line.contains("gradle.")) {
                 return;
             }
             List<String> unresolved;
             try {
-                unresolved = new TemplateLine(config, line, lineNo - 1).findUnresolvedDescriptorReferences();
+                unresolved = new TemplateLine(config, line, lineIndex).findUnresolvedDescriptorReferences();
             } catch (RuntimeException e) {
-                error(file, lineNo, "descriptor-error", e.getMessage(), null);
+                error(file, lineIndex + 1, "descriptor-error", e.getMessage(), null);
                 return;
             }
             for (String ref : unresolved) {
-                warning(file, lineNo, "unresolved-reference",
+                warning(file, lineIndex + 1, "unresolved-reference",
                         "${" + ref + "} is not defined in the descriptor and renders empty",
                         "fix the path or give a fallback: ${" + ref + ":...}");
             }
@@ -460,7 +461,6 @@ public final class Validator {
 
     /** Raw value of the first {@code <!--@key=...-->} declared in this file, or {@code null}. */
     private static String readOwnProperty(String body, String key) {
-        if (body == null) return null;
         for (String line : body.split("\\R", -1)) {
             String value = NRGUtil.extractRawPropertyMarkers(line).get(key);
             if (value != null) {
@@ -472,7 +472,6 @@ public final class Validator {
 
     /** Returns the {@code nrg.languages} declared in this file, or {@code null} if absent. */
     private static List<String> readOwnDeclaredLanguages(String body) {
-        if (body == null) return null;
         for (String line : body.split("\\R", -1)) {
             Map<String, String> raw = NRGUtil.extractRawPropertyMarkers(line);
             String langs = raw.get(NRGConstants.PROPERTY_LANGUAGES);

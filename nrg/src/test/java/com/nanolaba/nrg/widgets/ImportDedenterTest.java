@@ -48,6 +48,13 @@ class ImportDedenterTest {
     }
 
     @Test
+    void leadingBlankLineDoesNotDecideThePrefix() {
+        List<String> input = Arrays.asList("", "\t", "    line1", "      line2");
+        List<String> expected = Arrays.asList("", "", "line1", "  line2");
+        assertEquals(expected, ImportDedenter.dedent(input));
+    }
+
+    @Test
     void noCommonPrefixIsNoOp() {
         List<String> input = Arrays.asList("line1", "    line2");
         assertEquals(input, ImportDedenter.dedent(input));

@@ -1,6 +1,7 @@
 package com.nanolaba.nrg.maven;
 
 import com.nanolaba.nrg.NRG;
+import org.apache.maven.plugin.MojoExecutionException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -10,6 +11,8 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class NRGMojoMultiFileTest {
@@ -79,5 +82,32 @@ class NRGMojoMultiFileTest {
         }
         // Mojo runs in --validate mode so no .md files should be written either way,
         // but the test's true purpose is to lock that --fail-fast is forwarded.
+    }
+
+    private NRGMojo mojoForBrokenThenValidFile(boolean failFast) throws IOException {
+        writeSource("A.src.md", "<!--@nrg.languages=en-->\n${widget:import(path='missing.md')}\n");
+        writeSource("B.src.md", "<!--@nrg.languages=en-->\nB\n");
+        NRGMojo mojo = new NRGMojo();
+        mojo.setFailFast(failFast);
+        mojo.setFile(new String[]{
+                tempDir.resolve("A.src.md").toString(),
+                tempDir.resolve("B.src.md").toString()});
+        return mojo;
+    }
+
+    @Test
+    public void testFailFastSkipsTheFilesAfterAFailedGeneration() throws Exception {
+        NRGMojo mojo = mojoForBrokenThenValidFile(true);
+
+        assertThrows(MojoExecutionException.class, mojo::execute);
+        assertFalse(Files.exists(tempDir.resolve("B.md")));
+    }
+
+    @Test
+    public void testWithoutFailFastTheOtherFilesAreStillGenerated() throws Exception {
+        NRGMojo mojo = mojoForBrokenThenValidFile(false);
+
+        assertThrows(MojoExecutionException.class, mojo::execute);
+        assertTrue(Files.exists(tempDir.resolve("B.md")));
     }
 }

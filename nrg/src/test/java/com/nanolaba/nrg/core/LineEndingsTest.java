@@ -39,6 +39,19 @@ class LineEndingsTest {
         assertNull(LineEndings.detect(""));
         assertNull(LineEndings.detect(null));
         assertNull(LineEndings.detect("no newline here"));
+        assertNull(LineEndings.detect("a\rb\r"));
+    }
+
+    @Test
+    public void testDetectNewlineAtTheVeryStart() {
+        assertEquals(LineEndings.LF, LineEndings.detect("\n"));
+        assertEquals(LineEndings.LF, LineEndings.detect("\na\r\n"));
+        assertEquals(LineEndings.CRLF, LineEndings.detect("\r\n"));
+    }
+
+    @Test
+    public void testDetectMixedWithTheBareLfLast() {
+        assertEquals(LineEndings.LF, LineEndings.detect("a\r\nb\r\nc\n"));
     }
 
     @Test
@@ -55,6 +68,12 @@ class LineEndingsTest {
         assertEquals("", LineEndings.applyTo("", LineEndings.LF));
         // Null target ending is a no-op (caller has nothing to enforce).
         assertEquals("a\r\nb\n", LineEndings.applyTo("a\r\nb\n", null));
+    }
+
+    @Test
+    public void testApplyToAcceptsAnyCharSequence() {
+        assertEquals("a\r\nb", LineEndings.applyTo(new StringBuilder("a\nb"), LineEndings.CRLF));
+        assertEquals("a\nb", LineEndings.applyTo(new StringBuilder("a\r\nb"), LineEndings.LF));
     }
 
     @Test

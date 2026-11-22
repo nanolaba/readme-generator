@@ -17,17 +17,10 @@ final class ImportDedenter {
     }
 
     static List<String> dedent(List<String> lines) {
-        if (lines.isEmpty()) {
-            return lines;
-        }
         int minPrefix = Integer.MAX_VALUE;
         for (String line : lines) {
-            if (isWhitespaceOnly(line)) {
-                continue;
-            }
-            int prefix = leadingWhitespaceLength(line);
-            if (prefix < minPrefix) {
-                minPrefix = prefix;
+            if (!isWhitespaceOnly(line)) {
+                minPrefix = Math.min(minPrefix, leadingWhitespaceLength(line));
             }
         }
         if (minPrefix == 0 || minPrefix == Integer.MAX_VALUE) {
@@ -49,22 +42,14 @@ final class ImportDedenter {
         }
         List<String> result = new ArrayList<>(lines.size());
         for (String line : lines) {
-            if (line.length() <= minPrefix) {
-                result.add("");
-            } else {
-                result.add(line.substring(minPrefix));
-            }
+            // A whitespace-only line may be shorter than the prefix: it becomes empty.
+            result.add(line.substring(Math.min(minPrefix, line.length())));
         }
         return result;
     }
 
     private static boolean isWhitespaceOnly(String s) {
-        for (int i = 0; i < s.length(); i++) {
-            if (!Character.isWhitespace(s.charAt(i))) {
-                return false;
-            }
-        }
-        return true;
+        return leadingWhitespaceLength(s) == s.length();
     }
 
     private static int leadingWhitespaceLength(String s) {

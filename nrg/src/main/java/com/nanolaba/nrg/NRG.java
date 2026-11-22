@@ -2,7 +2,6 @@ package com.nanolaba.nrg;
 
 import com.nanolaba.logging.ConsoleLogger;
 import com.nanolaba.logging.LOG;
-import com.nanolaba.logging.LogEntry;
 import com.nanolaba.nrg.core.Generator;
 import com.nanolaba.nrg.core.GeneratorConfig;
 import com.nanolaba.nrg.core.LineEndings;
@@ -19,12 +18,11 @@ import com.nanolaba.sugar.Code;
 import org.apache.commons.cli.*;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.io.function.IOIntSupplier;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.PrintStream;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.charset.Charset;
@@ -39,6 +37,8 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.function.Function;
+import java.util.function.IntConsumer;
+import java.util.function.Supplier;
 import java.util.regex.Pattern;
 
 import static com.nanolaba.nrg.core.NRGConstants.DEFAULT_CHARSET;
@@ -91,6 +91,13 @@ public class NRG {
 
     public static boolean exitOnFailure = true;
 
+    /**
+     * Opens the syntax card that {@code --help syntax} prints, bundled into the jar from
+     * {@code skills/nrg/SYNTAX.src.md}. A field so that tests can stand in for a build that lacks
+     * the card or cannot read it.
+     */
+    static Supplier<InputStream> syntaxCard = () -> NRG.class.getResourceAsStream("/syntax/SYNTAX.md");
+
     /** nanolog's switch for its agent mode, as a system property and as an environment variable. */
     private static final String NANOLOG_AGENT_PROPERTY = "nanolog.agent";
     private static final String NANOLOG_AGENT_ENV = "NANOLOG_AGENT";
@@ -114,10 +121,18 @@ public class NRG {
     }
 
     public static void main(String... args) {
-        quietAgentModeForHook(args, System::getenv);
+        launch(args, System::getenv, System::exit);
+    }
+
+    /**
+     * {@link #main(String...)} with the process environment and the JVM exit passed in, so that
+     * what {@code main} does around {@link #run(String...)} can be checked in-process.
+     */
+    static void launch(String[] args, Function<String, String> env, IntConsumer exit) {
+        quietAgentModeForHook(args, env);
         int code = run(args);
         if (code != 0 && exitOnFailure) {
-            System.exit(code);
+            exit.accept(code);
         }
     }
 
@@ -309,7 +324,7 @@ public class NRG {
         }
         if (cmd.hasOption(help)) {
             if (Arrays.asList(cmd.getArgs()).contains("syntax")) {
-                return printSyntaxCard();
+                return ioCommand("Cannot read the syntax card", NRG::printSyntaxCard);
             }
             printHelp(options);
             return 0;
@@ -320,13 +335,8 @@ public class NRG {
                     .run(cmd.getOptionValue(claudeHook), System.in);
         }
         if (cmd.hasOption(initWrapper)) {
-            try {
-                return new WrapperInstaller().install(new File("."),
-                        cmd.getOptionValue(wrapperVersion), cmd.getOptionValue(wrapperSha256));
-            } catch (IOException e) {
-                LOG.error(e, () -> "Cannot write the wrapper files");
-                return EXIT_TEMPLATE_ERROR;
-            }
+            return ioCommand("Cannot write the wrapper files", () -> new WrapperInstaller().install(new File("."),
+                    cmd.getOptionValue(wrapperVersion), cmd.getOptionValue(wrapperSha256)));
         }
         if (cmd.hasOption(wrapperVersion) || cmd.hasOption(wrapperSha256)) {
             throw new ParseException("--wrapper-version and --wrapper-sha256 require --init-wrapper");
@@ -340,7 +350,9 @@ public class NRG {
             Thread.currentThread().setContextClassLoader(extraCl);
         }
 
-        List<NRGWidget> cliWidgets = NRGUtil.loadWidgets(cmd.getOptionValue(widgets), extraCl);
+        // The widgets every generator of this run gets on top of the built-in ones.
+        List<NRGWidget> runWidgets = new ArrayList<>(NRGUtil.loadWidgets(cmd.getOptionValue(widgets), extraCl));
+        runWidgets.addAll(additionalWidgets);
 
         boolean toStdout = cmd.hasOption(stdout);
         boolean checkMode = cmd.hasOption(check);
@@ -397,7 +409,7 @@ public class NRG {
         if (sandboxFlag && cmd.hasOption(allowExec)) {
             throw new ParseException("--sandbox cannot be combined with --allow-exec");
         }
-        Function<String, String> envProvider = null;
+        GeneratorConfig.RestrictedEnvProvider envProvider = null;
         if (sandboxFlag || cmd.hasOption(noEnv) || cmd.hasOption(envAllow)) {
             envProvider = restrictedEnv(cmd.getOptionValue(envAllow));
         }
@@ -424,15 +436,9 @@ public class NRG {
             if (ruleSources == null) {
                 return EXIT_USAGE;
             }
-            List<NRGWidget> widgetsForRules = new ArrayList<>(cliWidgets == null ? Collections.emptyList() : cliWidgets);
-            widgetsForRules.addAll(additionalWidgets);
-            try {
-                return new ManifestCommand(sourceCharset, widgetsForRules).load(ruleSources)
-                        .agentRules(cmd.hasOption(write) ? new File(cmd.getOptionValue(write)) : null, checkMode);
-            } catch (IOException e) {
-                LOG.error(e, () -> "Cannot write the agent rules");
-                return EXIT_TEMPLATE_ERROR;
-            }
+            return ioCommand("Cannot write the agent rules", () -> new ManifestCommand(sourceCharset, runWidgets)
+                    .load(ruleSources)
+                    .agentRules(cmd.hasOption(write) ? new File(cmd.getOptionValue(write)) : null, checkMode));
         }
 
         int queryModes = (cmd.hasOption(manifest) ? 1 : 0) + (cmd.hasOption(isGenerated) ? 1 : 0)
@@ -451,10 +457,8 @@ public class NRG {
             return EXIT_USAGE;
         }
         if (queryModes == 1) {
-            List<NRGWidget> widgetsForQuery = new ArrayList<>(cliWidgets == null ? Collections.emptyList() : cliWidgets);
-            widgetsForQuery.addAll(additionalWidgets);
-            try {
-                ManifestCommand query = new ManifestCommand(sourceCharset, widgetsForQuery).load(sources);
+            return ioCommand("Cannot list the templates", () -> {
+                ManifestCommand query = new ManifestCommand(sourceCharset, runWidgets).load(sources);
                 if (cmd.hasOption(locate)) {
                     return query.printLocate(cmd.getOptionValue(locate), outputFormat);
                 }
@@ -473,10 +477,7 @@ public class NRG {
                     return query.printAffected(changed, outputFormat);
                 }
                 return query.printManifest(outputFormat);
-            } catch (IOException e) {
-                LOG.error(e, () -> "Cannot list the templates");
-                return EXIT_TEMPLATE_ERROR;
-            }
+            });
         }
         if (sources.isEmpty()) {
             return EXIT_OK;
@@ -487,16 +488,16 @@ public class NRG {
         boolean failFastFlag = cmd.hasOption(failFast);
         int totalOutputs = 0;
         if (toStdout) {
-            totalOutputs = countTotalOutputs(sources, sourceCharset, cliWidgets, langValue);
+            totalOutputs = countTotalOutputs(sources, sourceCharset, runWidgets, langValue);
         }
         int aggregateCode = EXIT_OK;
         MatchTracker checkMatchTracker = new MatchTracker();
         for (File sourceFile : sources) {
             int code;
             if (validateMode) {
-                code = runValidation(sourceFile, rootDir, cliWidgets, report, outputFormat);
+                code = runValidation(sourceFile, rootDir, runWidgets, report, outputFormat);
             } else {
-                code = generate(sourceFile, sourceCharset, toStdout, langValue, cliWidgets,
+                code = generate(sourceFile, sourceCharset, toStdout, langValue, runWidgets,
                         checkMode, cmd.hasOption(allowExec),
                         fileNamePatternValue, defaultLangFileNamePatternValue,
                         totalOutputs > 1, lineEndingMode,
@@ -596,16 +597,11 @@ public class NRG {
      * <p>Cheap: {@link Generator}'s constructor only reads config; full rendering is deferred to
      * {@link Generator#getResult(String)} and is performed exactly once per language.
      */
-    private static int countTotalOutputs(List<File> sources, Charset charset, List<NRGWidget> cliWidgets,
+    private static int countTotalOutputs(List<File> sources, Charset charset, List<NRGWidget> widgets,
                                          String languageFilter) {
         int total = 0;
         for (File f : sources) {
             try {
-                List<NRGWidget> widgets = new ArrayList<>();
-                if (cliWidgets != null) {
-                    widgets.addAll(cliWidgets);
-                }
-                widgets.addAll(additionalWidgets);
                 Generator probe = new Generator(f, charset, widgets);
                 List<String> declared = probe.getConfig().getLanguages();
                 if (languageFilter != null) {
@@ -624,16 +620,11 @@ public class NRG {
         return total;
     }
 
-    private static int runValidation(File sourceFile, File rootDir, List<NRGWidget> cliWidgets,
+    private static int runValidation(File sourceFile, File rootDir, List<NRGWidget> widgets,
                                      RunReport report, RunReport.Format format) {
         if (!sourceFile.exists()) {
             return missingSource(sourceFile, report);
         }
-        List<NRGWidget> widgets = new ArrayList<>();
-        if (cliWidgets != null) {
-            widgets.addAll(cliWidgets);
-        }
-        widgets.addAll(additionalWidgets);
         List<Validator.Diagnostic> diagnostics = new Validator(sourceFile, rootDir, widgets).validate();
         boolean anyError = false;
         for (Validator.Diagnostic d : diagnostics) {
@@ -701,11 +692,8 @@ public class NRG {
                 LOG.warn("--classpath entry does not exist: {}", f.getAbsolutePath());
                 continue;
             }
-            try {
-                urls.add(f.toURI().toURL());
-            } catch (MalformedURLException e) {
-                LOG.error(e, () -> "Cannot convert --classpath entry to URL: " + trimmed);
-            }
+            // A file: URL always has a protocol handler, so the conversion cannot fail.
+            urls.add(Code.run(() -> f.toURI().toURL()));
         }
         if (urls.isEmpty()) {
             return null;
@@ -739,14 +727,10 @@ public class NRG {
      */
     private static void applyLogLevel(LogLevel level, boolean everythingToStderr) {
         int threshold = level.ordinal();
-        ConsoleLogger logger = everythingToStderr
-                ? new ConsoleLogger() {
-                    @Override
-                    protected PrintStream getOutputStream(LogEntry entry) {
-                        return System.err;
-                    }
-                }
-                : new ConsoleLogger();
+        ConsoleLogger logger = new ConsoleLogger();
+        if (everythingToStderr) {
+            logger.setStream("err");
+        }
         logger.setTraceEnabled(LogLevel.TRACE.ordinal() >= threshold);
         logger.setDebugEnabled(LogLevel.DEBUG.ordinal() >= threshold);
         logger.setInfoEnabled(LogLevel.INFO.ordinal() >= threshold);
@@ -756,18 +740,19 @@ public class NRG {
     }
 
     private static int generate(File sourceFile, Charset charset, boolean toStdout, String languageFilter,
-                                List<NRGWidget> cliWidgets, boolean checkMode, boolean allowExec,
+                                List<NRGWidget> widgets, boolean checkMode, boolean allowExec,
                                 String fileNamePatternOverride, String defaultLangFileNamePatternOverride,
                                 boolean perFileStdoutHeader, LineEndings.Mode lineEndingMode,
                                 boolean noHeaderOverride, String headerTextOverride,
                                 PathPatternMatcher checkPathFilter, MatchTracker checkMatchTracker,
                                 File rootDir, RunReport report, RunReport.Format format,
-                                Function<String, String> envProvider, boolean offline, String variantFilter) {
+                                GeneratorConfig.RestrictedEnvProvider envProvider, boolean offline,
+                                String variantFilter) {
         if (!sourceFile.exists()) {
             return missingSource(sourceFile, report);
         }
         try {
-            Generator first = newGenerator(sourceFile, charset, cliWidgets, envProvider, offline, rootDir,
+            Generator first = newGenerator(sourceFile, charset, widgets, envProvider, offline, rootDir,
                     fileNamePatternOverride, defaultLangFileNamePatternOverride, noHeaderOverride, headerTextOverride);
             List<String> variants = first.getConfig().getVariants();
             if (variants.isEmpty()) {
@@ -788,7 +773,7 @@ public class NRG {
                     continue;
                 }
                 if (generator == null) {
-                    generator = newGenerator(sourceFile, charset, cliWidgets, envProvider, offline, rootDir,
+                    generator = newGenerator(sourceFile, charset, widgets, envProvider, offline, rootDir,
                             fileNamePatternOverride, defaultLangFileNamePatternOverride, noHeaderOverride, headerTextOverride);
                 }
                 generator.getConfig().setVariant(variant);
@@ -821,21 +806,21 @@ public class NRG {
         }
     }
 
-    /** A generator for {@code sourceFile} with every caller-side setting applied. */
-    private static Generator newGenerator(File sourceFile, Charset charset, List<NRGWidget> cliWidgets,
-                                          Function<String, String> envProvider, boolean offline, File rootDir,
+    /**
+     * A generator for {@code sourceFile} with every caller-side setting applied.
+     *
+     * <p>A restricted {@code envProvider} is all {@link GeneratorConfig#isEnvRestricted()} needs:
+     * the config recognises its type, from construction on.
+     */
+    private static Generator newGenerator(File sourceFile, Charset charset, List<NRGWidget> widgets,
+                                          GeneratorConfig.RestrictedEnvProvider envProvider, boolean offline,
+                                          File rootDir,
                                           String fileNamePatternOverride, String defaultLangFileNamePatternOverride,
                                           boolean noHeaderOverride, String headerTextOverride) throws IOException {
-        List<NRGWidget> widgets = new ArrayList<>();
-        if (cliWidgets != null) {
-            widgets.addAll(cliWidgets);
-        }
-        widgets.addAll(additionalWidgets);
         Generator generator = envProvider == null
                 ? new Generator(sourceFile, charset, widgets)
                 : new Generator(sourceFile, FileUtils.readFileToString(sourceFile, charset), widgets, envProvider);
         GeneratorConfig config = generator.getConfig();
-        config.setEnvRestricted(envProvider != null);
         config.setOffline(offline);
         if (rootDir != null) {
             config.setProjectRoot(rootDir);
@@ -990,9 +975,9 @@ public class NRG {
 
     private static List<String> splitLines(String s) {
         if (s == null || s.isEmpty()) {
-            return new ArrayList<>();
+            return Collections.emptyList();
         }
-        return new ArrayList<>(Arrays.asList(s.split("\\R", -1)));
+        return Arrays.asList(s.split("\\R", -1));
     }
 
     private static void createFiles(Generator generator, LineEndings.Mode lineEndingMode, RunReport report)
@@ -1093,16 +1078,27 @@ public class NRG {
      * {@code skills/nrg/SYNTAX.src.md}), so the reference matches the installed version and
      * needs no network.
      */
-    private static int printSyntaxCard() {
-        try (InputStream in = NRG.class.getResourceAsStream("/syntax/SYNTAX.md")) {
+    private static int printSyntaxCard() throws IOException {
+        try (InputStream in = syntaxCard.get()) {
             if (in == null) {
                 System.err.println("The syntax card is missing from this build of NRG");
                 return EXIT_TEMPLATE_ERROR;
             }
             System.out.print(IOUtils.toString(in, StandardCharsets.UTF_8));
             return EXIT_OK;
+        }
+    }
+
+    /**
+     * Runs a command that reads or writes files outside the generation pipeline (the syntax card,
+     * the wrapper, the agent rules, the template queries): an I/O failure is logged with
+     * {@code failure} and ends the run with {@link #EXIT_TEMPLATE_ERROR}.
+     */
+    private static int ioCommand(String failure, IOIntSupplier command) {
+        try {
+            return command.getAsInt();
         } catch (IOException e) {
-            LOG.error(e, () -> "Cannot read the syntax card");
+            LOG.error(e, failure);
             return EXIT_TEMPLATE_ERROR;
         }
     }

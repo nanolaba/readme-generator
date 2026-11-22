@@ -228,8 +228,14 @@ public class ExecWidget extends DefaultWidget {
         }
     }
 
-    /** Reads one stream of a child process to the end on its own daemon thread. */
-    private static final class StreamDrain {
+    /**
+     * Reads one stream of a child process to the end on its own daemon thread.
+     *
+     * <p>Package-private so a test can hand it a stream it controls: whether the thread is a
+     * daemon and whether {@link #await()} really waits for it cannot be observed through a
+     * child process, whose output is usually read completely before it exits.
+     */
+    static final class StreamDrain {
         private final Thread thread;
         private volatile String text = "";
         private volatile IOException failure;

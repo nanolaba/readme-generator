@@ -58,23 +58,16 @@ final class ImportRegionExtractor {
         if (beginIdx < 0) {
             return null;
         }
-        int endIdx = -1;
+        List<Integer> result = new ArrayList<>();
         for (int i = beginIdx + 1; i < sourceLines.size(); i++) {
-            if (endPattern.matcher(sourceLines.get(i)).find()) {
-                endIdx = i;
-                break;
+            String line = sourceLines.get(i);
+            if (endPattern.matcher(line).find()) {
+                return result;
+            }
+            if (!ANY_MARKER.matcher(line).find()) {
+                result.add(i);
             }
         }
-        if (endIdx < 0) {
-            return null;
-        }
-        List<Integer> result = new ArrayList<>(endIdx - beginIdx - 1);
-        for (int i = beginIdx + 1; i < endIdx; i++) {
-            if (ANY_MARKER.matcher(sourceLines.get(i)).find()) {
-                continue;
-            }
-            result.add(i);
-        }
-        return result;
+        return null;
     }
 }

@@ -89,52 +89,31 @@ public final class SourceFileResolver {
     }
 
     /**
-     * Builds the {@link PathMatcher}(s) to apply for a pattern. {@code **\/} is treated as a
-     * "zero or more directory components" wildcard (bash globstar semantics): besides the
-     * literal pattern, an additional matcher is generated for each {@code **\/} segment with
-     * the segment removed, so {@code docs/**\/*.src.md} matches both {@code docs/a.src.md}
-     * (zero intermediate dirs) and {@code docs/sub/b.src.md} (one or more).
-     *
-     * <p>Uses {@code base.getFileSystem()} rather than {@link java.nio.file.FileSystems#getDefault()}
-     * so tests can drive the resolver against virtual (in-memory) filesystems. The
-     * {@link PathPatternMatcher} sibling class targets real-disk paths and so uses the default
-     * filesystem instead — the variant-expansion loop is duplicated deliberately for that reason.
+     * Builds the {@link PathMatcher}s of a pattern: one per {@link PathPatternMatcher#globstarVariants
+     * globstar variant}. Uses {@code base.getFileSystem()} rather than
+     * {@link java.nio.file.FileSystems#getDefault()} so the matchers belong to the file system
+     * that is walked; {@link PathPatternMatcher} targets real-disk paths and uses the default one.
      */
     private static List<PathMatcher> buildMatchers(Path base, String pattern) {
-        String absolutePattern = PathPatternMatcher.absolutePatternString(pattern);
-        List<String> variants = new ArrayList<>();
-        variants.add(absolutePattern);
-        // Generate one variant per "**/" position with the segment elided. Iterating a fixed
-        // index avoids overlapping replacements when the pattern contains multiple "**/".
-        int from = 0;
-        while (true) {
-            int idx = absolutePattern.indexOf("**/", from);
-            if (idx < 0) break;
-            variants.add(absolutePattern.substring(0, idx) + absolutePattern.substring(idx + 3));
-            from = idx + 3;
-        }
-        List<PathMatcher> matchers = new ArrayList<>(variants.size());
-        for (String v : variants) {
-            matchers.add(base.getFileSystem().getPathMatcher("glob:" + v));
+        List<PathMatcher> matchers = new ArrayList<>();
+        for (String variant : PathPatternMatcher.globstarVariants(PathPatternMatcher.absolutePatternString(pattern))) {
+            matchers.add(base.getFileSystem().getPathMatcher("glob:" + variant));
         }
         return matchers;
     }
 
     /**
      * Walks back from the first glob character to the previous path separator and returns the
-     * absolute directory at that prefix. With no separator before the glob, walks from the
-     * current working directory; with no characters at all before the glob, walks from the
-     * filesystem root. Always returned absolute so {@link PathMatcher} can match against
-     * absolute paths produced by {@link Files#walk}.
+     * absolute directory at that prefix. With no separator before the glob ({@code *.md}), walks
+     * from the current working directory; when the only separator before it is the leading one
+     * ({@code /*.md}), from the filesystem root. Always returned absolute so {@link PathMatcher}
+     * can match against absolute paths produced by {@link Files#walk}.
+     *
+     * <p>{@code pattern} must contain a glob character ({@link PathPatternMatcher#hasGlobChars}).
      */
-    private static Path baseDirectory(String pattern) {
+    static Path baseDirectory(String pattern) {
         String normalized = pattern.replace('\\', '/');
-        int firstGlob = -1;
-        for (char c : new char[]{'*', '?', '[', '{'}) {
-            int idx = normalized.indexOf(c);
-            if (idx >= 0 && (firstGlob < 0 || idx < firstGlob)) firstGlob = idx;
-        }
-        String prefix = firstGlob < 0 ? normalized : normalized.substring(0, firstGlob);
+        String prefix = normalized.substring(0, PathPatternMatcher.indexOfGlobChar(normalized));
         int lastSlash = prefix.lastIndexOf('/');
         String basePart = lastSlash < 0 ? "." : prefix.substring(0, lastSlash);
         if (basePart.isEmpty()) basePart = "/";

@@ -1,5 +1,7 @@
 package com.nanolaba.nrg.core;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.io.File;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
@@ -8,6 +10,8 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Matches a {@link File} against a list of {@code glob:}-style path patterns.
@@ -26,6 +30,7 @@ import java.util.List;
 public final class PathPatternMatcher {
 
     private static final char[] GLOB_CHARS = {'*', '?', '[', '{'};
+    private static final Pattern GLOBSTAR_SEGMENT = Pattern.compile("**/", Pattern.LITERAL);
 
     private final List<String> patterns;
     private final List<List<PathMatcher>> matchersPerPattern;
@@ -81,29 +86,33 @@ public final class PathPatternMatcher {
         return false;
     }
 
-    /**
-     * Builds the {@link PathMatcher}(s) for a single pattern. {@code **\/} is treated as a
-     * "zero or more directory components" wildcard (bash globstar semantics): besides the
-     * literal pattern, an additional matcher is generated for each {@code **\/} occurrence with
-     * the segment elided, so {@code docs/**\/*.md} matches both {@code docs/a.md} (zero
-     * intermediate dirs) and {@code docs/sub/b.md} (one or more).
-     */
     private static List<PathMatcher> buildMatchersFor(String pattern) {
-        String absolutePattern = absolutePatternString(pattern);
-        List<String> variants = new ArrayList<>();
-        variants.add(absolutePattern);
-        int from = 0;
-        while (true) {
-            int idx = absolutePattern.indexOf("**/", from);
-            if (idx < 0) break;
-            variants.add(absolutePattern.substring(0, idx) + absolutePattern.substring(idx + 3));
-            from = idx + 3;
-        }
-        List<PathMatcher> matchers = new ArrayList<>(variants.size());
-        for (String v : variants) {
-            matchers.add(FileSystems.getDefault().getPathMatcher("glob:" + v));
+        List<PathMatcher> matchers = new ArrayList<>();
+        for (String variant : globstarVariants(absolutePatternString(pattern))) {
+            matchers.add(FileSystems.getDefault().getPathMatcher("glob:" + variant));
         }
         return matchers;
+    }
+
+    /**
+     * The {@code glob:} strings one pattern stands for. {@code **\/} is treated as a "zero or more
+     * directory components" wildcard (bash globstar semantics): besides the literal pattern, one
+     * variant is generated for each {@code **\/} occurrence with that occurrence elided, so
+     * {@code docs/**\/*.md} matches both {@code docs/a.md} (zero intermediate dirs) and
+     * {@code docs/sub/b.md} (one or more).
+     *
+     * <p>Each variant elides exactly one occurrence, found left to right without overlaps;
+     * shared with {@link SourceFileResolver}, which builds its matchers on the walked path's
+     * file system instead of the default one.
+     */
+    static List<String> globstarVariants(String absolutePattern) {
+        List<String> variants = new ArrayList<>();
+        variants.add(absolutePattern);
+        Matcher globstar = GLOBSTAR_SEGMENT.matcher(absolutePattern);
+        while (globstar.find()) {
+            variants.add(absolutePattern.substring(0, globstar.start()) + absolutePattern.substring(globstar.end()));
+        }
+        return variants;
     }
 
     /**
@@ -118,11 +127,9 @@ public final class PathPatternMatcher {
         if (isAbsoluteNormalized(normalized)) {
             return normalized;
         }
+        // Only a file system root ("/", "C:/") already ends with the separator.
         String cwd = Paths.get("").toAbsolutePath().toString().replace('\\', '/');
-        if (cwd.endsWith("/")) {
-            return cwd + normalized;
-        }
-        return cwd + "/" + normalized;
+        return StringUtils.removeEnd(cwd, "/") + "/" + normalized;
     }
 
     private static boolean isAbsoluteNormalized(String normalized) {
@@ -140,9 +147,11 @@ public final class PathPatternMatcher {
     }
 
     static boolean hasGlobChars(String s) {
-        for (char c : GLOB_CHARS) {
-            if (s.indexOf(c) >= 0) return true;
-        }
-        return false;
+        return StringUtils.containsAny(s, GLOB_CHARS);
+    }
+
+    /** Index of the first glob character in {@code s}, or {@code -1} when it has none. */
+    static int indexOfGlobChar(String s) {
+        return StringUtils.indexOfAny(s, GLOB_CHARS);
     }
 }

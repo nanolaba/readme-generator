@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.function.LongSupplier;
 
 /**
  * Production {@link UrlOpener} implementation backed by {@link HttpURLConnection}.
@@ -25,18 +26,28 @@ final class HttpUrlOpener implements UrlOpener {
     static final int MAX_BODY_BYTES = 16 * 1024 * 1024;
 
     private final int maxBodyBytes;
+    private final LongSupplier nanoClock;
 
     HttpUrlOpener() {
         this(MAX_BODY_BYTES);
     }
 
     HttpUrlOpener(int maxBodyBytes) {
+        this(maxBodyBytes, System::nanoTime);
+    }
+
+    /**
+     * @param nanoClock stands in for {@link System#nanoTime()}; a test passes its own to pin the
+     *                  deadline arithmetic down to the millisecond.
+     */
+    HttpUrlOpener(int maxBodyBytes, LongSupplier nanoClock) {
         this.maxBodyBytes = maxBodyBytes;
+        this.nanoClock = nanoClock;
     }
 
     @Override
     public Response open(URL url, int timeoutMillis, int maxRedirects) throws IOException {
-        long deadline = System.nanoTime() + timeoutMillis * 1_000_000L;
+        long deadline = nanoClock.getAsLong() + timeoutMillis * 1_000_000L;
         URL current = url;
         int hops = 0;
         while (true) {
@@ -45,9 +56,9 @@ final class HttpUrlOpener implements UrlOpener {
             conn.setConnectTimeout(remaining);
             conn.setReadTimeout(remaining);
             conn.setInstanceFollowRedirects(false); // we handle redirects manually for cross-protocol support
-            conn.setRequestMethod("GET");
             int code = conn.getResponseCode();
-            if (code >= 300 && code < 400) {
+            int statusClass = code / 100;
+            if (statusClass == 3) {
                 String location = conn.getHeaderField("Location");
                 conn.disconnect();
                 if (location == null) {
@@ -59,7 +70,7 @@ final class HttpUrlOpener implements UrlOpener {
                 current = redirectTarget(url, current, location);
                 continue;
             }
-            if (code < 200 || code >= 300) {
+            if (statusClass != 2) {
                 conn.disconnect();
                 throw new IOException("import url=" + url + ": HTTP " + code);
             }
@@ -111,8 +122,12 @@ final class HttpUrlOpener implements UrlOpener {
         return out.toByteArray();
     }
 
-    private static int remainingMillis(long deadline, URL url) throws IOException {
-        long remaining = (deadline - System.nanoTime()) / 1_000_000L;
+    /**
+     * Whole milliseconds left until {@code deadline}. Less than one is a timeout rather than
+     * {@code 0}, which {@link HttpURLConnection} would take for "wait forever".
+     */
+    private int remainingMillis(long deadline, URL url) throws IOException {
+        long remaining = (deadline - nanoClock.getAsLong()) / 1_000_000L;
         if (remaining <= 0) {
             throw new IOException("import url=" + url + ": timed out");
         }

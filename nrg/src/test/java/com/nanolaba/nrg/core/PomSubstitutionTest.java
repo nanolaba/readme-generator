@@ -178,6 +178,26 @@ class PomSubstitutionTest extends DefaultNRGTest {
     }
 
     @Test
+    public void testPomInternalProjectReferenceInheritsOnlyTheInheritedFields() {
+        PomReader pr = fixed("url", "https://example.com/${project.version}/${project.description}",
+                "parent.version", "2.0", "parent.description", "from the parent");
+        Generator g = make("U=${pom.url}\n", pr);
+
+        String body = g.getResult("en").getContent().toString();
+        // version comes from the parent like Maven does it; description does not, so it stays unresolved
+        assertTrue(body.contains("U=https://example.com/2.0/${project.description}"), body);
+    }
+
+    @Test
+    public void testPomInternalProjectReferencePrefersTheOwnValue() {
+        PomReader pr = fixed("url", "https://example.com/${project.version}", "version", "1.0", "parent.version", "2.0");
+        Generator g = make("U=${pom.url}\n", pr);
+
+        String body = g.getResult("en").getContent().toString();
+        assertTrue(body.contains("U=https://example.com/1.0"), body);
+    }
+
+    @Test
     public void testPomInternalEnvReference() {
         PomReader pr = path -> "version".equals(path)
                 ? java.util.Optional.of("${env.RELEASE_VERSION:0.0.0}")

@@ -2,11 +2,11 @@ package com.nanolaba.nrg.core.freeze;
 
 import com.nanolaba.nrg.core.NRGUtil;
 import com.nanolaba.nrg.core.Validator;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -144,11 +144,13 @@ public final class FreezeBlockParser {
         return out;
     }
 
+    /**
+     * {@code raw} is the optional attribute group of the open marker: {@code null} for a bare
+     * {@code <!--nrg.freeze-->}, possibly padded with whitespace otherwise. Both shapes come back
+     * as an empty map, since the parameter parser treats a null or empty line as "no attributes".
+     */
     private static Map<String, String> parseAttributes(String raw) {
-        if (raw == null || raw.trim().isEmpty()) {
-            return new HashMap<>();
-        }
-        return NRGUtil.parseParametersLine(raw.trim());
+        return NRGUtil.parseParametersLine(StringUtils.trim(raw));
     }
 
     private static Validator.Diagnostic error(File file, int line, String message) {

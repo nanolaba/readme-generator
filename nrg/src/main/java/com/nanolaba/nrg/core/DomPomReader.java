@@ -6,7 +6,6 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.File;
@@ -64,13 +63,13 @@ public final class DomPomReader implements PomReader {
                 // The file is chosen by the template (nrg.pom.path), so it is untrusted XML. A
                 // POM never needs a DOCTYPE; refusing one outright rules out external entities
                 // (local file reads, network access behind nrg.allowRemoteImports' back) and
-                // entity-expansion bombs in one go.
+                // entity-expansion bombs in one go. With no DTD there is no entity to expand and
+                // no external DTD to fetch, so the secure-processing and entity-reference switches
+                // have nothing left to act on. XInclude, the one inclusion mechanism that needs no
+                // DOCTYPE, requires an XInclude- and namespace-aware factory; a new factory is
+                // neither, and it must stay that way.
                 DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-                dbf.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
                 dbf.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
-                dbf.setXIncludeAware(false);
-                dbf.setExpandEntityReferences(false);
-                dbf.setNamespaceAware(false);
                 DocumentBuilder db = dbf.newDocumentBuilder();
                 document = db.parse(pomFile);
             } catch (Exception e) {

@@ -186,6 +186,13 @@ public class Generator {
      * A frozen region takes its body from the file on disk, so the number of lines between its
      * markers can change. Lines outside the regions keep their origins in order; lines inside
      * get the origin of the region's opening marker.
+     *
+     * <p>Both texts are well formed, so the walk needs no bounds checks: {@code before} passed
+     * the freeze parser (it throws on unbalanced or nested markers), {@code after} is the same
+     * text with region bodies swapped for disk content that is empty or ends in a line break,
+     * so each closing marker stays on a line of its own, and outside the regions the two agree
+     * line for line. Every opening marker therefore has its closing marker on a later line of
+     * both texts, and the two walks end together.
      */
     private static List<SourceOrigin> remapFrozenRegions(String before, String after, List<SourceOrigin> map) {
         String[] a = before.split("\\R", -1);
@@ -195,15 +202,15 @@ public class Generator {
         int i = 0;
         int j = 0;
         while (j < linesAfter) {
-            SourceOrigin origin = i < map.size() ? map.get(i) : SourceOrigin.note("unknown");
+            SourceOrigin origin = map.get(i);
             out.add(origin);
             if (FREEZE_OPEN.matcher(b[j]).find()) {
                 i++;
                 j++;
-                while (i < a.length && !FREEZE_CLOSE.matcher(a[i]).find()) {
+                while (!FREEZE_CLOSE.matcher(a[i]).find()) {
                     i++;
                 }
-                while (j < linesAfter && !FREEZE_CLOSE.matcher(b[j]).find()) {
+                while (!FREEZE_CLOSE.matcher(b[j]).find()) {
                     out.add(origin.withNote("frozen region: content kept from the file on disk"));
                     j++;
                 }

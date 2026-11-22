@@ -26,6 +26,13 @@ class Sha256HexTest {
     }
 
     @Test
+    void leadingZeroBytesArePadded() {
+        assertEquals(
+                "009d9e88ce13770ca5fc05097eb32a9576e1b989c0584f9174f31fe70aadc342",
+                Sha256Hex.hexOf("x84".getBytes(StandardCharsets.UTF_8)));
+    }
+
+    @Test
     void outputIsAlwaysLowercaseAnd64Chars() {
         String h = Sha256Hex.hexOf("anything".getBytes(StandardCharsets.UTF_8));
         assertEquals(64, h.length());

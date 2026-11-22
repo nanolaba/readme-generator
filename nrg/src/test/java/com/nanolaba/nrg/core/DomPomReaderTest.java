@@ -1,5 +1,6 @@
 package com.nanolaba.nrg.core;
 
+import com.nanolaba.logging.MemoryLogger;
 import com.nanolaba.nrg.DefaultNRGTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -9,6 +10,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Collections;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -62,5 +64,38 @@ class DomPomReaderTest extends DefaultNRGTest {
 
         assertEquals(Optional.empty(), new DomPomReader(pom).read("version"));
         assertTrue(getErrAndClear().contains("pom reader: failed to parse"));
+    }
+
+    @Test
+    void xIncludeIsNotProcessed(@TempDir Path tmp) throws IOException {
+        // XInclude needs no DOCTYPE, so refusing one does not cover it: the factory must stay
+        // neither XInclude- nor namespace-aware for the include to remain an inert element.
+        write(tmp.resolve("secret.txt"), "TOP-SECRET");
+        File pom = write(tmp.resolve("xinclude.xml"),
+                "<?xml version=\"1.0\"?>\n" +
+                        "<project xmlns:xi=\"http://www.w3.org/2001/XInclude\">" +
+                        "<version><xi:include href=\"secret.txt\" parse=\"text\"/></version></project>");
+
+        assertEquals(Optional.of(""), new DomPomReader(pom).read("version"));
+    }
+
+    @Test
+    void missingPomIsLoggedOnceWithItsPath(@TempDir Path tmp) {
+        File missing = tmp.resolve("pom.xml").toFile();
+        try (MemoryLogger log = MemoryLogger.capture()) {
+            DomPomReader reader = new DomPomReader(missing);
+            assertEquals(Optional.empty(), reader.read("version"));
+            assertEquals(Optional.empty(), reader.read("properties.x"));
+            assertEquals(Collections.singletonList("pom reader: file not found: " + missing.getAbsolutePath()),
+                    log.getMessages());
+        }
+    }
+
+    @Test
+    void nullPomIsLoggedAsNull() {
+        try (MemoryLogger log = MemoryLogger.capture()) {
+            assertEquals(Optional.empty(), new DomPomReader(null).read("version"));
+            assertEquals(Collections.singletonList("pom reader: file not found: <null>"), log.getMessages());
+        }
     }
 }

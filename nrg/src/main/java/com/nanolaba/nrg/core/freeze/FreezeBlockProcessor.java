@@ -60,7 +60,7 @@ public final class FreezeBlockProcessor {
             } else {
                 if (config.getWarnedMissingFreezeIds().add(m.getId())) {
                     LOG.warn("freeze id='{}' not found in {}; using template placeholder",
-                            m.getId(), targetFile == null ? "<unresolved>" : targetFile.getName());
+                            m.getId(), targetFile.getName());
                 }
                 for (int i = m.getOpenLineIndex() + 1; i < m.getCloseLineIndex(); i++) {
                     out.append(lines[i]).append('\n');
@@ -70,15 +70,11 @@ public final class FreezeBlockProcessor {
             out.append(m.getCloseLine()).append('\n');
             cursor = m.getCloseLineIndex() + 1;
         }
-        // Tail
+        // Tail. A trailing newline of the input is the empty last element of the split, so it
+        // is kept.
         for (int i = cursor; i < lines.length; i++) {
             out.append(lines[i]);
             if (i < lines.length - 1) out.append('\n');
-        }
-
-        // Preserve original trailing newline if input had one.
-        if (renderedOutput.endsWith("\n") && out.length() > 0 && out.charAt(out.length() - 1) != '\n') {
-            out.append('\n');
         }
         return out.toString();
     }

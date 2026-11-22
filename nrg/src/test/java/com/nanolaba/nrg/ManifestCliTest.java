@@ -3,13 +3,18 @@ package com.nanolaba.nrg;
 import com.nanolaba.nrg.core.Generator;
 import com.nanolaba.nrg.core.TemplateManifest;
 import com.nanolaba.nrg.core.json.MinimalJsonParser;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.AccessDeniedException;
+import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -25,6 +30,12 @@ public class ManifestCliTest extends DefaultNRGTest {
 
     @TempDir
     Path tempDir;
+
+    /** Only errors are logged, so stdout holds nothing but what the command under test prints. */
+    @BeforeEach
+    public void logErrorsOnly() {
+        NRG.applyLogLevel(NRG.LogLevel.ERROR);
+    }
 
     private Path write(String name, String body) throws IOException {
         Path p = tempDir.resolve(name);
@@ -169,5 +180,213 @@ public class ManifestCliTest extends DefaultNRGTest {
         Path src = project();
         assertEquals(NRG.EXIT_USAGE, NRG.run("--manifest", "--check", "-f", src.toString()));
         assertEquals(NRG.EXIT_USAGE, NRG.run("--manifest", "--is-generated", "x", "-f", src.toString()));
+    }
+
+    private ManifestCommand command(Path... sources) throws IOException {
+        List<File> files = new ArrayList<>();
+        for (Path source : sources) {
+            files.add(source.toFile());
+        }
+        return new ManifestCommand(StandardCharsets.UTF_8, null, tempDir.toFile()).load(files);
+    }
+
+    private List<String> discoveredSources() throws IOException {
+        List<String> sources = new ArrayList<>();
+        command().getManifests().forEach(m -> sources.add(tempDir.relativize(m.getSource().toPath()).toString()
+                .replace(File.separatorChar, '/')));
+        return sources;
+    }
+
+    private static String version() {
+        return RunReport.str(NRG.getVersion().trim());
+    }
+
+    @Test
+    public void testManifestTextListsOutputsInputsAndDynamicSources() throws IOException {
+        Path src = project();
+
+        assertEquals(NRG.EXIT_OK, command(src).printManifest(RunReport.Format.TEXT));
+        List<String> lines = Arrays.asList(getOutAndClear().split("\\R"));
+        assertEquals("README.src.md", lines.get(0));
+        assertTrue(lines.contains("  output  README.md (en)"), lines.toString());
+        assertTrue(lines.contains("  output  README.ru.md (ru)"), lines.toString());
+        assertTrue(lines.contains("  input   docs/snippet.sh"), lines.toString());
+        assertTrue(lines.contains("  dynamic date"), lines.toString());
+        assertTrue(lines.contains("  dynamic env:TOKEN"), lines.toString());
+    }
+
+    @Test
+    public void testManifestJsonLayout() throws IOException {
+        write("docs/part.src.md", "Part\n");
+        Path src = write("README.src.md", "<!--@nrg.languages=en,ru-->\n${widget:import(path='docs/part.src.md')}\n");
+
+        assertEquals(NRG.EXIT_OK, command(src).printManifest(RunReport.Format.JSON));
+        assertEquals("{\n  \"version\": " + version() + ",\n  \"mode\": \"manifest\",\n  \"templates\": [\n"
+                + "    {\"source\": \"README.src.md\",\n"
+                + "     \"outputs\": [{\"language\": \"en\", \"path\": \"README.md\"}, {\"language\": \"ru\", \"path\": \"README.ru.md\"}],\n"
+                + "     \"inputs\": [\"README.src.md\", \"docs/part.src.md\"],\n"
+                + "     \"dynamic\": []}\n  ]\n}", getOutAndClear().trim());
+    }
+
+    @Test
+    public void testManifestOfAProjectWithoutTemplates() throws IOException {
+        Files.createDirectories(tempDir.resolve(".git"));
+
+        assertEquals(NRG.EXIT_OK, command().printManifest(RunReport.Format.JSON));
+        assertEquals("{\n  \"version\": " + version() + ",\n  \"mode\": \"manifest\",\n  \"templates\": []\n}",
+                getOutAndClear().trim());
+    }
+
+    @Test
+    public void testUnreadableSourcesAreReportedAndFailTheQuery() throws IOException {
+        Path broken = write("broken.src.md", "<!--@nrg.languages=en,ru-->\n<!--@nrg.defaultLanguage=de-->\nx\n");
+        Path good = write("README.src.md", "Hello\n");
+
+        ManifestCommand command = command(tempDir.resolve("missing.src.md"), broken, good);
+        String err = getErrAndClear();
+        assertTrue(err.contains("Source file does not exist: " + tempDir.resolve("missing.src.md")), err);
+        assertTrue(err.contains("Cannot read " + broken + ": The default language \"de\" is not defined"), err);
+        assertEquals(1, command.getManifests().size(), "the readable template is still loaded");
+        assertEquals(NRG.EXIT_TEMPLATE_ERROR, command.printManifest(RunReport.Format.TEXT));
+        assertEquals(NRG.EXIT_TEMPLATE_ERROR, command.printAffected(Collections.singletonList(good.toFile()), RunReport.Format.TEXT));
+    }
+
+    @Test
+    public void testIsGeneratedJson() throws IOException {
+        Path src = project();
+
+        assertEquals(NRG.EXIT_OK, command(src).printIsGenerated(tempDir.resolve("README.ru.md").toFile(), RunReport.Format.JSON));
+        assertEquals("{\"version\": " + version() + ", \"mode\": \"is-generated\", \"file\": \"README.ru.md\", "
+                + "\"generated\": true, \"sources\": [\"README.src.md\"]}", getOutAndClear().trim());
+        assertEquals(1, command(src).printIsGenerated(tempDir.resolve("docs/part.src.md").toFile(), RunReport.Format.JSON));
+        assertEquals("{\"version\": " + version() + ", \"mode\": \"is-generated\", \"file\": \"docs/part.src.md\", "
+                + "\"generated\": false, \"sources\": []}", getOutAndClear().trim());
+    }
+
+    @Test
+    public void testAffectedJson() throws IOException {
+        Path src = project();
+
+        assertEquals(NRG.EXIT_OK, command(src).printAffected(Arrays.asList(tempDir.resolve("docs/nested.src.md").toFile(),
+                tempDir.resolve("unrelated.txt").toFile()), RunReport.Format.JSON));
+        assertEquals("{\"version\": " + version() + ", \"mode\": \"affected\", "
+                + "\"files\": [\"docs/nested.src.md\", \"unrelated.txt\"], \"affected\": [\"README.src.md\"]}", getOutAndClear().trim());
+    }
+
+    @Test
+    public void testDiscoverySkipsHiddenAndBuildDirectoriesOnly() throws IOException {
+        Files.createDirectories(tempDir.resolve(".git"));
+        write("README.src.md", "Root\n");
+        write("sub/Other.src.md", "Other\n");
+        write("target/Stale.src.md", "copied by a build\n");
+        write("build/Stale.src.md", "copied by a build\n");
+        write("node_modules/Pkg.src.md", "a dependency\n");
+        write(".hidden/Hidden.src.md", "hidden\n");
+
+        assertEquals(Arrays.asList("README.src.md", "sub/Other.src.md"), discoveredSources());
+    }
+
+    @Test
+    public void testDiscoveredTemplatesAreSortedByPath() throws IOException {
+        Files.createDirectories(tempDir.resolve(".git"));
+        // Created out of order; and NTFS lists the directory "b" before "b.src.md", which sorts first.
+        for (String name : new String[]{"e", "b/x", "g", "a", "f", "b", "d", "c"}) {
+            write(name + ".src.md", name + "\n");
+        }
+
+        assertEquals(Arrays.asList("a.src.md", "b.src.md", "b/x.src.md", "c.src.md", "d.src.md", "e.src.md",
+                "f.src.md", "g.src.md"), discoveredSources());
+    }
+
+    @Test
+    public void testAnUnreadableEntryDoesNotStopDiscovery() {
+        ManifestCommand.TemplateFinder finder = new ManifestCommand.TemplateFinder(tempDir);
+
+        assertEquals(FileVisitResult.CONTINUE, finder.visitFileFailed(tempDir.resolve("locked"), new AccessDeniedException("locked")));
+        assertTrue(finder.getFound().isEmpty());
+    }
+
+    private Path locateProject() throws IOException {
+        write("docs/part.src.md", "Part line\n${widget:import(path='deep.src.md')}\n");
+        write("docs/deep.src.md", "Deep line\n");
+        return write("README.src.md", "<!--@nrg.languages=en,ru-->\nHello<!--en-->\nПривет<!--ru-->\n"
+                + "${widget:import(path='docs/part.src.md')}\n");
+    }
+
+    @Test
+    public void testLocateTextNamesTheOriginOfEveryLine() throws IOException {
+        Path src = locateProject();
+        String ru = tempDir.resolve("README.ru.md").toString();
+
+        assertEquals(NRG.EXIT_OK, command(src).printLocate(ru + ":1-5", RunReport.Format.TEXT));
+        assertEquals(Arrays.asList(
+                "README.ru.md:1: head comment",
+                "README.ru.md:2: head comment",
+                "README.ru.md:3: README.src.md:3",
+                "README.ru.md:4: docs/part.src.md:1 <- imported at README.src.md:4",
+                "README.ru.md:5: docs/deep.src.md:1 <- imported at docs/part.src.md:2 <- imported at README.src.md:4"),
+                Arrays.asList(getOutAndClear().trim().split("\\R")));
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    public void testLocateJsonCarriesTheImportChain() throws IOException {
+        Path src = locateProject();
+        String ru = tempDir.resolve("README.ru.md").toString();
+
+        assertEquals(NRG.EXIT_OK, command(src).printLocate(ru + ":4-5", RunReport.Format.JSON));
+        Map<String, Object> report = (Map<String, Object>) MinimalJsonParser.parse(getOutAndClear());
+        List<Map<String, Object>> lines = (List<Map<String, Object>>) report.get("lines");
+        assertEquals(2, lines.size());
+        assertEquals("Deep line", lines.get(1).get("text"));
+        Map<String, Object> origin = (Map<String, Object>) lines.get(1).get("origin");
+        assertEquals("docs/deep.src.md", origin.get("file"));
+        List<Map<String, Object>> chain = (List<Map<String, Object>>) origin.get("importChain");
+        assertEquals(2, chain.size());
+        assertEquals("docs/part.src.md", chain.get(0).get("file"));
+        assertEquals(2L, ((Number) chain.get(0).get("line")).longValue());
+        assertEquals("README.src.md", chain.get(1).get("file"));
+        assertEquals(4L, ((Number) chain.get(1).get("line")).longValue());
+    }
+
+    @Test
+    public void testLocateAcceptsTheLastLine() throws IOException {
+        Path src = locateProject();
+        String ru = tempDir.resolve("README.ru.md").toString();
+
+        assertEquals(NRG.EXIT_USAGE, command(src).printLocate(ru + ":8", RunReport.Format.TEXT));
+        assertTrue(getErrAndClear().contains("README.ru.md has 7 lines when generated now; line 8 does not exist"));
+        assertEquals(NRG.EXIT_OK, command(src).printLocate(ru + ":7-9", RunReport.Format.TEXT));
+        assertTrue(getOutAndClear().trim().startsWith("README.ru.md:7: "));
+    }
+
+    @Test
+    public void testLocateRejectsMalformedPositions() throws IOException {
+        Path src = locateProject();
+        String ru = tempDir.resolve("README.ru.md").toString();
+
+        for (String position : new String[]{ru + ":x", ru + ":-3", ru + ":3-", ru + ":0", ru + ":4-3", ":3", "3"}) {
+            assertEquals(NRG.EXIT_USAGE, command(src).printLocate(position, RunReport.Format.TEXT), position);
+            assertTrue(getErrAndClear().contains("--locate expects FILE:LINE or FILE:FIRST-LAST, got '" + position + "'"), position);
+        }
+    }
+
+    @Test
+    public void testLocateRendersTheVariantOfTheOutput() throws IOException {
+        Path src = write("AGENTS.src.md", "<!--@nrg.variants=agents,claude-->\n<!--@nrg.fileNamePattern=<VARIANT>.md-->\n"
+                + "<!--@nrg.noHeader=true-->\nShared.\nClaude only.<!--variant:claude-->\nAfter.\n");
+
+        assertEquals(NRG.EXIT_OK, command(src).printLocate(tempDir.resolve("CLAUDE.md") + ":2", RunReport.Format.TEXT));
+        assertEquals("CLAUDE.md:2: AGENTS.src.md:5", getOutAndClear().trim());
+        assertEquals(NRG.EXIT_OK, command(src).printLocate(tempDir.resolve("AGENTS.md") + ":2", RunReport.Format.TEXT));
+        assertEquals("AGENTS.md:2: AGENTS.src.md:6", getOutAndClear().trim());
+    }
+
+    @Test
+    public void testLocateReportsATemplateThatCannotBeRendered() throws IOException {
+        Path src = write("README.src.md", "${widget:import(path='../../../../outside.md')}\n");
+
+        assertEquals(NRG.EXIT_TEMPLATE_ERROR, command(src).printLocate(tempDir.resolve("README.md") + ":1", RunReport.Format.TEXT));
+        assertTrue(getErrAndClear().contains("Cannot render README.src.md: import path is outside the project root"));
     }
 }

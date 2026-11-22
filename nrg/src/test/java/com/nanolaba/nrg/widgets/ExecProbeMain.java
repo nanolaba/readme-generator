@@ -5,7 +5,8 @@ package com.nanolaba.nrg.widgets;
  *
  * <p>{@code flood <stdout-bytes> <stderr-bytes>} writes that much to each stream — far more
  * than an OS pipe buffer holds, which is what a process blocks on when nobody reads.
- * {@code stdin} reports whether its standard input is at end of file.
+ * {@code stdin} reports whether its standard input is at end of file. {@code sleep <millis>}
+ * outlives a short timeout, and {@code exit <code>} ends with that exit code.
  */
 public final class ExecProbeMain {
 
@@ -18,6 +19,11 @@ public final class ExecProbeMain {
             flood(System.out, Integer.parseInt(args[1]), 'o');
         } else if ("stdin".equals(args[0])) {
             System.out.print(System.in.read() == -1 ? "stdin-closed" : "stdin-open");
+        } else if ("sleep".equals(args[0])) {
+            Thread.sleep(Long.parseLong(args[1]));
+        } else if ("exit".equals(args[0])) {
+            System.out.print("exiting");
+            System.exit(Integer.parseInt(args[1]));
         }
     }
 

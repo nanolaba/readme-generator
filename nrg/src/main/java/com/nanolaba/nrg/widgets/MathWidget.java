@@ -77,18 +77,12 @@ public class MathWidget extends DefaultWidget {
         return "![" + alt + "](" + service + urlEncode(urlExpr) + ")";
     }
 
+    /**
+     * Collapses each {@code \\} pair into one backslash, scanning left to right without overlap,
+     * so an odd run keeps its last backslash: three become two.
+     */
     static String unescapeBackslashes(String input) {
-        StringBuilder out = new StringBuilder(input.length());
-        for (int i = 0; i < input.length(); i++) {
-            char c = input.charAt(i);
-            if (c == '\\' && i + 1 < input.length() && input.charAt(i + 1) == '\\') {
-                out.append('\\');
-                i++;
-                continue;
-            }
-            out.append(c);
-        }
-        return out.toString();
+        return input.replace("\\\\", "\\");
     }
 
     private static String urlEncode(String s) {

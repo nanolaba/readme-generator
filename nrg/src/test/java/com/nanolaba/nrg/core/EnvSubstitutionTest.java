@@ -1,5 +1,6 @@
 package com.nanolaba.nrg.core;
 
+import com.nanolaba.logging.MemoryLogger;
 import com.nanolaba.nrg.DefaultNRGTest;
 import org.junit.jupiter.api.Test;
 
@@ -8,6 +9,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.nanolaba.logging.LogEntry.LogEntryLevel.WARN;
 import static org.junit.jupiter.api.Assertions.*;
 
 class EnvSubstitutionTest extends DefaultNRGTest {
@@ -41,6 +43,32 @@ class EnvSubstitutionTest extends DefaultNRGTest {
 
         String logs = getOutAndClear() + getErrAndClear();
         assertTrue(logs.contains("MISSING"), logs);
+    }
+
+    @Test
+    public void testMissingEnvWarningSaysWhetherTheCallerRestrictedTheEnvironment() {
+        Generator plain = make("[${env.PLAIN}]\n", new HashMap<>());
+        assertFalse(plain.getConfig().isEnvRestricted());
+        try (MemoryLogger log = MemoryLogger.capture()) {
+            plain.getResult("en");
+            log.assertLogged(WARN, "Environment variable 'PLAIN' is not set; rendering empty");
+        }
+
+        Generator flagged = make("[${env.FLAGGED}]\n", new HashMap<>());
+        flagged.getConfig().setEnvRestricted(true);
+        assertTrue(flagged.getConfig().isEnvRestricted());
+        try (MemoryLogger log = MemoryLogger.capture()) {
+            flagged.getResult("en");
+            log.assertLogged(WARN, "Environment variable 'FLAGGED' is not available under --no-env / --env-allow");
+        }
+
+        GeneratorConfig.RestrictedEnvProvider hiding = name -> null;
+        Generator hidden = new Generator(new File("README.src.md"), "[${env.HIDDEN}]\n", null, hiding);
+        assertTrue(hidden.getConfig().isEnvRestricted(), "a restricting provider is recognised by its type");
+        try (MemoryLogger log = MemoryLogger.capture()) {
+            hidden.getResult("en");
+            log.assertLogged(WARN, "Environment variable 'HIDDEN' is not available under --no-env / --env-allow");
+        }
     }
 
     @Test

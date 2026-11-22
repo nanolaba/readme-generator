@@ -1,10 +1,14 @@
 package com.nanolaba.nrg.widgets;
 
+import com.nanolaba.logging.LogEntry;
+import com.nanolaba.logging.MemoryLogger;
 import com.nanolaba.nrg.DefaultNRGTest;
 import com.nanolaba.nrg.core.Generator;
+import com.nanolaba.nrg.core.GeneratorConfig;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -286,5 +290,28 @@ class IfWidgetTest extends DefaultNRGTest {
 
         String out = render(body, null);
         assertFalse(out.contains("SHOULD-NOT-APPEAR"), out);
+    }
+
+    @Test
+    public void testInlineFormInvalidConditionLogsErrorAndEmitsEmpty() {
+        try (MemoryLogger log = MemoryLogger.capture()) {
+            String out = render("[${widget:if(cond='(unclosed', text='HELLO')}]\n", null);
+
+            assertTrue(out.contains("[]"), out);
+            log.assertLogged(LogEntry.LogEntryLevel.ERROR, "if widget: invalid condition '(unclosed' in inline form");
+        }
+    }
+
+    @Test
+    public void testOpenerInsideInactiveParentIsInactiveAndNotEvaluated() {
+        GeneratorConfig config = new GeneratorConfig(new File("README.src.md"), "", null);
+        try (MemoryLogger log = MemoryLogger.capture()) {
+            BlockOpening opening = new IfWidget().onBlockOpen(
+                    Collections.singletonMap("cond", "(unclosed"), config, "en", false, 3);
+
+            assertFalse(opening.isContentActive());
+            assertTrue(opening.getEmittedLines().isEmpty());
+            log.assertNoneAtOrAbove(LogEntry.LogEntryLevel.ERROR);
+        }
     }
 }

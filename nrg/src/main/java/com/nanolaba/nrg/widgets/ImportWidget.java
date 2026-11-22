@@ -18,6 +18,7 @@ import java.time.Clock;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -238,10 +239,11 @@ public class ImportWidget extends DefaultWidget {
             chain.add(key);
             Generator subGenerator = new InMemoryImportedFileGenerator(sourceFile, content, widgetConfig, config);
             subGenerator.getConfig().setImportChain(chain);
+            // The child renders the parent's languages, so it always has a result for this one.
             GenerationResult subResult = subGenerator.getResult(language);
-            content = subResult == null ? "" : subResult.getContent().toString();
+            content = subResult.getContent().toString();
             if (origins != null) {
-                origins = toImportedFileLines(subResult == null ? null : subResult.getSourceMap(), selectedLineNumbers);
+                origins = toImportedFileLines(subResult.getSourceMap(), selectedLineNumbers);
                 if (content.endsWith(System.lineSeparator())) {
                     origins.add(null); // the empty piece after the final line separator
                 }
@@ -263,7 +265,7 @@ public class ImportWidget extends DefaultWidget {
             content = shifted.content;
             if (shifted.clampedCount > 0) {
                 String src = widgetConfig.getPath() != null ? widgetConfig.getPath() : widgetConfig.getUrl();
-                String signedOffset = headingOffset > 0 ? "+" + headingOffset : String.valueOf(headingOffset);
+                String signedOffset = String.format(Locale.ROOT, "%+d", headingOffset);
                 LOG.warn("import: heading-offset clamped {} heading(s) in {} (offset={}, e.g. '{}')",
                         shifted.clampedCount, src, signedOffset, shifted.firstClampedLine);
             }
@@ -298,12 +300,10 @@ public class ImportWidget extends DefaultWidget {
      * The child generator renders the selected text, so its source map counts lines of that
      * text; this turns them back into lines of the imported file. Only the outermost link of
      * each origin refers to the selected text — deeper links name files the child imported.
+     * The child collects a map whenever its parent does, so {@code childMap} is never null.
      */
     private static List<SourceOrigin> toImportedFileLines(List<SourceOrigin> childMap, List<Integer> selectedLineNumbers) {
         List<SourceOrigin> result = new ArrayList<>();
-        if (childMap == null) {
-            return result;
-        }
         for (SourceOrigin o : childMap) {
             result.add(o == null ? null : o.mapOutermostLine(line ->
                     line >= 1 && line <= selectedLineNumbers.size() ? selectedLineNumbers.get(line - 1) : line));

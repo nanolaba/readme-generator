@@ -217,6 +217,11 @@ class NRGUtilTest extends DefaultNRGTest {
         assertEquals(mapOf(), NRGUtil.parseParametersLine("a=b"));
         assertEquals(mapOf(), NRGUtil.parseParametersLine("a='x"));
         assertEquals(mapOf(), NRGUtil.parseParametersLine("a='1\n2'"));
+        assertEquals(mapOf(), NRGUtil.parseParametersLine("a='1\r2'"));
+        assertEquals(mapOf(), NRGUtil.parseParametersLine("a='1\u00852'"));
+        assertEquals(mapOf(), NRGUtil.parseParametersLine("a=\"1\u20282\""));
+        assertEquals(mapOf(), NRGUtil.parseParametersLine("a='1\u20292'"));
+        assertEquals(mapOf("b", "2"), NRGUtil.parseParametersLine("a='1\n b='2'"));
         assertEquals(mapOf(), NRGUtil.parseParametersLine("='x'"));
         assertEquals(mapOf("b", "y"), NRGUtil.parseParametersLine("a='x, b=\"y\""));
         assertEquals(mapOf("c", "x"), NRGUtil.parseParametersLine("a b c = 'x'"));
@@ -335,6 +340,25 @@ class NRGUtilTest extends DefaultNRGTest {
 
         String untouched = "no comments here";
         assertTrue(untouched == NRGUtil.stripPropertyComments(untouched), "same instance when nothing is removed");
+
+        // An opener at the very end of the text, with or without spaces after it.
+        assertEquals("x <!--", NRGUtil.stripPropertyComments("x <!--"));
+        assertEquals("x <!--   ", NRGUtil.stripPropertyComments("x <!--   "));
+        assertEquals("x <!--@", NRGUtil.stripPropertyComments("x <!--@"));
+        // A lone carriage return ends the line as well.
+        assertEquals("<!--@a\rb-->", NRGUtil.stripPropertyComments("<!--@a\rb-->"));
+        assertEquals("<!--@a\r ", NRGUtil.stripPropertyComments("<!--@a\r <!--@b--><!--@c=3-->"));
+        // A plain comment ends before the property comment that follows it.
+        assertEquals("<!-- plain -->  tail", NRGUtil.stripPropertyComments("<!-- plain --> <!--@a=1--> tail"));
+    }
+
+    @Test
+    public void testExtractRawPropertyMarkers() {
+        Map<String, String> markers = NRGUtil.extractRawPropertyMarkers(
+                "text <!--@b=2--> <!-- plain --> <!--@flag--> <!-- @a = 1 -->");
+        assertEquals("{b=2, a=1}", markers.toString(), "declared pairs in the order of the line");
+        assertTrue(NRGUtil.extractRawPropertyMarkers("no comments").isEmpty());
+        assertTrue(NRGUtil.extractRawPropertyMarkers("<!-- plain -->").isEmpty());
     }
 
     @Test

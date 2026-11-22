@@ -4,6 +4,7 @@ import com.nanolaba.logging.LOG;
 import com.nanolaba.nrg.core.GeneratorConfig;
 import com.nanolaba.nrg.core.NRGUtil;
 import com.nanolaba.nrg.core.ProjectRoot;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
 import java.nio.file.FileSystems;
@@ -93,7 +94,7 @@ public class FileTreeWidget extends DefaultWidget {
         body.append(root.getName()).append(System.lineSeparator());
         renderChildren(root, "", depth, 1, dirsOnly, excludeMatchers, "", body, config.getProjectRoot());
 
-        String content = stripTrailingNewline(body.toString());
+        String content = StringUtils.stripEnd(body.toString(), "\r\n");
         if (codeblock) {
             return "```" + System.lineSeparator() + content + System.lineSeparator() + "```";
         }
@@ -174,11 +175,5 @@ public class FileTreeWidget extends DefaultWidget {
             }
         }
         return result;
-    }
-
-    private static String stripTrailingNewline(String s) {
-        int end = s.length();
-        while (end > 0 && (s.charAt(end - 1) == '\n' || s.charAt(end - 1) == '\r')) end--;
-        return s.substring(0, end);
     }
 }

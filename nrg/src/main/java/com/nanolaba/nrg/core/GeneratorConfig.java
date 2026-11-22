@@ -4,6 +4,7 @@ import com.nanolaba.logging.LOG;
 import com.nanolaba.nrg.core.freeze.DiskFreezeIndex;
 import com.nanolaba.nrg.widgets.*;
 import com.nanolaba.sugar.Code;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -130,7 +131,7 @@ public class GeneratorConfig {
                     "\" property: " + languages);
         }
 
-        getSourceLinesStream().forEach(line -> readPropertiesFromLine(line, defaultLanguage));
+        getSourceLinesStream().forEach(line -> line.readProperties(defaultLanguage));
 
         initDefaultWidgets(this.widgets);
         List<NRGWidget> declaredWidgets = NRGUtil.loadWidgets(widgetsProperty, null);
@@ -200,10 +201,6 @@ public class GeneratorConfig {
             variants = Arrays.stream(variantsProp.split(",")).map(String::trim)
                     .filter(v -> !v.isEmpty()).collect(Collectors.toList());
         }
-    }
-
-    private void readPropertiesFromLine(TemplateLine line, String language) {
-        line.readProperties(language).forEach((key, value) -> NRGUtil.mergeProperty(key, value, properties));
     }
 
     protected void initDefaultWidgets(List<NRGWidget> widgets) {
@@ -607,7 +604,7 @@ public class GeneratorConfig {
     private File resolvePomFile() {
         String configured = getProperties().getProperty(NRGConstants.PROPERTY_POM_PATH);
         File base = sourceFile == null ? new File(".").getAbsoluteFile() : sourceFile.getAbsoluteFile().getParentFile();
-        if (configured == null || configured.isEmpty()) {
+        if (StringUtils.isEmpty(configured)) {
             // The default sits next to the source file, but it may still be a link that
             // leads elsewhere — every file that is actually opened is checked.
             return requireInsideProjectRoot(new File(base, "pom.xml"), "pom.xml");
@@ -641,7 +638,7 @@ public class GeneratorConfig {
         File base = sourceFile == null
                 ? new File(".").getAbsoluteFile()
                 : sourceFile.getAbsoluteFile().getParentFile();
-        if (configured == null || configured.isEmpty()) {
+        if (StringUtils.isEmpty(configured)) {
             return requireInsideProjectRoot(new File(base, "package.json"), "package.json");
         }
         File requested = new File(configured);
@@ -680,7 +677,7 @@ public class GeneratorConfig {
                 ? new File(".").getAbsoluteFile()
                 : sourceFile.getAbsoluteFile().getParentFile();
         File anchor;
-        if (configured == null || configured.isEmpty()) {
+        if (StringUtils.isEmpty(configured)) {
             anchor = base;
         } else {
             File requested = new File(configured);

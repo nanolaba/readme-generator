@@ -1,7 +1,11 @@
 package com.nanolaba.nrg.core;
 
+import com.nanolaba.logging.MemoryLogger;
 import com.nanolaba.nrg.DefaultNRGTest;
 import org.junit.jupiter.api.Test;
+
+import java.util.Arrays;
+import java.util.Collections;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -118,5 +122,30 @@ class IgnoreBlockStripperTest extends DefaultNRGTest {
     public void testNestedBeginInsideBlockIsIgnored() {
         assertEquals("a\nd",
                 IgnoreBlockStripper.strip("a\n<!--nrg.ignore.begin-->\n<!--nrg.ignore.begin-->\nb\n<!--nrg.ignore.end-->\nd"));
+    }
+
+    @Test
+    public void testErrorsNameTheLineOfTheOffendingMarker() {
+        try (MemoryLogger log = MemoryLogger.capture()) {
+            IgnoreBlockStripper.strip("a\n<!--nrg.ignore.end-->\nb\n<!--nrg.ignore.begin-->\nc");
+            assertEquals(Arrays.asList(
+                            "nrg.ignore.end without matching nrg.ignore.begin at line 2",
+                            "Unclosed nrg.ignore.begin at line 4 (missing nrg.ignore.end)"),
+                    log.getMessages());
+        }
+    }
+
+    @Test
+    public void testKeptLineNumbersOfAnEmptyBody() {
+        assertEquals(Collections.singletonList(1), IgnoreBlockStripper.keptLineNumbers(null));
+        assertEquals(Collections.singletonList(1), IgnoreBlockStripper.keptLineNumbers(""));
+    }
+
+    @Test
+    public void testKeptLineNumbersSkipEveryIgnoredLine() {
+        String src = "a\n<!--nrg.ignore.begin-->\nb\nc\n<!--nrg.ignore.end-->\nd\nx<!--nrg.ignore-->\n"
+                + "<!--nrg.ignore.end-->\ne";
+        assertEquals(Arrays.asList(1, 6, 9), IgnoreBlockStripper.keptLineNumbers(src));
+        assertEquals("a\nd\ne", IgnoreBlockStripper.strip(src));
     }
 }

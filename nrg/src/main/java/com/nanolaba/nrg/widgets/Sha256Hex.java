@@ -1,7 +1,9 @@
 package com.nanolaba.nrg.widgets;
 
+import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Locale;
 
 /**
  * Computes the lowercase-hex SHA-256 of a byte array.
@@ -25,12 +27,6 @@ final class Sha256Hex {
         } catch (NoSuchAlgorithmException e) {
             throw new IllegalStateException("SHA-256 not available", e);
         }
-        byte[] digest = md.digest(data);
-        StringBuilder sb = new StringBuilder(digest.length * 2);
-        for (byte b : digest) {
-            sb.append(Character.forDigit((b >> 4) & 0xF, 16));
-            sb.append(Character.forDigit(b & 0xF, 16));
-        }
-        return sb.toString();
+        return String.format(Locale.ROOT, "%064x", new BigInteger(1, md.digest(data)));
     }
 }

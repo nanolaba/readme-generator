@@ -10,7 +10,10 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -63,6 +66,20 @@ class TranslationParityCheckerTest extends DefaultNRGTest {
     }
 
     @Test
+    public void testSharedTextLineEndsAGroup() throws IOException {
+        // A whitespace-only line keeps the group together; any visible untagged text ends it.
+        List<Validator.Diagnostic> d = validate(HEAD +
+                "Hello<!--en-->\n  \nПривет<!--ru-->\n" +
+                "shared\n" +
+                "Only English<!--en-->\n");
+
+        assertEquals(1, d.size(), d.toString());
+        assertEquals("missing-translation", d.get(0).getCode());
+        assertEquals(6, d.get(0).getLine());
+        assertTrue(d.get(0).getMessage().startsWith("line 6 exists for 'en' but not for 'ru'"), d.get(0).getMessage());
+    }
+
+    @Test
     public void testBlankLinesDoNotEndAGroup() throws IOException {
         // EN heading and RU heading are separated by blank lines and EN bullets: still one group.
         List<Validator.Diagnostic> d = validate(HEAD +
@@ -80,6 +97,27 @@ class TranslationParityCheckerTest extends DefaultNRGTest {
         assertTrue(d.get(0).isWarning());
         assertEquals(3, d.get(0).getLine());
         assertTrue(d.get(0).toString().contains("'en' has a list item (line 3) where 'ru' has nothing more"),
+                d.get(0).getMessage());
+    }
+
+    @Test
+    public void testLongerSecondLanguageIsAWarningToo() throws IOException {
+        List<Validator.Diagnostic> d = validate(HEAD +
+                "- one<!--en-->\n- один<!--ru-->\n- два<!--ru-->\n");
+
+        assertEquals(1, d.size(), d.toString());
+        assertTrue(d.get(0).isWarning());
+        assertEquals(4, d.get(0).getLine());
+        assertTrue(d.get(0).toString().contains("'en' has nothing more where 'ru' has a list item (line 4)"),
+                d.get(0).getMessage());
+    }
+
+    @Test
+    public void testQuoteAndParagraphAreDifferentElements() throws IOException {
+        List<Validator.Diagnostic> d = validate(HEAD + "> Note<!--en-->\nЗаметка<!--ru-->\n");
+
+        assertEquals(1, d.size(), d.toString());
+        assertTrue(d.get(0).toString().contains("'en' has a quote (line 2) where 'ru' has a paragraph (line 3)"),
                 d.get(0).getMessage());
     }
 
@@ -107,6 +145,24 @@ class TranslationParityCheckerTest extends DefaultNRGTest {
 
         assertEquals(1, d.size(), d.toString());
         assertTrue(d.get(0).isError());
+        assertEquals(2, d.get(0).getLine());
+        assertTrue(d.get(0).toString().contains("no text for 'ru'"), d.get(0).getMessage());
+    }
+
+    @Test
+    public void testConstructAtTheStartOfTheLineIsChecked() throws IOException {
+        List<Validator.Diagnostic> d = validate(HEAD + "${en:'Hello'} and more\n");
+
+        assertEquals(1, d.size(), d.toString());
+        assertEquals("language-construct", d.get(0).getCode());
+        assertTrue(d.get(0).toString().contains("no text for 'ru'"), d.get(0).getMessage());
+    }
+
+    @Test
+    public void testEmptyEntryIsNotADoubledQuote() throws IOException {
+        List<Validator.Diagnostic> d = validate(HEAD + "Title ${en:''}\n");
+
+        assertEquals(1, d.size(), d.toString());
         assertTrue(d.get(0).toString().contains("no text for 'ru'"), d.get(0).getMessage());
     }
 
@@ -182,5 +238,25 @@ class TranslationParityCheckerTest extends DefaultNRGTest {
         assertNull(TranslationParityChecker.parseConstructKeys("${widget:toc}", 2));
         assertNull(TranslationParityChecker.parseConstructKeys("${en:'unterminated}", 2));
         assertNull(TranslationParityChecker.parseConstructKeys("${env.HOME:x}", 2));
+        assertNull(TranslationParityChecker.parseConstructKeys("${}", 2));
+        assertNull(TranslationParityChecker.parseConstructKeys("${ :'x'}", 2));
+    }
+
+    @Test
+    public void testParseConstructValues() {
+        Map<String, String> expected = new LinkedHashMap<>();
+        expected.put("en", "");
+        expected.put("ru", "x");
+        assertEquals(expected, TranslationParityChecker.parseConstruct("${en:'', ru:'x'}", 2));
+        assertEquals(Collections.singletonMap("en", "it's"), TranslationParityChecker.parseConstruct("${en:'it''s'}", 2));
+        assertEquals(Collections.singletonMap("en", "a"), TranslationParityChecker.parseConstruct("${ en : 'a' }", 2));
+    }
+
+    @Test
+    public void testConstructCutShortIsNotAConstruct() {
+        for (String text : Arrays.asList("${en", "${en ", "${en:", "${en: ", "${en:'x", "${en:'x'", "${en:'x' ",
+                "${en:'x',", "${en:'x' ru")) {
+            assertNull(TranslationParityChecker.parseConstruct(text, 2), text);
+        }
     }
 }

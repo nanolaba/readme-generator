@@ -18,10 +18,6 @@ final class BlockDispatcher {
 
     private BlockDispatcher() {/* utility */}
 
-    static String process(String body, GeneratorConfig config, String language) {
-        return process(body, config, language, null);
-    }
-
     /** @param origins one origin per body line, kept in step with the rewritten body; may be {@code null} */
     static String process(String body, GeneratorConfig config, String language, List<SourceOrigin> origins) {
         for (NRGWidget w : config.getWidgets()) {

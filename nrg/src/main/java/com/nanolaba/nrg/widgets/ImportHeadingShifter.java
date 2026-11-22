@@ -1,5 +1,7 @@
 package com.nanolaba.nrg.widgets;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.util.function.UnaryOperator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -53,18 +55,7 @@ final class ImportHeadingShifter {
             return new Result(content, 0, null);
         }
 
-        // Choose a single separator for the rejoin. Inputs with mixed line endings
-        // are normalized to whichever separator dominates: \r\n if any present,
-        // else \n if any newline present, else the platform default.
-        String sep;
-        if (content.contains("\r\n")) {
-            sep = "\r\n";
-        } else if (content.indexOf('\n') >= 0 || content.indexOf('\r') >= 0) {
-            sep = "\n";
-        } else {
-            sep = System.lineSeparator();
-        }
-
+        String sep = separatorOf(content, System.lineSeparator());
         String[] lines = content.split("\\R", -1);
         StringBuilder out = new StringBuilder(content.length() + 16);
         int clampedCount = 0;
@@ -103,7 +94,7 @@ final class ImportHeadingShifter {
             if (m.matches()) {
                 int level = m.group(1).length();
                 int target = level + offset;
-                int newLevel = clamp(target, 1, 6);
+                int newLevel = Math.max(1, Math.min(6, target));
                 if (newLevel != target) {
                     clampedCount++;
                     if (firstClampedLine == null) {
@@ -111,7 +102,7 @@ final class ImportHeadingShifter {
                     }
                 }
                 if (newLevel != level) {
-                    rewritten = repeatHash(newLevel) + m.group(2);
+                    rewritten = StringUtils.repeat('#', newLevel) + m.group(2);
                 }
             }
 
@@ -119,6 +110,23 @@ final class ImportHeadingShifter {
         }
 
         return new Result(out.toString(), clampedCount, firstClampedLine);
+    }
+
+    /**
+     * The single separator the rewritten lines are joined with, so that mixed line endings come
+     * out normalised to the dominant one: {@code \r\n} if any is present, else {@code \n} if the
+     * content has any {@code \n} or lone {@code \r}, else {@code fallback} — the content is then
+     * one line, or broken only by one of the rarer separators {@code \R} also matches (U+2028,
+     * NEL, ...).
+     */
+    static String separatorOf(String content, String fallback) {
+        if (content.contains("\r\n")) {
+            return "\r\n";
+        }
+        if (content.indexOf('\n') >= 0 || content.indexOf('\r') >= 0) {
+            return "\n";
+        }
+        return fallback;
     }
 
     private static boolean isFenceClose(String line, char marker, int minLen) {
@@ -135,17 +143,5 @@ final class ImportHeadingShifter {
             i++;
         }
         return true;
-    }
-
-    private static int clamp(int value, int min, int max) {
-        if (value < min) return min;
-        if (value > max) return max;
-        return value;
-    }
-
-    private static String repeatHash(int n) {
-        StringBuilder sb = new StringBuilder(n);
-        for (int i = 0; i < n; i++) sb.append('#');
-        return sb.toString();
     }
 }

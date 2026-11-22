@@ -99,12 +99,10 @@ final class ManifestCommand {
                 if (m.getVariant() != null) {
                     sb.append(", \"variant\": ").append(RunReport.str(m.getVariant()));
                 }
-                sb.append(",\n     \"outputs\": [");
-                int k = 0;
-                for (Map.Entry<String, File> e : m.getOutputs().entrySet()) {
-                    sb.append(k++ == 0 ? "" : ", ").append("{\"language\": ").append(RunReport.str(e.getKey()))
-                            .append(", \"path\": ").append(RunReport.str(path(e.getValue()))).append('}');
-                }
+                List<String> outputs = new ArrayList<>();
+                m.getOutputs().forEach((lang, f) -> outputs.add("{\"language\": " + RunReport.str(lang)
+                        + ", \"path\": " + RunReport.str(path(f)) + "}"));
+                sb.append(",\n     \"outputs\": [").append(String.join(", ", outputs));
                 sb.append("],\n     \"inputs\": ").append(array(paths(m.getInputs())));
                 sb.append(",\n     \"dynamic\": ").append(array(new ArrayList<>(m.getDynamic()))).append('}');
             }
@@ -174,10 +172,9 @@ final class ManifestCommand {
         int first;
         int last;
         try {
-            String range = position.substring(colon + 1);
-            int dash = range.indexOf('-');
-            first = Integer.parseInt(dash < 0 ? range : range.substring(0, dash));
-            last = dash < 0 ? first : Integer.parseInt(range.substring(dash + 1));
+            String[] bounds = position.substring(colon + 1).split("-", 2);
+            first = Integer.parseInt(bounds[0]);
+            last = bounds.length == 1 ? first : Integer.parseInt(bounds[1]);
         } catch (RuntimeException e) {
             System.err.println("--locate expects FILE:LINE or FILE:FIRST-LAST, got '" + position + "'");
             return NRG.EXIT_USAGE;
@@ -364,27 +361,35 @@ final class ManifestCommand {
     }
 
     private static String object(Map<String, String> values) {
-        StringBuilder sb = new StringBuilder("{");
-        int k = 0;
-        for (Map.Entry<String, String> e : values.entrySet()) {
-            sb.append(k++ == 0 ? "" : ", ").append(RunReport.str(e.getKey())).append(": ").append(RunReport.str(e.getValue()));
-        }
-        return sb.append('}').toString();
+        List<String> entries = new ArrayList<>();
+        values.forEach((key, value) -> entries.add(RunReport.str(key) + ": " + RunReport.str(value)));
+        return "{" + String.join(", ", entries) + "}";
     }
 
     /** {@code git show REF:./NAME} run in the file's directory; {@code null} when git cannot provide it. */
     static String gitShow(File file, String ref) {
         try {
-            Process p = new ProcessBuilder("git", "show", ref + ":./" + file.getName())
+            return output(new ProcessBuilder("git", "show", ref + ":./" + file.getName())
                     .directory(file.getAbsoluteFile().getParentFile())
                     .redirectErrorStream(false)
-                    .start();
-            p.getOutputStream().close();
-            byte[] out = IOUtils.toByteArray(p.getInputStream());
-            IOUtils.toByteArray(p.getErrorStream());
-            return p.waitFor() == 0 ? new String(out, StandardCharsets.UTF_8) : null;
+                    .start());
         } catch (IOException e) {
             return null;
+        }
+    }
+
+    /**
+     * What {@code process} prints on stdout, or {@code null} when it exits with a non-zero status.
+     * Its stdin is closed at once and both output streams are drained before waiting, so a
+     * child that writes more than a pipe buffer cannot block. An interrupt while waiting gives
+     * {@code null} and leaves the thread's interrupt status set.
+     */
+    static String output(Process process) throws IOException {
+        process.getOutputStream().close();
+        byte[] out = IOUtils.toByteArray(process.getInputStream());
+        IOUtils.toByteArray(process.getErrorStream());
+        try {
+            return process.waitFor() == 0 ? new String(out, StandardCharsets.UTF_8) : null;
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             return null;
@@ -541,31 +546,54 @@ final class ManifestCommand {
     }
 
     private List<File> discover() throws IOException {
-        List<File> found = new ArrayList<>();
-        Files.walkFileTree(workingDirectory.toPath().normalize(), new SimpleFileVisitor<Path>() {
-            @Override
-            public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) {
-                String name = dir.getFileName() == null ? "" : dir.getFileName().toString();
-                boolean skip = !dir.equals(workingDirectory.toPath().normalize())
-                        && (name.startsWith(".") || SKIPPED_DIRECTORIES.contains(name));
-                return skip ? FileVisitResult.SKIP_SUBTREE : FileVisitResult.CONTINUE;
-            }
-
-            @Override
-            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
-                if (file.getFileName().toString().endsWith("." + NRGConstants.DEFAULT_SOURCE_EXTENSION)) {
-                    found.add(file.toFile());
-                }
-                return FileVisitResult.CONTINUE;
-            }
-
-            @Override
-            public FileVisitResult visitFileFailed(Path file, IOException exc) {
-                return FileVisitResult.CONTINUE;
-            }
-        });
+        Path root = workingDirectory.toPath().normalize();
+        TemplateFinder finder = new TemplateFinder(root);
+        Files.walkFileTree(root, finder);
+        List<File> found = finder.getFound();
         Collections.sort(found);
         return found;
+    }
+
+    /**
+     * Collects the {@code *.src.md} files of a directory tree for template discovery, in the
+     * order the file system lists them.
+     *
+     * <p>Hidden directories and {@link #SKIPPED_DIRECTORIES} are not entered unless they are the
+     * root of the walk itself, and an entry that cannot be read is passed over: one unreadable
+     * directory must not hide every template of the project.
+     */
+    static final class TemplateFinder extends SimpleFileVisitor<Path> {
+
+        private final Path root;
+        private final List<File> found = new ArrayList<>();
+
+        TemplateFinder(Path root) {
+            this.root = root;
+        }
+
+        @Override
+        public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) {
+            String name = dir.getFileName() == null ? "" : dir.getFileName().toString();
+            boolean skip = !dir.equals(root) && (name.startsWith(".") || SKIPPED_DIRECTORIES.contains(name));
+            return skip ? FileVisitResult.SKIP_SUBTREE : FileVisitResult.CONTINUE;
+        }
+
+        @Override
+        public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
+            if (file.getFileName().toString().endsWith("." + NRGConstants.DEFAULT_SOURCE_EXTENSION)) {
+                found.add(file.toFile());
+            }
+            return FileVisitResult.CONTINUE;
+        }
+
+        @Override
+        public FileVisitResult visitFileFailed(Path file, IOException exc) {
+            return FileVisitResult.CONTINUE;
+        }
+
+        List<File> getFound() {
+            return found;
+        }
     }
 
     private void dropFragments() {

@@ -35,6 +35,7 @@ final class WrapperInstaller {
     private static final int MAX_CHECKSUM_BYTES = 4096;
 
     private final Function<String, String> fetcher;
+    private final ExecutableFlag executableFlag;
 
     WrapperInstaller() {
         this(WrapperInstaller::fetch);
@@ -42,7 +43,24 @@ final class WrapperInstaller {
 
     /** @param fetcher returns the body of a URL, or {@code null} when it cannot be read */
     WrapperInstaller(Function<String, String> fetcher) {
+        this(fetcher, File::setExecutable);
+    }
+
+    /** @param executableFlag marks {@code nrgw} executable; {@link File#setExecutable(boolean, boolean)} outside tests */
+    WrapperInstaller(Function<String, String> fetcher, ExecutableFlag executableFlag) {
         this.fetcher = fetcher;
+        this.executableFlag = executableFlag;
+    }
+
+    /**
+     * The signature of {@link File#setExecutable(boolean, boolean)}, so that a test can make it fail.
+     *
+     * <p>The real call never fails on Windows, and elsewhere only in setups a test cannot build
+     * (a file owned by another user, a file system without permission bits), so without this seam
+     * the warning printed on failure could not be tested.
+     */
+    interface ExecutableFlag {
+        boolean set(File file, boolean executable, boolean ownerOnly);
     }
 
     static String distributionUrl(String version) {
@@ -76,7 +94,7 @@ final class WrapperInstaller {
 
         File nrgw = new File(directory, "nrgw");
         write(nrgw, resource("nrgw"), "\n");
-        if (!nrgw.setExecutable(true, false)) {
+        if (!executableFlag.set(nrgw, true, false)) {
             System.err.println("WARN: could not mark " + nrgw.getPath() + " executable; run: chmod +x nrgw");
         }
         write(new File(directory, "nrgw.cmd"), resource("nrgw.cmd"), "\r\n");
@@ -120,21 +138,30 @@ final class WrapperInstaller {
         Files.write(file.toPath(), normalised.getBytes(StandardCharsets.UTF_8));
     }
 
-    private static String fetch(String url) {
+    /** The body of {@code url}, or {@code null} when it is not an http(s) URL or cannot be read. */
+    static String fetch(String url) {
         try {
-            HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
-            connection.setConnectTimeout(FETCH_TIMEOUT_MS);
-            connection.setReadTimeout(FETCH_TIMEOUT_MS);
-            if (connection.getResponseCode() != HttpURLConnection.HTTP_OK) {
-                return null;
-            }
-            try (InputStream in = connection.getInputStream()) {
-                byte[] buffer = new byte[MAX_CHECKSUM_BYTES];
-                int length = IOUtils.read(in, buffer);
-                return new String(buffer, 0, length, StandardCharsets.UTF_8);
-            }
+            return read((HttpURLConnection) new URL(url).openConnection());
         } catch (IOException | RuntimeException e) {
             return null;
+        }
+    }
+
+    /**
+     * The body of {@code connection} when it answers {@code 200 OK}, {@code null} for any other
+     * status. Only the first 4 KiB are read: a checksum file is one short line, and a server that
+     * sends more is not given the chance to fill the heap.
+     */
+    static String read(HttpURLConnection connection) throws IOException {
+        connection.setConnectTimeout(FETCH_TIMEOUT_MS);
+        connection.setReadTimeout(FETCH_TIMEOUT_MS);
+        if (connection.getResponseCode() != HttpURLConnection.HTTP_OK) {
+            return null;
+        }
+        try (InputStream in = connection.getInputStream()) {
+            byte[] buffer = new byte[MAX_CHECKSUM_BYTES];
+            int length = IOUtils.read(in, buffer);
+            return new String(buffer, 0, length, StandardCharsets.UTF_8);
         }
     }
 }

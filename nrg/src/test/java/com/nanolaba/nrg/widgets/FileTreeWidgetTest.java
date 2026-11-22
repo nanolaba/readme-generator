@@ -1,7 +1,10 @@
 package com.nanolaba.nrg.widgets;
 
+import com.nanolaba.logging.LogEntry;
+import com.nanolaba.logging.MemoryLogger;
 import com.nanolaba.nrg.DefaultNRGTest;
 import com.nanolaba.nrg.core.Generator;
+import com.nanolaba.nrg.core.GeneratorConfig;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -12,6 +15,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -168,5 +172,69 @@ class FileTreeWidgetTest extends DefaultNRGTest {
 
         assertTrue(out.contains("keep.txt"), out);
         assertFalse(out.contains("drop.txt"), out);
+    }
+
+    /** Calls the widget directly, so the result can be compared without the generated file's header. */
+    private String body(String parameters) {
+        File src = tempDir.resolve("README.src.md").toFile();
+        return new FileTreeWidget().getBody(new WidgetTag(null, "fileTree", parameters, 0, 0),
+                new GeneratorConfig(src, "", null), "en");
+    }
+
+    private static String lines(String... lines) {
+        return String.join(System.lineSeparator(), lines);
+    }
+
+    @Test
+    public void testNestedIndentationAndNoTrailingNewline() throws IOException {
+        touch("root/a/x.txt", "root/z/y.txt");
+
+        assertEquals(lines(
+                "root",
+                "├── a",
+                "│   └── x.txt",
+                "└── z",
+                "    └── y.txt"), body("path='root', codeblock='false'"));
+    }
+
+    @Test
+    public void testCodeblockWrapsTheTreeExactly() throws IOException {
+        touch("root/a.txt");
+
+        assertEquals(lines("```", "root", "└── a.txt", "```"), body("path='root'"));
+    }
+
+    @Test
+    public void testNamesAreSortedCaseSensitively() throws IOException {
+        // Created out of order and with mixed case, so neither the creation order nor a
+        // case-insensitive directory listing matches the expected (String.compareTo) order.
+        touch("root/c.txt", "root/F.txt", "root/a.txt", "root/D.txt", "root/e.txt", "root/B.txt");
+
+        assertEquals(lines(
+                "root",
+                "├── B.txt",
+                "├── D.txt",
+                "├── F.txt",
+                "├── a.txt",
+                "├── c.txt",
+                "└── e.txt"), body("path='root', codeblock='false'"));
+    }
+
+    @Test
+    public void testZeroDepthIsRejected() throws IOException {
+        touch("root/a.txt");
+        try (MemoryLogger log = MemoryLogger.capture()) {
+            assertEquals("", body("path='root', depth='0'"));
+            log.assertLogged(LogEntry.LogEntryLevel.ERROR, "fileTree widget: invalid 'depth' value '0'");
+        }
+    }
+
+    @Test
+    public void testInvalidExcludePatternIsReportedAndSkipped() throws IOException {
+        touch("root/a.txt", "root/b.class");
+        try (MemoryLogger log = MemoryLogger.capture()) {
+            assertEquals(lines("root", "└── a.txt"), body("path='root', exclude='[abc,*.class', codeblock='false'"));
+            log.assertLogged(LogEntry.LogEntryLevel.ERROR, "fileTree widget: invalid exclude pattern '[abc'");
+        }
     }
 }

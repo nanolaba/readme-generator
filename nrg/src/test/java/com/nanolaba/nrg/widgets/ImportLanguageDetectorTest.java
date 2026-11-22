@@ -74,6 +74,12 @@ class ImportLanguageDetectorTest {
     }
 
     @Test
+    void dotfileNamedLikeAnExtensionReturnsEmpty() {
+        // ".java" is a hidden file without an extension, not a Java source.
+        assertEquals("", ImportLanguageDetector.detectFromFilename(".java"));
+    }
+
+    @Test
     void filenameEndingWithDotReturnsEmpty() {
         assertEquals("", ImportLanguageDetector.detectFromFilename("foo."));
     }

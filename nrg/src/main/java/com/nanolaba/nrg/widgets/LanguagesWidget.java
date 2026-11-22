@@ -5,6 +5,7 @@ import com.nanolaba.nrg.core.OutputFileNameResolver;
 
 import java.io.File;
 import java.nio.file.Path;
+import java.util.Collections;
 import java.util.Set;
 
 /**
@@ -16,11 +17,9 @@ import java.util.Set;
  */
 public class LanguagesWidget extends DefaultWidget {
 
-    private static final Set<String> PARAMETERS = NRGWidget.parameterNames();
-
     @Override
     public Set<String> getParameterNames() {
-        return PARAMETERS;
+        return Collections.emptySet();
     }
 
     @Override

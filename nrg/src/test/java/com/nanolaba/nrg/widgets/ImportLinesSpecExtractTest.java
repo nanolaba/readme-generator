@@ -14,6 +14,11 @@ class ImportLinesSpecExtractTest {
             "1", "2", "3", "4", "5", "6", "7", "8", "9", "10");
 
     @Test
+    void lastLineOfTheFile() {
+        assertEquals(Collections.singletonList("10"), ImportLinesSpec.parse("10").apply(tenLines));
+    }
+
+    @Test
     void midRange() {
         List<String> result = ImportLinesSpec.parse("3-5").apply(tenLines);
         assertEquals(Arrays.asList("3", "4", "5"), result);

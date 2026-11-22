@@ -115,4 +115,40 @@ class PathPatternMatcherTest {
                 Arrays.asList("a.md", "", null, "b.md"));
         assertEquals(Arrays.asList("a.md", "b.md"), m.getPatterns());
     }
+
+    @Test
+    void testAbsolutePatternsAreUsedAsWritten() {
+        assertEquals("/abs/*.md", PathPatternMatcher.absolutePatternString("/abs/*.md"));
+        assertEquals("//server/share/*.md", PathPatternMatcher.absolutePatternString("\\\\server\\share\\*.md"));
+        assertEquals("C:/docs/*.md", PathPatternMatcher.absolutePatternString("C:\\docs\\*.md"));
+        assertEquals("C:/", PathPatternMatcher.absolutePatternString("C:/"));
+    }
+
+    @Test
+    void testPatternsThatOnlyLookAbsoluteArePrefixedWithCwd() {
+        String cwd = Paths.get("").toAbsolutePath().toString().replace('\\', '/');
+        assertEquals(cwd + "/docs/*.md", PathPatternMatcher.absolutePatternString("docs/*.md"));
+        assertEquals(cwd + "/C:docs", PathPatternMatcher.absolutePatternString("C:docs"));
+        assertEquals(cwd + "/1:/docs", PathPatternMatcher.absolutePatternString("1:/docs"));
+        assertEquals(cwd + "/ab/docs", PathPatternMatcher.absolutePatternString("ab/docs"));
+        assertEquals(cwd + "/C:", PathPatternMatcher.absolutePatternString("C:"));
+    }
+
+    @Test
+    void testGlobCharacters() {
+        assertFalse(PathPatternMatcher.hasGlobChars("docs/README.md"));
+        for (String glob : Arrays.asList("*.md", "a?.md", "[ab].md", "{a,b}.md")) {
+            assertTrue(PathPatternMatcher.hasGlobChars(glob), glob);
+        }
+        assertEquals(-1, PathPatternMatcher.indexOfGlobChar("docs/README.md"));
+        assertEquals(0, PathPatternMatcher.indexOfGlobChar("*/a?"));
+        assertEquals(5, PathPatternMatcher.indexOfGlobChar("docs/{a,b}/*.md"));
+    }
+
+    @Test
+    void testEachGlobstarIsElidedOnceInItsOwnVariant() {
+        assertEquals(Collections.singletonList("/docs/*.md"), PathPatternMatcher.globstarVariants("/docs/*.md"));
+        assertEquals(Arrays.asList("/a/**/b/**/c.md", "/a/b/**/c.md", "/a/**/b/c.md"),
+                PathPatternMatcher.globstarVariants("/a/**/b/**/c.md"));
+    }
 }

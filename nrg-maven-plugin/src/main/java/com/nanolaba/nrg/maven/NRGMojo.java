@@ -171,6 +171,18 @@ public class NRGMojo extends AbstractMojo {
         this.envAllow = envAllow;
     }
 
+    public void setLogLevel(String logLevel) {
+        this.logLevel = logLevel;
+    }
+
+    public void setNoEnv(boolean noEnv) {
+        this.noEnv = noEnv;
+    }
+
+    public void setOffline(boolean offline) {
+        this.offline = offline;
+    }
+
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         if (files == null || files.length == 0) {
@@ -200,7 +212,7 @@ public class NRGMojo extends AbstractMojo {
             args.add("--log-level");
             args.add(logLevel);
         }
-        if (widgetsArg != null) {
+        if (!widgetsArg.isEmpty()) {
             args.add("--widgets");
             args.add(widgetsArg);
         }
@@ -290,12 +302,16 @@ public class NRGMojo extends AbstractMojo {
         throw new MojoExecutionException("Template generation failed (see errors above).");
     }
 
+    /**
+     * Checks every {@code <widgets>} entry and returns the non-blank ones as the comma-separated
+     * value of {@code --widgets}; an empty string when there are none.
+     */
     private String validateAndJoinWidgets() throws MojoExecutionException {
-        if (widgets == null || widgets.isEmpty()) {
-            return null;
+        if (widgets == null) {
+            return "";
         }
         ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-        StringBuilder joined = new StringBuilder();
+        List<String> validated = new ArrayList<>();
         for (String rawFqcn : widgets) {
             if (rawFqcn == null) continue;
             String fqcn = rawFqcn.trim();
@@ -320,11 +336,8 @@ public class NRGMojo extends AbstractMojo {
                         "Widget class '" + fqcn + "' must declare a public no-argument constructor");
             }
 
-            if (joined.length() > 0) {
-                joined.append(',');
-            }
-            joined.append(fqcn);
+            validated.add(fqcn);
         }
-        return joined.length() == 0 ? null : joined.toString();
+        return String.join(",", validated);
     }
 }

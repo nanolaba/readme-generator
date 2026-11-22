@@ -3,11 +3,13 @@ package com.nanolaba.nrg.widgets;
 import com.nanolaba.logging.LOG;
 
 import java.io.IOException;
+import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Locale;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -80,13 +82,7 @@ final class CacheStore {
     private static String key(String url) {
         try {
             MessageDigest md = MessageDigest.getInstance("SHA-1");
-            byte[] digest = md.digest(url.getBytes(StandardCharsets.UTF_8));
-            StringBuilder sb = new StringBuilder(digest.length * 2);
-            for (byte b : digest) {
-                sb.append(Character.forDigit((b >> 4) & 0xF, 16));
-                sb.append(Character.forDigit(b & 0xF, 16));
-            }
-            return sb.toString();
+            return String.format(Locale.ROOT, "%040x", new BigInteger(1, md.digest(url.getBytes(StandardCharsets.UTF_8))));
         } catch (NoSuchAlgorithmException e) {
             throw new IllegalStateException("SHA-1 not available", e);
         }

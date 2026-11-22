@@ -73,13 +73,8 @@ public final class DiskFreezeIndex {
      * Empty regions (close immediately after open) yield the empty string.
      */
     private static String extractContent(String[] lines, FreezeMarker m) {
-        int from = m.getOpenLineIndex() + 1;
-        int to = m.getCloseLineIndex();
-        if (from >= to) {
-            return "";
-        }
         StringBuilder sb = new StringBuilder();
-        for (int i = from; i < to; i++) {
+        for (int i = m.getOpenLineIndex() + 1; i < m.getCloseLineIndex(); i++) {
             sb.append(lines[i]).append('\n');
         }
         return sb.toString();

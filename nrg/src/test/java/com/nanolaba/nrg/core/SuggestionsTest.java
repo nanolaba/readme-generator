@@ -28,6 +28,9 @@ class SuggestionsTest {
     public void testShortNamesAllowOnlyOneEdit() {
         assertNull(Suggestions.closest("doh", Arrays.asList("todo", "date")));
         assertEquals("ru", Suggestions.closest("rus", Arrays.asList("en", "ru")));
+        // Four characters is still "short": two edits away is too far.
+        assertNull(Suggestions.closest("abcd", Collections.singletonList("abxy")));
+        assertEquals("abcxy", Suggestions.closest("abcde", Collections.singletonList("abcxy")));
     }
 
     @Test

@@ -4,13 +4,17 @@ import com.nanolaba.nrg.DefaultNRGTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ValidatorTest extends DefaultNRGTest {
@@ -202,5 +206,188 @@ class ValidatorTest extends DefaultNRGTest {
 
         // Escaped markers aren't widget calls; validator must not flag them.
         assertTrue(validate(src).isEmpty(), "escaped widget marker must not be flagged");
+    }
+
+    @Test
+    public void testMissingSourceFileIsTheOnlyDiagnostic() {
+        File missing = tempDir.resolve("missing.src.md").toFile();
+
+        List<Validator.Diagnostic> diags = new Validator(missing).validate();
+
+        assertEquals(1, diags.size(), diags.toString());
+        assertEquals("source-not-found", diags.get(0).getCode());
+        assertEquals(Validator.Severity.ERROR, diags.get(0).getSeverity());
+        assertEquals("source file does not exist: " + missing.getAbsolutePath(), diags.get(0).getMessage());
+
+        List<Validator.Diagnostic> forNull = new Validator(null).validate();
+        assertEquals(1, forNull.size(), forNull.toString());
+        assertEquals("source file does not exist: <null>", forNull.get(0).getMessage());
+    }
+
+    @Test
+    public void testUnreadableConfigurationIsReported() throws IOException {
+        Path src = writeSource("README.src.md",
+                "<!--@nrg.languages=en,ru-->\n" +
+                        "<!--@nrg.defaultLanguage=de-->\n" +
+                        "${widget:doesNotExist}\n");
+
+        List<Validator.Diagnostic> diags = validate(src);
+
+        assertEquals(1, diags.size(), diags.toString());
+        assertEquals("config-error", diags.get(0).getCode());
+        assertTrue(diags.get(0).getMessage().startsWith("cannot read the template configuration: The default language"),
+                diags.get(0).getMessage());
+    }
+
+    @Test
+    public void testUnreadableSourceFileIsAConfigurationError() throws IOException {
+        Path src = writeSource("README.src.md", "<!--@nrg.languages=en-->\n");
+
+        try (ReadDenial ignored = ReadDenial.of(src)) {
+            List<Validator.Diagnostic> diags = validate(src);
+
+            assertEquals(1, diags.size(), diags.toString());
+            assertEquals("config-error", diags.get(0).getCode());
+        }
+    }
+
+    @Test
+    public void testNestedIgnoreBeginFlagged() throws IOException {
+        Path src = writeSource("README.src.md",
+                "<!--@nrg.languages=en-->\n" +
+                        "<!--nrg.ignore.begin-->\n" +
+                        "<!--nrg.ignore.begin-->\n" +
+                        "<!--nrg.ignore.end-->\n");
+
+        List<Validator.Diagnostic> diags = validate(src);
+        assertEquals(1, diags.size(), diags.toString());
+        assertEquals("unbalanced-ignore", diags.get(0).getCode());
+        assertEquals(3, diags.get(0).getLine());
+        assertTrue(diags.get(0).getMessage().startsWith("nested <!--nrg.ignore.begin-->"), diags.get(0).getMessage());
+    }
+
+    @Test
+    public void testUndeclaredLanguageHints() throws IOException {
+        Path src = writeSource("README.src.md",
+                "<!--@nrg.languages=en,ru-->\n" +
+                        "Russian<!--rus-->\n" +
+                        "French<!--fr-->\n");
+
+        List<Validator.Diagnostic> diags = validate(src);
+        assertEquals(2, diags.size(), diags.toString());
+        assertEquals("did you mean 'ru'?", diags.get(0).getHint());
+        assertEquals("add it to nrg.languages or remove the marker", diags.get(1).getHint());
+    }
+
+    @Test
+    public void testImportWithoutParametersIsNotAMissingFile() throws IOException {
+        Path src = writeSource("README.src.md", "<!--@nrg.languages=en-->\n${widget:import}\n");
+
+        List<Validator.Diagnostic> diags = validate(src);
+        assertTrue(diags.isEmpty(), diags.toString());
+    }
+
+    @Test
+    public void testImportedFileInheritsDisabledParity() throws IOException {
+        writeSource("part.src.md", "Only English<!--en-->\n");
+        Path src = writeSource("README.src.md",
+                "<!--@nrg.languages=en,ru-->\n" +
+                        "<!--@nrg.validate.parity=false-->\n" +
+                        "${widget:import(path='part.src.md')}\n");
+
+        List<Validator.Diagnostic> diags = validate(src);
+        assertTrue(diags.isEmpty(), diags.toString());
+    }
+
+    @Test
+    public void testLanguageScopedPropertyNeedsAName() throws IOException {
+        // "<!--@.ru=...-->" is not a Russian value of some property: it declares no "" property
+        // that "${x}" could be a near miss of.
+        Path src = writeSource("README.src.md",
+                "<!--@nrg.languages=en,ru-->\n" +
+                        "<!--@.ru=1-->\n" +
+                        "${x}\n");
+
+        List<Validator.Diagnostic> diags = validate(src);
+        assertEquals(1, diags.size(), diags.toString());
+        assertEquals("undefined-variable", diags.get(0).getCode());
+        assertTrue(diags.get(0).isWarning(), diags.toString());
+    }
+
+    @Test
+    public void testUnresolvedNpmAndGradleReferencesAreWarnings() throws IOException {
+        Path src = writeSource("README.src.md",
+                "<!--@nrg.languages=en-->\n" +
+                        "Name: ${npm.name}\n" +
+                        "Group: ${gradle.group}\n");
+
+        List<Validator.Diagnostic> diags = validate(src);
+        assertEquals(2, diags.size(), diags.toString());
+        assertEquals("unresolved-reference", diags.get(0).getCode());
+        assertEquals(2, diags.get(0).getLine());
+        assertTrue(diags.get(0).getMessage().startsWith("${npm.name}"), diags.get(0).getMessage());
+        assertEquals("unresolved-reference", diags.get(1).getCode());
+        assertEquals(3, diags.get(1).getLine());
+        assertTrue(diags.get(1).getMessage().startsWith("${gradle.group}"), diags.get(1).getMessage());
+    }
+
+    @Test
+    public void testDescriptorOutsideTheProjectRootIsAnError() throws IOException {
+        Path docs = Files.createDirectories(tempDir.resolve("repo/docs/.git")).getParent();
+        Files.write(tempDir.resolve("repo/pom.xml"), "<project><version>2.0</version></project>".getBytes(StandardCharsets.UTF_8));
+        Path src = docs.resolve("README.src.md");
+        Files.write(src, ("<!--@nrg.pom.path=../pom.xml-->\n" +
+                "Version ${pom.version}\n").getBytes(StandardCharsets.UTF_8));
+
+        List<Validator.Diagnostic> diags = validate(src);
+        assertEquals(1, diags.size(), diags.toString());
+        assertEquals("descriptor-error", diags.get(0).getCode());
+        assertEquals(2, diags.get(0).getLine());
+        assertTrue(diags.get(0).getMessage().contains("outside the project root"), diags.get(0).getMessage());
+
+        // The root given by the caller is the one descriptors are confined to.
+        List<Validator.Diagnostic> widened = new Validator(src.toFile(), tempDir.resolve("repo").toFile()).validate();
+        assertTrue(widened.isEmpty(), widened.toString());
+    }
+
+    @Test
+    public void testDescriptorReferencesOfAnImportedFileAreResolved() throws IOException {
+        writeSource("pom.xml", "<project><version>2.0</version></project>");
+        writeSource("part.src.md", "Version ${pom.version}\n");
+        Path src = writeSource("README.src.md", "${widget:import(path='part.src.md')}\n");
+
+        List<Validator.Diagnostic> diags = validate(src);
+        assertTrue(diags.isEmpty(), diags.toString());
+    }
+
+    @Test
+    public void testImportedFileWithBrokenConfigurationUsesTheParentOne() throws IOException {
+        writeSource("pom.xml", "<project><version>2.0</version></project>");
+        writeSource("part.src.md", "<!--@nrg.defaultLanguage=de-->\nVersion ${pom.version}\n");
+        Path src = writeSource("README.src.md", "${widget:import(path='part.src.md')}\n");
+
+        List<Validator.Diagnostic> diags = validate(src);
+        assertTrue(diags.isEmpty(), diags.toString());
+    }
+
+    @Test
+    public void testDiagnosticAccessorsAndTextForm() {
+        File file = new File("README.src.md");
+        Validator.Diagnostic error = new Validator.Diagnostic(file, 3, Validator.Severity.ERROR, "unknown-widget",
+                "unknown widget 'x'", "fix the name");
+        Validator.Diagnostic warning = new Validator.Diagnostic(null, 0, "plain", Validator.Severity.WARNING);
+
+        assertEquals(Validator.Severity.ERROR, error.getSeverity());
+        assertTrue(error.isError());
+        assertFalse(error.isWarning());
+        assertEquals(Validator.Severity.WARNING, warning.getSeverity());
+        assertTrue(warning.isWarning());
+        assertFalse(warning.isError());
+        assertEquals(Validator.Diagnostic.DEFAULT_CODE, warning.getCode());
+        assertEquals("ERROR: README.src.md:3: unknown widget 'x'; fix the name", error.toString());
+        assertEquals("WARNING: <unknown>:0: plain", warning.toString());
+
+        assertEquals("", Validator.format(Collections.emptyList()));
+        assertEquals(error + System.lineSeparator() + warning, Validator.format(Arrays.asList(error, warning)));
     }
 }

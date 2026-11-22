@@ -82,7 +82,7 @@ public class NRGMultiFileTest extends DefaultNRGTest {
         int code = NRG.run(tempDir.toString() + "/nope/**/*.src.md");
         assertEquals(NRG.EXIT_USAGE, code);
         String err = getErrAndClear();
-        assertTrue(err.contains("No source files matched"),
+        assertTrue(err.contains("No source files matched any of the supplied patterns"),
                 "expected total-zero error, got: " + err);
     }
 

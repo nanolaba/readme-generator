@@ -516,9 +516,7 @@ public class TemplateLine {
                 String propertyName = m.group(1);
                 String value = NRGUtil.getLanguageScopedProperty(config.getProperties(), propertyName, language);
                 if (value != null) {
-                    line = (m.start() > 0 ? line.substring(0, m.start()) : "") +
-                            value +
-                            (m.end() < line.length() ? line.substring(m.end()) : "");
+                    line = line.substring(0, m.start()) + value + line.substring(m.end());
                     m = pattern.matcher(line);
                 }
             }

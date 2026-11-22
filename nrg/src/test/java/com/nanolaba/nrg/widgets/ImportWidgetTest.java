@@ -1,8 +1,12 @@
 package com.nanolaba.nrg.widgets;
 
 import com.nanolaba.logging.LOG;
+import com.nanolaba.logging.LogEntry;
+import com.nanolaba.logging.MemoryLogger;
+import com.nanolaba.nrg.core.GenerationResult;
 import com.nanolaba.nrg.core.Generator;
 import com.nanolaba.nrg.core.NRGConstants;
+import com.nanolaba.nrg.core.SourceOrigin;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -15,6 +19,7 @@ import java.nio.file.Path;
 import java.time.Clock;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -393,6 +398,20 @@ class ImportWidgetTest {
     }
 
     @Test
+    public void circularImportInsideAnImportedFileReportsTheChainFromTheRoot(@TempDir Path tmp) throws IOException {
+        // The imported file's generator is handed the chain that led to it; on its own it
+        // would know only itself.
+        Files.write(tmp.resolve("a.src.md"), "A\n${widget:import(path='a.src.md')}\n".getBytes(StandardCharsets.UTF_8));
+        File src = writeFixture(tmp, "ROOT\n${widget:import(path='a.src.md')}\n");
+
+        RuntimeException e = assertThrows(RuntimeException.class,
+                () -> new Generator(src, StandardCharsets.UTF_8).getResult("en"));
+
+        assertTrue(e.getMessage().matches("import: circular import: .*test\\.src\\.md -> .*a\\.src\\.md -> .*a\\.src\\.md"),
+                e.getMessage());
+    }
+
+    @Test
     public void selfImportIsCircularAlsoBehindATableOfContents(@TempDir Path tmp) throws IOException {
         File plain = writeFixture(tmp, "x\n${widget:import(path='test.src.md')}\n");
         assertThrows(RuntimeException.class, () -> new Generator(plain, StandardCharsets.UTF_8).getResult("en"));
@@ -475,5 +494,216 @@ class ImportWidgetTest {
         // The bash comment must remain a single '#' (not shifted).
         assertTrue(body.contains("# this is a shell comment, not a heading"), body);
         assertFalse(body.contains("## this is a shell comment, not a heading"), body);
+    }
+
+    private static String renderNoHeader(Path tmp, String body) throws IOException {
+        File src = writeFixture(tmp, "<!--@" + NRGConstants.PROPERTY_NO_HEADER + "=true-->\n" + body);
+        return new Generator(src, StandardCharsets.UTF_8).getResult("en").getContent().toString();
+    }
+
+    /** Origin of the first output line equal to {@code line}. */
+    private static SourceOrigin originOf(GenerationResult result, String line) {
+        String[] lines = result.getContent().toString().split("\\R", -1);
+        for (int i = 0; i < lines.length; i++) {
+            if (lines[i].equals(line)) {
+                return result.getSourceMap().get(i);
+            }
+        }
+        throw new AssertionError("no output line '" + line + "' in " + result.getContent());
+    }
+
+    @Test
+    void plainTextImportKeepsItsLinesWithoutAddingOrDroppingOne(@TempDir Path tmp) throws IOException {
+        Files.write(tmp.resolve("a.txt"), "x\ny\n".getBytes(StandardCharsets.UTF_8));
+        Files.write(tmp.resolve("b.txt"), "z".getBytes(StandardCharsets.UTF_8));
+
+        String body = renderNoHeader(tmp, "before\n" +
+                "${widget:import(path='a.txt', run-generator='false')}\n" +
+                "${widget:import(path='b.txt', run-generator='false')}\n" +
+                "after\n");
+
+        String sep = System.lineSeparator();
+        assertEquals("before" + sep + "x" + sep + "y" + sep + "z" + sep + "after" + sep, body);
+    }
+
+    @Test
+    void wholeFileKeepsItsIndentationUnlessDedentIsAskedFor(@TempDir Path tmp) throws IOException {
+        Files.write(tmp.resolve("indented.txt"), "    a\n      b\n".getBytes(StandardCharsets.UTF_8));
+        String sep = System.lineSeparator();
+
+        assertEquals("    a" + sep + "      b" + sep,
+                renderNoHeader(tmp, "${widget:import(path='indented.txt', run-generator='false')}\n"));
+        assertEquals("a" + sep + "  b" + sep,
+                renderNoHeader(tmp, "${widget:import(path='indented.txt', run-generator='false', dedent='true')}\n"));
+        assertEquals("a" + sep + "  b" + sep,
+                renderNoHeader(tmp, "${widget:import(path='indented.txt', run-generator='false', lines='1-2')}\n"));
+        assertEquals("    a" + sep + "      b" + sep,
+                renderNoHeader(tmp, "${widget:import(path='indented.txt', run-generator='false', lines='1-2', dedent='false')}\n"));
+    }
+
+    @Test
+    void invalidDedentOrWrapValueIsRejected(@TempDir Path tmp) throws IOException {
+        Files.write(tmp.resolve("a.txt"), "x\n".getBytes(StandardCharsets.UTF_8));
+        String[][] cases = {
+                {"dedent='bogus'", "import: invalid 'dedent' value 'bogus' (expected auto|true|false)"},
+                {"wrap='bogus'", "import: invalid 'wrap' value 'bogus' (expected true|false)"}};
+        for (String[] c : cases) {
+            RuntimeException e = assertThrows(RuntimeException.class,
+                    () -> renderNoHeader(tmp, "${widget:import(path='a.txt', " + c[0] + ")}\n"));
+            assertEquals(c[1], e.getMessage());
+        }
+    }
+
+    @Test
+    void unreadableImportIsReportedAsAnIoErrorNamingThePath(@TempDir Path tmp) throws IOException {
+        Files.createDirectory(tmp.resolve("somedir"));
+
+        RuntimeException e = assertThrows(RuntimeException.class,
+                () -> renderNoHeader(tmp, "${widget:import(path='somedir')}\n"));
+        assertTrue(e.getMessage().startsWith("import: I/O error reading somedir: "), e.getMessage());
+    }
+
+    @Test
+    void missingRegionNamesTheImportedPathOrUrl(@TempDir Path tmp) throws IOException {
+        Files.write(tmp.resolve("code.txt"), "no markers\n".getBytes(StandardCharsets.UTF_8));
+        RuntimeException local = assertThrows(RuntimeException.class,
+                () -> renderNoHeader(tmp, "${widget:import(path='code.txt', region='main')}\n"));
+        assertEquals("import: region 'main' not found or unclosed in code.txt", local.getMessage());
+
+        File src = writeFixture(tmp, "<!--@nrg.allowRemoteImports=true-->\n" +
+                "${widget:import(url='https://example.com/code.txt', region='main')}\n");
+        Generator g = new Generator(src, StandardCharsets.UTF_8, withCustomImport("no markers\n".getBytes(StandardCharsets.UTF_8)));
+        RuntimeException remote = assertThrows(RuntimeException.class, () -> g.getResult("en"));
+        assertEquals("import: region 'main' not found or unclosed in https://example.com/code.txt", remote.getMessage());
+    }
+
+    @Test
+    void regionsOfOneFileImportingEachOtherAreNotCircular(@TempDir Path tmp) throws IOException {
+        File src = writeFixture(tmp, "<!-- nrg:begin:outer -->\n" +
+                "outer: ${widget:import(path='test.src.md', region='inner')}\n" +
+                "<!-- nrg:end:outer -->\n" +
+                "<!-- nrg:begin:inner -->\n" +
+                "INNER\n" +
+                "<!-- nrg:end:inner -->\n" +
+                "all: ${widget:import(path='test.src.md', region='outer')}\n");
+
+        String body = new Generator(src, StandardCharsets.UTF_8).getResult("en").getContent().toString();
+
+        assertTrue(body.contains("all: outer: INNER"), body);
+    }
+
+    @Test
+    void clampedHeadingsAreWarnedAboutWithTheSignedOffset(@TempDir Path tmp) throws IOException {
+        Files.write(tmp.resolve("frag.md"), "# A\n##### B\n###### C\n".getBytes(StandardCharsets.UTF_8));
+        Files.write(tmp.resolve("fits.md"), "# A\n".getBytes(StandardCharsets.UTF_8));
+
+        try (MemoryLogger log = MemoryLogger.capture()) {
+            renderNoHeader(tmp, "${widget:import(path='frag.md', heading-offset='2')}\n");
+            log.assertLogged(LogEntry.LogEntryLevel.WARN,
+                    "import: heading-offset clamped 2 heading(s) in frag.md (offset=+2, e.g. '##### B')");
+        }
+        try (MemoryLogger log = MemoryLogger.capture()) {
+            renderNoHeader(tmp, "${widget:import(path='frag.md', heading-offset='-1')}\n");
+            log.assertLogged(LogEntry.LogEntryLevel.WARN,
+                    "import: heading-offset clamped 1 heading(s) in frag.md (offset=-1, e.g. '# A')");
+        }
+        try (MemoryLogger log = MemoryLogger.capture()) {
+            renderNoHeader(tmp, "${widget:import(path='fits.md', heading-offset='1')}\n");
+            assertFalse(log.contains(LogEntry.LogEntryLevel.WARN, "clamped"), String.valueOf(log.getMessages()));
+        }
+    }
+
+    @Test
+    void plainHttpWithoutAPinIsWarnedAbout(@TempDir Path tmp) throws IOException {
+        byte[] remote = "REMOTE".getBytes(StandardCharsets.UTF_8);
+        String[][] cases = {
+                {"url='http://example.com/x.txt'", "true"},
+                {"url='HTTP://example.com/x.txt'", "true"},
+                {"url='https://example.com/x.txt'", "false"},
+                {"url='http://example.com/x.txt', sha256='" + Sha256Hex.hexOf(remote) + "'", "false"}};
+        for (String[] c : cases) {
+            File src = writeFixture(tmp, "<!--@nrg.allowRemoteImports=true-->\n${widget:import(" + c[0] + ")}\n");
+            try (MemoryLogger log = MemoryLogger.capture()) {
+                new Generator(src, StandardCharsets.UTF_8, withCustomImport(remote)).getResult("en");
+                assertEquals(Boolean.parseBoolean(c[1]),
+                        log.contains(LogEntry.LogEntryLevel.WARN, "is fetched over plain http without a sha256 pin"), c[0]);
+            }
+        }
+    }
+
+    @Test
+    void remoteImportPassesTimeoutAndCacheToTheFetch(@TempDir Path tmp) throws IOException {
+        AtomicInteger seenTimeout = new AtomicInteger();
+        UrlOpener opener = (url, timeout, redirects) -> {
+            seenTimeout.set(timeout);
+            return new UrlOpener.Response("REMOTE".getBytes(StandardCharsets.UTF_8));
+        };
+        Path cache = tmp.resolve("cache");
+        File src = writeFixture(tmp, "<!--@nrg.allowRemoteImports=true-->\n" +
+                "<!--@nrg.cacheDir=" + cache.toString().replace('\\', '/') + "-->\n" +
+                "${widget:import(url='https://example.com/x.txt', timeout='5s', cache='1h')}\n");
+
+        String body = new Generator(src, StandardCharsets.UTF_8,
+                Arrays.<NRGWidget>asList(new ImportWidget(new RemoteFetcher(opener, Clock.systemUTC()))))
+                .getResult("en").getContent().toString();
+
+        assertTrue(body.contains("REMOTE"), body);
+        assertEquals(5000, seenTimeout.get());
+        assertTrue(new CacheStore(cache).lookup("https://example.com/x.txt").isPresent(), "cache='1h' stores the fetch");
+    }
+
+    @Test
+    void remoteFileGetsTheLanguageOfItsUrlPath(@TempDir Path tmp) throws IOException {
+        File src = writeFixture(tmp, "<!--@nrg.allowRemoteImports=true-->\n" +
+                "${widget:import(url='https://example.com/src/Foo.java?ref=main', wrap='true')}\n");
+
+        String body = new Generator(src, StandardCharsets.UTF_8, withCustomImport("class Foo {}\n".getBytes(StandardCharsets.UTF_8)))
+                .getResult("en").getContent().toString();
+
+        String sep = System.lineSeparator();
+        assertTrue(body.contains("```java" + sep + "class Foo {}" + sep + "```" + sep), body);
+    }
+
+    @Test
+    void sourceMapNamesEveryLineOfAPlainImportUpToTheLast(@TempDir Path tmp) throws IOException {
+        Files.write(tmp.resolve("notes.txt"), "one\ntwo\nthree\n".getBytes(StandardCharsets.UTF_8));
+        File src = writeFixture(tmp, "${widget:import(path='notes.txt', run-generator='false')}\n");
+        Generator g = new Generator(src, StandardCharsets.UTF_8);
+        g.getConfig().setCollectSourceMap(true);
+
+        SourceOrigin three = originOf(g.getResult("en"), "three");
+
+        assertEquals("notes.txt", three.getFile().getName(), three.toString());
+        assertEquals(3, three.getLine(), three.toString());
+        assertEquals("test.src.md", three.getImportedFrom().getFile().getName(), three.toString());
+    }
+
+    @Test
+    void sourceMapOfARemoteImportNamesTheFileOfTheUrlAndTheUrl(@TempDir Path tmp) throws IOException {
+        File src = writeFixture(tmp, "<!--@nrg.allowRemoteImports=true-->\n" +
+                "${widget:import(url='https://example.com/docs/notes.txt')}\n");
+        Generator g = new Generator(src, StandardCharsets.UTF_8, withCustomImport("one\ntwo\n".getBytes(StandardCharsets.UTF_8)));
+        g.getConfig().setCollectSourceMap(true);
+
+        SourceOrigin two = originOf(g.getResult("en"), "two");
+
+        assertEquals("notes.txt", two.getFile().getName(), two.toString());
+        assertEquals(2, two.getLine(), two.toString());
+        assertEquals("remote import https://example.com/docs/notes.txt", two.getNote());
+    }
+
+    @Test
+    void importedTemplateUsesTheDefaultLanguageOfTheImportingOne(@TempDir Path tmp) throws IOException {
+        // The language links of a fragment point to the same files as those of the root.
+        Files.write(tmp.resolve("child.src.md"), "child ${widget:languages}\n".getBytes(StandardCharsets.UTF_8));
+        File src = writeFixture(tmp, "<!--@nrg.languages=en,ru-->\n" +
+                "<!--@nrg.defaultLanguage=ru-->\n" +
+                "root ${widget:languages}\n" +
+                "${widget:import(path='child.src.md')}\n");
+
+        String body = new Generator(src, StandardCharsets.UTF_8).getResult("en").getContent().toString();
+
+        String sep = System.lineSeparator();
+        assertTrue(body.contains("root [ **en** | [ru](test.md) ]" + sep + "child [ **en** | [ru](test.md) ]" + sep), body);
     }
 }

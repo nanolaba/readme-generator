@@ -220,6 +220,41 @@ class ImportHeadingShifterTest {
     }
 
     @Test
+    void fenceLineWithAnInfoStringDoesNotCloseTheFenceButTrailingBlanksDo() {
+        String input =
+                "```" + "\n" +
+                "```bash" + "\n" +
+                "# still code" + "\n" +
+                "```  \t" + "\n" +
+                "# after" + "\n";
+        ImportHeadingShifter.Result r = ImportHeadingShifter.shift(input, 1);
+        assertEquals(
+                "```" + "\n" +
+                "```bash" + "\n" +
+                "# still code" + "\n" +
+                "```  \t" + "\n" +
+                "## after" + "\n",
+                r.content);
+    }
+
+    @Test
+    void separatorIsCrlfIfAnyElseLfIfAnyNewlineElseTheFallback() {
+        assertEquals("\r\n", ImportHeadingShifter.separatorOf("a\nb\r\nc", "X"));
+        assertEquals("\n", ImportHeadingShifter.separatorOf("a\nb", "X"));
+        assertEquals("\n", ImportHeadingShifter.separatorOf("\n", "X"));
+        assertEquals("\n", ImportHeadingShifter.separatorOf("\r", "X"));
+        assertEquals("\n", ImportHeadingShifter.separatorOf("a\rb", "X"));
+        assertEquals("X", ImportHeadingShifter.separatorOf("a b", "X"));
+        assertEquals("X", ImportHeadingShifter.separatorOf("a", "X"));
+    }
+
+    @Test
+    void headingsSplitByARareSeparatorAreRejoinedWithTheLineSeparator() {
+        ImportHeadingShifter.Result r = ImportHeadingShifter.shift("# A # B", 1);
+        assertEquals("## A" + System.lineSeparator() + "## B", r.content);
+    }
+
+    @Test
     void preservesTrailingNewline() {
         String input = "# A" + "\n";
         ImportHeadingShifter.Result r = ImportHeadingShifter.shift(input, 1);

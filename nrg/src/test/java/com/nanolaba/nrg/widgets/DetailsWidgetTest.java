@@ -1,10 +1,14 @@
 package com.nanolaba.nrg.widgets;
 
+import com.nanolaba.logging.LogEntry;
+import com.nanolaba.logging.MemoryLogger;
 import com.nanolaba.nrg.DefaultNRGTest;
 import com.nanolaba.nrg.core.Generator;
+import com.nanolaba.nrg.core.GeneratorConfig;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
+import java.util.Collections;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -96,5 +100,17 @@ class DetailsWidgetTest extends DefaultNRGTest {
                         "${widget:details(summary='${title}', content='X')}\n");
         String body = generator.getResult("en").getContent().toString();
         assertTrue(body.contains("<details><summary>Hello</summary>X</details>"), body);
+    }
+
+    @Test
+    public void testRenderInlineWithoutContentLogsErrorAndEmitsNothing() {
+        // The pipeline only takes the inline form when content= is present; a subclass or
+        // another caller of the hook may still pass parameters without it.
+        GeneratorConfig config = new GeneratorConfig(new File("README.src.md"), "", null);
+        try (MemoryLogger log = MemoryLogger.capture()) {
+            assertEquals("", new DetailsWidget().renderInline(
+                    Collections.singletonMap("summary", "Click"), config, "en"));
+            log.assertLogged(LogEntry.LogEntryLevel.ERROR, "details widget: missing required 'content' parameter");
+        }
     }
 }

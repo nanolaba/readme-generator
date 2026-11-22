@@ -27,7 +27,7 @@ import java.nio.file.Path;
 public final class ProjectRoot {
 
     /** Bound on chained dangling links, so a link cycle cannot recurse forever. */
-    private static final int MAX_LINK_HOPS = 40;
+    static final int MAX_LINK_HOPS = 40;
 
     private ProjectRoot() {/* utility */}
 
@@ -91,15 +91,12 @@ public final class ProjectRoot {
      * because writing through it would create its target.
      */
     static File canonical(File file) {
-        Path absolute = (file == null ? new File(".") : file).getAbsoluteFile().toPath();
-        return resolveLinks(absolute, 0).toFile();
+        return resolveLinks(orCurrentDirectory(file).getAbsoluteFile().toPath(), 0).toFile();
     }
 
+    /** {@code absolute} has a root: it comes from {@link File#getAbsoluteFile()} or is resolved against one. */
     private static Path resolveLinks(Path absolute, int depth) {
         Path current = absolute.getRoot();
-        if (current == null) {
-            return absolute.normalize();
-        }
         for (Path name : absolute) {
             String segment = name.toString();
             if (segment.equals(".")) {
@@ -154,8 +151,12 @@ public final class ProjectRoot {
         try {
             return canonical(file).getPath();
         } catch (UnresolvablePathException e) {
-            return (file == null ? new File(".") : file).getAbsolutePath();
+            return orCurrentDirectory(file).getAbsolutePath();
         }
+    }
+
+    private static File orCurrentDirectory(File file) {
+        return file == null ? new File(".") : file;
     }
 
     /**

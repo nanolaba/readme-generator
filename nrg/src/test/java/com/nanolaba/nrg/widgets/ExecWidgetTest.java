@@ -1,18 +1,24 @@
 package com.nanolaba.nrg.widgets;
 
+import com.nanolaba.logging.LogEntry;
+import com.nanolaba.logging.MemoryLogger;
 import com.nanolaba.nrg.DefaultNRGTest;
 import com.nanolaba.nrg.core.Generator;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -151,9 +157,29 @@ class ExecWidgetTest extends DefaultNRGTest {
         Generator g = makeGenerator("${widget:exec(cmd='sleep 99', timeout='2')}",
                 new ExecWidget(runner), true);
 
-        String body = g.getResult("en").getContent().toString();
-        assertFalse(body.contains("sleep"), body);
-        assertEquals(2L, runner.invocations.get(0).timeoutSeconds);
+        try (MemoryLogger log = MemoryLogger.capture()) {
+            String body = g.getResult("en").getContent().toString();
+            assertFalse(body.contains("sleep"), body);
+            assertEquals(2L, runner.invocations.get(0).timeoutSeconds);
+            log.assertLogged(LogEntry.LogEntryLevel.WARN, "exec widget: command [sleep, 99] timed out after 2 seconds");
+        }
+    }
+
+    @Test
+    public void testStderrSnippetIsShortenedOnlyPast200Characters() {
+        String exactly200 = StringUtils.repeat('e', 200);
+        RecordingRunner runner = new RecordingRunner();
+        runner.next = ExecWidget.ExecResult.failed(1, "", exactly200);
+        try (MemoryLogger log = MemoryLogger.capture()) {
+            makeGenerator("${widget:exec(cmd='x')}", new ExecWidget(runner), true).getResult("en");
+            log.assertLogged(LogEntry.LogEntryLevel.ERROR, "(stderr: " + exactly200 + ")");
+        }
+
+        runner.next = ExecWidget.ExecResult.failed(1, "", exactly200 + "tail");
+        try (MemoryLogger log = MemoryLogger.capture()) {
+            makeGenerator("${widget:exec(cmd='x')}", new ExecWidget(runner), true).getResult("en");
+            log.assertLogged(LogEntry.LogEntryLevel.ERROR, "(stderr: " + exactly200 + "…)");
+        }
     }
 
     @Test
@@ -256,13 +282,98 @@ class ExecWidgetTest extends DefaultNRGTest {
 
     /** Runs {@link ExecProbeMain} as a real child process through the production runner. */
     private static String runProbe(String probeArgs, String timeout) {
+        return probeGenerator(probeArgs, timeout).getResult("en").getContent().toString();
+    }
+
+    private static Generator probeGenerator(String probeArgs, String timeout) {
         // 'java' is taken from PATH and the class path is passed as cwd + "-cp .", so no path
         // (which may contain spaces) has to survive the widget's whitespace splitting.
         String classes = new File(ExecProbeMain.class.getProtectionDomain().getCodeSource().getLocation().getPath())
                 .getAbsolutePath().replace('\\', '/').replace("%20", " ");
-        Generator g = makeGenerator("[${widget:exec(cmd='java -cp . " + ExecProbeMain.class.getName() + " "
+        return makeGenerator("[${widget:exec(cmd='java -cp . " + ExecProbeMain.class.getName() + " "
                 + probeArgs + "', cwd='" + classes + "', timeout='" + timeout + "')}]", new ExecWidget(), true);
-        return g.getResult("en").getContent().toString();
+    }
+
+    @Test
+    public void testRealCommandOutlivingTheTimeoutIsAbandoned() {
+        try (MemoryLogger log = MemoryLogger.capture()) {
+            String body = runProbe("sleep 60000", "1");
+
+            assertTrue(body.contains("[]"), body);
+            log.assertLogged(LogEntry.LogEntryLevel.WARN, "timed out after 1 seconds");
+        }
+    }
+
+    @Test
+    public void testRealCommandWithNonZeroExitIsAnError() {
+        try (MemoryLogger log = MemoryLogger.capture()) {
+            String body = runProbe("exit 3", "30");
+
+            assertTrue(body.contains("[]"), body);
+            log.assertLogged(LogEntry.LogEntryLevel.ERROR, "exec widget: command failed with exit code 3");
+        }
+    }
+
+    @Test
+    public void testInterruptWhileWaitingStopsTheCommandAndKeepsTheInterruptFlag() {
+        Generator g = probeGenerator("sleep 60000", "30");
+        try (MemoryLogger log = MemoryLogger.capture()) {
+            Thread.currentThread().interrupt();
+            String body = g.getResult("en").getContent().toString();
+
+            assertTrue(Thread.interrupted(), "the interrupt must be restored for the caller");
+            assertTrue(body.contains("[]"), body);
+            log.assertLogged(LogEntry.LogEntryLevel.ERROR, "exec widget: failed to run command");
+        } finally {
+            Thread.interrupted();
+        }
+    }
+
+    @Test
+    public void testDrainReadsOnADaemonThreadAndAwaitWaitsForTheWholeStream() throws Exception {
+        Thread owner = Thread.currentThread();
+        AtomicReference<Thread> reader = new AtomicReference<>();
+        InputStream heldBack = new InputStream() {
+            private boolean sent;
+
+            @Override
+            public int read() throws IOException {
+                reader.set(Thread.currentThread());
+                if (sent) {
+                    return -1;
+                }
+                // The data only comes once the owner is blocked in await(), so an await() that
+                // does not wait for the drain thread returns before anything was read.
+                long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(10);
+                while (owner.getState() != Thread.State.WAITING && System.nanoTime() < deadline) {
+                    sleepBriefly();
+                }
+                sent = true;
+                return 'x';
+            }
+        };
+        // Created from a non-daemon thread: a thread inherits that flag from its creator, so
+        // only an explicit setDaemon(true) can make the drain thread a daemon.
+        AtomicReference<ExecWidget.StreamDrain> drain = new AtomicReference<>();
+        Thread creator = new Thread(() -> drain.set(new ExecWidget.StreamDrain(heldBack)));
+        creator.setDaemon(false);
+        creator.start();
+        while (drain.get() == null) {
+            // Spinning, not join(): the owner must not be WAITING before it calls await().
+            Thread.yield();
+        }
+
+        assertEquals("x", drain.get().await());
+        assertTrue(reader.get().isDaemon(), "drain thread must not keep the JVM alive");
+        assertEquals("nrg-exec-drain", reader.get().getName());
+    }
+
+    private static void sleepBriefly() {
+        try {
+            Thread.sleep(1);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
     }
 
     @Test

@@ -87,6 +87,14 @@ class OutputFileNameResolverTest {
     }
 
     @Test
+    void baseIsTheWholeNameWithoutTheSrcMdSuffix() {
+        Properties p = new Properties();
+        p.setProperty("nrg.fileNamePattern", "<base>.<lang>.md");
+        String r = resolve(src("repo/notes.tmpl"), "en", "ru", p);
+        assertTrue(r.endsWith("repo/notes.tmpl.ru.md"), r);
+    }
+
+    @Test
     void langPlaceholderUppercase() {
         Properties p = new Properties();
         p.setProperty("nrg.fileNamePattern", "<LANG>.md");

@@ -8,6 +8,7 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
@@ -105,6 +106,22 @@ class NRGMojoWidgetsTest {
         }
     }
 
+    @Test
+    public void testValidatedWidgetsAreForwardedToTheCli() throws Exception {
+        Path src = tempDir.resolve("README.src.md");
+        Files.write(src, "<!--@nrg.languages=en-->\n[${widget:sampleMojoWidget}|${widget:otherMojoWidget}]\n"
+                .getBytes(StandardCharsets.UTF_8));
+
+        NRG.exitOnFailure = false;
+        NRGMojo mojo = new NRGMojo();
+        mojo.setFile(new String[]{src.toString()});
+        mojo.setWidgets(Arrays.asList(SampleMojoWidget.class.getName(), " " + OtherMojoWidget.class.getName() + " "));
+        mojo.execute();
+
+        String out = new String(Files.readAllBytes(tempDir.resolve("README.md")), StandardCharsets.UTF_8);
+        assertTrue(out.contains("[sample|other]"), out);
+    }
+
     public static class SampleMojoWidget implements NRGWidget {
         @Override
         public String getName() {
@@ -113,7 +130,27 @@ class NRGMojoWidgetsTest {
 
         @Override
         public String getBody(WidgetTag t, GeneratorConfig c, String l) {
-            return "";
+            return "sample";
+        }
+
+        @Override
+        public boolean isEnabled() {
+            return true;
+        }
+
+        @Override
+        public void setEnabled(boolean e) {/**/}
+    }
+
+    public static class OtherMojoWidget implements NRGWidget {
+        @Override
+        public String getName() {
+            return "otherMojoWidget";
+        }
+
+        @Override
+        public String getBody(WidgetTag t, GeneratorConfig c, String l) {
+            return "other";
         }
 
         @Override

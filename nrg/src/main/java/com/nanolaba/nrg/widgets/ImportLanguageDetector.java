@@ -74,7 +74,7 @@ final class ImportLanguageDetector {
             return "";
         }
         int dot = filename.lastIndexOf('.');
-        if (dot <= 0 || dot == filename.length() - 1) {
+        if (dot <= 0) {
             return "";
         }
         String ext = filename.substring(dot + 1).toLowerCase(Locale.ROOT);

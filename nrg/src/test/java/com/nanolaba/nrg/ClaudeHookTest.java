@@ -11,6 +11,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.Map;
+import java.util.function.Function;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -31,10 +32,22 @@ public class ClaudeHookTest extends DefaultNRGTest {
     }
 
     private int hook(String mode, Path file) {
-        String json = "{\"cwd\": " + RunReport.str(tempDir.toString()) + ", \"tool_name\": \"Edit\", "
+        return hook(mode, file, tempDir, name -> null);
+    }
+
+    private int hook(String mode, Path file, Path cwd, Function<String, String> env) {
+        String json = "{\"cwd\": " + RunReport.str(cwd.toString()) + ", \"tool_name\": \"Edit\", "
                 + "\"tool_input\": {\"file_path\": " + RunReport.str(file.toString()) + "}}";
-        return new ClaudeHook(StandardCharsets.UTF_8, Collections.emptyList(), name -> null)
+        return new ClaudeHook(StandardCharsets.UTF_8, Collections.emptyList(), env)
                 .run(mode, new ByteArrayInputStream(json.getBytes(StandardCharsets.UTF_8)));
+    }
+
+    @SuppressWarnings("unchecked")
+    private static String additionalContext(String out) {
+        String json = out.substring(out.lastIndexOf("{\"hookSpecificOutput\""));
+        Map<String, Object> specific = (Map<String, Object>) ((Map<String, Object>) MinimalJsonParser.parse(json)).get("hookSpecificOutput");
+        assertEquals("PostToolUse", specific.get("hookEventName"));
+        return (String) specific.get("additionalContext");
     }
 
     private Path project() throws IOException {
@@ -73,13 +86,55 @@ public class ClaudeHookTest extends DefaultNRGTest {
         getOutAndClear();
 
         assertEquals(NRG.EXIT_OK, hook("post-edit", fragment));
-        String out = getOutAndClear().trim();
-        String json = out.substring(out.lastIndexOf("{\"hookSpecificOutput\""));
-        @SuppressWarnings("unchecked")
-        Map<String, Object> specific = (Map<String, Object>) ((Map<String, Object>) MinimalJsonParser.parse(json)).get("hookSpecificOutput");
-        assertEquals("PostToolUse", specific.get("hookEventName"));
-        assertTrue(((String) specific.get("additionalContext")).contains("README.ru.md"), specific.toString());
+        String context = additionalContext(getOutAndClear().trim());
+        assertTrue(context.startsWith("NRG regenerated ") && context.contains("README.ru.md"), context);
+        assertTrue(context.endsWith("from the templates; commit them together with the template."),
+                "no warnings, no warnings section: " + context);
         assertTrue(new String(Files.readAllBytes(tempDir.resolve("README.ru.md")), StandardCharsets.UTF_8).contains("Изменено"));
+    }
+
+    @Test
+    public void testPostEditPassesValidationWarningsOn() throws IOException {
+        project();
+        Path fragment = write("docs/part.src.md", "Changed ${HOME}<!--en-->\nИзменено ${HOME}<!--ru-->\n");
+        getOutAndClear();
+
+        assertEquals(NRG.EXIT_OK, hook("post-edit", fragment));
+        String context = additionalContext(getOutAndClear().trim());
+        assertTrue(context.contains("; commit them together with the template. Warnings from --validate: WARNING: part.src.md:1: "),
+                context);
+    }
+
+    @Test
+    public void testPostEditReportsAFailedRegeneration() throws IOException {
+        project();
+        Path src = write("README.src.md", "<!--@nrg.fileNamePattern=../../outside/<base>.md-->\nx\n");
+
+        assertEquals(2, hook("post-edit", src));
+        String err = getErrAndClear();
+        assertTrue(err.startsWith("NRG: regeneration failed:"), err);
+        assertTrue(err.contains("outside the project root"), "the output of the failed run is passed on: " + err);
+    }
+
+    @Test
+    public void testUnknownModeIsAUsageError() throws IOException {
+        project();
+
+        assertEquals(NRG.EXIT_USAGE, hook("mid-edit", tempDir.resolve("README.md")));
+        assertTrue(getErrAndClear().contains("--claude-hook expects pre-edit or post-edit, got 'mid-edit'"));
+    }
+
+    @Test
+    public void testProjectDirectoryComesFromClaudeProjectDirBeforeCwd() throws IOException {
+        project();
+        Path elsewhere = Files.createDirectories(tempDir.resolve("elsewhere"));
+        Path readme = tempDir.resolve("README.ru.md");
+
+        assertEquals(2, hook("pre-edit", readme, elsewhere,
+                name -> "CLAUDE_PROJECT_DIR".equals(name) ? tempDir.toString() : null));
+        assertEquals(2, hook("pre-edit", readme, tempDir, name -> ""), "an empty CLAUDE_PROJECT_DIR is not set");
+        assertEquals(NRG.EXIT_OK, hook("pre-edit", readme, elsewhere, name -> null),
+                "without CLAUDE_PROJECT_DIR the cwd of the event is the project");
     }
 
     @Test
@@ -89,6 +144,7 @@ public class ClaudeHookTest extends DefaultNRGTest {
 
         assertEquals(2, hook("post-edit", fragment));
         String err = getErrAndClear();
+        assertTrue(err.startsWith("NRG: the edit leaves a template invalid; fix it before going on:"), err);
         assertTrue(err.contains("unknown widget 'tocc'"), err);
         assertFalse(new String(Files.readAllBytes(tempDir.resolve("README.md")), StandardCharsets.UTF_8).contains("tocc"),
                 "nothing is regenerated from an invalid template");

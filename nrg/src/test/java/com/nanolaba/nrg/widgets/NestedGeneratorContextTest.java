@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Clock;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -115,6 +116,26 @@ class NestedGeneratorContextTest extends DefaultNRGTest {
 
         assertTrue(out.contains("child: []"), out);
         assertTrue(runner.commands.isEmpty());
+        assertTrue(getErrAndClear().contains("execution is disabled"));
+    }
+
+    @Test
+    void execStaysRefusedInARemoteTemplateEvenWhenAllowed() throws IOException {
+        // --allow-exec is consent for the user's own templates, not for text fetched from elsewhere.
+        byte[] remote = "remote: [${widget:exec(cmd='remote-cmd')}]\n".getBytes(StandardCharsets.UTF_8);
+        File root = write("README.src.md", "<!--@nrg.allowRemoteImports=true-->\n" +
+                "${widget:import(url='https://example.com/x.src.md', sha256='" + Sha256Hex.hexOf(remote) + "')}\n");
+        CountingRunner runner = new CountingRunner();
+        ImportWidget importWidget = new ImportWidget(new RemoteFetcher(
+                (url, timeout, redirects) -> new UrlOpener.Response(remote), Clock.systemUTC()));
+        Generator generator = new Generator(root, StandardCharsets.UTF_8,
+                Arrays.<NRGWidget>asList(new ExecWidget(runner), importWidget));
+        generator.getConfig().setExecAllowed(true);
+
+        String out = render(generator);
+
+        assertTrue(out.contains("remote: []"), out);
+        assertTrue(runner.commands.isEmpty(), String.valueOf(runner.commands));
         assertTrue(getErrAndClear().contains("execution is disabled"));
     }
 

@@ -10,7 +10,6 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Deque;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -120,7 +119,7 @@ public abstract class BlockWidget extends DefaultWidget {
         }
         String openProbe = "widget:" + getName();
         String endProbe = "widget:" + getEndMarkerName();
-        if (body.indexOf(openProbe) < 0 && body.indexOf(endProbe) < 0) {
+        if (!body.contains(openProbe) && !body.contains(endProbe)) {
             return body;
         }
 
@@ -260,16 +259,12 @@ public abstract class BlockWidget extends DefaultWidget {
      *
      * <p>Subclasses that want their own true aliases (e.g. a short synonym for the opener)
      * should override and merge with {@code super.getAliases()} so the closer stays in the set.
+     * The set is immutable; {@link DefaultWidget} declares no aliases of its own, so there is
+     * nothing to merge here.
      */
     @Override
     public Set<String> getAliases() {
-        Set<String> base = super.getAliases();
-        if (base.isEmpty()) {
-            return Collections.singleton(getEndMarkerName());
-        }
-        Set<String> combined = new LinkedHashSet<>(base);
-        combined.add(getEndMarkerName());
-        return Collections.unmodifiableSet(combined);
+        return Collections.singleton(getEndMarkerName());
     }
 
     private static final class Frame {

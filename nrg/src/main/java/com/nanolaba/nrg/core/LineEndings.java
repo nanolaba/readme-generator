@@ -48,19 +48,16 @@ public final class LineEndings {
      * who left bare LF lines in an otherwise-CRLF file.
      */
     public static String detect(String content) {
-        if (content == null || content.isEmpty()) return null;
-        int crlf = 0;
-        int lfOnly = 0;
-        int len = content.length();
-        for (int i = 0; i < len; i++) {
+        if (content == null) return null;
+        boolean crlf = false;
+        for (int i = 0; i < content.length(); i++) {
             if (content.charAt(i) == '\n') {
-                if (i > 0 && content.charAt(i - 1) == '\r') crlf++;
-                else lfOnly++;
+                // One bare LF settles it: the file is either LF-only or mixed, and both give LF.
+                if (i == 0 || content.charAt(i - 1) != '\r') return LF;
+                crlf = true;
             }
         }
-        if (crlf == 0 && lfOnly == 0) return null;
-        if (crlf > 0 && lfOnly == 0) return CRLF;
-        return LF;
+        return crlf ? CRLF : null;
     }
 
     /**
@@ -80,9 +77,7 @@ public final class LineEndings {
             return content == null ? null : content.toString();
         }
         String normalized = content.toString().replace(CRLF, LF);
-        if (LF.equals(ending)) return normalized;
-        if (CRLF.equals(ending)) return normalized.replace(LF, CRLF);
-        return normalized;
+        return CRLF.equals(ending) ? normalized.replace(LF, CRLF) : normalized;
     }
 
     /**

@@ -1,8 +1,10 @@
 package com.nanolaba.nrg.widgets;
 
 import com.nanolaba.logging.LOG;
+import com.nanolaba.logging.MemoryLogger;
 import com.nanolaba.nrg.DefaultNRGTest;
 import com.nanolaba.nrg.core.Generator;
+import com.nanolaba.nrg.core.GeneratorConfig;
 import com.nanolaba.nrg.core.NoHeadCommentGenerator;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
@@ -16,6 +18,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import static com.nanolaba.logging.LogEntry.LogEntryLevel.ERROR;
+import static com.nanolaba.logging.LogEntry.LogEntryLevel.WARN;
 import static org.junit.jupiter.api.Assertions.*;
 
 class TableOfContentsWidgetTest extends DefaultNRGTest {
@@ -1116,5 +1120,347 @@ class TableOfContentsWidgetTest extends DefaultNRGTest {
                 "primary and alias must render byte-identically");
         assertTrue(outPrimary.contains("Chapter A"), outPrimary);
         assertTrue(outPrimary.contains("Chapter B"), outPrimary);
+    }
+
+    private static String renderEn(String source) {
+        return new NoHeadCommentGenerator(new File("README.src.md"), source).getResult("en").getContent().toString();
+    }
+
+    private static Path write(Path dir, String name, String content) throws IOException {
+        return Files.write(dir.resolve(name), content.getBytes(StandardCharsets.UTF_8));
+    }
+
+    @Test
+    public void testTOCWithoutNumberingParametersLogsNoWarning() {
+        try (MemoryLogger log = MemoryLogger.capture()) {
+            String body = renderEn("${widget:tableOfContents}\n## A\n## B\n");
+
+            assertTrue(body.contains("- [A](#a)" + RN + "- [B](#b)"), body);
+            log.assertNoneAtOrAbove(WARN);
+        }
+    }
+
+    @Test
+    public void testTOCNumberingStyleWithoutOrderedWarnsAndKeepsNesting() {
+        try (MemoryLogger log = MemoryLogger.capture()) {
+            String body = renderEn("${widget:tableOfContents(numbering-style = \"dotted\")}\n## A\n### A1\n## B\n");
+
+            assertTrue(body.contains("- [A](#a)" + RN + "\t- [A1](#a1)" + RN + "- [B](#b)" + RN), body);
+            log.assertLogged(WARN, "numbering-style='dotted' has no effect without ordered='true'");
+        }
+    }
+
+    @Test
+    public void testTOCNumberingStyleWithOrderedDoesNotWarn() {
+        try (MemoryLogger log = MemoryLogger.capture()) {
+            String body = renderEn("${widget:tableOfContents(ordered = \"true\", numbering-style = \"dotted\")}\n## A\n");
+
+            assertTrue(body.contains("- 1 [A](#a)"), body);
+            log.assertNoneAtOrAbove(WARN);
+        }
+    }
+
+    @Test
+    public void testTOCExplicitDefaultNumberingStyleIsNotAnError() {
+        try (MemoryLogger log = MemoryLogger.capture()) {
+            String body = renderEn("${widget:tableOfContents(ordered = \"true\", numbering-style = \"default\")}\n## A\n");
+
+            assertTrue(body.contains("1. [A](#a)"), body);
+            log.assertNoneAtOrAbove(WARN);
+        }
+    }
+
+    @Test
+    public void testTOCUnknownNumberingStyleLogsError() {
+        try (MemoryLogger log = MemoryLogger.capture()) {
+            renderEn("${widget:tableOfContents(ordered = \"true\", numbering-style = \"dottd\")}\n## A\n");
+
+            log.assertLogged(ERROR, "unknown numbering-style 'dottd'");
+        }
+    }
+
+    @Test
+    public void testTOCExplicitGithubAnchorStyleIsCaseInsensitive() {
+        try (MemoryLogger log = MemoryLogger.capture()) {
+            String body = renderEn("${widget:tableOfContents(anchor-style = \" GitHub \")}\n## snake_case name\n");
+
+            assertTrue(body.contains("- [snake_case name](#snake-case-name)"), body);
+            log.assertNoneAtOrAbove(WARN);
+        }
+    }
+
+    @Test
+    public void testTOCUnknownAnchorStyleLogsError() {
+        try (MemoryLogger log = MemoryLogger.capture()) {
+            renderEn("${widget:tableOfContents(anchor-style = \"confluence\")}\n## A\n");
+
+            log.assertLogged(ERROR, "unknown anchor-style 'confluence' (expected github|gitlab|bitbucket)");
+        }
+    }
+
+    @Test
+    public void testTOCInvalidDepthsLogErrors() {
+        try (MemoryLogger log = MemoryLogger.capture()) {
+            renderEn("${widget:tableOfContents(min-depth = \"zero\", max-depth = \"9\")}\n## A\n");
+
+            log.assertLogged(ERROR, "min-depth must be an integer, got 'zero'");
+            log.assertLogged(ERROR, "max-depth must be between 1 and 6, got '9'");
+        }
+    }
+
+    @Test
+    public void testTOCOutOfRangeMinDepthKeepsDefault() {
+        String body = renderEn("${widget:tableOfContents(min-depth = \"0\")}\n# Top\n## A\n");
+
+        assertFalse(body.contains("[Top]"), body);
+        assertTrue(body.contains("- [A](#a)"), body);
+    }
+
+    @Test
+    public void testTOCDepthSixIsAccepted() {
+        try (MemoryLogger log = MemoryLogger.capture()) {
+            String body = renderEn("${widget:tableOfContents(min-depth = \"6\", max-depth = \"6\")}\n## A\n###### Deep\n");
+
+            assertFalse(body.contains("[A]"), body);
+            assertTrue(body.contains("- [Deep](#deep)"), body);
+            log.assertNoneAtOrAbove(WARN);
+        }
+    }
+
+    @Test
+    public void testTOCMinDepthAboveMaxDepthLogsError() {
+        try (MemoryLogger log = MemoryLogger.capture()) {
+            renderEn("${widget:tableOfContents(min-depth = \"4\", max-depth = \"2\")}\n## A\n");
+
+            log.assertLogged(ERROR, "min-depth (4) must not exceed max-depth (2); using defaults");
+        }
+    }
+
+    @Test
+    public void testTOCMinItemsOneIsAccepted() {
+        try (MemoryLogger log = MemoryLogger.capture()) {
+            String body = renderEn("${widget:tableOfContents(min-items = \"1\")}\n## A\n");
+
+            assertTrue(body.contains("- [A](#a)"), body);
+            log.assertNoneAtOrAbove(WARN);
+        }
+    }
+
+    @Test
+    public void testTOCInvalidMinItemsLogErrors() {
+        try (MemoryLogger log = MemoryLogger.capture()) {
+            renderEn("${widget:tableOfContents(min-items = \"0\")}\n## A\n");
+            renderEn("${widget:tableOfContents(min-items = \"zero\")}\n## A\n");
+
+            log.assertLogged(ERROR, "min-items must be >= 1, got '0'");
+            log.assertLogged(ERROR, "min-items must be an integer, got 'zero'");
+        }
+    }
+
+    @Test
+    public void testTOCStartWithDefaultNumberingStyleWarnsAndIsIgnored() {
+        try (MemoryLogger log = MemoryLogger.capture()) {
+            String body = renderEn("${widget:tableOfContents(ordered = \"true\", start = \"5\")}\n## A\n## B\n");
+
+            assertTrue(body.contains("1. [A](#a)" + RN + "2. [B](#b)"), body);
+            log.assertLogged(WARN, "'start' is ignored when numbering-style is 'default'");
+        }
+    }
+
+    @Test
+    public void testTOCInvalidStartLogsError() {
+        try (MemoryLogger log = MemoryLogger.capture()) {
+            String body = renderEn("${widget:tableOfContents(ordered = \"true\", numbering-style = \"roman-upper\", start = \"5\")}\n## A\n");
+
+            assertTrue(body.contains("- I [A](#a)"), body);
+            log.assertLogged(ERROR, "invalid 'start' value '5' for numbering-style 'roman-upper'; falling back to natural first value");
+        }
+    }
+
+    @Test
+    public void testTOCNaturalFirstStartIsAccepted() {
+        try (MemoryLogger log = MemoryLogger.capture()) {
+            assertTrue(renderEn(flatToc("arabic", "1")).contains("- 1 [A](#a)" + RN + "- 2 [B](#b)"));
+            assertTrue(renderEn(flatToc("alpha", "a")).contains("- a [A](#a)" + RN + "- b [B](#b)"));
+            assertTrue(renderEn(flatToc("roman", "i")).contains("- i [A](#a)" + RN + "- ii [B](#b)"));
+            log.assertNoneAtOrAbove(WARN);
+        }
+    }
+
+    private static String flatToc(String style, String start) {
+        return "${widget:tableOfContents(ordered = \"true\", numbering-style = \"" + style + "\", start = \"" + start + "\")}\n" +
+                "## A\n" +
+                "## B\n";
+    }
+
+    @Test
+    public void testTOCNumberingStyleArabicWithStart() {
+        assertTrue(renderEn(flatToc("arabic", "3")).contains("- 3 [A](#a)" + RN + "- 4 [B](#b)"));
+    }
+
+    @Test
+    public void testTOCNumberingStyleAlphaWithStart() {
+        assertTrue(renderEn(flatToc("alpha", "z")).contains("- z [A](#a)" + RN + "- aa [B](#b)"));
+        assertTrue(renderEn(flatToc("alpha", "y")).contains("- y [A](#a)" + RN + "- z [B](#b)"));
+        assertTrue(renderEn(flatToc("alpha-upper", "AA")).contains("- AA [A](#a)" + RN + "- AB [B](#b)"));
+        assertTrue(renderEn(flatToc("alpha-upper", "az")).contains("- AZ [A](#a)" + RN + "- BA [B](#b)"));
+    }
+
+    @Test
+    public void testTOCNumberingStyleRomanWithStart() {
+        assertTrue(renderEn(flatToc("roman", "iv")).contains("- iv [A](#a)" + RN + "- v [B](#b)"));
+        assertTrue(renderEn(flatToc("roman", "VI")).contains("- vi [A](#a)" + RN + "- vii [B](#b)"));
+        assertTrue(renderEn(flatToc("roman-upper", "xlix")).contains("- XLIX [A](#a)" + RN + "- L [B](#b)"));
+    }
+
+    @Test
+    public void testTOCRomanCountersPastTheLargestNumeralFallBackToDigits() {
+        assertTrue(renderEn(flatToc("roman-upper", "MMMCMXCIX")).contains("- MMMCMXCIX [A](#a)" + RN + "- 4000 [B](#b)"));
+    }
+
+    @Test
+    public void testTOCRejectsNonCanonicalStartValues() {
+        String[][] cases = {
+                {"roman", "IIII"}, {"roman", "IM"}, {"roman", "MMMM"}, {"roman", "0"}, {"roman", "x1"},
+                {"alpha", "a1"}, {"alpha", "{"}, {"alpha", "`"}
+        };
+        for (String[] c : cases) {
+            try (MemoryLogger log = MemoryLogger.capture()) {
+                String body = renderEn(flatToc(c[0], c[1]));
+
+                String first = c[0].equals("roman") ? "i" : "a";
+                assertTrue(body.contains("- " + first + " [A](#a)"), c[1] + ": " + body);
+                log.assertLogged(ERROR, "invalid 'start' value '" + c[1] + "' for numbering-style '" + c[0] + "'");
+            }
+        }
+    }
+
+    @Test
+    public void testTOCNumberingStyleDottedCountsSiblingsAtMaxDepth() {
+        String body = renderEn("${widget:tableOfContents(ordered = \"true\", numbering-style = \"dotted\", max-depth = \"3\")}\n" +
+                "## A\n" +
+                "### A1\n" +
+                "### A2\n" +
+                "#### hidden\n" +
+                "## B\n");
+
+        assertTrue(body.contains("- 1 [A](#a)" + RN +
+                "\t- 1.1 [A1](#a1)" + RN +
+                "\t- 1.2 [A2](#a2)" + RN +
+                "- 2 [B](#b)" + RN), body);
+    }
+
+    @Test
+    public void testTOCNumberingStyleDottedIgnoresHeadingsBelowMaxDepth() {
+        // The hidden heading must not count as the predecessor of B, or B would read 1.2.
+        String body = renderEn("${widget:tableOfContents(ordered = \"true\", numbering-style = \"dotted\", min-depth = \"1\", max-depth = \"2\")}\n" +
+                "# A\n" +
+                "### hidden\n" +
+                "## B\n");
+
+        assertTrue(body.contains("- 1 [A](#a)" + RN + "\t- 1.1 [B](#b)" + RN), body);
+        assertFalse(body.contains("[hidden]"), body);
+    }
+
+    @Test
+    public void testTOCNumberingStyleDottedJumpsOverALevel() {
+        String body = renderEn("${widget:tableOfContents(ordered = \"true\", numbering-style = \"dotted\", min-depth = \"1\")}\n" +
+                "# A\n" +
+                "### deep\n" +
+                "## B\n" +
+                "# C\n");
+
+        assertTrue(body.contains("- 1 [A](#a)" + RN +
+                "\t\t- 1.1.1 [deep](#deep)" + RN +
+                "\t- 1.2 [B](#b)" + RN +
+                "- 2 [C](#c)" + RN), body);
+    }
+
+    @Test
+    public void testTOCFenceLineWithInfoStringDoesNotCloseAnOpenFence() {
+        String body = renderEn("${widget:tableOfContents}\n" +
+                "## A\n" +
+                "```\n" +
+                "```not-a-close\n" +
+                "# inside\n" +
+                "```\n" +
+                "## B\n");
+
+        assertTrue(body.contains("- [A](#a)" + RN + "- [B](#b)" + RN), body);
+        assertFalse(body.contains("[inside]"), body);
+    }
+
+    @Test
+    public void testTOCOnTheFirstLineOfTheDocument() {
+        // Without the head comment the tag is on line 0 of the scanned text.
+        for (String tag : new String[]{"tableOfContents", "toc"}) {
+            String body = new Generator(new File("README.src.md"),
+                    "<!--@nrg.noHeader=true-->\n${widget:" + tag + "}\n## A\n## B\n")
+                    .getResult("en").getContent().toString();
+
+            assertEquals("- [A](#a)" + RN + "- [B](#b)" + RN + RN + "## A" + RN + "## B" + RN, body, tag);
+        }
+    }
+
+    @Test
+    public void testTOCScanStartsAtTheTagsOwnLine() {
+        // The line that carries the tag is the first line of the scanned range, so a heading
+        // written on that line is listed too — tag and all, since the scan does not render it.
+        String body = renderEn("## Guide ${widget:toc}\n## A\n");
+
+        assertTrue(body.startsWith("## Guide - [Guide ${widget:toc}](#guide-widgettoc)" + RN + "- [A](#a)" + RN), body);
+    }
+
+    @Test
+    public void testTOCKeepsAnEscapedPlaceholderInAHeadingLiteral() {
+        // The scan must not be a root generator: it would unescape \${price}, and the entry
+        // would then be rendered with the property value.
+        String body = renderEn("<!--@price=10-->\n${widget:toc}\n## Cost \\${price}\n");
+
+        assertTrue(body.contains("- [Cost ${price}](#cost-price)"), body);
+        assertTrue(body.contains("## Cost ${price}"), body);
+    }
+
+    @Test
+    public void testTOCInsideAnImportedTemplateSeesTheImportersProperties(@TempDir Path dir) throws IOException {
+        write(dir, "child.src.md", "${widget:toc}\n" +
+                "## Always\n" +
+                "${widget:if(cond='${edition} == pro')}\n" +
+                "## Pro only\n" +
+                "${widget:endIf}\n");
+        Path root = write(dir, "README.src.md", "<!--@edition=pro-->\n${widget:import(path='child.src.md')}\n");
+
+        String body = new NoHeadCommentGenerator(root.toFile(), StandardCharsets.UTF_8).getResult("en").getContent().toString();
+
+        assertTrue(body.contains("- [Always](#always)" + RN + "- [Pro only](#pro-only)" + RN), body);
+    }
+
+    @Test
+    public void testTOCInsideAnImportedTemplateKnowsTheDefaultLanguage(@TempDir Path dir) throws IOException {
+        // ru is the default language, so the English output is README.en.md; the scan has to
+        // render the languages widget in the heading with the same links as the real pass.
+        write(dir, "child.src.md", "${widget:toc}\n## Read in ${widget:languages}\n");
+        Path root = write(dir, "README.src.md", "<!--@nrg.languages=ru,en-->\n${widget:import(path='child.src.md')}\n");
+
+        String ru = new NoHeadCommentGenerator(root.toFile(), StandardCharsets.UTF_8).getResult("ru").getContent().toString();
+
+        assertTrue(ru.contains("- [Read in [ **ru** | [en](README.en.md) ]](#"), ru);
+        assertTrue(ru.contains("## Read in [ **ru** | [en](README.en.md) ]"), ru);
+        assertFalse(ru.contains("(README.md)"), ru);
+    }
+
+    @Test
+    public void testTOCInsideAnImportedTemplateKeepsTheImportChain(@TempDir Path dir) throws IOException {
+        // The scan renders the child again; a cycle back to the root must be reported from the
+        // root's point of view, as the real pass would, not as if the child were the root.
+        Path child = write(dir, "child.src.md", "${widget:toc}\n## Child\n${widget:import(path='README.src.md')}\n");
+        Path root = write(dir, "README.src.md", "${widget:import(path='child.src.md')}\n");
+        Generator generator = new NoHeadCommentGenerator(root.toFile(), StandardCharsets.UTF_8);
+
+        RuntimeException e = assertThrows(RuntimeException.class, () -> generator.getResult("en"));
+
+        String rootKey = GeneratorConfig.importKey(root.toFile());
+        String childKey = GeneratorConfig.importKey(child.toFile());
+        assertEquals("import: circular import: " + rootKey + " -> " + childKey + " -> " + rootKey, e.getMessage());
     }
 }

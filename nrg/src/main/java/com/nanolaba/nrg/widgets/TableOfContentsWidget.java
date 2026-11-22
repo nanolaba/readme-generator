@@ -13,9 +13,11 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -273,22 +275,13 @@ public class TableOfContentsWidget extends DefaultWidget {
             config.setOrdered(Boolean.parseBoolean(map.get("ordered")));
         }
         if (map.containsKey("min-depth")) {
-            Integer value = parseDepth(map.get("min-depth"), "min-depth");
-            if (value != null) {
-                config.setMinDepth(value);
-            }
+            parseDepth(map.get("min-depth"), "min-depth").ifPresent(config::setMinDepth);
         }
         if (map.containsKey("max-depth")) {
-            Integer value = parseDepth(map.get("max-depth"), "max-depth");
-            if (value != null) {
-                config.setMaxDepth(value);
-            }
+            parseDepth(map.get("max-depth"), "max-depth").ifPresent(config::setMaxDepth);
         }
         if (map.containsKey("min-items")) {
-            Integer value = parseMinItems(map.get("min-items"));
-            if (value != null) {
-                config.setMinItems(value);
-            }
+            parseMinItems(map.get("min-items")).ifPresent(config::setMinItems);
         }
         if (map.containsKey("anchor-style")) {
             AnchorStyle style = AnchorStyle.from(map.get("anchor-style"));
@@ -320,31 +313,33 @@ public class TableOfContentsWidget extends DefaultWidget {
         return config;
     }
 
-    private static Integer parseDepth(String raw, String paramName) {
+    /** The depth in {@code raw}, or empty after logging an error when it is not an integer in 1..6. */
+    private static Optional<Integer> parseDepth(String raw, String paramName) {
         try {
             int value = Integer.parseInt(raw.trim());
             if (value < 1 || value > 6) {
                 LOG.error("tableOfContents widget: {} must be between 1 and 6, got '{}'", paramName, raw);
-                return null;
+                return Optional.empty();
             }
-            return value;
+            return Optional.of(value);
         } catch (NumberFormatException e) {
             LOG.error("tableOfContents widget: {} must be an integer, got '{}'", paramName, raw);
-            return null;
+            return Optional.empty();
         }
     }
 
-    private static Integer parseMinItems(String raw) {
+    /** The count in {@code raw}, or empty after logging an error when it is not a positive integer. */
+    private static Optional<Integer> parseMinItems(String raw) {
         try {
             int value = Integer.parseInt(raw.trim());
             if (value < 1) {
                 LOG.error("tableOfContents widget: min-items must be >= 1, got '{}'", raw);
-                return null;
+                return Optional.empty();
             }
-            return value;
+            return Optional.of(value);
         } catch (NumberFormatException e) {
             LOG.error("tableOfContents widget: min-items must be an integer, got '{}'", raw);
-            return null;
+            return Optional.empty();
         }
     }
 
@@ -509,6 +504,9 @@ public class TableOfContentsWidget extends DefaultWidget {
      * falls back to the natural first value (1 / I / a / A).
      */
     protected static class NumberingFormatter {
+        private static final int[] ROMAN_VALUES = {1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1};
+        private static final String[] ROMAN_SYMBOLS = {"M", "CM", "D", "CD", "C", "XC", "L", "XL", "X", "IX", "V", "IV", "I"};
+
         private final NumberingStyle style;
         private final int startOffset; // added to each top-level counter; 0 means natural first
 
@@ -523,11 +521,6 @@ public class TableOfContentsWidget extends DefaultWidget {
 
         public boolean isDefault() {
             return style == NumberingStyle.DEFAULT;
-        }
-
-        /** List marker emitted before the counter prefix. {@code "1."} for default, {@code "-"} otherwise. */
-        public String marker() {
-            return style == NumberingStyle.DEFAULT ? "1." : "-";
         }
 
         /** Trailing punctuation after the counter prefix (e.g. {@code "."} for legal). */
@@ -555,12 +548,13 @@ public class TableOfContentsWidget extends DefaultWidget {
             return sb.toString();
         }
 
-        /** Flat counter rendering (1-based index, with {@code start} offset applied). */
+        /**
+         * Flat counter rendering (1-based index, with {@code start} offset applied). Only the
+         * flat styles reach it; {@link NumberingStyle#ARABIC} is the plain-number branch.
+         */
         public String flatPrefix(int oneBasedIndex) {
             int value = oneBasedIndex + startOffset;
             switch (style) {
-                case ARABIC:
-                    return Integer.toString(value);
                 case ROMAN:
                     return toRoman(value, false);
                 case ROMAN_UPPER:
@@ -570,7 +564,7 @@ public class TableOfContentsWidget extends DefaultWidget {
                 case ALPHA_UPPER:
                     return toAlpha(value, true);
                 default:
-                    return Integer.toString(value); // unreachable for flat
+                    return Integer.toString(value);
             }
         }
 
@@ -623,13 +617,13 @@ public class TableOfContentsWidget extends DefaultWidget {
             return n;
         }
 
-        /** Excel-style: 1 to a, 26 to z, 27 to aa, 52 to az, 53 to ba, ... */
+        /**
+         * Excel-style: 1 to a, 26 to z, 27 to aa, 52 to az, 53 to ba, ... A value below 1 —
+         * reachable only when a huge {@code start} overflows {@code int} — renders as the first letter.
+         */
         private static String toAlpha(int n, boolean upper) {
-            if (n < 1) {
-                return upper ? "A" : "a";
-            }
             StringBuilder sb = new StringBuilder();
-            int x = n;
+            int x = Math.max(n, 1);
             while (x > 0) {
                 int rem = (x - 1) % 26;
                 sb.insert(0, (char) ((upper ? 'A' : 'a') + rem));
@@ -638,15 +632,17 @@ public class TableOfContentsWidget extends DefaultWidget {
             return sb.toString();
         }
 
+        /**
+         * Inverse of {@link #toAlpha}, case-insensitive: {@code a} to 1, {@code z} to 26,
+         * {@code aa} to 27. Throws {@link NumberFormatException} on a character outside
+         * {@code a..z}; an empty string reads as 0, which {@link #requirePositive} rejects.
+         */
         private static int fromAlpha(String s) {
-            if (s == null || s.isEmpty()) {
-                return -1;
-            }
             int n = 0;
             for (int i = 0; i < s.length(); i++) {
                 char c = Character.toLowerCase(s.charAt(i));
                 if (c < 'a' || c > 'z') {
-                    return -1;
+                    throw new NumberFormatException();
                 }
                 n = n * 26 + (c - 'a' + 1);
             }
@@ -658,41 +654,37 @@ public class TableOfContentsWidget extends DefaultWidget {
             if (n < 1 || n > 3999) {
                 return Integer.toString(n);
             }
-            int[] values = {1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1};
-            String[] symbols = {"M", "CM", "D", "CD", "C", "XC", "L", "XL", "X", "IX", "V", "IV", "I"};
             StringBuilder sb = new StringBuilder();
             int x = n;
-            for (int i = 0; i < values.length; i++) {
-                while (x >= values[i]) {
-                    sb.append(symbols[i]);
-                    x -= values[i];
+            for (int i = 0; i < ROMAN_VALUES.length; i++) {
+                while (x >= ROMAN_VALUES[i]) {
+                    sb.append(ROMAN_SYMBOLS[i]);
+                    x -= ROMAN_VALUES[i];
                 }
             }
             return upper ? sb.toString() : sb.toString().toLowerCase();
         }
 
+        /**
+         * Inverse of {@link #toRoman}, case-insensitive. Reads the symbols greedily, then
+         * requires the value to spell back to exactly the input: that one canonical round-trip
+         * rejects non-canonical input (e.g. {@code IIII}, which would silently read as 4) as well
+         * as any character the greedy scan could not consume, so a typoed start logs an error
+         * instead of being misinterpreted. Throws {@link NumberFormatException} on rejection; an
+         * empty string or {@code 0} reads as 0, which {@link #requirePositive} rejects.
+         */
         private static int fromRoman(String s) {
-            if (s == null || s.isEmpty()) {
-                return -1;
-            }
             String upper = s.toUpperCase();
-            int[] values = {1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1};
-            String[] symbols = {"M", "CM", "D", "CD", "C", "XC", "L", "XL", "X", "IX", "V", "IV", "I"};
             int n = 0;
             int i = 0;
-            for (int k = 0; k < symbols.length; k++) {
-                while (upper.startsWith(symbols[k], i)) {
-                    n += values[k];
-                    i += symbols[k].length();
+            for (int k = 0; k < ROMAN_SYMBOLS.length; k++) {
+                while (upper.startsWith(ROMAN_SYMBOLS[k], i)) {
+                    n += ROMAN_VALUES[k];
+                    i += ROMAN_SYMBOLS[k].length();
                 }
             }
-            if (i != upper.length() || n < 1) {
-                return -1;
-            }
-            // Canonical round-trip: reject non-canonical input (e.g. "IIII" → 4 silently)
-            // so a typoed start logs a warning instead of being mis-interpreted.
             if (!upper.equals(toRoman(n, true))) {
-                return -1;
+                throw new NumberFormatException();
             }
             return n;
         }
@@ -742,61 +734,38 @@ public class TableOfContentsWidget extends DefaultWidget {
                     number = 1;
                 }
 
-                this.counters = computeCounters();
+                computeCounters();
                 headers.add(this);
             }
         }
 
         /**
-         * Builds the hierarchical counter path for this header, indexed from the visible top
-         * (i.e. the {@code min-depth} level becomes index 0). Returns an empty array for headers
-         * outside the visible depth window — those entries are still tracked in {@code headers}
+         * Sets the hierarchical counter path for this header, indexed from the visible top
+         * (i.e. the {@code min-depth} level becomes index 0). Headers outside the visible depth
+         * window keep the empty path — those entries are still tracked in {@code headers}
          * so {@link #getPreviousHeader(int)} keeps the legacy walk-back semantics intact, but
          * their counter slot is never read by hierarchical-style rendering, which is gated by
          * the same depth window.
          *
-         * <p>Walks back to the most recent header inside {@code [minLevel, maxLevel]} and either
-         * (a) increments the sibling slot when this header's depth equals the predecessor's,
-         * (b) extends the path with fresh {@code 1}s when descending, or (c) drops back to the
-         * ancestor slot and increments when ascending.
+         * <p>Takes the path of the most recent header inside {@code [minLevel, maxLevel]} (none:
+         * an empty path), cut or padded to this header's depth, and advances the counter at that
+         * depth. So a sibling or a header that ascends increments the predecessor's slot, while a
+         * header that descends starts its own slot — and every level a jump skips — at {@code 1}.
          */
-        private int[] computeCounters() {
+        private void computeCounters() {
             int minLevel = config.getMinDepth() - 1;
             int maxLevel = config.getMaxDepth() - 1;
             if (level < minLevel || level > maxLevel) {
-                return new int[0];
+                return;
             }
             int depthFromTop = level - minLevel;
-            int[] result = new int[depthFromTop + 1];
-
             Header prev = lastVisibleHeader(minLevel, maxLevel);
-            if (prev == null) {
-                for (int i = 0; i <= depthFromTop; i++) {
-                    result[i] = 1;
-                }
-                return result;
-            }
+            int[] path = prev == null ? new int[0] : prev.counters;
 
-            int prevDepth = prev.counters.length;
-            if (depthFromTop + 1 == prevDepth) {
-                for (int i = 0; i < depthFromTop; i++) {
-                    result[i] = prev.counters[i];
-                }
-                result[depthFromTop] = prev.counters[depthFromTop] + 1;
-            } else if (depthFromTop + 1 > prevDepth) {
-                for (int i = 0; i < prevDepth; i++) {
-                    result[i] = prev.counters[i];
-                }
-                for (int i = prevDepth; i <= depthFromTop; i++) {
-                    result[i] = 1;
-                }
-            } else {
-                for (int i = 0; i < depthFromTop; i++) {
-                    result[i] = prev.counters[i];
-                }
-                result[depthFromTop] = prev.counters[depthFromTop] + 1;
-            }
-            return result;
+            int[] result = Arrays.copyOf(path, depthFromTop + 1);
+            Arrays.fill(result, Math.min(path.length, depthFromTop), depthFromTop, 1);
+            result[depthFromTop]++;
+            counters = result;
         }
 
         private Header lastVisibleHeader(int minLevel, int maxLevel) {
@@ -873,10 +842,7 @@ public class TableOfContentsWidget extends DefaultWidget {
 
         private void appendIndent(StringBuilder sb) {
             int minLevel = config.getMinDepth() - 1;
-            int depth = Math.max(0, level - minLevel);
-            for (int i = 0; i < depth; i++) {
-                sb.append("\t");
-            }
+            sb.append(StringUtils.repeat('\t', level - minLevel));
         }
 
         @Override

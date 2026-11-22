@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 
 import java.io.File;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -136,5 +137,12 @@ class MathWidgetTest extends DefaultNRGTest {
         String ru = generator.getResult("ru").getContent().toString();
         assertTrue(en.contains("![x axis]"), en);
         assertTrue(ru.contains("![ось X]"), ru);
+    }
+
+    @Test
+    public void testUnescapeCollapsesPairsAndKeepsAnUnpairedBackslash() {
+        assertEquals("a\\", MathWidget.unescapeBackslashes("a\\"));
+        assertEquals("\\b\\", MathWidget.unescapeBackslashes("\\\\b\\"));
+        assertEquals("\\\\", MathWidget.unescapeBackslashes("\\\\\\"));
     }
 }
