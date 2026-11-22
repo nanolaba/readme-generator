@@ -7,8 +7,9 @@
 
 [![NRG continuous integration build status](https://github.com/nanolaba/readme-generator/actions/workflows/ci.yml/badge.svg)](https://github.com/nanolaba/readme-generator/actions/workflows/ci.yml)
 [![NRG release on Maven Central](https://img.shields.io/maven-central/v/com.nanolaba/readme-generator?label=Maven%20Central)](https://central.sonatype.com/artifact/com.nanolaba/readme-generator)
-![Built with Java 8+](https://img.shields.io/badge/Java-8+-orange.svg)
-[![NRG is open source under the Apache 2.0 license](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
+[![NRG API documentation on javadoc.io](https://img.shields.io/badge/javadoc-1.4-blue.svg)](https://javadoc.io/doc/com.nanolaba/readme-generator/1.4)
+[![Java 8 or newer](https://img.shields.io/badge/java-8+-blue.svg)](https://adoptium.net/)
+[![NRG is open source under the Apache 2.0 license](https://img.shields.io/badge/License-Apache--2.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
 [![GitHub stars](https://img.shields.io/github/stars/nanolaba/readme-generator?style=social)](https://github.com/nanolaba/readme-generator)
 
 # Nanolaba Readme Generator (NRG): one template for README in every language, for AI coding agents and CI
@@ -2079,7 +2080,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 22.11.2026 19:29:48
+Last updated: 22.11.2026 19:44:26
 ```
 
 </td></tr>
@@ -2536,7 +2537,7 @@ ${widget:endDetails}
 <details>
 <summary>Advanced</summary>
 
-inner *markdown* and 22.11.2026 19:29:48
+inner *markdown* and 22.11.2026 19:44:26
 
 </details>
 ```

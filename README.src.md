@@ -6,6 +6,7 @@
 <!--@name=**Nanolaba Readme Generator (NRG)**-->
 <!--@stableVersion=${pom.properties.stableVersion}-->
 <!--@devVersion=${pom.version}-->
+<!--@javadoc=https://javadoc.io/doc/com.nanolaba/readme-generator-->
 <!--@projectRootLink=#project-root-->
 <!--@projectRootLink.ru=#корень-проекта-->
 
@@ -13,8 +14,9 @@ ${widget:languages}
 
 ${widget:badge(type='github-workflow', repo='nanolaba/readme-generator', workflow='ci.yml', name='CI', alt='NRG continuous integration build status')}
 ${widget:badge(type='maven-central', coordinates='com.nanolaba:readme-generator', alt='NRG release on Maven Central')}
-${widget:badge(type='custom', label='Java', message='8+', color='orange', alt='Built with Java 8+')}
-${widget:badge(type='license', value='Apache 2.0', url='https://www.apache.org/licenses/LICENSE-2.0', alt='NRG is open source under the Apache 2.0 license')}
+${widget:badge(type='custom', label='javadoc', message='${stableVersion}', color='blue', url='${javadoc}/${stableVersion}', alt='NRG API documentation on javadoc.io')}
+${widget:badge(type='custom', label='java', message='${pom.properties.maven.compiler.target}+', color='blue', url='https://adoptium.net/', alt='Java 8 or newer')}
+${widget:badge(type='license', value='Apache-2.0', url='https://www.apache.org/licenses/LICENSE-2.0', alt='NRG is open source under the Apache 2.0 license')}
 ${widget:badge(type='github-stars', repo='nanolaba/readme-generator')}
 
 # Nanolaba Readme Generator (NRG): ${en:'one template for README in every language, for AI coding agents and CI', ru:'один шаблон для README на всех языках — для ИИ-агентов и CI'}
