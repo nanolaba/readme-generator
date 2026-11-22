@@ -65,14 +65,14 @@ public abstract class BlockWidget extends DefaultWidget {
         if (getEndMarkerName().equals(tag.getName())) {
             // The pre-pass's END_LINE regex requires the closer on its own line. Reaching here
             // means the closer was embedded mid-line, where it should not appear.
-            LOG.error("{} widget: closer ${{widget:{}}} must appear on its own line "
+            LOG.error("{} widget: closer ${widget:{}} must appear on its own line "
                     + "(not embedded in surrounding text)", getName(), getEndMarkerName());
             return "";
         }
         Map<String, String> params = NRGUtil.parseParametersLine(tag.getParameters());
         if (!isInlineForm(params)) {
             LOG.error("{} widget: opener without inline-form parameter must be closed by "
-                    + "${{widget:{}}}", getName(), getEndMarkerName());
+                    + "${widget:{}}", getName(), getEndMarkerName());
             return "";
         }
         return renderInline(params, config, language);
@@ -157,7 +157,7 @@ public abstract class BlockWidget extends DefaultWidget {
             Matcher endMatcher = endLine.matcher(line);
             if (endMatcher.matches()) {
                 if (stack.isEmpty()) {
-                    LOG.error("{} widget: unmatched stray ${{widget:{}}} at line {}",
+                    LOG.error("{} widget: unmatched stray ${widget:{}} at line {}",
                             getName(), getEndMarkerName(), i + 1);
                     continue;
                 }
@@ -184,7 +184,7 @@ public abstract class BlockWidget extends DefaultWidget {
         }
 
         if (!stack.isEmpty()) {
-            LOG.error("{} widget: unclosed ${{widget:{}}} block ({} still open)",
+            LOG.error("{} widget: unclosed ${widget:{}} block ({} still open)",
                     getName(), getName(), stack.size());
             if (outermostOpenIndexInOutput >= 0) {
                 while (output.size() > outermostOpenIndexInOutput) {

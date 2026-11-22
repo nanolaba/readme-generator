@@ -176,8 +176,25 @@ class BlockWidgetTest extends DefaultNRGTest {
         try (MemoryLogger log = MemoryLogger.capture()) {
             assertEquals("", echo.getBody(new WidgetTag(null, "echo", "", 0, 0), config(""), "en"));
             log.assertLogged(LogEntry.LogEntryLevel.ERROR,
-                    "echo widget: opener without inline-form parameter must be closed by");
-            log.assertLogged(LogEntry.LogEntryLevel.ERROR, "widget:endEcho");
+                    "echo widget: opener without inline-form parameter must be closed by ${widget:endEcho}");
+        }
+    }
+
+    @Test
+    public void testCloserReachingPerLineDispatchLogsError() {
+        EchoBlockWidget echo = new EchoBlockWidget();
+        try (MemoryLogger log = MemoryLogger.capture()) {
+            assertEquals("", echo.getBody(new WidgetTag(null, "endEcho", "", 0, 0), config(""), "en"));
+            log.assertLogged(LogEntry.LogEntryLevel.ERROR, "echo widget: closer ${widget:endEcho} must appear "
+                    + "on its own line (not embedded in surrounding text)");
+        }
+    }
+
+    @Test
+    public void testUnclosedBlockNamesItsOpener() {
+        try (MemoryLogger log = MemoryLogger.capture()) {
+            process("${widget:echo}\n${widget:echo}\nINNER\n${widget:endEcho}\n");
+            log.assertLogged(LogEntry.LogEntryLevel.ERROR, "echo widget: unclosed ${widget:echo} block (1 still open)");
         }
     }
 
@@ -194,8 +211,7 @@ class BlockWidgetTest extends DefaultNRGTest {
     public void testStrayCloserReportsItsLineNumber() {
         try (MemoryLogger log = MemoryLogger.capture()) {
             process("before\n${widget:endEcho}\nafter\n");
-            log.assertLogged(LogEntry.LogEntryLevel.ERROR, "echo widget: unmatched stray");
-            log.assertLogged(LogEntry.LogEntryLevel.ERROR, "at line 2");
+            log.assertLogged(LogEntry.LogEntryLevel.ERROR, "echo widget: unmatched stray ${widget:endEcho} at line 2");
         }
     }
 
