@@ -99,20 +99,25 @@ mvn install -Dgpg.skip=true
 # Compile core only
 mvn -pl nrg compile
 
-# Run all tests in the core module
+# Run all tests in the core module, mutation testing included
 mvn -pl nrg test
 
-# Run a single test class or method
-mvn -pl nrg test -Dtest=TableOfContentsWidgetTest
-mvn -pl nrg test -Dtest=TableOfContentsWidgetTest#methodName
+# Tests only, without mutation testing
+mvn -pl nrg test -Dpit.skip=true
 
-# Mutation testing (PIT) — opt-in
-mvn -pl nrg test -Dpit.skip=false
+# Run a single test class or method
+mvn -pl nrg test -Dpit.skip=true -Dtest=TableOfContentsWidgetTest
+mvn -pl nrg test -Dpit.skip=true -Dtest=TableOfContentsWidgetTest#methodName
+
+# Mutation testing of one class
+mvn -pl nrg test-compile org.pitest:pitest-maven:mutationCoverage -Dpit.targetClasses='com.nanolaba.nrg.core.IfCondition*'
 ```
+
+Every build runs mutation testing ([PIT](https://pitest.org/)) and fails unless every mutant is killed. If your change leaves a mutant alive, `nrg/target/pit-reports/index.html` shows it on its source line: add a test that asserts the behaviour the mutant changes, or, when no test can tell the mutant from the original, simplify the code so the mutant disappears. `-Dpit.threads=N` sets the number of mutation workers (4 by default).
 
 When changing widget behavior or anchor generation, please also run the focused tests (`TableOfContentsWidgetTest`, `TableOfContentsWidgetSlugifyTest`, `ImportWidgetTest`, etc.) — they exercise the most fragile logic in the codebase.
 
-CI runs `mvn verify` against JDK 8 and JDK 17 on every push and pull request to `main`. Your changes need to pass on both.
+CI runs `mvn verify`, mutation testing included, against JDK 8 and JDK 17 on every push and pull request to `main`. Your changes need to pass on both.
 
 ## Coding conventions
 

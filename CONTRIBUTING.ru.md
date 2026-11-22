@@ -99,20 +99,25 @@ mvn install -Dgpg.skip=true
 # Скомпилировать только ядро
 mvn -pl nrg compile
 
-# Прогнать все тесты модуля ядра
+# Прогнать все тесты модуля ядра вместе с мутационным тестированием
 mvn -pl nrg test
 
-# Запустить один тест-класс или метод
-mvn -pl nrg test -Dtest=TableOfContentsWidgetTest
-mvn -pl nrg test -Dtest=TableOfContentsWidgetTest#methodName
+# Только тесты, без мутационного тестирования
+mvn -pl nrg test -Dpit.skip=true
 
-# Mutation testing (PIT) — по запросу
-mvn -pl nrg test -Dpit.skip=false
+# Запустить один тест-класс или метод
+mvn -pl nrg test -Dpit.skip=true -Dtest=TableOfContentsWidgetTest
+mvn -pl nrg test -Dpit.skip=true -Dtest=TableOfContentsWidgetTest#methodName
+
+# Мутационное тестирование одного класса
+mvn -pl nrg test-compile org.pitest:pitest-maven:mutationCoverage -Dpit.targetClasses='com.nanolaba.nrg.core.IfCondition*'
 ```
+
+Каждая сборка прогоняет мутационное тестирование ([PIT](https://pitest.org/)) и падает, если хотя бы один мутант выжил. Если после вашей правки мутант остался жив, `nrg/target/pit-reports/index.html` покажет его на строке исходника: добавьте тест, проверяющий поведение, которое мутант меняет, а если никакой тест не отличит мутанта от оригинала — упростите код, чтобы мутанта не стало. `-Dpit.threads=N` задаёт число потоков (по умолчанию 4).
 
 При изменении поведения виджетов или генерации анкоров запускайте также точечные тесты (`TableOfContentsWidgetTest`, `TableOfContentsWidgetSlugifyTest`, `ImportWidgetTest` и т.д.) — они покрывают самую хрупкую логику.
 
-CI прогоняет `mvn verify` на JDK 8 и JDK 17 при каждом push и pull request в `main`. Ваши изменения должны проходить и там, и там.
+CI прогоняет `mvn verify` вместе с мутационным тестированием на JDK 8 и JDK 17 при каждом push и pull request в `main`. Ваши изменения должны проходить и там, и там.
 
 ## Соглашения по коду
 

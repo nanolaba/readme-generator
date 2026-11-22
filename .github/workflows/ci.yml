@@ -32,8 +32,9 @@ jobs:
           java-version: ${{ matrix.java }}
           cache: maven
 
+      # Mutation testing (pitest) runs in the test phase and fails the build below 100%.
       - name: Build & test
-        run: mvn --batch-mode --no-transfer-progress verify -Dgpg.skip=true -Dmaven.javadoc.skip=true
+        run: mvn --batch-mode --no-transfer-progress verify -Dgpg.skip=true -Dmaven.javadoc.skip=true -Dverbosity=NO_SPINNER
 
       # Dogfood: HEAD's generator against HEAD's templates, on every push and pull request.
       # --validate rather than --check: the README renders ${widget:date}, so a regeneration
@@ -52,6 +53,15 @@ jobs:
         with:
           name: surefire-reports-jdk${{ matrix.java }}
           path: '**/target/surefire-reports/'
+          if-no-files-found: ignore
+
+      # The HTML report shows each surviving mutant on its source line.
+      - name: Upload pitest reports on failure
+        if: failure()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: pit-reports-jdk${{ matrix.java }}
+          path: '**/target/pit-reports/'
           if-no-files-found: ignore
 
   wrapper:

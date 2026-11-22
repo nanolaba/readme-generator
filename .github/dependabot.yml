@@ -12,10 +12,9 @@ updates:
       # Its version becomes requiredMavenVersion in the plugin descriptor: a bump stops
       # nrg-maven-plugin from running on every older Maven.
       - dependency-name: "org.apache.maven:maven-plugin-api"
-      # 1.16+ of pitest-maven (and the junit5 plugin releases built for it) need Java 11 to
-      # load; the build still runs on Java 8.
+      # pitest 1.18 and newer need Java 11 to run, and CI builds and mutates on Java 8 as well.
       - dependency-name: "org.pitest:pitest-maven"
-      - dependency-name: "org.pitest:pitest-junit5-plugin"
+        versions: [ ">= 1.18.0" ]
       # JUnit 6 needs Java 17. Updates within 5.x are welcome.
       - dependency-name: "org.junit:junit-bom"
         update-types: ["version-update:semver-major"]

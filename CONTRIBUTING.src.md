@@ -95,22 +95,28 @@ mvn install -Dgpg.skip=true
 # ${en:'Compile core only', ru:'Скомпилировать только ядро'}
 mvn -pl nrg compile
 
-# ${en:'Run all tests in the core module', ru:'Прогнать все тесты модуля ядра'}
+# ${en:'Run all tests in the core module, mutation testing included', ru:'Прогнать все тесты модуля ядра вместе с мутационным тестированием'}
 mvn -pl nrg test
 
-# ${en:'Run a single test class or method', ru:'Запустить один тест-класс или метод'}
-mvn -pl nrg test -Dtest=TableOfContentsWidgetTest
-mvn -pl nrg test -Dtest=TableOfContentsWidgetTest#methodName
+# ${en:'Tests only, without mutation testing', ru:'Только тесты, без мутационного тестирования'}
+mvn -pl nrg test -Dpit.skip=true
 
-# ${en:'Mutation testing (PIT) — opt-in', ru:'Mutation testing (PIT) — по запросу'}
-mvn -pl nrg test -Dpit.skip=false
+# ${en:'Run a single test class or method', ru:'Запустить один тест-класс или метод'}
+mvn -pl nrg test -Dpit.skip=true -Dtest=TableOfContentsWidgetTest
+mvn -pl nrg test -Dpit.skip=true -Dtest=TableOfContentsWidgetTest#methodName
+
+# ${en:'Mutation testing of one class', ru:'Мутационное тестирование одного класса'}
+mvn -pl nrg test-compile org.pitest:pitest-maven:mutationCoverage -Dpit.targetClasses='com.nanolaba.nrg.core.IfCondition*'
 ```
+
+Every build runs mutation testing ([PIT](https://pitest.org/)) and fails unless every mutant is killed. If your change leaves a mutant alive, `nrg/target/pit-reports/index.html` shows it on its source line: add a test that asserts the behaviour the mutant changes, or, when no test can tell the mutant from the original, simplify the code so the mutant disappears. `-Dpit.threads=N` sets the number of mutation workers (4 by default).<!--en-->
+Каждая сборка прогоняет мутационное тестирование ([PIT](https://pitest.org/)) и падает, если хотя бы один мутант выжил. Если после вашей правки мутант остался жив, `nrg/target/pit-reports/index.html` покажет его на строке исходника: добавьте тест, проверяющий поведение, которое мутант меняет, а если никакой тест не отличит мутанта от оригинала — упростите код, чтобы мутанта не стало. `-Dpit.threads=N` задаёт число потоков (по умолчанию 4).<!--ru-->
 
 When changing widget behavior or anchor generation, please also run the focused tests (`TableOfContentsWidgetTest`, `TableOfContentsWidgetSlugifyTest`, `ImportWidgetTest`, etc.) — they exercise the most fragile logic in the codebase.<!--en-->
 При изменении поведения виджетов или генерации анкоров запускайте также точечные тесты (`TableOfContentsWidgetTest`, `TableOfContentsWidgetSlugifyTest`, `ImportWidgetTest` и т.д.) — они покрывают самую хрупкую логику.<!--ru-->
 
-CI runs `mvn verify` against JDK 8 and JDK 17 on every push and pull request to `main`. Your changes need to pass on both.<!--en-->
-CI прогоняет `mvn verify` на JDK 8 и JDK 17 при каждом push и pull request в `main`. Ваши изменения должны проходить и там, и там.<!--ru-->
+CI runs `mvn verify`, mutation testing included, against JDK 8 and JDK 17 on every push and pull request to `main`. Your changes need to pass on both.<!--en-->
+CI прогоняет `mvn verify` вместе с мутационным тестированием на JDK 8 и JDK 17 при каждом push и pull request в `main`. Ваши изменения должны проходить и там, и там.<!--ru-->
 
 ## ${en:'Coding conventions', ru:'Соглашения по коду'}
 

@@ -27,22 +27,26 @@ Multi-module Maven build (run from repo root):
 
 ```bash
 mvn clean install -Dgpg.skip=true   # build everything, run tests, install to local repo
-mvn -pl nrg test                    # tests for the core module only
+mvn -pl nrg test                    # tests and mutation testing for the core module only
 mvn -pl nrg-maven-plugin install -Dgpg.skip=true  # install the Maven plugin (needs nrg installed first)
 ```
 
 Run a single test class / method:
 
 ```bash
-mvn -pl nrg test -Dtest=TableOfContentsWidgetTest
-mvn -pl nrg test -Dtest=TableOfContentsWidgetTest#methodName
+mvn -pl nrg test -Dpit.skip=true -Dtest=TableOfContentsWidgetTest
+mvn -pl nrg test -Dpit.skip=true -Dtest=TableOfContentsWidgetTest#methodName
 ```
 
-Mutation testing is wired up via PIT but skipped by default. To run it:
+Mutation testing (PIT) runs in the `test` phase of every module, CI included, and fails the build unless **every** mutant is killed (`pit.mutationThreshold` = 100). A full run of the `nrg` module takes several minutes, so while iterating:
 
 ```bash
-mvn -pl nrg test -Dpit.skip=false
+mvn -pl nrg test -Dpit.skip=true                     # surefire only (-DskipTests skips both)
+mvn -pl nrg test-compile org.pitest:pitest-maven:mutationCoverage -Dpit.targetClasses='com.nanolaba.nrg.core.IfCondition*'   # mutate one class
+# -Dpit.threads=N sets the number of mutation workers (default 4)
 ```
+
+The report is `<module>/target/pit-reports/index.html`. Kill a surviving mutant with a test that asserts the behaviour it changes (log entries through nanolog's `MemoryLogger.capture()`); when a mutant is equivalent, simplify the code so it no longer exists. Never add pitest exclusions.
 
 Regenerate the dogfooded docs after touching any `.src.md` (or an example class imported by the docs):
 
@@ -59,7 +63,7 @@ The README footer renders `${widget:date}`, so a regeneration always changes the
 
 The `nrg` module's `package` phase produces two artifacts in `nrg/target/`: `nrg.jar` (executable jar-with-dependencies, `Main-Class` = `com.nanolaba.nrg.NRG`) and a release zip bundling the jar with `nrg.sh` / `nrg.bat`.
 
-The parent build configures `maven-source-plugin`, `maven-javadoc-plugin`, `maven-gpg-plugin`, and `central-publishing-maven-plugin` for releases — these run on every build, so local builds without GPG keys will fail at the `verify` phase. Use `-Dgpg.skip=true` (or stay at the `package` phase) when iterating locally. CI runs `mvn verify -Dgpg.skip=true -Dmaven.javadoc.skip=true` on JDK 8 and JDK 17; changes must pass on both.
+The parent build configures `maven-source-plugin`, `maven-javadoc-plugin`, `maven-gpg-plugin`, and `central-publishing-maven-plugin` for releases — these run on every build, so local builds without GPG keys will fail at the `verify` phase. Use `-Dgpg.skip=true` (or stay at the `package` phase) when iterating locally. CI runs `mvn verify -Dgpg.skip=true -Dmaven.javadoc.skip=true` on JDK 8 and JDK 17 (tests and the 100% mutation gate); changes must pass on both.
 
 ## Architecture
 

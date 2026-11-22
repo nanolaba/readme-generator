@@ -25,10 +25,10 @@
         <maven.compiler.source>8</maven.compiler.source>
         <github.global.server>github</github.global.server>
 
-        <!--        <maven.test.skip>true</maven.test.skip>-->
-        <pit.skip>true</pit.skip>
-        <!--        <pit.skip>false</pit.skip>-->
-
+        <!-- Mutation testing runs in every build, CI included, and fails it below 100%.
+             -Dpit.skip=true (or -DskipTests) skips it; -Dpit.threads=N sets the number of mutation workers. -->
+        <pit.skip>false</pit.skip>
+        <pit.threads>4</pit.threads>
         <pit.targetClasses>com.nanolaba.nrg.*</pit.targetClasses>
         <pit.mutationThreshold>100</pit.mutationThreshold>
 
@@ -67,9 +67,9 @@
         <maven-javadoc-plugin.version>3.12.0</maven-javadoc-plugin.version>
         <maven-gpg-plugin.version>3.2.8</maven-gpg-plugin.version>
 
-        <!-- 1.15.8 / 1.2.1 are the last releases that load on Java 8, which the build still targets. -->
-        <pitest-maven.version>1.15.8</pitest-maven.version>
-        <pitest-junit5-plugin.version>1.2.1</pitest-junit5-plugin.version>
+        <!-- 1.17.4 is the last pitest that runs on Java 8, which CI builds and mutates on; 1.18 needs Java 11. -->
+        <pitest-maven.version>1.17.4</pitest-maven.version>
+        <pitest-junit5-plugin.version>1.2.3</pitest-junit5-plugin.version>
     </properties>
 
     <developers>
@@ -215,11 +215,15 @@
                 <version>${pitest-maven.version}</version>
                 <configuration>
                     <skip>${pit.skip}</skip>
-                    <verbose>true</verbose>
+                    <threads>${pit.threads}</threads>
                     <mutationThreshold>${pit.mutationThreshold}</mutationThreshold>
                     <targetClasses>
                         <param>${pit.targetClasses}</param>
                     </targetClasses>
+                    <environmentVariables>
+                        <NANOLOG_AGENT>off</NANOLOG_AGENT>
+                        <NANOLOG_CONSOLE_COLOR>never</NANOLOG_CONSOLE_COLOR>
+                    </environmentVariables>
                 </configuration>
                 <executions>
                     <execution>
