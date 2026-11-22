@@ -480,17 +480,20 @@ class TableOfContentsWidgetTest extends DefaultNRGTest {
     }
 
     @Test
-    public void testTOCAnchorStyleGithubCollapsesConsecutiveHyphens() {
+    public void testTOCAnchorStyleGithubKeepsUnderscoresAndRepeatedHyphens() {
         Generator generator = new NoHeadCommentGenerator(new File("README.src.md"),
                 "<!--@nrg.languages=en-->\n" +
                         "${widget:tableOfContents}\n" +
-                        "## a -- b\n"
+                        "## a -- b\n" +
+                        "## Feedback & Support\n" +
+                        "## snake_case name\n"
         );
 
         String bodyEn = generator.getResult("en").getContent().toString();
-        LOG.info(bodyEn);
 
-        assertTrue(bodyEn.contains("[a -- b](#a-b)"));
+        assertTrue(bodyEn.contains("[a -- b](#a----b)"), bodyEn);
+        assertTrue(bodyEn.contains("[Feedback & Support](#feedback--support)"), bodyEn);
+        assertTrue(bodyEn.contains("[snake_case name](#snake_case-name)"), bodyEn);
     }
 
     @Test
@@ -1184,7 +1187,7 @@ class TableOfContentsWidgetTest extends DefaultNRGTest {
         try (MemoryLogger log = MemoryLogger.capture()) {
             String body = renderEn("${widget:tableOfContents(anchor-style = \" GitHub \")}\n## snake_case name\n");
 
-            assertTrue(body.contains("- [snake_case name](#snake-case-name)"), body);
+            assertTrue(body.contains("- [snake_case name](#snake_case-name)"), body);
             log.assertNoneAtOrAbove(WARN);
         }
     }

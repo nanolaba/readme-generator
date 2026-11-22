@@ -69,8 +69,8 @@ class TableOfContentsWidgetSlugifyTest extends DefaultNRGTest {
     @DisplayName("Заголовки с различными знаками пунктуации")
     @CsvSource({
             "'# FAQ: How to use this?', 'faq-how-to-use-this'",
-            "'## Step 1: Install & Configure', 'step-1-install-configure'",
-            "'### Version 2.0 - What\\'s New!', 'version-20-whats-new'",
+            "'## Step 1: Install & Configure', 'step-1-install--configure'",
+            "'### Version 2.0 - What\\'s New!', 'version-20---whats-new'",
             "'#### Section A.1.2 (Important)', 'section-a12-important'",
             "'# Title with \"quotes\" and \\'apostrophes\\'', 'title-with-quotes-and-apostrophes'"
     })
@@ -83,14 +83,14 @@ class TableOfContentsWidgetSlugifyTest extends DefaultNRGTest {
     @DisplayName("Заголовок с множественными пробелами")
     void testMultipleSpaces() {
         TableOfContentsWidget.Header header = new TableOfContentsWidget.Header("# Multiple    Spaces   Here", config, headers);
-        assertEquals("multiple-spaces-here", header.getAnchor());
+        assertEquals("multiple----spaces---here", header.getAnchor());
     }
 
     @Test
     @DisplayName("Заголовок с URL")
     void testUrlInTitle() {
         TableOfContentsWidget.Header header = new TableOfContentsWidget.Header("## Visit https://example.com for details", config, headers);
-        assertEquals("visit-for-details", header.getAnchor());
+        assertEquals("visit--for-details", header.getAnchor());
     }
 
     @Test
@@ -104,7 +104,7 @@ class TableOfContentsWidgetSlugifyTest extends DefaultNRGTest {
     @DisplayName("Заголовок с подчеркиваниями")
     void testUnderscores() {
         TableOfContentsWidget.Header header = new TableOfContentsWidget.Header("## Method_name_with_underscores", config, headers);
-        assertEquals("method-name-with-underscores", header.getAnchor());
+        assertEquals("method_name_with_underscores", header.getAnchor());
     }
 
     @Test
@@ -125,7 +125,7 @@ class TableOfContentsWidgetSlugifyTest extends DefaultNRGTest {
     @DisplayName("Заголовок с дефисами")
     void testDashesInTitle() {
         TableOfContentsWidget.Header header = new TableOfContentsWidget.Header("# Pre-formatted--title---here", config, headers);
-        assertEquals("pre-formatted-title-here", header.getAnchor());
+        assertEquals("pre-formatted--title---here", header.getAnchor());
     }
 
     @Test
@@ -140,7 +140,7 @@ class TableOfContentsWidgetSlugifyTest extends DefaultNRGTest {
     void testComplexTitle() {
         String complexTitle = "### **Step 2**: Configure [API Keys](https://docs.example.com) & `Environment` Variables!";
         TableOfContentsWidget.Header header = new TableOfContentsWidget.Header(complexTitle, config, headers);
-        assertEquals("step-2-configure-api-keys-environment-variables", header.getAnchor());
+        assertEquals("step-2-configure-api-keys--environment-variables", header.getAnchor());
     }
 
 
@@ -148,9 +148,44 @@ class TableOfContentsWidgetSlugifyTest extends DefaultNRGTest {
     @DisplayName("Заголовок начинающийся и заканчивающийся дефисами")
     void testLeadingTrailingDashes() {
         TableOfContentsWidget.Header header = new TableOfContentsWidget.Header("# -start and end-", config, headers);
-        assertEquals("start-and-end", header.getAnchor());
+        assertEquals("-start-and-end-", header.getAnchor());
     }
-    // TableOfContentsWidgetSlugifyTest.java
+
+    @Test
+    @DisplayName("GitHub keeps every hyphen: one per space, none collapsed or trimmed")
+    void testGithubKeepsEveryHyphen() {
+        assertEquals("feedback--support", anchor("## Feedback & Support"));
+        assertEquals("a----b", anchor("## A -- B"));
+        assertEquals("-quick-start", anchor("## 🚀 Quick start"));
+        assertEquals("install-", anchor("## Install 🚀"));
+        assertEquals("tabseparated", anchor("## Tab\tseparated"));
+    }
+
+    @ParameterizedTest
+    @DisplayName("GitLab: the examples of its documentation")
+    @CsvSource(delimiter = '|', value = {
+            "# This heading has spaces in it | this-heading-has-spaces-in-it",
+            "## This heading has a :thumbsup: in it | this-heading-has-a-thumbsup-in-it",
+            "# This heading has Unicode in it: 한글 | this-heading-has-unicode-in-it-한글",
+            "## This heading has 3.5 in it (and parentheses) | this-heading-has-35-in-it-and-parentheses",
+            "## This heading has  multiple spaces and --- hyphens_and_underscores"
+                    + " | this-heading-has--multiple-spaces-and-----hyphens_and_underscores"
+    })
+    void testGitlabDocumentationExamples(String input, String expected) {
+        config.setAnchorStyle(TableOfContentsWidget.AnchorStyle.GITLAB);
+        assertEquals(expected, anchor(input));
+    }
+
+    @Test
+    @DisplayName("Bitbucket collapses runs of hyphens and spaces and drops underscores")
+    void testBitbucketCollapsesHyphens() {
+        config.setAnchorStyle(TableOfContentsWidget.AnchorStyle.BITBUCKET);
+        assertEquals("markdown-header-a-bc-d", anchor("## -A -- b_c  d-"));
+    }
+
+    private String anchor(String line) {
+        return new TableOfContentsWidget.Header(line, config, headers).getAnchor();
+    }
 
     @Test
     @DisplayName("Русские заголовки")
@@ -170,6 +205,6 @@ class TableOfContentsWidgetSlugifyTest extends DefaultNRGTest {
     @DisplayName("Заголовок с Unicode символами")
     void testUnicodeCharacters() {
         TableOfContentsWidget.Header header = new TableOfContentsWidget.Header("# Título con acentós and émojis 🎉", config, headers);
-        assertEquals("título-con-acentós-and-émojis", header.getAnchor());
+        assertEquals("título-con-acentós-and-émojis-", header.getAnchor());
     }
 }

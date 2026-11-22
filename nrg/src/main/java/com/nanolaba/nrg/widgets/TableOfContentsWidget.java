@@ -782,9 +782,10 @@ public class TableOfContentsWidget extends DefaultWidget {
          * Builds the anchor slug for this header in the configured {@link AnchorStyle}.
          *
          * <p>Markdown decoration ({@code [text](url)}, bold/italic, inline code, strikethrough,
-         * raw HTML tags, bare URLs) is stripped before slugification. The three styles diverge
-         * in how punctuation, casing, and the {@code markdown-header-} prefix are handled —
-         * matched against each platform's known anchor algorithm.
+         * raw HTML tags, bare URLs) is stripped before slugification. GitHub and GitLab use the
+         * same algorithm, which keeps every hyphen a title produces; Bitbucket adds the
+         * {@code markdown-header-} prefix, drops underscores and collapses runs of hyphens and
+         * spaces into one hyphen.
          *
          * @return the anchor slug for this header; empty string if the title is blank.
          */
@@ -803,28 +804,20 @@ public class TableOfContentsWidget extends DefaultWidget {
                     .replaceAll("https?://\\S+", "") // Удаляем URL
                     .replaceAll("www\\.\\S+", ""); // Удаляем URL
 
-            AnchorStyle style = config.getAnchorStyle() == null ? AnchorStyle.GITHUB : config.getAnchorStyle();
-            switch (style) {
-                case GITLAB:
-                    return cleaned.toLowerCase()
-                            .replaceAll("[^\\p{L}\\p{N}\\p{M}\\s_-]", "")
-                            .replaceAll("\\s+", "-")
-                            .replaceAll("^-+|-+$", "");
-                case BITBUCKET:
-                    return "markdown-header-" + cleaned.toLowerCase()
-                            .replaceAll("[^\\p{L}\\p{N}\\p{M}\\s-]", "")
-                            .replaceAll("\\s+", "-")
-                            .replaceAll("-{2,}", "-")
-                            .replaceAll("^-+|-+$", "");
-                case GITHUB:
-                default:
-                    return cleaned.toLowerCase()
-                            .replaceAll("[^\\p{L}\\p{N}\\p{M}\\s_-]", "")
-                            .replaceAll("\\s+", "-")
-                            .replaceAll("_", "-")
-                            .replaceAll("-{2,}", "-")
-                            .replaceAll("^-+|-+$", "");
+            if (config.getAnchorStyle() == AnchorStyle.BITBUCKET) {
+                return "markdown-header-" + cleaned.toLowerCase()
+                        .replaceAll("[^\\p{L}\\p{N}\\p{M}\\s-]", "")
+                        .replaceAll("\\s+", "-")
+                        .replaceAll("-{2,}", "-")
+                        .replaceAll("^-+|-+$", "");
             }
+            // GitHub (github-slugger) and GitLab: drop every character but letters, digits, marks,
+            // '-', '_' and the space, then turn each space into a hyphen. Neither collapses nor
+            // trims hyphens, so "Feedback & Support" is "feedback--support" and a heading that
+            // starts with an emoji gets an anchor that starts with '-'.
+            return cleaned.toLowerCase()
+                    .replaceAll("[^\\p{L}\\p{N}\\p{M} _-]", "")
+                    .replace(' ', '-');
         }
 
         private Header getPreviousHeader(int level) {
