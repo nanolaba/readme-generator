@@ -35,17 +35,21 @@ public final class TemplateManifest {
     private final Set<String> dynamic = new LinkedHashSet<>();
     private final Charset charset;
     private final String variant;
+    /** The root template's languages: generation renders every import once per language. */
+    private final List<String> languages;
 
-    private TemplateManifest(File source, Charset charset, String variant) {
+    private TemplateManifest(File source, Charset charset, String variant, List<String> languages) {
         this.source = normalise(source);
         this.charset = charset;
         this.variant = variant;
+        this.languages = languages;
     }
 
     /** Builds the manifest of the template behind {@code generator} (nothing is rendered). */
     public static TemplateManifest of(Generator generator, Charset charset) {
         GeneratorConfig config = generator.getConfig();
-        TemplateManifest manifest = new TemplateManifest(config.getSourceFile(), charset, config.getVariant());
+        TemplateManifest manifest = new TemplateManifest(config.getSourceFile(), charset, config.getVariant(),
+                config.getLanguages());
         for (String language : config.getLanguages()) {
             manifest.outputs.put(language, normalise(OutputFileNameResolver.resolve(
                     config.getSourceFile(), config.getDefaultLanguage(), language, config.getProperties())));
@@ -74,8 +78,8 @@ public final class TemplateManifest {
                         followImport(directory, config, params, visited);
                         break;
                     case "fileTree":
-                        if (params.get("path") != null) {
-                            inputs.add(normalise(new File(directory, params.get("path"))));
+                        for (String path : paths(params, config)) {
+                            inputs.add(normalise(new File(directory, path)));
                         }
                         break;
                     case "exec":
@@ -117,11 +121,12 @@ public final class TemplateManifest {
             dynamic.add("url:" + params.get("url"));
             return;
         }
-        String path = params.get("path");
-        if (path == null) {
-            return;
+        for (String path : paths(params, config)) {
+            followImportedFile(new File(directory, path), config, params, visited);
         }
-        File imported = new File(directory, path);
+    }
+
+    private void followImportedFile(File imported, GeneratorConfig config, Map<String, String> params, Set<File> visited) {
         if ("false".equals(params.get("run-generator")) || !imported.isFile()) {
             inputs.add(normalise(imported));
             return;
@@ -140,6 +145,21 @@ public final class TemplateManifest {
             child = config;
         }
         walk(imported, child, body, visited);
+    }
+
+    /**
+     * The files a {@code path} parameter names: one per language once template properties are
+     * substituted, as in generation. A path that still holds {@code ${...}} — an undefined
+     * property, an {@code env} or descriptor value — names no file that can be listed.
+     */
+    private Set<String> paths(Map<String, String> params, GeneratorConfig config) {
+        String written = params.get("path");
+        if (written == null) {
+            return Collections.emptySet();
+        }
+        Set<String> paths = TemplateLine.renderPropertiesPerLanguage(written, config, languages);
+        paths.removeIf(path -> path.contains("${"));
+        return paths;
     }
 
     private static boolean escaped(String line, int start) {

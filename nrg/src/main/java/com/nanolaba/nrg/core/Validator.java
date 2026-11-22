@@ -89,6 +89,8 @@ public final class Validator {
         private final List<BlockWidget> blockWidgets = new ArrayList<>();
         private final Set<String> declaredProperties = new HashSet<>();
         private final List<VariableReference> variableReferences = new ArrayList<>();
+        /** {@code file:line:name} of the undefined variables an import path has already reported. */
+        private final Set<String> reportedReferences = new HashSet<>();
         private List<String> rootLanguages;
         private List<String> rootVariants;
         private GeneratorConfig rootConfig;
@@ -260,25 +262,46 @@ public final class Validator {
 
         private void checkImport(File file, GeneratorConfig config, String params, int lineNo,
                                  List<String> declaredLanguages, boolean parity) {
-            String path = extractImportPath(params);
-            if (path == null) {
+            String written = extractImportPath(params);
+            if (written == null) {
                 return;
             }
+            // Generation substitutes properties in the path first, once per language.
+            for (String path : TemplateLine.renderPropertiesPerLanguage(written, config, rootConfig.getLanguages())) {
+                checkImportPath(file, config, params, lineNo, declaredLanguages, parity, written, path);
+            }
+        }
+
+        private void checkImportPath(File file, GeneratorConfig config, String params, int lineNo,
+                                     List<String> declaredLanguages, boolean parity, String written, String path) {
+            Matcher reference = VARIABLE_PATTERN.matcher(path);
+            if (reference.find()) {
+                // An env or descriptor value is only known when the template is rendered.
+                String name = reference.group(1);
+                if (!isSourceReference(name)) {
+                    error(file, lineNo, "undefined-variable",
+                            "import path '" + written + "' uses undefined variable '" + name + "'",
+                            "declare it with <!--@" + name + "=...-->");
+                    reportedReferences.add(file.getPath() + ":" + lineNo + ":" + name);
+                }
+                return;
+            }
+            String shown = path.equals(written) ? "'" + path + "'" : "'" + path + "' (written as '" + written + "')";
             File importedFile = new File(file.getAbsoluteFile().getParentFile(), path);
             if (!ProjectRoot.contains(projectRoot, importedFile)) {
                 // Reported without touching the file: following it would let a
                 // template probe and parse files outside the project.
-                error(file, lineNo, "import-outside-root", "import path is outside the project root: '" + path + "'",
+                error(file, lineNo, "import-outside-root", "import path is outside the project root: " + shown,
                         "keep imports inside the project, or widen the root with --root");
             } else if (!importedFile.isFile()) {
-                error(file, lineNo, "import-not-found", "import path not found: '" + path + "'",
+                error(file, lineNo, "import-not-found", "import path not found: " + shown,
                         "paths are relative to the importing file");
             } else if (!"false".equals(NRGUtil.parseParametersLine(params).get("run-generator"))) {
                 String body;
                 try {
                     body = FileUtils.readFileToString(importedFile, StandardCharsets.UTF_8);
                 } catch (IOException e) {
-                    error(file, lineNo, "import-unreadable", "cannot read import '" + path + "': " + describe(e),
+                    error(file, lineNo, "import-unreadable", "cannot read import " + shown + ": " + describe(e),
                             "check the permissions of the file");
                     return;
                 }
@@ -374,11 +397,7 @@ public final class Validator {
                     continue;
                 }
                 String name = m.group(1);
-                boolean sourceReference = false;
-                for (String prefix : SOURCE_PREFIXES) {
-                    sourceReference |= name.startsWith(prefix);
-                }
-                if (!sourceReference) {
+                if (!isSourceReference(name)) {
                     variableReferences.add(new VariableReference(file, lineNo, name));
                 }
             }
@@ -386,11 +405,13 @@ public final class Validator {
 
         /**
          * Deferred until the whole import graph is read: a fragment may use a property that the
-         * root template (or another fragment) declares further down.
+         * root template (or another fragment) declares further down. A reference in an import path
+         * that has no value there was reported as an error already.
          */
         private void checkVariableReferences() {
             for (VariableReference ref : variableReferences) {
-                if (declaredProperties.contains(ref.name)) {
+                if (declaredProperties.contains(ref.name)
+                        || reportedReferences.contains(ref.file.getPath() + ":" + ref.line + ":" + ref.name)) {
                     continue;
                 }
                 String suggestion = Suggestions.closest(ref.name, declaredProperties);
@@ -510,6 +531,15 @@ public final class Validator {
         // markers that look like comments but aren't language tags
         return marker.startsWith("nrg.") || marker.startsWith("toc.")
                 || "@".equals(marker) || marker.startsWith("@");
+    }
+
+    /** {@code ${env.…}}, {@code ${pom.…}}, {@code ${npm.…}}, {@code ${gradle.…}}: no template property. */
+    private static boolean isSourceReference(String name) {
+        boolean sourceReference = false;
+        for (String prefix : SOURCE_PREFIXES) {
+            sourceReference |= name.startsWith(prefix);
+        }
+        return sourceReference;
     }
 
     /** Why a file could not be read: the message of an {@link AccessDeniedException} is the bare path. */

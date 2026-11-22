@@ -2079,7 +2079,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 22.11.2026 15:09:55
+Last updated: 22.11.2026 15:14:21
 ```
 
 </td></tr>
@@ -2536,7 +2536,7 @@ ${widget:endDetails}
 <details>
 <summary>Advanced</summary>
 
-inner *markdown* and 22.11.2026 15:09:55
+inner *markdown* and 22.11.2026 15:14:21
 
 </details>
 ```
@@ -2695,6 +2695,7 @@ This section summarises the main user-visible changes in each release. For full 
 - **An invalid glob is a usage error**: a malformed pattern in `--check-paths` (or `<checkPaths>`) or among the source file arguments, such as an unclosed `[` or `{`, crashed NRG with a `PatternSyntaxException` stack trace and exit code `1`, the code `--check` uses for files that are out of date. It is now reported as `Incorrect command line arguments: invalid --check-paths pattern '[': Missing ']'` with exit code `64`. Closes [#83](https://github.com/nanolaba/readme-generator/issues/83).
 - **`tableOfContents` anchors match GitHub's**: the default `github` style collapsed runs of hyphens and of spaces, turned `_` into `-` and trimmed hyphens at both ends, while GitHub keeps them all. `## Feedback & Support` linked to `#feedback-support` instead of `#feedback--support`, `## snake_case` to `#snake-case`, and a heading that starts with an emoji lost the leading `-` of its anchor, so these links led nowhere on GitHub. The `github` and `gitlab` styles now follow the rules of GitHub (as github-slugger implements them) and of the GitLab documentation, which are the same: punctuation is dropped, letters, digits, `-` and `_` are kept, and every space becomes a hyphen. `bitbucket` is unchanged. A table of contents changes only where a heading has such characters. Closes [#89](https://github.com/nanolaba/readme-generator/issues/89).
 - **Everything NRG prints on stdout is UTF-8**: `--stdout`, the reports of `--format json` and `--format github`, `--help syntax`, the queries (`--manifest`, `--affected`, `--locate`, `--stale-translations`, `--agent-rules` and the others) and the JSON of `--claude-hook post-edit` were written in the platform charset, which Java 8 to 17 use for `System.out`. On Windows, or under `LANG=C` as in many Docker images and CI runners, every character outside it became `?`, so `nrg --stdout README.src.md > README.md` did not produce the file that `nrg README.src.md` writes. They are now UTF-8, like the generated files. Log lines and the messages on stderr keep the platform charset. Closes [#87](https://github.com/nanolaba/readme-generator/issues/87).
+- **Template properties in import paths work in `--validate`, `--manifest`, `--affected`, `--agent-rules` and the hook**: generation substitutes properties in widget parameters, so `${widget:import(path='${dir}/part.md')}` imports `docs/part.md`, but the commands that read a template without rendering it took the path as written. `--validate` reported `import-not-found` for a template that generates without an error, so `--claude-hook post-edit` rejected every edit of it, and `--manifest` listed `${dir}/part.md` as an input, so `--affected docs/part.md` named no template. Import and `fileTree` paths now get the same substitution, once per language: a `name.<lang>` property gives one input per language. A path that uses an undefined property is reported as an `undefined-variable` error at the import, not as a missing file. Closes [#86](https://github.com/nanolaba/readme-generator/issues/86).
 
 ### 1.4
 

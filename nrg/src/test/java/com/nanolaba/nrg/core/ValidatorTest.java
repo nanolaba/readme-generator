@@ -253,6 +253,42 @@ class ValidatorTest extends DefaultNRGTest {
     }
 
     @Test
+    public void testImportPathsGetTemplatePropertiesSubstituted() throws IOException {
+        Files.createDirectories(tempDir.resolve("docs"));
+        writeSource("docs/part.src.md", "<!--@sub=.-->\n${widget:import(path='${sub}/Example.java', run-generator='false')}\n");
+        writeSource("docs/Example.java", "class Example {}\n");
+        Path src = writeSource("README.src.md", "<!--@nrg.languages=en,ru-->\n<!--@dir=docs-->\n"
+                + "<!--@example.en=Example.java-->\n<!--@example.ru=ExampleRu.java-->\n# Title\n"
+                + "${widget:import(path='${dir}/part.src.md')}\n"
+                + "${widget:import(path='${dir}/${example}', run-generator='false')}\n"
+                + "${widget:import(path='${env.HOME}/x.md')}\n");
+
+        List<Validator.Diagnostic> diags = validate(src);
+
+        assertEquals(1, diags.size(), diags.toString());
+        Validator.Diagnostic d = diags.get(0);
+        assertEquals("import-not-found", d.getCode());
+        assertEquals(7, d.getLine());
+        assertEquals("import path not found: 'docs/ExampleRu.java' (written as '${dir}/${example}')", d.getMessage());
+    }
+
+    @Test
+    public void testAnUndefinedPropertyInAnImportPathIsReportedOnce() throws IOException {
+        Path src = writeSource("README.src.md", "<!--@nrg.languages=en,ru-->\n# Title\n"
+                + "${widget:import(path='${nowhere}/part.md')}\n");
+
+        List<Validator.Diagnostic> diags = validate(src);
+
+        assertEquals(1, diags.size(), diags.toString());
+        Validator.Diagnostic d = diags.get(0);
+        assertTrue(d.isError());
+        assertEquals("undefined-variable", d.getCode());
+        assertEquals(3, d.getLine());
+        assertEquals("import path '${nowhere}/part.md' uses undefined variable 'nowhere'", d.getMessage());
+        assertEquals("declare it with <!--@nowhere=...-->", d.getHint());
+    }
+
+    @Test
     public void testUnreadableImportIsReportedAtTheImport() throws IOException {
         Path src = writeSource("README.src.md", "<!--@nrg.languages=en-->\n# Title\n"
                 + "${widget:import(path='part.src.md')}\n");

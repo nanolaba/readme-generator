@@ -8,6 +8,7 @@ import org.apache.commons.text.TextStringBuilder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
@@ -522,6 +523,24 @@ public class TemplateLine {
             }
         }
         return line;
+    }
+
+    /**
+     * What {@code value} becomes in each of {@code languages} once template properties are
+     * substituted — what a widget parameter, such as an import path, is by the time the widget
+     * reads it during generation ({@code name.<lang>} overrides {@code name}). The commands that
+     * read a template without rendering it ({@code --validate}, {@code --manifest}) resolve paths
+     * through this.
+     *
+     * <p>In the order of {@code languages}, without repeats; a reference to a property that is not
+     * defined, and an {@code env} or descriptor reference, stay as written.
+     */
+    public static Set<String> renderPropertiesPerLanguage(String value, GeneratorConfig config, List<String> languages) {
+        Set<String> values = new LinkedHashSet<>();
+        for (String language : languages) {
+            values.add(renderPropertiesIn(value, config, language));
+        }
+        return values;
     }
 
     protected String renderProperties(String line, String language) {

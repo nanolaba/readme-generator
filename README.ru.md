@@ -2086,7 +2086,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 22.11.2026 15:09:57
+Last updated: 22.11.2026 15:14:21
 ```
 
 </td></tr>
@@ -2544,7 +2544,7 @@ ${widget:endDetails}
 <details>
 <summary>Advanced</summary>
 
-inner *markdown* and 22.11.2026 15:09:58
+inner *markdown* and 22.11.2026 15:14:22
 
 </details>
 ```
@@ -2702,6 +2702,7 @@ nrg --classpath my-widgets.jar --widgets com.acme.widgets.Tag,com.acme.widgets.B
 - **Неверный glob-шаблон — ошибка в аргументах**: некорректный шаблон в `--check-paths` (или `<checkPaths>`) или среди аргументов с исходными файлами, например незакрытая `[` или `{`, ронял NRG со стектрейсом `PatternSyntaxException` и кодом выхода `1` — тем же, которым `--check` сообщает об устаревших файлах. Теперь это сообщение `Incorrect command line arguments: invalid --check-paths pattern '[': Missing ']'` и код выхода `64`. Закрывает [#83](https://github.com/nanolaba/readme-generator/issues/83).
 - **Якоря `tableOfContents` совпадают с якорями GitHub**: стиль `github` по умолчанию схлопывал подряд идущие дефисы и пробелы, превращал `_` в `-` и обрезал дефисы по краям, а GitHub всё это сохраняет. `## Feedback & Support` ссылался на `#feedback-support` вместо `#feedback--support`, `## snake_case` — на `#snake-case`, а у заголовка, начинающегося с эмодзи, пропадал начальный `-` якоря, так что на GitHub такие ссылки никуда не вели. Теперь стили `github` и `gitlab` следуют правилам GitHub (в том виде, как их реализует github-slugger) и документации GitLab, а они одинаковы: знаки препинания удаляются, буквы, цифры, `-` и `_` сохраняются, а каждый пробел становится дефисом. `bitbucket` не изменился. Оглавление меняется только там, где в заголовке есть такие символы. Закрывает [#89](https://github.com/nanolaba/readme-generator/issues/89).
 - **Всё, что NRG печатает в stdout, — в UTF-8**: `--stdout`, отчёты `--format json` и `--format github`, `--help syntax`, запросы (`--manifest`, `--affected`, `--locate`, `--stale-translations`, `--agent-rules` и другие) и JSON от `--claude-hook post-edit` выводились в кодировке платформы, которую Java 8–17 использует для `System.out`. В Windows или при `LANG=C`, как во многих Docker-образах и CI-раннерах, каждый символ вне этой кодировки превращался в `?`, и `nrg --stdout README.src.md > README.md` давал не тот файл, который пишет `nrg README.src.md`. Теперь этот вывод в UTF-8, как и сгенерированные файлы. Строки лога и сообщения в stderr остаются в кодировке платформы. Закрывает [#87](https://github.com/nanolaba/readme-generator/issues/87).
+- **Свойства шаблона в путях импорта работают в `--validate`, `--manifest`, `--affected`, `--agent-rules` и хуке**: генерация подставляет свойства в параметры виджетов, так что `${widget:import(path='${dir}/part.md')}` импортирует `docs/part.md`, а команды, которые читают шаблон без рендеринга, брали путь как написано. `--validate` сообщал `import-not-found` для шаблона, который генерируется без ошибок, поэтому `--claude-hook post-edit` отклонял каждую его правку, а `--manifest` перечислял `${dir}/part.md` среди входов, и `--affected docs/part.md` не называл ни одного шаблона. Теперь в пути `import` и `fileTree` подставляются свойства так же, отдельно для каждого языка: свойство `name.<lang>` даёт по входу на язык. Путь с неопределённым свойством сообщается как ошибка `undefined-variable` в строке импорта, а не как отсутствующий файл. Закрывает [#86](https://github.com/nanolaba/readme-generator/issues/86).
 
 ### 1.4
 

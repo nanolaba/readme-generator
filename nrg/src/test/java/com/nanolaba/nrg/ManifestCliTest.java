@@ -84,6 +84,32 @@ public class ManifestCliTest extends DefaultNRGTest {
     }
 
     @Test
+    public void testPathsGetTemplatePropertiesSubstitutedPerLanguage() throws IOException {
+        Files.createDirectories(tempDir.resolve(".git"));
+        write("docs/part.src.md", "<!--@sub=nested-->\n${widget:import(path='${sub}/deep.md')}\n");
+        write("docs/nested/deep.md", "Deep\n");
+        Path src = write("README.src.md", "<!--@nrg.languages=en,ru-->\n<!--@dir=docs-->\n"
+                + "<!--@example.en=Example.java-->\n<!--@example.ru=ExampleRu.java-->\n"
+                + "${widget:import(path='${dir}/part.src.md')}\n"
+                + "${widget:import(path='${dir}/${example}', run-generator='false')}\n"
+                + "${widget:fileTree(path='${dir}/nested')}\n"
+                + "${widget:import(path='${undefined}/x.md')}\n${widget:fileTree(path='${env.HOME}')}\n");
+
+        TemplateManifest m = TemplateManifest.of(new Generator(src.toFile(), StandardCharsets.UTF_8), StandardCharsets.UTF_8);
+
+        List<File> expected = Arrays.asList(src.toFile(), tempDir.resolve("docs/part.src.md").toFile(),
+                tempDir.resolve("docs/nested/deep.md").toFile(), tempDir.resolve("docs/Example.java").toFile(),
+                tempDir.resolve("docs/ExampleRu.java").toFile(), tempDir.resolve("docs/nested").toFile());
+        List<File> actual = new ArrayList<>(m.getInputs());
+        assertEquals(expected.size(), actual.size(), actual.toString());
+        for (int i = 0; i < expected.size(); i++) {
+            assertEquals(n(expected.get(i).toPath()).toFile(), actual.get(i));
+        }
+        assertEquals(NRG.EXIT_OK, NRG.run("--affected", tempDir.resolve("docs/ExampleRu.java").toString(), "-f", src.toString()));
+        assertTrue(getOutAndClear().trim().endsWith("README.src.md"));
+    }
+
+    @Test
     public void testManifestJson() throws IOException {
         Path src = project();
 
