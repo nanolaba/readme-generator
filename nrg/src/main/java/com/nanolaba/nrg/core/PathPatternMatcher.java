@@ -96,8 +96,8 @@ public final class PathPatternMatcher {
      * file system of the directory it walks; this class targets real-disk paths and uses the
      * default one.
      *
-     * @throws IllegalArgumentException when the pattern is not a valid glob (an unclosed {@code [}
-     *                                  or {@code {}); the message names the pattern as the user
+     * @throws IllegalArgumentException when the pattern is not a valid glob (an unclosed <code>[</code>
+     *                                  or <code>{</code>); the message names the pattern as the user
      *                                  wrote it, not the absolute form the JDK was given
      */
     static List<PathMatcher> buildMatchers(FileSystem fileSystem, String pattern) {

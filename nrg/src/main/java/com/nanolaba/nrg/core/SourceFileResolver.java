@@ -38,8 +38,8 @@ public final class SourceFileResolver {
     private SourceFileResolver() {/**/}
 
     /**
-     * @throws IllegalArgumentException when a pattern is not a valid glob (an unclosed {@code [}
-     *                                  or {@code {}) — a mistake in the arguments, unlike a
+     * @throws IllegalArgumentException when a pattern is not a valid glob (an unclosed <code>[</code>
+     *                                  or <code>{</code>) — a mistake in the arguments, unlike a
      *                                  pattern that matches nothing
      */
     public static Result resolve(List<String> patterns) {
