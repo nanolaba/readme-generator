@@ -2086,7 +2086,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 22.11.2026 18:51:21
+Last updated: 22.11.2026 19:29:50
 ```
 
 </td></tr>
@@ -2544,7 +2544,7 @@ ${widget:endDetails}
 <details>
 <summary>Advanced</summary>
 
-inner *markdown* and 22.11.2026 18:51:21
+inner *markdown* and 22.11.2026 19:29:50
 
 </details>
 ```
@@ -2705,6 +2705,7 @@ nrg --classpath my-widgets.jar --widgets com.acme.widgets.Tag,com.acme.widgets.B
 - **Свойства шаблона в путях импорта работают в `--validate`, `--manifest`, `--affected`, `--agent-rules` и хуке**: генерация подставляет свойства в параметры виджетов, так что `${widget:import(path='${dir}/part.md')}` импортирует `docs/part.md`, а команды, которые читают шаблон без рендеринга, брали путь как написано. `--validate` сообщал `import-not-found` для шаблона, который генерируется без ошибок, поэтому `--claude-hook post-edit` отклонял каждую его правку, а `--manifest` перечислял `${dir}/part.md` среди входов, и `--affected docs/part.md` не называл ни одного шаблона. Теперь в пути `import` и `fileTree` подставляются свойства так же, отдельно для каждого языка: свойство `name.<lang>` даёт по входу на язык. Путь с неопределённым свойством сообщается как ошибка `undefined-variable` в строке импорта, а не как отсутствующий файл. Закрывает [#86](https://github.com/nanolaba/readme-generator/issues/86).
 - **`--agent-rules --write` больше не пишет `null` в файл без перевода строки**: если в целевом файле (например, `AGENTS.md`) был текст, но ни одного перевода строки, как в файле из одной строки `# Rules`, NRG принимал за окончание строки `null` и записывал `# Rulesnullnull<!-- nrg:agent-rules:begin -->` и ещё один `null` после блока. Теперь такой файл получает окончание строк платформы, как и новый.
 - **Jar `readme-generator` в Maven Central содержит только классы NRG**: главным артефактом вместо обычного jar был исполняемый jar со всеми зависимостями, поэтому jar в Central нёс копии nanolog, sugar и библиотек commons, а его POM объявлял их ещё и зависимостями. Проект, который подключает NRG как библиотеку, получал по две копии каждого класса, и какая из них загрузится, зависело от порядка classpath: более новая commons-lang3 или nanolog в проекте могла проиграть старой копии внутри NRG. `nrg-maven-plugin` запускал классы nanolog, скопированные в NRG при его сборке, а не тот nanolog, который выбрал Maven. Исполняемый `nrg.jar` по-прежнему собирается для релизного zip, который скачивают `nrgw` и GitHub Action. Закрывает [#90](https://github.com/nanolaba/readme-generator/issues/90).
+- **GitHub Action устанавливает Java через `actions/setup-java` 6.3.0** (было 6.2.0). setup-java больше не регистрирует свой Java problem matcher по умолчанию, поэтому непойманное Java-исключение в логе шага NRG больше не превращается в аннотацию. Сам вывод не меняется. До пользователей дойдёт со следующим выпуском action.
 
 ### 1.4
 
