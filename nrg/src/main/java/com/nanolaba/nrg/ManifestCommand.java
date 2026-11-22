@@ -417,7 +417,7 @@ final class ManifestCommand {
             return loadFailed ? NRG.EXIT_TEMPLATE_ERROR : NRG.EXIT_OK;
         }
         String existing = target.isFile() ? FileUtils.readFileToString(target, charset) : "";
-        String ending = existing.isEmpty() ? System.lineSeparator() : LineEndings.detect(existing);
+        String ending = LineEndings.resolve(LineEndings.Mode.AUTO, target, charset);
         String normalisedBlock = LineEndings.applyTo(block, ending).trim();
         Matcher m = RULES_BLOCK.matcher(existing);
         String updated;

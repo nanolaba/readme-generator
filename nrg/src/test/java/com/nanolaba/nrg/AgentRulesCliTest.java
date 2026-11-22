@@ -118,6 +118,37 @@ public class AgentRulesCliTest extends DefaultNRGTest {
     }
 
     @Test
+    public void testWriteUsesTheLineEndingsOfTheFile() throws IOException {
+        Path src = template();
+        File agents = tempDir.resolve("AGENTS.md").toFile();
+        String nl = System.lineSeparator();
+
+        write("AGENTS.md", "# Rules\r\n\r\nKeep this.\r\n");
+        assertEquals(NRG.EXIT_OK, command(src).agentRules(agents, false));
+        String crlf = read("AGENTS.md");
+        assertTrue(crlf.startsWith("# Rules\r\n\r\nKeep this.\r\n\r\n" + ManifestCommand.RULES_BEGIN + "\r\n"), crlf);
+        assertFalse(crlf.replace("\r\n", "").contains("\n"), "the block is written with CRLF too: " + crlf);
+
+        write("AGENTS.md", "# Rules\n");
+        assertEquals(NRG.EXIT_OK, command(src).agentRules(agents, false));
+        String lf = read("AGENTS.md");
+        assertTrue(lf.startsWith("# Rules\n\n" + ManifestCommand.RULES_BEGIN + "\n"), lf);
+        assertFalse(lf.contains("\r"), "the block is written with LF: " + lf);
+
+        write("AGENTS.md", "# Rules");
+        assertEquals(NRG.EXIT_OK, command(src).agentRules(agents, false));
+        String noNewline = read("AGENTS.md");
+        assertTrue(noNewline.startsWith("# Rules" + nl + nl + ManifestCommand.RULES_BEGIN + nl), noNewline);
+        assertTrue(noNewline.endsWith(ManifestCommand.RULES_END + nl), noNewline);
+
+        assertTrue(agents.delete());
+        assertEquals(NRG.EXIT_OK, command(src).agentRules(agents, false));
+        String created = read("AGENTS.md");
+        assertTrue(created.startsWith(ManifestCommand.RULES_BEGIN + nl), created);
+        assertTrue(created.endsWith(ManifestCommand.RULES_END + nl), created);
+    }
+
+    @Test
     public void testSingleLanguageAndDateDependentTemplate() throws IOException {
         Path src = write("README.src.md", "Updated ${widget:date}\n");
 
