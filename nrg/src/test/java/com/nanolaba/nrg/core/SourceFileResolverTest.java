@@ -16,6 +16,7 @@ import java.util.List;
 
 import static com.nanolaba.logging.LogEntry.LogEntryLevel.WARN;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class SourceFileResolverTest {
@@ -37,6 +38,15 @@ class SourceFileResolverTest {
         assertEquals(1, r.getFiles().size());
         assertEquals(a.toFile().getCanonicalFile(), r.getFiles().get(0).getCanonicalFile());
         assertTrue(r.getEmptyPatterns().isEmpty());
+    }
+
+    @Test
+    void testAnInvalidGlobIsRejectedRatherThanReportedAsMatchingNothing() throws IOException {
+        touch("README.src.md");
+        String pattern = tempDir + "/{README,x.src.md";
+        IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
+                () -> SourceFileResolver.resolve(Collections.singletonList(pattern)));
+        assertEquals("pattern '" + pattern + "': Missing '}", e.getMessage());
     }
 
     @Test

@@ -10,9 +10,12 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.regex.PatternSyntaxException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class PathPatternMatcherTest {
@@ -47,6 +50,14 @@ class PathPatternMatcherTest {
         PathPatternMatcher m = PathPatternMatcher.compile(Arrays.asList("", null));
         assertTrue(m.isUnconstrained(),
                 "empty/null entries should drop and leave matcher unconstrained");
+    }
+
+    @Test
+    void testAnInvalidGlobIsRejectedWithThePatternAsWritten() {
+        IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
+                () -> PathPatternMatcher.compile(Arrays.asList("*.md", "docs/[")));
+        assertEquals("pattern 'docs/[': Missing ']", e.getMessage());
+        assertInstanceOf(PatternSyntaxException.class, e.getCause());
     }
 
     @Test

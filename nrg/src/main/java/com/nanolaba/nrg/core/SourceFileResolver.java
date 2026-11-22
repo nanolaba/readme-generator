@@ -37,6 +37,11 @@ public final class SourceFileResolver {
 
     private SourceFileResolver() {/**/}
 
+    /**
+     * @throws IllegalArgumentException when a pattern is not a valid glob (an unclosed {@code [}
+     *                                  or {@code {}) — a mistake in the arguments, unlike a
+     *                                  pattern that matches nothing
+     */
     public static Result resolve(List<String> patterns) {
         Set<File> dedup = new LinkedHashSet<>();
         List<String> empty = new ArrayList<>();
@@ -65,7 +70,8 @@ public final class SourceFileResolver {
         if (!Files.isDirectory(base)) {
             return Collections.emptyList();
         }
-        List<PathMatcher> matchers = buildMatchers(base, pattern);
+        // The matchers belong to the file system that is walked, not to the default one.
+        List<PathMatcher> matchers = PathPatternMatcher.buildMatchers(base.getFileSystem(), pattern);
         List<File> hits = new ArrayList<>();
         try (Stream<Path> walk = Files.walk(base)) {
             walk.filter(Files::isRegularFile)
@@ -86,20 +92,6 @@ public final class SourceFileResolver {
             if (m.matches(normalised)) return true;
         }
         return false;
-    }
-
-    /**
-     * Builds the {@link PathMatcher}s of a pattern: one per {@link PathPatternMatcher#globstarVariants
-     * globstar variant}. Uses {@code base.getFileSystem()} rather than
-     * {@link java.nio.file.FileSystems#getDefault()} so the matchers belong to the file system
-     * that is walked; {@link PathPatternMatcher} targets real-disk paths and uses the default one.
-     */
-    private static List<PathMatcher> buildMatchers(Path base, String pattern) {
-        List<PathMatcher> matchers = new ArrayList<>();
-        for (String variant : PathPatternMatcher.globstarVariants(PathPatternMatcher.absolutePatternString(pattern))) {
-            matchers.add(base.getFileSystem().getPathMatcher("glob:" + variant));
-        }
-        return matchers;
     }
 
     /**

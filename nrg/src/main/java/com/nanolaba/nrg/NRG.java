@@ -381,7 +381,12 @@ public class NRG {
         if (hasCheckPathsFilter && !checkMode) {
             throw new ParseException("--check-paths requires --check");
         }
-        PathPatternMatcher checkPathFilter = PathPatternMatcher.compile(checkPathsList);
+        PathPatternMatcher checkPathFilter;
+        try {
+            checkPathFilter = PathPatternMatcher.compile(checkPathsList);
+        } catch (IllegalArgumentException e) {
+            throw new ParseException("invalid --check-paths " + e.getMessage());
+        }
         String langValue = cmd.getOptionValue(language);
         if (langValue != null && !toStdout) {
             LOG.warn("--language has no effect without --stdout; ignoring");
@@ -541,8 +546,7 @@ public class NRG {
      * surfaces unchanged when a missing path is passed via {@code -f}.
      */
     private static List<File> collectSourceFiles(CommandLine cmd, Option fileOpt) throws ParseException {
-        // Declared 'throws ParseException' because cmd.getParsedOptionValue(fileOpt) is declared
-        // to throw it; in practice the value was already validated by the parser above.
+        // Throws ParseException for a positional pattern that is not a valid glob.
         boolean hasFlag = cmd.hasOption(fileOpt);
         String[] positional = cmd.getArgs();
         boolean hasPositional = positional != null && positional.length > 0;
@@ -570,7 +574,12 @@ public class NRG {
         if (patterns.isEmpty()) {
             return Collections.emptyList();
         }
-        SourceFileResolver.Result r = SourceFileResolver.resolve(patterns);
+        SourceFileResolver.Result r;
+        try {
+            r = SourceFileResolver.resolve(patterns);
+        } catch (IllegalArgumentException e) {
+            throw new ParseException("invalid source " + e.getMessage());
+        }
         // LOG.warn writes to stdout in the in-house logger; routing per-pattern empty warnings
         // straight to stderr keeps them close to the eventual "No source files matched" error
         // and matches what users expect from a warning of this kind.

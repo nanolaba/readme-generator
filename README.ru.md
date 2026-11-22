@@ -2086,7 +2086,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 22.11.2026 14:55:46
+Last updated: 22.11.2026 14:56:14
 ```
 
 </td></tr>
@@ -2544,7 +2544,7 @@ ${widget:endDetails}
 <details>
 <summary>Advanced</summary>
 
-inner *markdown* and 22.11.2026 14:55:46
+inner *markdown* and 22.11.2026 14:56:14
 
 </details>
 ```
@@ -2699,6 +2699,7 @@ nrg --classpath my-widgets.jar --widgets com.acme.widgets.Tag,com.acme.widgets.B
 - **`--validate` сообщает, почему шаблон не читается**: корневой шаблон без права на чтение сообщался как `cannot read the template configuration: null`; теперь сообщение — `cannot read README.src.md: access denied` (код `config-error`, как и раньше). Импортируемый шаблон, который нельзя прочитать, раньше молча пропускался: `--validate` проходил, а генерация потом падала; теперь это ошибка `import-unreadable` в строке импорта. Закрывает [#85](https://github.com/nanolaba/readme-generator/issues/85).
 - **Ошибки блочных виджетов печатают маркер так, как он пишется**: ошибки `if`, `details` и пользовательских наследников `BlockWidget` показывали маркер с удвоенными фигурными скобками — `unmatched stray ${{widget:endIf}} at line 3`, — а такого синтаксиса в NRG нет, и скопировать его обратно в шаблон нельзя. Теперь они печатают `${widget:endIf}`. Закрывает [#84](https://github.com/nanolaba/readme-generator/issues/84).
 - **Каталог выходного файла, который не удалось создать, проваливает запуск**: если каталог выходного файла не удавалось создать, NRG писал ошибку в лог и добавлял диагностику `generation-failed`, но завершался с кодом `0`, а `--format json` сообщал `"ok": true` рядом с этой ошибкой. Теперь запуск завершается с кодом `2`, как при любой другой ошибке записи; файлы остальных языков по-прежнему записываются. Закрывает [#82](https://github.com/nanolaba/readme-generator/issues/82).
+- **Неверный glob-шаблон — ошибка в аргументах**: некорректный шаблон в `--check-paths` (или `<checkPaths>`) или среди аргументов с исходными файлами, например незакрытая `[` или `{`, ронял NRG со стектрейсом `PatternSyntaxException` и кодом выхода `1` — тем же, которым `--check` сообщает об устаревших файлах. Теперь это сообщение `Incorrect command line arguments: invalid --check-paths pattern '[': Missing ']'` и код выхода `64`. Закрывает [#83](https://github.com/nanolaba/readme-generator/issues/83).
 
 ### 1.4
 

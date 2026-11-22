@@ -3,6 +3,7 @@ package com.nanolaba.nrg.core;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
+import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.nio.file.PathMatcher;
@@ -12,6 +13,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 /**
  * Matches a {@link File} against a list of {@code glob:}-style path patterns.
@@ -44,6 +46,8 @@ public final class PathPatternMatcher {
      * Compiles the supplied raw patterns into an immutable matcher. Null or blank entries are
      * silently dropped; a {@code null} or empty list yields an {@linkplain #isUnconstrained()
      * unconstrained} matcher that accepts every file.
+     *
+     * @throws IllegalArgumentException when a pattern is not a valid glob
      */
     public static PathPatternMatcher compile(List<String> rawPatterns) {
         if (rawPatterns == null || rawPatterns.isEmpty()) {
@@ -55,7 +59,7 @@ public final class PathPatternMatcher {
         for (String raw : rawPatterns) {
             if (raw == null || raw.isEmpty()) continue;
             kept.add(raw);
-            matchers.add(buildMatchersFor(raw));
+            matchers.add(buildMatchers(FileSystems.getDefault(), raw));
         }
         return new PathPatternMatcher(kept, matchers);
     }
@@ -86,10 +90,24 @@ public final class PathPatternMatcher {
         return false;
     }
 
-    private static List<PathMatcher> buildMatchersFor(String pattern) {
+    /**
+     * The {@link PathMatcher}s of one pattern on {@code fileSystem}: one per {@linkplain
+     * #globstarVariants globstar variant}. Shared with {@link SourceFileResolver}, which passes the
+     * file system of the directory it walks; this class targets real-disk paths and uses the
+     * default one.
+     *
+     * @throws IllegalArgumentException when the pattern is not a valid glob (an unclosed {@code [}
+     *                                  or {@code {}); the message names the pattern as the user
+     *                                  wrote it, not the absolute form the JDK was given
+     */
+    static List<PathMatcher> buildMatchers(FileSystem fileSystem, String pattern) {
         List<PathMatcher> matchers = new ArrayList<>();
-        for (String variant : globstarVariants(absolutePatternString(pattern))) {
-            matchers.add(FileSystems.getDefault().getPathMatcher("glob:" + variant));
+        try {
+            for (String variant : globstarVariants(absolutePatternString(pattern))) {
+                matchers.add(fileSystem.getPathMatcher("glob:" + variant));
+            }
+        } catch (PatternSyntaxException e) {
+            throw new IllegalArgumentException("pattern '" + pattern + "': " + e.getDescription(), e);
         }
         return matchers;
     }

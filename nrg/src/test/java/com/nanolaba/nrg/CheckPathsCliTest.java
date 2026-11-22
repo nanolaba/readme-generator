@@ -139,6 +139,29 @@ public class CheckPathsCliTest extends DefaultNRGTest {
     }
 
     @Test
+    public void testAnInvalidCheckPathsGlobIsAUsageError() throws IOException {
+        Path src = writeSrc("<!--@nrg.languages=en-->\n## Title\n");
+
+        int code = NRG.run("--check", "--check-paths", "[", "-f", src.toString());
+
+        assertEquals(NRG.EXIT_USAGE, code);
+        String err = getErrAndClear();
+        assertTrue(err.contains("Incorrect command line arguments: invalid --check-paths pattern '[': Missing ']"), err);
+    }
+
+    @Test
+    public void testAnInvalidSourceGlobIsAUsageError() throws IOException {
+        writeSrc("<!--@nrg.languages=en-->\n## Title\n");
+
+        int code = NRG.run(tempDir + "/[README.src.md");
+
+        assertEquals(NRG.EXIT_USAGE, code);
+        String err = getErrAndClear();
+        assertTrue(err.contains("Incorrect command line arguments: invalid source pattern '"), err);
+        assertTrue(err.contains("': Missing ']"), err);
+    }
+
+    @Test
     public void testCheckPathsEmptyValueTreatedAsAbsent() throws IOException {
         // Passing --check-paths with an empty string should behave like no filter at all,
         // i.e. *all* outputs are checked. RU absence => exit 1 + Missing file: README.ru.md.

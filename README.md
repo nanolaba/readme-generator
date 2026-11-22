@@ -2079,7 +2079,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 22.11.2026 14:55:44
+Last updated: 22.11.2026 14:56:11
 ```
 
 </td></tr>
@@ -2536,7 +2536,7 @@ ${widget:endDetails}
 <details>
 <summary>Advanced</summary>
 
-inner *markdown* and 22.11.2026 14:55:44
+inner *markdown* and 22.11.2026 14:56:11
 
 </details>
 ```
@@ -2692,6 +2692,7 @@ This section summarises the main user-visible changes in each release. For full 
 - **`--validate` says why a template cannot be read**: a root template without read permission was reported as `cannot read the template configuration: null`; the message is now `cannot read README.src.md: access denied` (code `config-error`, as before). An imported template that cannot be read used to be skipped without a word, so `--validate` passed and the generation failed afterwards; it is now an `import-unreadable` error at the line of the import. Closes [#85](https://github.com/nanolaba/readme-generator/issues/85).
 - **Block widget errors print the marker as it is written**: the errors of `if`, `details` and custom `BlockWidget` subclasses showed the marker with doubled braces — `unmatched stray ${{widget:endIf}} at line 3` — which is not NRG syntax and cannot be copied back into a template. They now print `${widget:endIf}`. Closes [#84](https://github.com/nanolaba/readme-generator/issues/84).
 - **An output directory that cannot be created fails the run**: when the directory of an output file could not be created, NRG logged the error and added a `generation-failed` diagnostic but still exited `0`, and `--format json` reported `"ok": true` next to that error. The run now exits `2`, as for any other write failure; the outputs of the other languages are still written. Closes [#82](https://github.com/nanolaba/readme-generator/issues/82).
+- **An invalid glob is a usage error**: a malformed pattern in `--check-paths` (or `<checkPaths>`) or among the source file arguments, such as an unclosed `[` or `{`, crashed NRG with a `PatternSyntaxException` stack trace and exit code `1`, the code `--check` uses for files that are out of date. It is now reported as `Incorrect command line arguments: invalid --check-paths pattern '[': Missing ']'` with exit code `64`. Closes [#83](https://github.com/nanolaba/readme-generator/issues/83).
 
 ### 1.4
 
