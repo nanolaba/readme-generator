@@ -697,7 +697,7 @@ nrg --check --format json -f README.src.md
 ```
 
 - `files[].status`: `written` / `unchanged` (генерация), `ok` / `stale` / `missing` (`--check`), `ok` / `invalid` (`--validate`, по записи на исходный файл).
-- `diagnostics[].code` стабилен — ориентируйтесь на него, а не на `message`: `unknown-widget`, `unknown-parameter`, `undeclared-language`, `import-not-found`, `import-outside-root`, `unbalanced-ignore`, `unbalanced-block`, `undefined-variable`, `unresolved-reference`, `cosmetic-escape`, `missing-translation`, `language-construct`, `structure-mismatch`, `freeze-block`, `file-name-pattern`, `generation-failed`, `source-not-found`, `check-paths-unmatched`, `config-error`, `descriptor-error`. `hint` — предлагаемое исправление или `null`.
+- `diagnostics[].code` стабилен — ориентируйтесь на него, а не на `message`: `unknown-widget`, `unknown-parameter`, `undeclared-language`, `import-not-found`, `import-unreadable`, `import-outside-root`, `unbalanced-ignore`, `unbalanced-block`, `undefined-variable`, `unresolved-reference`, `cosmetic-escape`, `missing-translation`, `language-construct`, `structure-mismatch`, `freeze-block`, `file-name-pattern`, `generation-failed`, `source-not-found`, `check-paths-unmatched`, `config-error`, `descriptor-error`. `hint` — предлагаемое исправление или `null`.
 - Пути указаны относительно рабочего каталога, с разделителем `/`.
 - При ошибке в аргументах (код `64`) в stdout ничего не пишется; сообщение — в stderr.
 
@@ -2086,7 +2086,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 22.11.2026 14:36:09
+Last updated: 22.11.2026 14:54:21
 ```
 
 </td></tr>
@@ -2544,7 +2544,7 @@ ${widget:endDetails}
 <details>
 <summary>Advanced</summary>
 
-inner *markdown* and 22.11.2026 14:36:09
+inner *markdown* and 22.11.2026 14:54:21
 
 </details>
 ```
@@ -2696,6 +2696,7 @@ nrg --classpath my-widgets.jar --widgets com.acme.widgets.Tag,com.acme.widgets.B
 ### В разработке (1.5-SNAPSHOT)
 
 - **Обновлены runtime-зависимости**: `nanolog` 1.1 → 1.5-SNAPSHOT, `commons-lang3` 3.21.0 → 3.22.0. Вывод лога, `--log-level` / `NRG_LOG_LEVEL` и логирование только в stderr при `--format json` не изменились. Когда NRG запускает ИИ-агент (переменные `AI_AGENT`, `CLAUDECODE` и подобные), режим агента nanolog добавляет в stderr строку `[NANOLOG]` и сводку запуска и ведёт журнал запуска в `target/nanolog/` (вне проекта Maven или Gradle — в `.nanolog/`); `NANOLOG_AGENT=off` его отключает. `--claude-hook` отключает его сам, так что вывод хука, который Claude Code показывает агенту, не меняется.
+- **`--validate` сообщает, почему шаблон не читается**: корневой шаблон без права на чтение сообщался как `cannot read the template configuration: null`; теперь сообщение — `cannot read README.src.md: access denied` (код `config-error`, как и раньше). Импортируемый шаблон, который нельзя прочитать, раньше молча пропускался: `--validate` проходил, а генерация потом падала; теперь это ошибка `import-unreadable` в строке импорта. Закрывает [#85](https://github.com/nanolaba/readme-generator/issues/85).
 
 ### 1.4
 

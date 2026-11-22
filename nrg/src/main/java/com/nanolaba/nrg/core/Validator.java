@@ -8,6 +8,7 @@ import org.apache.commons.io.FileUtils;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.AccessDeniedException;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -93,7 +94,14 @@ public final class Validator {
         private GeneratorConfig rootConfig;
 
         List<Diagnostic> validate() {
-            String body = readSafe(rootSourceFile);
+            String body;
+            try {
+                body = FileUtils.readFileToString(rootSourceFile, StandardCharsets.UTF_8);
+            } catch (IOException e) {
+                error(rootSourceFile, 0, "config-error",
+                        "cannot read " + rootSourceFile.getName() + ": " + describe(e), null);
+                return diagnostics;
+            }
             try {
                 rootConfig = new GeneratorConfig(rootSourceFile, body, extraWidgets);
                 rootConfig.setProjectRoot(projectRoot);
@@ -114,13 +122,13 @@ public final class Validator {
             if (!rootVariants.isEmpty()) {
                 declaredProperties.add(NRGConstants.PROPERTY_VARIANT);
             }
-            validateFile(rootSourceFile, rootConfig, rootLanguages, true);
+            validateFile(rootSourceFile, body, rootConfig, rootLanguages, true);
             checkVariableReferences();
             sortByFileAndLine();
             return diagnostics;
         }
 
-        private void validateFile(File file, GeneratorConfig config, List<String> inheritedLanguages,
+        private void validateFile(File file, String body, GeneratorConfig config, List<String> inheritedLanguages,
                                   boolean inheritedParity) {
             File canonical;
             try {
@@ -131,8 +139,6 @@ public final class Validator {
             if (!visited.add(canonical)) {
                 return;
             }
-            String body = readSafe(file);
-            if (body == null) return;
             fileOrder.add(file);
 
             // A file declaring its own nrg.languages overrides what was inherited; otherwise the
@@ -268,7 +274,15 @@ public final class Validator {
                 error(file, lineNo, "import-not-found", "import path not found: '" + path + "'",
                         "paths are relative to the importing file");
             } else if (!"false".equals(NRGUtil.parseParametersLine(params).get("run-generator"))) {
-                validateFile(importedFile, childConfig(importedFile, config), declaredLanguages, parity);
+                String body;
+                try {
+                    body = FileUtils.readFileToString(importedFile, StandardCharsets.UTF_8);
+                } catch (IOException e) {
+                    error(file, lineNo, "import-unreadable", "cannot read import '" + path + "': " + describe(e),
+                            "check the permissions of the file");
+                    return;
+                }
+                validateFile(importedFile, body, childConfig(importedFile, body, config), declaredLanguages, parity);
             }
         }
 
@@ -277,9 +291,9 @@ public final class Validator {
          * descriptor references resolve against the same files: its own directory, the parent's
          * run context, and the parent's properties where the child declares none.
          */
-        private GeneratorConfig childConfig(File importedFile, GeneratorConfig parent) {
+        private GeneratorConfig childConfig(File importedFile, String body, GeneratorConfig parent) {
             try {
-                return parent.forImportedTemplate(importedFile, readSafe(importedFile), extraWidgets);
+                return parent.forImportedTemplate(importedFile, body, extraWidgets);
             } catch (RuntimeException e) {
                 return parent;
             }
@@ -498,12 +512,9 @@ public final class Validator {
                 || "@".equals(marker) || marker.startsWith("@");
     }
 
-    private static String readSafe(File file) {
-        try {
-            return FileUtils.readFileToString(file, StandardCharsets.UTF_8);
-        } catch (IOException e) {
-            return null;
-        }
+    /** Why a file could not be read: the message of an {@link AccessDeniedException} is the bare path. */
+    private static String describe(IOException e) {
+        return e instanceof AccessDeniedException ? "access denied" : e.toString();
     }
 
     public enum Severity {ERROR, WARNING}

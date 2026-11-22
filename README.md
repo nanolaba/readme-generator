@@ -695,7 +695,7 @@ nrg --check --format json -f README.src.md
 ```
 
 - `files[].status`: `written` / `unchanged` (generation), `ok` / `stale` / `missing` (`--check`), `ok` / `invalid` (`--validate`, one entry per source file).
-- `diagnostics[].code` is stable — match on it, not on `message`: `unknown-widget`, `unknown-parameter`, `undeclared-language`, `import-not-found`, `import-outside-root`, `unbalanced-ignore`, `unbalanced-block`, `undefined-variable`, `unresolved-reference`, `cosmetic-escape`, `missing-translation`, `language-construct`, `structure-mismatch`, `freeze-block`, `file-name-pattern`, `generation-failed`, `source-not-found`, `check-paths-unmatched`, `config-error`, `descriptor-error`. `hint` is the suggested fix or `null`.
+- `diagnostics[].code` is stable — match on it, not on `message`: `unknown-widget`, `unknown-parameter`, `undeclared-language`, `import-not-found`, `import-unreadable`, `import-outside-root`, `unbalanced-ignore`, `unbalanced-block`, `undefined-variable`, `unresolved-reference`, `cosmetic-escape`, `missing-translation`, `language-construct`, `structure-mismatch`, `freeze-block`, `file-name-pattern`, `generation-failed`, `source-not-found`, `check-paths-unmatched`, `config-error`, `descriptor-error`. `hint` is the suggested fix or `null`.
 - Paths are relative to the working directory, with `/` separators.
 - On a usage error (exit code `64`) nothing is written to stdout; the message is on stderr.
 
@@ -2079,7 +2079,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 22.11.2026 14:36:08
+Last updated: 22.11.2026 14:54:20
 ```
 
 </td></tr>
@@ -2536,7 +2536,7 @@ ${widget:endDetails}
 <details>
 <summary>Advanced</summary>
 
-inner *markdown* and 22.11.2026 14:36:08
+inner *markdown* and 22.11.2026 14:54:20
 
 </details>
 ```
@@ -2689,6 +2689,7 @@ This section summarises the main user-visible changes in each release. For full 
 ### Unreleased (1.5-SNAPSHOT)
 
 - **Updated runtime dependencies**: `nanolog` 1.1 → 1.5-SNAPSHOT, `commons-lang3` 3.21.0 → 3.22.0. Log output, `--log-level` / `NRG_LOG_LEVEL` and the stderr-only logging of `--format json` are unchanged. When a coding agent runs NRG (`AI_AGENT`, `CLAUDECODE` and similar variables), nanolog's agent mode adds a `[NANOLOG]` notice and a run summary on stderr and keeps a run log in `target/nanolog/` (`.nanolog/` outside a Maven or Gradle project); `NANOLOG_AGENT=off` turns it off. `--claude-hook` turns it off by itself, so the hook output Claude Code shows the agent stays the same.
+- **`--validate` says why a template cannot be read**: a root template without read permission was reported as `cannot read the template configuration: null`; the message is now `cannot read README.src.md: access denied` (code `config-error`, as before). An imported template that cannot be read used to be skipped without a word, so `--validate` passed and the generation failed afterwards; it is now an `import-unreadable` error at the line of the import. Closes [#85](https://github.com/nanolaba/readme-generator/issues/85).
 
 ### 1.4
 

@@ -248,6 +248,26 @@ class ValidatorTest extends DefaultNRGTest {
 
             assertEquals(1, diags.size(), diags.toString());
             assertEquals("config-error", diags.get(0).getCode());
+            assertEquals("cannot read README.src.md: access denied", diags.get(0).getMessage());
+        }
+    }
+
+    @Test
+    public void testUnreadableImportIsReportedAtTheImport() throws IOException {
+        Path src = writeSource("README.src.md", "<!--@nrg.languages=en-->\n# Title\n"
+                + "${widget:import(path='part.src.md')}\n");
+        Path part = writeSource("part.src.md", "${widget:doesNotExist}\n");
+
+        try (ReadDenial ignored = ReadDenial.of(part)) {
+            List<Validator.Diagnostic> diags = validate(src);
+
+            assertEquals(1, diags.size(), diags.toString());
+            Validator.Diagnostic d = diags.get(0);
+            assertEquals("import-unreadable", d.getCode());
+            assertEquals(src.toFile(), d.getFile());
+            assertEquals(3, d.getLine());
+            assertEquals("cannot read import 'part.src.md': access denied", d.getMessage());
+            assertEquals("check the permissions of the file", d.getHint());
         }
     }
 
