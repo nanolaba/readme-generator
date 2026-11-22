@@ -74,14 +74,15 @@ public class NRGTest extends DefaultNRGTest {
     }
 
     /**
-     * Runs {@code args} while {@code System.out} fails on the first line printed — the report of
-     * {@code --format json} — so that the run ends with an exception rather than a status.
+     * Runs {@code args} while {@code System.out} fails on the first bytes printed — the report of
+     * {@code --format json} — so that the run ends with an exception rather than a status. NRG
+     * prints through a UTF-8 stream of its own that hands {@code System.out} bytes, not lines.
      */
     private static void runWithFailingStdout(String... args) {
         PrintStream out = System.out;
         System.setOut(new PrintStream(new ByteArrayOutputStream()) {
             @Override
-            public void println(String x) {
+            public void write(byte[] buf, int off, int len) {
                 throw new IllegalStateException("stdout is gone");
             }
         });

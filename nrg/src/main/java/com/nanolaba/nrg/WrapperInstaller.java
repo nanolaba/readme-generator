@@ -106,7 +106,7 @@ final class WrapperInstaller {
                 + "# distributionUrl=" + distributionUrl(pinned) + "\n";
         write(new File(directory, PROPERTIES_PATH), properties, "\n");
 
-        System.out.println("Created nrgw, nrgw.cmd and " + PROPERTIES_PATH + " for NRG " + pinned
+        NRG.stdout().println("Created nrgw, nrgw.cmd and " + PROPERTIES_PATH + " for NRG " + pinned
                 + ". Commit them, then run ./nrgw -f README.src.md (nrgw.cmd on Windows).");
         return NRG.EXIT_OK;
     }

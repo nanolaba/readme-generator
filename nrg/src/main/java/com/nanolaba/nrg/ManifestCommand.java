@@ -107,13 +107,13 @@ final class ManifestCommand {
                 sb.append(",\n     \"dynamic\": ").append(array(new ArrayList<>(m.getDynamic()))).append('}');
             }
             sb.append(manifests.isEmpty() ? "]\n}" : "\n  ]\n}");
-            System.out.println(sb);
+            NRG.stdout().println(sb);
         } else {
             for (TemplateManifest m : manifests) {
-                System.out.println(path(m.getSource()) + (m.getVariant() == null ? "" : " (variant " + m.getVariant() + ")"));
-                m.getOutputs().forEach((lang, f) -> System.out.println("  output  " + path(f) + " (" + lang + ")"));
-                m.getInputs().forEach(f -> System.out.println("  input   " + path(f)));
-                m.getDynamic().forEach(d -> System.out.println("  dynamic " + d));
+                NRG.stdout().println(path(m.getSource()) + (m.getVariant() == null ? "" : " (variant " + m.getVariant() + ")"));
+                m.getOutputs().forEach((lang, f) -> NRG.stdout().println("  output  " + path(f) + " (" + lang + ")"));
+                m.getInputs().forEach(f -> NRG.stdout().println("  input   " + path(f)));
+                m.getDynamic().forEach(d -> NRG.stdout().println("  dynamic " + d));
             }
         }
         return loadFailed ? NRG.EXIT_TEMPLATE_ERROR : NRG.EXIT_OK;
@@ -128,11 +128,11 @@ final class ManifestCommand {
             }
         }
         if (format == RunReport.Format.JSON) {
-            System.out.println("{\"version\": " + RunReport.str(NRG.getVersion().trim()) + ", \"mode\": \"is-generated\", "
+            NRG.stdout().println("{\"version\": " + RunReport.str(NRG.getVersion().trim()) + ", \"mode\": \"is-generated\", "
                     + "\"file\": " + RunReport.str(path(file)) + ", \"generated\": " + !sources.isEmpty()
                     + ", \"sources\": " + array(sources) + "}");
         } else {
-            sources.forEach(System.out::println);
+            sources.forEach(NRG.stdout()::println);
         }
         return sources.isEmpty() ? 1 : NRG.EXIT_OK;
     }
@@ -151,10 +151,10 @@ final class ManifestCommand {
         if (format == RunReport.Format.JSON) {
             List<String> changedPaths = new ArrayList<>();
             changed.forEach(f -> changedPaths.add(path(f)));
-            System.out.println("{\"version\": " + RunReport.str(NRG.getVersion().trim()) + ", \"mode\": \"affected\", "
+            NRG.stdout().println("{\"version\": " + RunReport.str(NRG.getVersion().trim()) + ", \"mode\": \"affected\", "
                     + "\"files\": " + array(changedPaths) + ", \"affected\": " + array(affected) + "}");
         } else {
-            affected.forEach(System.out::println);
+            affected.forEach(NRG.stdout()::println);
         }
         return loadFailed ? NRG.EXIT_TEMPLATE_ERROR : NRG.EXIT_OK;
     }
@@ -225,10 +225,10 @@ final class ManifestCommand {
                         .append(", \"text\": ").append(RunReport.str(lines[n - 1]))
                         .append(", \"origin\": ").append(originJson(map.get(n - 1))).append('}');
             }
-            System.out.println(sb.append("\n]}"));
+            NRG.stdout().println(sb.append("\n]}"));
         } else {
             for (int n = first; n <= end; n++) {
-                System.out.println(path(output) + ":" + n + ": " + describe(map.get(n - 1)));
+                NRG.stdout().println(path(output) + ":" + n + ": " + describe(map.get(n - 1)));
             }
         }
         return NRG.EXIT_OK;
@@ -314,12 +314,12 @@ final class ManifestCommand {
                         .append(", \"old\": ").append(object(f.getOldText()))
                         .append(", \"new\": ").append(object(f.getNewText())).append('}');
             }
-            System.out.println(sb.append(findings.isEmpty() ? "]}" : "\n]}"));
+            NRG.stdout().println(sb.append(findings.isEmpty() ? "]}" : "\n]}"));
         } else {
             for (StaleTranslationFinder.Finding f : findings) {
                 String range = f.getFirstLine() == f.getLastLine() ? String.valueOf(f.getFirstLine())
                         : f.getFirstLine() + "-" + f.getLastLine();
-                System.out.println(path(f.getFile()) + ":" + range + ": " + quoted(f.getChanged()) + " changed since "
+                NRG.stdout().println(path(f.getFile()) + ":" + range + ": " + quoted(f.getChanged()) + " changed since "
                         + ref + ", " + quoted(f.getUnchanged()) + " did not"
                         + ("construct".equals(f.getKind()) ? " (in a ${...} language construct)" : ""));
                 for (String language : f.getChanged()) {
@@ -343,14 +343,14 @@ final class ManifestCommand {
 
     private static void printIndented(String prefix, String text) {
         if (text == null || text.isEmpty()) {
-            System.out.println(prefix + "(nothing)");
+            NRG.stdout().println(prefix + "(nothing)");
             return;
         }
         String[] lines = text.split("\n", -1);
-        System.out.println(prefix + lines[0]);
+        NRG.stdout().println(prefix + lines[0]);
         String pad = new String(new char[prefix.length()]).replace('\0', ' ');
         for (int i = 1; i < lines.length; i++) {
-            System.out.println(pad + lines[i]);
+            NRG.stdout().println(pad + lines[i]);
         }
     }
 
@@ -413,7 +413,7 @@ final class ManifestCommand {
     int agentRules(File target, boolean check) throws IOException {
         String block = buildAgentRules(target);
         if (target == null) {
-            System.out.print(block);
+            NRG.stdout().print(block);
             return loadFailed ? NRG.EXIT_TEMPLATE_ERROR : NRG.EXIT_OK;
         }
         String existing = target.isFile() ? FileUtils.readFileToString(target, charset) : "";
@@ -438,9 +438,9 @@ final class ManifestCommand {
         }
         if (!updated.equals(existing)) {
             FileUtils.write(target, updated, charset);
-            System.out.println("Updated the NRG block in " + target.getPath());
+            NRG.stdout().println("Updated the NRG block in " + target.getPath());
         } else {
-            System.out.println("The NRG block in " + target.getPath() + " is up to date");
+            NRG.stdout().println("The NRG block in " + target.getPath() + " is up to date");
         }
         return loadFailed ? NRG.EXIT_TEMPLATE_ERROR : NRG.EXIT_OK;
     }

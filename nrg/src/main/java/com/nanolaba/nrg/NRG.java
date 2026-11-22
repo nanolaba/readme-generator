@@ -23,6 +23,7 @@ import org.apache.commons.io.function.IOIntSupplier;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.PrintStream;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.charset.Charset;
@@ -123,6 +124,19 @@ public class NRG {
 
     public static void main(String... args) {
         launch(args, System::getenv, System::exit);
+    }
+
+    /**
+     * Standard output for what NRG prints: UTF-8, like the files it writes, whatever the platform
+     * charset. JDK 8 to 17 encode {@code System.out} in the platform charset, where every character
+     * outside it, or everything non-ASCII under the POSIX locale, would come out as {@code ?}.
+     *
+     * <p>Wraps the {@code System.out} of the moment rather than the file descriptor, so a caller that
+     * replaced it (the Maven build, the post-edit hook, a test) still receives the bytes. Every print
+     * reaches {@code System.out} at once, in order with the log lines written to it directly.
+     */
+    static PrintStream stdout() {
+        return Code.run(() -> new PrintStream(System.out, true, StandardCharsets.UTF_8.name()));
     }
 
     /**
@@ -527,9 +541,9 @@ public class NRG {
             }
         }
         if (outputFormat == RunReport.Format.JSON) {
-            System.out.println(report.toJson(aggregateCode));
+            stdout().println(report.toJson(aggregateCode));
         } else if (outputFormat == RunReport.Format.GITHUB) {
-            report.toGithubAnnotations().forEach(System.out::println);
+            report.toGithubAnnotations().forEach(stdout()::println);
         }
         return aggregateCode;
     }
@@ -1033,6 +1047,7 @@ public class NRG {
      * we log a warning and move on instead of failing the whole run.
      */
     private static void printToStdout(Generator generator, String languageFilter, boolean forceHeader) {
+        PrintStream out = stdout();
         List<String> languages = generator.getConfig().getLanguages();
         if (languageFilter != null) {
             if (!languages.contains(languageFilter)) {
@@ -1043,11 +1058,11 @@ public class NRG {
             }
             if (forceHeader) {
                 File readmeFile = getReadmeFile(languageFilter, generator.getConfig());
-                System.out.println("=== " + readmeFile.getName() + " ===");
+                out.println("=== " + readmeFile.getName() + " ===");
             }
-            System.out.print(generator.getResult(languageFilter).getContent());
+            out.print(generator.getResult(languageFilter).getContent());
             if (forceHeader) {
-                System.out.println();
+                out.println();
             }
             return;
         }
@@ -1055,11 +1070,11 @@ public class NRG {
         for (String lang : languages) {
             if (multiple) {
                 File readmeFile = getReadmeFile(lang, generator.getConfig());
-                System.out.println("=== " + readmeFile.getName() + " ===");
+                out.println("=== " + readmeFile.getName() + " ===");
             }
-            System.out.print(generator.getResult(lang).getContent());
+            out.print(generator.getResult(lang).getContent());
             if (multiple) {
-                System.out.println();
+                out.println();
             }
         }
     }
@@ -1100,7 +1115,7 @@ public class NRG {
                 System.err.println("The syntax card is missing from this build of NRG");
                 return EXIT_TEMPLATE_ERROR;
             }
-            System.out.print(IOUtils.toString(in, StandardCharsets.UTF_8));
+            stdout().print(IOUtils.toString(in, StandardCharsets.UTF_8));
             return EXIT_OK;
         }
     }
@@ -1120,8 +1135,8 @@ public class NRG {
     }
 
     private static void printVersion() {
-        System.out.println("Nanolaba Readme Generator " + getVersion());
-        System.out.println("https://github.com/nanolaba/readme-generator");
+        stdout().println("Nanolaba Readme Generator " + getVersion());
+        stdout().println("https://github.com/nanolaba/readme-generator");
     }
 
     public static String getVersion() {

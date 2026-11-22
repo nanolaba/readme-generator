@@ -146,7 +146,7 @@ final class ClaudeHook {
                 ? "NRG: the generated files are already up to date."
                 : "NRG regenerated " + String.join(", ", written) + " from the templates; commit them together with the template."
                 + (check.err.trim().isEmpty() ? "" : " Warnings from --validate: " + check.err.trim());
-        System.out.println("{\"hookSpecificOutput\": {\"hookEventName\": \"PostToolUse\", \"additionalContext\": "
+        NRG.stdout().println("{\"hookSpecificOutput\": {\"hookEventName\": \"PostToolUse\", \"additionalContext\": "
                 + RunReport.str(context) + "}}");
         return NRG.EXIT_OK;
     }
