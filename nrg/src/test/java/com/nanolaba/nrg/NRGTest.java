@@ -43,6 +43,8 @@ public class NRGTest extends DefaultNRGTest {
     @TempDir
     Path tempDir;
 
+    private static final String NANOLOG_AGENT = NanologAgentModeGuard.PROPERTY;
+
     private InputStream originalIn;
 
     @BeforeEach
@@ -122,32 +124,24 @@ public class NRGTest extends DefaultNRGTest {
 
     @Test
     public void testMainTurnsNanologAgentModeOffUnlessSetExplicitly() {
-        String saved = System.getProperty("nanolog.agent");
-        try {
-            System.clearProperty("nanolog.agent");
-            NRG.launch(new String[]{"--no-such-option"}, name -> null, code -> {
-            });
-            assertEquals("off", System.getProperty("nanolog.agent"), "every command-line run, not only the hook");
-            assertTrue(getErrAndClear().contains("Incorrect command line arguments"));
+        // NanologAgentModeGuard puts nanolog.agent back after the test.
+        System.clearProperty(NANOLOG_AGENT);
+        NRG.launch(new String[]{"--no-such-option"}, name -> null, code -> {
+        });
+        assertEquals("off", System.getProperty(NANOLOG_AGENT), "every command-line run, not only the hook");
+        assertTrue(getErrAndClear().contains("Incorrect command line arguments"));
 
-            System.clearProperty("nanolog.agent");
-            NRG.quietAgentMode(name -> "NANOLOG_AGENT".equals(name) ? "on" : null);
-            assertNull(System.getProperty("nanolog.agent"), "NANOLOG_AGENT set by the user wins");
+        System.clearProperty(NANOLOG_AGENT);
+        NRG.quietAgentMode(name -> "NANOLOG_AGENT".equals(name) ? "on" : null);
+        assertNull(System.getProperty(NANOLOG_AGENT), "NANOLOG_AGENT set by the user wins");
 
-            System.setProperty("nanolog.agent", "on");
-            NRG.quietAgentMode(name -> null);
-            assertEquals("on", System.getProperty("nanolog.agent"), "-Dnanolog.agent set by the user wins");
+        System.setProperty(NANOLOG_AGENT, "on");
+        NRG.quietAgentMode(name -> null);
+        assertEquals("on", System.getProperty(NANOLOG_AGENT), "-Dnanolog.agent set by the user wins");
 
-            System.clearProperty("nanolog.agent");
-            assertEquals(NRG.EXIT_USAGE, NRG.run("--no-such-option"));
-            assertNull(System.getProperty("nanolog.agent"), "run() leaves agent mode to the JVM it runs in");
-        } finally {
-            if (saved == null) {
-                System.clearProperty("nanolog.agent");
-            } else {
-                System.setProperty("nanolog.agent", saved);
-            }
-        }
+        System.clearProperty(NANOLOG_AGENT);
+        assertEquals(NRG.EXIT_USAGE, NRG.run("--no-such-option"));
+        assertNull(System.getProperty(NANOLOG_AGENT), "run() leaves agent mode to the JVM it runs in");
     }
 
     // ------------------------------------------------------------------ options

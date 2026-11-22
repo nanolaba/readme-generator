@@ -4,12 +4,14 @@ import com.nanolaba.logging.LOG;
 import org.apache.commons.io.output.TeeOutputStream;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 
+@ExtendWith(NanologAgentModeGuard.class)
 public abstract class DefaultNRGTest {
 
     public static final String RN = System.lineSeparator();
