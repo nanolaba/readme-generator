@@ -91,7 +91,30 @@ public class NRG {
 
     public static boolean exitOnFailure = true;
 
+    /** nanolog's switch for its agent mode, as a system property and as an environment variable. */
+    private static final String NANOLOG_AGENT_PROPERTY = "nanolog.agent";
+    private static final String NANOLOG_AGENT_ENV = "NANOLOG_AGENT";
+
+    /**
+     * Turns nanolog's agent mode off for {@code --claude-hook}, unless {@code nanolog.agent} /
+     * {@code NANOLOG_AGENT} is set explicitly.
+     * <p>
+     * Claude Code starts the hook in its own environment, so nanolog always sees a coding agent
+     * there. In agent mode it would put a {@code [NANOLOG]} notice before the reason a refused edit
+     * prints on stderr, which Claude Code hands to the agent, and a run summary after it, and it
+     * would write a run log into the user's project on every edit. NRG installs its own console
+     * logger anyway, so agent mode changes nothing else in a hook. nanolog decides on agent mode
+     * once, when {@code LOG} initialises: this has to run before anything logs.
+     */
+    static void quietAgentModeForHook(String[] args, Function<String, String> env) {
+        boolean hook = Arrays.stream(args).anyMatch(a -> a.equals("--claude-hook") || a.startsWith("--claude-hook="));
+        if (hook && System.getProperty(NANOLOG_AGENT_PROPERTY) == null && env.apply(NANOLOG_AGENT_ENV) == null) {
+            System.setProperty(NANOLOG_AGENT_PROPERTY, "off");
+        }
+    }
+
     public static void main(String... args) {
+        quietAgentModeForHook(args, System::getenv);
         int code = run(args);
         if (code != 0 && exitOnFailure) {
             System.exit(code);

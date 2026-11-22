@@ -6,7 +6,8 @@
 # readme-generator-1.2-SNAPSHOT.zip and every nrg-action consumer got a 404 on
 # releases/download/v1.2/readme-generator-1.2.zip. This script makes that mistake loud:
 #
-#   1. every POM carries the same version and it is not a -SNAPSHOT;
+#   1. every POM carries the same version and it is not a -SNAPSHOT, and no POM refers to a
+#      SNAPSHOT dependency or plugin;
 #   2. (--tag vX.Y)   the tag being released is exactly "v" + that version;
 #   3. (--build)      the release zip builds as readme-generator-X.Y.zip and the jar inside
 #                     reports X.Y; a .sha256 file is written next to it;
@@ -73,6 +74,12 @@ done
 
 if [[ "$VERSION" == *-SNAPSHOT* ]]; then
   fail "project.version is $VERSION — pin the POMs to the release version (drop -SNAPSHOT) and commit before tagging"
+fi
+
+# The project version is a release by now, so any SNAPSHOT left in a POM is a dependency or a
+# plugin (nanolog is taken as a SNAPSHOT between its releases): a release must not ship one.
+if snapshots="$(grep -n -E '[0-9]-SNAPSHOT' "${POMS[@]}")"; then
+  fail "a POM still refers to a SNAPSHOT — switch it to a release first: $(echo "$snapshots" | tr '\n' ' ')"
 fi
 
 # === 2. tag ===

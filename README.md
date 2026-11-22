@@ -1962,7 +1962,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 17.11.2026 03:08:33
+Last updated: 22.11.2026 07:40:04
 ```
 
 </td></tr>
@@ -1975,7 +1975,7 @@ ${widget:date(pattern = 'dd.MM.yyyy')}
 </td><td>
 
 ```markdown
-17.11.2026
+22.11.2026
 ```
 
 </td></tr>
@@ -2419,7 +2419,7 @@ ${widget:endDetails}
 <details>
 <summary>Advanced</summary>
 
-inner *markdown* and 17.11.2026 03:08:33
+inner *markdown* and 22.11.2026 07:40:04
 
 </details>
 ```
@@ -2564,7 +2564,7 @@ This section summarises the main user-visible changes in each release. For full 
 
 ### Unreleased (1.5-SNAPSHOT)
 
-- **Updated runtime dependencies**: `nanolog` 1.1 → 1.3, `commons-lang3` 3.21.0 → 3.22.0. Log output, `--log-level` / `NRG_LOG_LEVEL` and the stderr-only logging of `--format json` are unchanged.
+- **Updated runtime dependencies**: `nanolog` 1.1 → 1.5-SNAPSHOT, `commons-lang3` 3.21.0 → 3.22.0. Log output, `--log-level` / `NRG_LOG_LEVEL` and the stderr-only logging of `--format json` are unchanged. When a coding agent runs NRG (`AI_AGENT`, `CLAUDECODE` and similar variables), nanolog's agent mode adds a `[NANOLOG]` notice and a run summary on stderr and keeps a run log in `target/nanolog/` (`.nanolog/` outside a Maven or Gradle project); `NANOLOG_AGENT=off` turns it off. `--claude-hook` turns it off by itself, so the hook output Claude Code shows the agent stays the same.
 
 ### 1.4
 
@@ -2710,4 +2710,4 @@ If **Nanolaba Readme Generator (NRG)** keeps your multi-language READMEs in sync
 
 
 ---
-*Last updated: 17.11.2026*
+*Last updated: 22.11.2026*

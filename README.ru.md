@@ -1971,7 +1971,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 17.11.2026 03:08:34
+Last updated: 22.11.2026 07:40:04
 ```
 
 </td></tr>
@@ -1984,7 +1984,7 @@ ${widget:date(pattern = 'dd.MM.yyyy')}
 </td><td>
 
 ```markdown
-17.11.2026
+22.11.2026
 ```
 
 </td></tr>
@@ -2429,7 +2429,7 @@ ${widget:endDetails}
 <details>
 <summary>Advanced</summary>
 
-inner *markdown* and 17.11.2026 03:08:34
+inner *markdown* and 22.11.2026 07:40:04
 
 </details>
 ```
@@ -2573,7 +2573,7 @@ nrg --classpath my-widgets.jar --widgets com.acme.widgets.Tag,com.acme.widgets.B
 
 ### В разработке (1.5-SNAPSHOT)
 
-- **Обновлены runtime-зависимости**: `nanolog` 1.1 → 1.3, `commons-lang3` 3.21.0 → 3.22.0. Вывод лога, `--log-level` / `NRG_LOG_LEVEL` и логирование только в stderr при `--format json` не изменились.
+- **Обновлены runtime-зависимости**: `nanolog` 1.1 → 1.5-SNAPSHOT, `commons-lang3` 3.21.0 → 3.22.0. Вывод лога, `--log-level` / `NRG_LOG_LEVEL` и логирование только в stderr при `--format json` не изменились. Когда NRG запускает ИИ-агент (переменные `AI_AGENT`, `CLAUDECODE` и подобные), режим агента nanolog добавляет в stderr строку `[NANOLOG]` и сводку запуска и ведёт журнал запуска в `target/nanolog/` (вне проекта Maven или Gradle — в `.nanolog/`); `NANOLOG_AGENT=off` его отключает. `--claude-hook` отключает его сам, так что вывод хука, который Claude Code показывает агенту, не меняется.
 
 ### 1.4
 
@@ -2720,4 +2720,4 @@ nrg --classpath my-widgets.jar --widgets com.acme.widgets.Tag,com.acme.widgets.B
 
 
 ---
-*Дата последнего обновления: 17.11.2026*
+*Дата последнего обновления: 22.11.2026*

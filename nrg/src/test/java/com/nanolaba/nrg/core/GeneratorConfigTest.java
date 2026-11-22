@@ -1,6 +1,7 @@
 package com.nanolaba.nrg.core;
 
 import com.nanolaba.logging.LOG;
+import com.nanolaba.logging.MemoryLogger;
 import com.nanolaba.nrg.DefaultNRGTest;
 import com.nanolaba.nrg.NRG;
 import org.junit.jupiter.api.Test;
@@ -8,32 +9,37 @@ import org.junit.jupiter.api.Test;
 import java.io.File;
 import java.util.List;
 
+import static com.nanolaba.logging.LogEntry.LogEntryLevel.DEBUG;
 import static com.nanolaba.nrg.core.NRGConstants.PROPERTY_DEFAULT_LANGUAGE;
 import static com.nanolaba.nrg.core.NRGConstants.PROPERTY_LANGUAGES;
 import static org.junit.jupiter.api.Assertions.*;
 
 class GeneratorConfigTest extends DefaultNRGTest {
 
+    // The entries are captured rather than read from the console: under a coding agent the
+    // default console of nanolog shows WARN and above only.
     @Test
     public void testPrintEmptyProperties() {
-        new GeneratorConfig(new File("README.src.md"), "", null);
-        String output = getOutAndClear();
-        assertTrue(output.contains("Generator configuration:"));
-        assertTrue(output.contains("widgets: ["));
-        assertTrue(output.contains("sourceFile: README.src.md"));
-        assertTrue(output.contains("languages: [en]"));
-        assertTrue(output.contains("defaultLanguage: en"));
-        assertTrue(output.contains("properties (names only): []"));
+        try (MemoryLogger log = MemoryLogger.capture()) {
+            new GeneratorConfig(new File("README.src.md"), "", null);
+            log.assertLogged(DEBUG, "Generator configuration:");
+            log.assertLogged(DEBUG, "widgets: [");
+            log.assertLogged(DEBUG, "sourceFile: README.src.md");
+            log.assertLogged(DEBUG, "languages: [en]");
+            log.assertLogged(DEBUG, "defaultLanguage: en");
+            log.assertLogged(DEBUG, "properties (names only): []");
 
-        assertFalse(output.contains("sourceFileBody: "));
+            assertFalse(log.contains(DEBUG, "sourceFileBody: "), log.getMessages().toString());
+        }
     }
 
     @Test
     public void testPrintProperties() {
-        new GeneratorConfig(new File("README.src.md"), "<!--@nrg.languages=en,ru-->", null);
-        String output = getOutAndClear();
-        // Names only: values may carry secrets taken from the environment.
-        assertTrue(output.contains("properties (names only): [nrg.languages]"), output);
+        try (MemoryLogger log = MemoryLogger.capture()) {
+            new GeneratorConfig(new File("README.src.md"), "<!--@nrg.languages=en,ru-->", null);
+            // Names only: values may carry secrets taken from the environment.
+            log.assertLogged(DEBUG, "properties (names only): [nrg.languages]");
+        }
     }
 
     @Test

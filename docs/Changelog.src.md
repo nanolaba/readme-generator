@@ -5,8 +5,8 @@ This section summarises the main user-visible changes in each release. For full 
 
 ### ${en:'Unreleased', ru:'В разработке'} (${devVersion})<!--toc.ignore-->
 
-- **Updated runtime dependencies**: `nanolog` 1.1 → 1.3, `commons-lang3` 3.21.0 → 3.22.0. Log output, `--log-level` / `NRG_LOG_LEVEL` and the stderr-only logging of `--format json` are unchanged.<!--en-->
-- **Обновлены runtime-зависимости**: `nanolog` 1.1 → 1.3, `commons-lang3` 3.21.0 → 3.22.0. Вывод лога, `--log-level` / `NRG_LOG_LEVEL` и логирование только в stderr при `--format json` не изменились.<!--ru-->
+- **Updated runtime dependencies**: `nanolog` 1.1 → 1.5-SNAPSHOT, `commons-lang3` 3.21.0 → 3.22.0. Log output, `--log-level` / `NRG_LOG_LEVEL` and the stderr-only logging of `--format json` are unchanged. When a coding agent runs NRG (`AI_AGENT`, `CLAUDECODE` and similar variables), nanolog's agent mode adds a `[NANOLOG]` notice and a run summary on stderr and keeps a run log in `target/nanolog/` (`.nanolog/` outside a Maven or Gradle project); `NANOLOG_AGENT=off` turns it off. `--claude-hook` turns it off by itself, so the hook output Claude Code shows the agent stays the same.<!--en-->
+- **Обновлены runtime-зависимости**: `nanolog` 1.1 → 1.5-SNAPSHOT, `commons-lang3` 3.21.0 → 3.22.0. Вывод лога, `--log-level` / `NRG_LOG_LEVEL` и логирование только в stderr при `--format json` не изменились. Когда NRG запускает ИИ-агент (переменные `AI_AGENT`, `CLAUDECODE` и подобные), режим агента nanolog добавляет в stderr строку `[NANOLOG]` и сводку запуска и ведёт журнал запуска в `target/nanolog/` (вне проекта Maven или Gradle — в `.nanolog/`); `NANOLOG_AGENT=off` его отключает. `--claude-hook` отключает его сам, так что вывод хука, который Claude Code показывает агенту, не меняется.<!--ru-->
 
 ### 1.4<!--toc.ignore-->
 
