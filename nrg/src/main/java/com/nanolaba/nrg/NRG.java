@@ -107,11 +107,12 @@ public class NRG {
      * {@code NANOLOG_AGENT} is set explicitly.
      * <p>
      * Claude Code starts the hook in its own environment, so nanolog always sees a coding agent
-     * there. In agent mode it would put a {@code [NANOLOG]} notice before the reason a refused edit
-     * prints on stderr, which Claude Code hands to the agent, and a run summary after it, and it
-     * would write a run log into the user's project on every edit. NRG installs its own console
-     * logger anyway, so agent mode changes nothing else in a hook. nanolog decides on agent mode
-     * once, when {@code LOG} initialises: this has to run before anything logs.
+     * there. Since nanolog 1.5 a run that logs nothing gets nothing from agent mode, a refused edit
+     * included, but a post-edit regeneration that logs an error, such as an {@code exec} widget
+     * without {@code --allow-exec}, would print a {@code [NANOLOG]} run summary on stderr and write
+     * a run log into the user's project. NRG installs its own console logger anyway, so agent mode
+     * changes nothing else in a hook. nanolog decides on agent mode once, when {@code LOG}
+     * initialises: this has to run before anything logs.
      */
     static void quietAgentModeForHook(String[] args, Function<String, String> env) {
         boolean hook = Arrays.stream(args).anyMatch(a -> a.equals("--claude-hook") || a.startsWith("--claude-hook="));
