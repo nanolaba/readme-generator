@@ -117,7 +117,7 @@ Every build runs mutation testing ([PIT](https://pitest.org/)) and fails unless 
 
 When changing widget behavior or anchor generation, please also run the focused tests (`TableOfContentsWidgetTest`, `TableOfContentsWidgetSlugifyTest`, `ImportWidgetTest`, etc.) — they exercise the most fragile logic in the codebase.
 
-CI runs `mvn verify`, mutation testing included, against JDK 8 and JDK 17 on every push and pull request to `main`. Your changes need to pass on both.
+CI runs `mvn verify`, mutation testing included, against JDK 8 and JDK 17 on every push and pull request to `main`. Your changes need to pass on both. The main sources compile with `javac -Xlint:all`, and CI fails the build on any compiler warning: fix it, or suppress it on the narrowest declaration with a comment saying why.
 
 ## Coding conventions
 

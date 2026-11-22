@@ -117,7 +117,7 @@ mvn -pl nrg test-compile org.pitest:pitest-maven:mutationCoverage -Dpit.targetCl
 
 При изменении поведения виджетов или генерации анкоров запускайте также точечные тесты (`TableOfContentsWidgetTest`, `TableOfContentsWidgetSlugifyTest`, `ImportWidgetTest` и т.д.) — они покрывают самую хрупкую логику.
 
-CI прогоняет `mvn verify` вместе с мутационным тестированием на JDK 8 и JDK 17 при каждом push и pull request в `main`. Ваши изменения должны проходить и там, и там.
+CI прогоняет `mvn verify` вместе с мутационным тестированием на JDK 8 и JDK 17 при каждом push и pull request в `main`. Ваши изменения должны проходить и там, и там. Основные исходники компилируются с `javac -Xlint:all`, и CI роняет сборку на любом предупреждении компилятора: исправьте его или подавите на самом узком объявлении с комментарием, почему.
 
 ## Соглашения по коду
 

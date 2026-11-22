@@ -24,6 +24,10 @@
         <maven.compiler.target>8</maven.compiler.target>
         <maven.compiler.source>8</maven.compiler.source>
         <github.global.server>github</github.global.server>
+        <!-- javac -Xlint:all reports the warnings of the main sources. CI passes -Dnrg.failOnWarning=true,
+             so a warning fails the build on JDK 8 and 17; newer JDKs add lint categories of their own,
+             which stay warnings in a local build. -->
+        <nrg.failOnWarning>false</nrg.failOnWarning>
 
         <!-- Mutation testing runs in every build, CI included, and fails it below 100%.
              -Dpit.skip=true (or -DskipTests) skips it; -Dpit.threads=N sets the number of mutation workers. -->
@@ -150,6 +154,19 @@
                 <plugin>
                     <artifactId>maven-compiler-plugin</artifactId>
                     <version>${maven-compiler-plugin.version}</version>
+                    <executions>
+                        <execution>
+                            <id>default-compile</id>
+                            <configuration>
+                                <showWarnings>true</showWarnings>
+                                <compilerArgs>
+                                    <!-- -options: JDK 9+ warn that -source 8 is used without a boot class path -->
+                                    <arg>-Xlint:all,-options</arg>
+                                </compilerArgs>
+                                <failOnWarning>${nrg.failOnWarning}</failOnWarning>
+                            </configuration>
+                        </execution>
+                    </executions>
                 </plugin>
                 <plugin>
                     <artifactId>maven-surefire-plugin</artifactId>

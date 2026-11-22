@@ -1,6 +1,7 @@
 package com.nanolaba.nrg.core;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 
 import java.io.File;
 import java.nio.file.FileSystem;
@@ -147,7 +148,7 @@ public final class PathPatternMatcher {
         }
         // Only a file system root ("/", "C:/") already ends with the separator.
         String cwd = Paths.get("").toAbsolutePath().toString().replace('\\', '/');
-        return StringUtils.removeEnd(cwd, "/") + "/" + normalized;
+        return Strings.CS.removeEnd(cwd, "/") + "/" + normalized;
     }
 
     private static boolean isAbsoluteNormalized(String normalized) {

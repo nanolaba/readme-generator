@@ -34,7 +34,7 @@ jobs:
 
       # Mutation testing (pitest) runs in the test phase and fails the build below 100%.
       - name: Build & test
-        run: mvn --batch-mode --no-transfer-progress verify -Dgpg.skip=true -Dmaven.javadoc.skip=true -Dverbosity=NO_SPINNER
+        run: mvn --batch-mode --no-transfer-progress verify -Dgpg.skip=true -Dmaven.javadoc.skip=true -Dnrg.failOnWarning=true -Dverbosity=NO_SPINNER
 
       # Dogfood: HEAD's generator against HEAD's templates, on every push and pull request.
       # --validate rather than --check: the README renders ${widget:date}, so a regeneration

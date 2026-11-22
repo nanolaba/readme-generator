@@ -227,7 +227,7 @@ public class NRG {
                 .argName("pattern")
                 .desc("limit --check to outputs matching these glob patterns " +
                         "(repeatable, cwd-relative); without it all generated outputs are checked")
-                .build();
+                .get();
         checkPaths.setArgs(Option.UNLIMITED_VALUES);
         options.addOption(checkPaths);
         Option allowExec = new Option(null, "allow-exec", false,
@@ -292,7 +292,7 @@ public class NRG {
                 .hasArg()
                 .argName("file")
                 .desc("print the templates that read any of these files (repeatable)")
-                .build();
+                .get();
         affected.setArgs(Option.UNLIMITED_VALUES);
         options.addOption(affected);
         Option locate = new Option(null, "locate", true,
@@ -1103,6 +1103,9 @@ public class NRG {
         return OutputFileNameResolver.resolve(sourceFile, defaultLanguage, language, new Properties());
     }
 
+    // Its replacement, org.apache.commons.cli.help.HelpFormatter, lays the usage out differently;
+    // this one keeps the -h output that users and scripts already know.
+    @SuppressWarnings("deprecation")
     private static void printHelp(Options options) {
         HelpFormatter formatter = new HelpFormatter();
         formatter.printHelp("nrg", null, options, null, true);

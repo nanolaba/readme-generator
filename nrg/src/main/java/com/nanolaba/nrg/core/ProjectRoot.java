@@ -141,6 +141,8 @@ public final class ProjectRoot {
 
     /** A path whose real location could not be established; never treated as inside a root. */
     private static final class UnresolvablePathException extends RuntimeException {
+        private static final long serialVersionUID = 1L;
+
         UnresolvablePathException(Path path) {
             super("cannot resolve " + path);
         }
@@ -164,6 +166,8 @@ public final class ProjectRoot {
      * through widget rendering like the other fatal template errors.
      */
     public static final class OutsideProjectRootException extends RuntimeException {
+        private static final long serialVersionUID = 1L;
+
         public OutsideProjectRootException(String message) {
             super(message);
         }
