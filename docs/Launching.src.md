@@ -8,27 +8,27 @@ ${name} is written in Java and requires **Java 8** or higher to run.<!--en-->
 [Install](https://www.java.com/en/download/) Java if it’s not already present on your system.<!--en-->
 
 [Скачайте](https://github.com/nanolaba/readme-generator/releases/tag/v${stableVersion}) последнюю <!--ru-->
-стабильную версию приложения.<!--ru-->
+стабильную версию.<!--ru-->
 [Download](https://github.com/nanolaba/readme-generator/releases/tag/v${stableVersion}) the latest<!--en-->
-stable version of the application.<!--en-->
+stable version.<!--en-->
 
-Разархивируйте скачанный архив. Если вы используете Unix-like системы, то назначьте файлу `nrg.sh` права <!--ru-->
-на исполнение:<!--ru-->
-Unzip the downloaded archive. If you're using a Unix-like system, make the `nrg.sh` file executable:<!--en-->
+Разархивируйте скачанный архив. В Unix-подобных системах сделайте файл `nrg.sh` <!--ru-->
+исполняемым:<!--ru-->
+Unzip the downloaded archive. On a Unix-like system, make `nrg.sh` executable:<!--en-->
 
 ```bash
 chmod +x nrg.sh  
 ```
 
-Теперь вы можете запустить программу для генерации файлов:<!--ru-->
-Now you can run the program to generate the files:<!--en-->
+Запустите программу, чтобы сгенерировать файлы:<!--ru-->
+Run the program to generate the files:<!--en-->
 
 ```bash
 nrg -f /path/to/README.src.md
 ```
 
-Чтобы посмотреть список доступных опций консольного приложения наберите:<!--ru-->
-To see the list of available options for the console application, type:<!--en-->
+Чтобы посмотреть список опций, наберите:<!--ru-->
+To list the available options, type:<!--en-->
 
 ```bash
 nrg --help
@@ -36,13 +36,13 @@ nrg --help
 
 #### ${en:'Pinned wrapper: nrgw', ru:'Обёртка nrgw с закреплённой версией'}
 
-`nrg --init-wrapper` writes three files into the current directory — `nrgw`, `nrgw.cmd` and<!--en-->
+`nrg --init-wrapper` writes three files into the current directory: `nrgw`, `nrgw.cmd` and<!--en-->
 `.nrg/wrapper.properties` with the release version and the sha256 of its zip. Commit them, and<!--en-->
-anyone who clones the repository — a contributor, a CI job, a coding agent in a fresh sandbox —<!--en-->
+anyone who clones the repository (a contributor, a CI job, a coding agent in a fresh sandbox)<!--en-->
 runs that exact NRG with one command and nothing installed but Java, the same idea as `mvnw` / `gradlew`:<!--en-->
-`nrg --init-wrapper` записывает в текущий каталог три файла — `nrgw`, `nrgw.cmd` и<!--ru-->
-`.nrg/wrapper.properties` с версией релиза и sha256 его архива. Закоммитьте их — и любой, кто<!--ru-->
-склонирует репозиторий, — контрибьютор, задача CI, ИИ-агент в свежей песочнице, — запускает именно<!--ru-->
+`nrg --init-wrapper` записывает в текущий каталог три файла: `nrgw`, `nrgw.cmd` и<!--ru-->
+`.nrg/wrapper.properties` с версией релиза и sha256 его архива. Закоммитьте их, и любой, кто<!--ru-->
+склонирует репозиторий (контрибьютор, задача CI, ИИ-агент в свежей песочнице), запустит именно<!--ru-->
 эту версию NRG одной командой, установив только Java. Та же идея, что у `mvnw` / `gradlew`:<!--ru-->
 
 ```bash
@@ -65,7 +65,7 @@ NRG's version, and the checksum is taken from the `.sha256` file published with 
 
 #### ${en:'Verifying generated files (CI mode)', ru:'Проверка сгенерированных файлов (режим CI)'}
 
-Use `--check` to verify that files on disk match what NRG would<!--en-->
+`--check` verifies that files on disk match what NRG would<!--en-->
 generate right now. The flag is meant for CI / pre-commit hooks:<!--en-->
 no files are written, a missing or out-of-date target file prints<!--en-->
 a diff to stderr, and the process exits with status `1`.<!--en-->
@@ -74,7 +74,7 @@ NRG сгенерировал бы прямо сейчас. Режим предн
 файлы не записываются, при отсутствии или расхождении выводится diff<!--ru-->
 в stderr, процесс завершается с кодом `1`.<!--ru-->
 
-The diff shows generated content, so anything a template pulls in — including values of `\${env.NAME}` — ends up in the CI log when the check fails. Keep secrets out of templates.<!--en-->
+The diff shows generated content, so anything a template pulls in, including values of `\${env.NAME}`, ends up in the CI log when the check fails. Keep secrets out of templates.<!--en-->
 В diff попадает сгенерированное содержимое, поэтому всё, что шаблон подтягивает, — включая значения `\${env.NAME}` — при провале проверки окажется в логе CI. Не используйте секреты в шаблонах.<!--ru-->
 
 ```bash
@@ -88,18 +88,18 @@ and is mutually exclusive with `--stdout`.<!--en-->
 
 `--check-paths <pattern>` (repeatable) limits the check to outputs whose<!--en-->
 path matches one of the supplied glob patterns. Patterns use the same<!--en-->
-`glob:` syntax as multi-file source globs (`**/` matches zero or more<!--en-->
+`glob:` syntax as source file globs (`**/` matches zero or more<!--en-->
 directories) and are resolved against the current working directory.<!--en-->
-Outputs that don't match any pattern are skipped from both the diff and<!--en-->
+Outputs that don't match any pattern are left out of both the diff and<!--en-->
 the missing-file check — useful when only some generated files are tracked<!--en-->
 in git and the rest are regenerated by a bot. A pattern that matches<!--en-->
 nothing prints a stderr `WARN` (still exits `0`) so typos do not silently<!--en-->
 disable the check. `--check-paths` requires `--check`.<!--en-->
 `--check-paths <шаблон>` (повторяемый) ограничивает проверку выходными<!--ru-->
 файлами, путь которых совпадает с одним из указанных glob-шаблонов.<!--ru-->
-Шаблоны используют тот же синтаксис `glob:`, что и мульти-файловые<!--ru-->
-исходные glob-ы (`**/` соответствует нулю и более каталогов), и<!--ru-->
-разрешаются относительно текущего каталога. Выходы, не попавшие ни<!--ru-->
+Синтаксис `glob:` у них тот же, что у glob-паттернов исходных<!--ru-->
+файлов (`**/` соответствует нулю и более каталогов), а отсчитываются<!--ru-->
+они от текущего каталога. Выходные файлы, не попавшие ни<!--ru-->
 под один шаблон, пропускаются и в diff, и в проверке наличия — удобно,<!--ru-->
 когда часть сгенерированных файлов лежит в git, а остальные регенерирует<!--ru-->
 бот. Шаблон без совпадений печатает `WARN` в stderr (код выхода всё равно<!--ru-->
@@ -112,7 +112,7 @@ nrg --check --check-paths README.md -f README.src.md
 
 #### ${en:'Validating source templates', ru:'Валидация исходных шаблонов'}
 
-Use `--validate` to scan the template (and every reachable<!--en-->
+`--validate` scans the template (and every reachable<!--en-->
 `\${widget:import}`-imported template) for authoring mistakes without<!--en-->
 generating any output. Errors:<!--en-->
 Флаг `--validate` сканирует шаблон (и все импортируемые через<!--ru-->
@@ -143,7 +143,7 @@ Warnings (reported, but the exit status stays `0`):<!--en-->
 - any other undefined `\${name}` — it stays in the output as written, which is right for a shell example like `\${HOME}` and wrong for a forgotten property,<!--en-->
 - `\${pom.…}` / `\${npm.…}` / `\${gradle.…}` without a `:fallback` that the descriptor does not define, so it renders empty,<!--en-->
 - <code>&lt;!--&#92;@nrg.languages=...--&gt;</code> and other `nrg.*` keys written with the cosmetic `\@` escape — such a line still declares the property (see [Backslash escapes](#backslash-escapes)); write <code>&lt;&#92;!--@...--&gt;</code> to show it in an example.<!--en-->
-- переводы с разной структурой: внутри серии строк с маркерами у одного языка есть заголовок, пункт списка, строка таблицы, блок кода или абзац, которого нет у другого (предупреждение, потому что переводы законно по-разному переносят текст),<!--ru-->
+- переводы с разной структурой: внутри серии строк с маркерами у одного языка есть заголовок, пункт списка, строка таблицы, блок кода или абзац, которого нет у другого (предупреждение, потому что переводы вправе переносить текст по-разному),<!--ru-->
 - любой другой необъявленный `\${name}` — он остаётся в выводе как есть, что правильно для shell-примера вроде `\${HOME}` и неправильно для забытого свойства,<!--ru-->
 - `\${pom.…}` / `\${npm.…}` / `\${gradle.…}` без `:fallback`, которых нет в дескрипторе, — они рендерятся пустыми,<!--ru-->
 - <code>&lt;!--&#92;@nrg.languages=...--&gt;</code> и другие ключи `nrg.*`, записанные с косметическим экранированием `\@`, — такая строка всё равно объявляет свойство (см. [«Обратные слэши и экранирование»](#обратные-слэши-и-экранирование)); чтобы показать её в примере, пишите <code>&lt;&#92;!--@...--&gt;</code>.<!--ru-->
@@ -158,7 +158,7 @@ message ends with it (`unknown widget 'tocc'; did you mean 'toc'?`).<!--en-->
 With no diagnostics, NRG exits silently with status `0`. All diagnostics<!--en-->
 go to stderr; the process exits with status `2` when at least one of them<!--en-->
 is an error. An import with `run-generator='false'` is only checked for<!--en-->
-existence — its content is not a template. `--validate` is mutually<!--en-->
+existence; its content is not a template. `--validate` is mutually<!--en-->
 exclusive with `--check` and `--stdout`.<!--en-->
 Каждое сообщение печатается в формате `ERROR: file.src.md:LINE: text` или<!--ru-->
 `WARNING: file.src.md:LINE: text`; если исправление очевидно, сообщение<!--ru-->
@@ -166,7 +166,7 @@ exclusive with `--check` and `--stdout`.<!--en-->
 диагностик NRG молча завершается с кодом `0`. Все сообщения печатаются<!--ru-->
 в stderr; процесс завершается с кодом `2`, если среди них есть хотя бы<!--ru-->
 одна ошибка. Импорт с `run-generator='false'` проверяется только на<!--ru-->
-наличие файла — его содержимое не является шаблоном. `--validate`<!--ru-->
+наличие файла: его содержимое — не шаблон. `--validate`<!--ru-->
 несовместим с `--check` и `--stdout`.<!--ru-->
 
 A line meant for one language only is left out of the translation checks with<!--en-->
@@ -181,7 +181,7 @@ A line meant for one language only is left out of the translation checks with<!-
 `--validate` notices a missing translation, not an outdated one: the English sentence is<!--en-->
 rewritten, the Russian line next to it stays as it was, and every check is green.<!--en-->
 `--stale-translations <git-ref>` compares each template and the template fragments it imports<!--en-->
-with their version at a git revision — typically the base of a pull request — and reports every<!--en-->
+with their version at a git revision (typically the base of a pull request) and reports every<!--en-->
 translation group, and every `\${en:'…', ru:'…'}` construct, where some languages changed and<!--en-->
 others did not, with the old and the new text of the changed side:<!--en-->
 `--validate` замечает пропущенный перевод, но не устаревший: английское предложение переписали,<!--ru-->
@@ -199,25 +199,25 @@ docs/Overview.src.md:22-25: 'en' changed since origin/main, 'ru' did not
 ```
 
 The run exits with `1` when it reports anything, so it works as a pull request gate (the<!--en-->
-checkout needs the history: `fetch-depth: 0`). A one-sided edit that needs no counterpart — a<!--en-->
-typo fix — is acknowledged with `<\!--nrg.translation.ok-->` on the line (removed from the output).<!--en-->
+checkout needs the history: `fetch-depth: 0`). A one-sided edit that needs no counterpart (a<!--en-->
+typo fix) is acknowledged with `<\!--nrg.translation.ok-->` on the line (removed from the output).<!--en-->
 `--format json` prints `{"findings": [{"file", "line", "lastLine", "kind", "changed", "unchanged", "old", "new"}]}`.<!--en-->
 Запуск завершается с кодом `1`, если что-то найдено, поэтому подходит как проверка pull request<!--ru-->
-(checkout нужна история: `fetch-depth: 0`). Одностороннюю правку, которой не нужна пара, — например,<!--ru-->
+(для checkout нужна история: `fetch-depth: 0`). Одностороннюю правку, которой не нужна пара, — например,<!--ru-->
 исправление опечатки — подтверждают маркером `<\!--nrg.translation.ok-->` в строке (из вывода он удаляется).<!--ru-->
 `--format json` печатает `{"findings": [{"file", "line", "lastLine", "kind", "changed", "unchanged", "old", "new"}]}`.<!--ru-->
 
 #### ${en:'Print to stdout', ru:'Вывод в stdout'}
 
-Use `--stdout` to stream generated output to standard output instead<!--en-->
-of writing files to disk. Combine with `--language <code>` to print<!--en-->
-only a single language variant; without it, every configured variant<!--en-->
+`--stdout` prints the generated output to standard output instead<!--en-->
+of writing files to disk. With `--language <code>` it prints<!--en-->
+only one language variant; without it, every configured variant<!--en-->
 is printed, prefixed with a separator line like `=== README.ru.md ===`<!--en-->
 so the output can be split by downstream tools.<!--en-->
 Флаг `--stdout` перенаправляет сгенерированный вывод в stdout,<!--ru-->
 файлы на диск при этом не создаются. В сочетании с `--language <код>`<!--ru-->
 печатается только один языковой вариант; без него выводятся все<!--ru-->
-настроенные варианты, каждый предваряется строкой-разделителем вида<!--ru-->
+настроенные варианты, перед каждым стоит строка-разделитель вида<!--ru-->
 `=== README.ru.md ===`, чтобы вывод можно было разрезать во внешних инструментах.<!--ru-->
 
 ```bash
@@ -225,10 +225,10 @@ nrg --stdout -f README.src.md
 nrg --stdout --language en -f README.src.md
 ```
 
-The `--language` flag is only meaningful with `--stdout` — using it<!--en-->
-on its own logs a warning and the flag is ignored.<!--en-->
-Флаг `--language` имеет смысл только вместе с `--stdout` — в одиночку<!--ru-->
-он логируется как предупреждение и игнорируется.<!--ru-->
+`--language` works only with `--stdout`; on its own it<!--en-->
+logs a warning and is ignored.<!--en-->
+Флаг `--language` работает только вместе с `--stdout`; без него<!--ru-->
+NRG выводит предупреждение и игнорирует флаг.<!--ru-->
 
 #### ${en:'Machine-readable output', ru:'Машиночитаемый вывод'}
 
@@ -297,10 +297,9 @@ text-mode `--check` ends with the command that fixes it (`Regenerate with: nrg -
 
 #### ${en:'What a template writes and reads', ru:'Что шаблон пишет и читает'}
 
-Four read-only queries answer what a tool has to know before it edits a file; none of them<!--en-->
-writes anything:<!--en-->
+Four read-only queries answer what a tool has to know before it edits a file:<!--en-->
 Четыре запроса только на чтение отвечают на вопросы, которые инструмент задаёт, прежде чем<!--ru-->
-править файл; ни один из них ничего не записывает:<!--ru-->
+править файл:<!--ru-->
 
 ```bash
 nrg --manifest                          # outputs and inputs of every template
@@ -345,17 +344,17 @@ The templates are the source files given with `-f` or as arguments; without them
 
 #### ${en:'Logging verbosity', ru:'Уровень логирования'}
 
-Control how much NRG prints to the console with `--log-level`. Accepted<!--en-->
-values are `trace`, `debug`, `info` (default), `warn`, and `error` —<!--en-->
-each level suppresses messages below it. The environment variable<!--en-->
-`NRG_LOG_LEVEL` is consulted when `--log-level` is not supplied, which<!--en-->
-is convenient for CI and the Maven plugin. Invalid values abort the<!--en-->
+`--log-level` sets how much NRG prints to the console. Accepted<!--en-->
+values are `trace`, `debug`, `info` (default), `warn`, and `error`;<!--en-->
+each level suppresses messages below it. Without `--log-level`, NRG reads<!--en-->
+the environment variable `NRG_LOG_LEVEL`, which<!--en-->
+is convenient for CI and the Maven plugin. An invalid value stops the<!--en-->
 run with a usage error on stderr.<!--en-->
-Управляйте детализацией вывода через `--log-level`. Допустимые значения —<!--ru-->
+`--log-level` задаёт, сколько NRG выводит в консоль. Допустимые значения —<!--ru-->
 `trace`, `debug`, `info` (по умолчанию), `warn`, `error`; каждый уровень<!--ru-->
 подавляет сообщения ниже по важности. Если флаг не задан, используется<!--ru-->
 переменная окружения `NRG_LOG_LEVEL` — удобно для CI и Maven-плагина.<!--ru-->
-Неизвестное значение приводит к завершению с сообщением об ошибке в stderr.<!--ru-->
+С неизвестным значением NRG завершается и печатает ошибку в stderr.<!--ru-->
 
 ```bash
 nrg --log-level warn -f /path/to/README.src.md
@@ -364,24 +363,24 @@ NRG_LOG_LEVEL=warn nrg -f /path/to/README.src.md
 
 #### ${en:'Customising output filenames', ru:'Настройка имён выходных файлов'}
 
-Use `--file-name-pattern <PATTERN>` to override the output filename layout.<!--en-->
+`--file-name-pattern <PATTERN>` overrides the output filename layout.<!--en-->
 Placeholders: `<base>` (source filename without `.src.md`), `<lang>` (language<!--en-->
-code as written), `<LANG>` (uppercased). Patterns may contain `/` separators —<!--en-->
+code as written), `<LANG>` (uppercased). Patterns may contain `/` separators;<!--en-->
 intermediate directories are created on demand. Equivalent to setting<!--en-->
 `<\!--\@nrg.fileNamePattern=PATTERN-->` in the template; the CLI flag wins.<!--en-->
 Use `--default-language-file-name-pattern <PATTERN>` to override the default<!--en-->
 language only (mirrors `<\!--\@nrg.defaultLanguageFileNamePattern=PATTERN-->`).<!--en-->
 Per-language overrides (`<\!--\@nrg.fileNamePattern.<lang>=...-->`) are<!--en-->
-template-only and have no CLI counterpart.<!--en-->
+template-only.<!--en-->
 Флаг `--file-name-pattern <PATTERN>` переопределяет схему имени выходного<!--ru-->
 файла. Плейсхолдеры: `<base>` (имя исходного файла без `.src.md`), `<lang>`<!--ru-->
 (код языка как есть), `<LANG>` (в верхнем регистре). Паттерн может содержать<!--ru-->
 `/` — недостающие каталоги создаются автоматически. Эквивалент свойства<!--ru-->
-`<\!--\@nrg.fileNamePattern=PATTERN-->`; CLI-флаг побеждает шаблон.<!--ru-->
+`<\!--\@nrg.fileNamePattern=PATTERN-->`; приоритет у CLI-флага.<!--ru-->
 Флаг `--default-language-file-name-pattern <PATTERN>` переопределяет только<!--ru-->
-язык по умолчанию (зеркало `<\!--\@nrg.defaultLanguageFileNamePattern=PATTERN-->`).<!--ru-->
-Пер-языковые переопределения (`<\!--\@nrg.fileNamePattern.<lang>=...-->`)<!--ru-->
-доступны только в шаблоне и CLI-аналога не имеют.<!--ru-->
+язык по умолчанию (аналог `<\!--\@nrg.defaultLanguageFileNamePattern=PATTERN-->`).<!--ru-->
+Переопределения для отдельных языков (`<\!--\@nrg.fileNamePattern.<lang>=...-->`)<!--ru-->
+доступны только в шаблоне.<!--ru-->
 
 ```bash
 nrg --file-name-pattern '<base>_<LANG>.md' -f README.src.md
@@ -393,13 +392,13 @@ nrg --file-name-pattern 'docs/<lang>/<base>.md' --default-language-file-name-pat
 A template is confined to a **project root**: every path it names must stay inside that directory — the output files it asks for, the files it imports (`import`), the directories it lists (`fileTree`), and the descriptors behind `\${pom.*}` / `\${npm.*}` / `\${gradle.*}` (`nrg.pom.path`, `nrg.npm.path`, `nrg.gradle.path`).<!--en-->
 The root is the nearest ancestor of the source file that contains a `.git` entry, or the source file's own directory when there is none. It is never taken from the template.<!--en-->
 A path that resolves outside the root (for example `../../somewhere/<base>.md` as a file name pattern, or `path='../../other-project/file.md'` in an import) stops the run with an error; nothing is read from there and nothing is written. `--validate` reports such imports as errors without opening the files.<!--en-->
-This is what keeps a template you did not write — a pull request, a freshly cloned repository — from copying your files into a README or overwriting files on your machine. Environment variables are a different matter: `\${env.NAME}` reads any variable of the process — run untrusted templates with `--sandbox` (see [Untrusted templates](#untrusted-templates)).<!--en-->
+This is what keeps a template you did not write (a pull request, a freshly cloned repository) from copying your files into a README or overwriting files on your machine. Environment variables are a different matter: `\${env.NAME}` reads any variable of the process, so run untrusted templates with `--sandbox` (see [Untrusted templates](#untrusted-templates)).<!--en-->
 If your layout legitimately needs a wider root, name it explicitly with `--root <dir>` (Maven plugin: `<root>`, GitHub Action: `root`).<!--en-->
 Шаблон ограничен **корнем проекта**: любой путь, который он называет, должен оставаться внутри этого каталога — выходные файлы, импортируемые файлы (`import`), перечисляемые каталоги (`fileTree`) и дескрипторы, стоящие за `\${pom.*}` / `\${npm.*}` / `\${gradle.*}` (`nrg.pom.path`, `nrg.npm.path`, `nrg.gradle.path`).<!--ru-->
 Корень — ближайший предок исходного файла, содержащий `.git`, а если такого нет — каталог самого исходного файла. Из шаблона корень задать нельзя.<!--ru-->
 Путь, выводящий за пределы корня (например, `../../somewhere/<base>.md` в паттерне имени файла или `path='../../other-project/file.md'` в импорте), останавливает запуск с ошибкой: оттуда ничего не читается и туда ничего не записывается. `--validate` сообщает о таких импортах как об ошибках, не открывая файлы.<!--ru-->
 Именно это не даёт чужому шаблону — из pull request или только что склонированного репозитория — скопировать ваши файлы в README или перезаписать файлы на вашей машине. С переменными окружения иначе: `\${env.NAME}` читает любую переменную процесса — недоверенные шаблоны запускайте с `--sandbox` (см. [«Недоверенные шаблоны»](#недоверенные-шаблоны)).<!--ru-->
-Если раскладке проекта действительно нужен более широкий корень, задайте его явно: `--root <dir>` (Maven-плагин: `<root>`, GitHub Action: `root`).<!--ru-->
+Если структуре проекта действительно нужен более широкий корень, задайте его явно: `--root <dir>` (Maven-плагин: `<root>`, GitHub Action: `root`).<!--ru-->
 
 ```bash
 nrg --root /path/to/workspace -f docs/README.src.md
@@ -408,7 +407,7 @@ nrg --root /path/to/workspace -f docs/README.src.md
 #### ${en:'Untrusted templates', ru:'Недоверенные шаблоны'}
 
 The project root keeps a template away from your files. Two switches, set on the command line<!--en-->
-only — no template property can turn them off — close the remaining channels when you run NRG on<!--en-->
+only (no template property can turn them off), close the remaining channels when you run NRG on<!--en-->
 a template you did not write, such as a pull request:<!--en-->
 Корень проекта не подпускает шаблон к вашим файлам. Два переключателя, задаваемые только в<!--ru-->
 командной строке — никакое свойство шаблона их не отключит, — закрывают оставшиеся каналы, когда<!--ru-->
@@ -435,29 +434,29 @@ Maven-плагин: `<sandbox>`, `<noEnv>`, `<envAllow>`, `<offline>`; GitHub Ac
 generated output. Default `auto` preserves the existing on-disk file's<!--en-->
 convention (CRLF stays CRLF, LF stays LF) and falls back to the platform<!--en-->
 default for first-time generation. Use `lf` or `crlf` to pin the output<!--en-->
-unconditionally — useful for Windows contributors regenerating Linux-LF<!--en-->
-repos and vice versa.<!--en-->
+unconditionally — useful for Windows contributors regenerating LF<!--en-->
+repositories and vice versa.<!--en-->
 `--line-ending=auto|lf|crlf` управляет переводом строк в сгенерированном<!--ru-->
-выводе. По умолчанию `auto` сохраняет конвенцию уже лежащего на диске<!--ru-->
-файла (CRLF останется CRLF, LF — LF) и откатывается на системный default<!--ru-->
-при первой генерации. Значения `lf` и `crlf` жёстко фиксируют формат —<!--ru-->
-полезно, например, для Windows-контрибьюторов, регенерирующих<!--ru-->
-Linux-репозитории с LF, и наоборот.<!--ru-->
+выводе. По умолчанию `auto` сохраняет переводы строк уже лежащего на диске<!--ru-->
+файла (CRLF останется CRLF, LF — LF), а при первой генерации берёт принятые<!--ru-->
+в системе. Значения `lf` и `crlf` жёстко фиксируют формат —<!--ru-->
+полезно, например, когда репозиторий с LF перегенерируют<!--ru-->
+на Windows, и наоборот.<!--ru-->
 
 ```bash
 nrg --line-ending lf -f README.src.md
 nrg --line-ending crlf -f README.src.md
 ```
 
-In `--check` mode, `auto` ignores LE-only differences against the on-disk<!--en-->
-file (regen would have preserved the existing convention anyway), so a<!--en-->
-mixed-OS contributor base does not trip CI. Explicit `lf` / `crlf` does<!--en-->
-flag a mismatch — that's the user-asked-for invariant.<!--en-->
-В режиме `--check` со значением `auto` различия только в переводах строк<!--ru-->
-против файла на диске не считаются ошибкой (повторная генерация и так<!--ru-->
-сохранила бы существующую конвенцию), поэтому контрибьюторы с разных<!--ru-->
-ОС не валят CI. Явные `lf` / `crlf` всё равно сигнализируют о несовпадении<!--ru-->
-— это инвариант, который пользователь явно запросил.<!--ru-->
+In `--check` mode, `auto` ignores differences from the on-disk file that are<!--en-->
+only in line endings (regeneration would have kept the existing convention anyway), so<!--en-->
+contributors on different operating systems do not trip CI. An explicit `lf` / `crlf` does<!--en-->
+flag a mismatch: the user asked for that convention.<!--en-->
+В режиме `--check` со значением `auto` различия с файлом на диске только<!--ru-->
+в переводах строк не считаются ошибкой (повторная генерация и так<!--ru-->
+сохранила бы прежний формат), поэтому контрибьюторы с разных<!--ru-->
+ОС не валят CI. Явные `lf` / `crlf` о таком несовпадении сообщают:<!--ru-->
+этот формат пользователь задал сам.<!--ru-->
 
 #### ${en:'Header customisation', ru:'Настройка заголовка'}
 
@@ -473,7 +472,7 @@ the template it was generated from and ask not to hand-edit the output:<!--en-->
 ```
 
 The template path is relative to the generated file (`../../README.src.md` for<!--en-->
-`docs/ru/README.md`), so a reader — or a coding agent — that opens the output first<!--en-->
+`docs/ru/README.md`), so a reader or a coding agent that opens the output first<!--en-->
 goes straight to the file to edit. The NRG version is not part of the default<!--en-->
 header, so upgrading NRG does not change every generated file.<!--en-->
 Путь к шаблону указан относительно сгенерированного файла (`../../README.src.md`<!--ru-->
@@ -485,16 +484,16 @@ Two flags override the header: `--no-header` strips the comment entirely;<!--en-
 `--header-text "..."` replaces it with arbitrary text (use `\n` for line breaks,<!--en-->
 also `\r`, `\t`, `\\`). The text may contain the placeholders `<source>` (the<!--en-->
 template path, as above), `<lang>` (language code) and `<version>` (NRG version).<!--en-->
-The two flags are mutually exclusive. Equivalent template properties<!--en-->
-`<\!--\@nrg.noHeader=true-->` and `<\!--\@nrg.headerText=...-->` work the<!--en-->
-same way; the CLI flag wins when both are set.<!--en-->
+The two flags are mutually exclusive. The template properties<!--en-->
+`<\!--\@nrg.noHeader=true-->` and `<\!--\@nrg.headerText=...-->` do the<!--en-->
+same; the CLI flag wins when both are set.<!--en-->
 Два флага переопределяют заголовок: `--no-header` полностью убирает<!--ru-->
 комментарий, `--header-text "..."` заменяет его произвольным текстом<!--ru-->
 (используйте `\n` для переноса строки, также `\r`, `\t`, `\\`). В тексте можно<!--ru-->
 использовать плейсхолдеры `<source>` (путь к шаблону, как выше), `<lang>` (код<!--ru-->
-языка) и `<version>` (версия NRG). Флаги взаимно исключающие. Эквивалентные<!--ru-->
-свойства шаблона `<\!--\@nrg.noHeader=true-->` и `<\!--\@nrg.headerText=...-->`<!--ru-->
-работают аналогично; CLI-флаг побеждает значение в шаблоне.<!--ru-->
+языка) и `<version>` (версия NRG). Флаги взаимно исключающие. Свойства<!--ru-->
+шаблона `<\!--\@nrg.noHeader=true-->` и `<\!--\@nrg.headerText=...-->`<!--ru-->
+делают то же самое; если заданы оба, приоритет у CLI-флага.<!--ru-->
 
 ```bash
 nrg --no-header -f README.src.md
@@ -503,8 +502,8 @@ nrg --header-text '<!-- Generated from <source> by NRG <version> -->\n<!-- See /
 
 A property marker ends at the first `-->`, so a header that is itself an HTML<!--en-->
 comment is written in the template with both ends escaped — <code>&lt;&#92;!--</code> and <code>--&#92;&gt;</code>:<!--en-->
-Маркер свойства заканчивается на первом `-->`, поэтому заголовок, который сам<!--ru-->
-является HTML-комментарием, записывается в шаблоне с экранированием обоих концов —<!--ru-->
+Маркер свойства заканчивается на первом `-->`, поэтому заголовок в виде<!--ru-->
+HTML-комментария записывается в шаблоне с экранированием обоих концов —<!--ru-->
 <code>&lt;&#92;!--</code> и <code>--&#92;&gt;</code>:<!--ru-->
 
 <code>&lt;!--@nrg.headerText=&lt;&#92;!-- Generated from &lt;source&gt;; edit the template, not this file --&#92;&gt;--&gt;</code>
@@ -523,22 +522,22 @@ nrg "docs/**/*.src.md"
 
 Glob expansion uses `java.nio.file.PathMatcher` with `glob:` syntax, so<!--en-->
 behavior is identical on Windows, Linux, and macOS regardless of the shell.<!--en-->
-Quote the pattern to keep it from being expanded by the shell first.<!--en-->
+Quote the pattern so the shell does not expand it first.<!--en-->
 The legacy `-f <file>` flag is still supported as a single-file alias and<!--en-->
-is mutually exclusive with positional arguments — passing both prints<!--en-->
+is mutually exclusive with positional arguments; passing both prints<!--en-->
 an error and exits with status `64`.<!--en-->
-Раскрытие glob-паттерна выполняется через `java.nio.file.PathMatcher`<!--ru-->
+Glob-паттерн раскрывается через `java.nio.file.PathMatcher`<!--ru-->
 с синтаксисом `glob:` — поведение одинаково на Windows, Linux и macOS<!--ru-->
 независимо от командной оболочки. Заключайте паттерн в кавычки, чтобы<!--ru-->
 сначала его не раскрыл сам шелл. Старый флаг `-f <file>` остаётся как<!--ru-->
-алиас для единственного файла и несовместим с позиционными аргументами —<!--ru-->
-их совместная передача приводит к ошибке и коду возврата `64`.<!--ru-->
+алиас для единственного файла и несовместим с позиционными аргументами:<!--ru-->
+если передать и то и другое, NRG выводит ошибку и завершается с кодом `64`.<!--ru-->
 
 By default each input is processed independently: an error on one file<!--en-->
 is logged but the rest still run, and the overall exit code is the most<!--en-->
 severe one of all files (see [Exit codes](#exit-codes)). Pass `--fail-fast` to stop on the first non-zero result.<!--en-->
 По умолчанию каждый файл обрабатывается независимо: ошибка на одном<!--ru-->
-логируется, но остальные продолжают выполняться, а общий код возврата —<!--ru-->
+логируется, но NRG продолжает с остальными, а общий код возврата —<!--ru-->
 самый серьёзный из кодов всех файлов (см. [«Коды возврата»](#коды-возврата)). Флаг `--fail-fast` останавливает<!--ru-->
 обработку на первом ненулевом результате.<!--ru-->
 
@@ -549,8 +548,8 @@ nrg --fail-fast "docs/**/*.src.md"
 A pattern that matches no files logs a warning. If the entire input set<!--en-->
 matches nothing, the run exits with status `64` and the message<!--en-->
 `No source files matched any of the supplied patterns`.<!--en-->
-Паттерн без совпадений логируется как предупреждение. Если ни один из<!--ru-->
-входов не нашёл файлов, программа завершается с кодом `64` и сообщением<!--ru-->
+На паттерн без совпадений NRG выводит предупреждение. Если не нашлось<!--ru-->
+ни одного файла, программа завершается с кодом `64` и сообщением<!--ru-->
 `No source files matched any of the supplied patterns`.<!--ru-->
 
 ### ${en:'Use as maven plugin', ru:'Использование как плагина для maven'}
@@ -603,15 +602,14 @@ Each `<file>` entry can be a literal path or a glob pattern (same `glob:`<!--en-
 syntax as the CLI). Multi-doc projects can replace a long list with<!--en-->
 `<file>**/*.src.md</file>` and let NRG expand it. Set<!--en-->
 `<failFast>true</failFast>` (or `-DfailFast=true`) to abort on the first<!--en-->
-non-zero result; default `false` preserves today's behavior of aggregating<!--en-->
-diagnostics across every matched file.<!--en-->
+non-zero result; with the default `false`, diagnostics are aggregated<!--en-->
+across every matched file.<!--en-->
 Каждый элемент `<file>` может быть как явным путём, так и glob-паттерном<!--ru-->
 (тот же синтаксис `glob:`, что и в CLI). Многодокументные проекты могут<!--ru-->
 заменить длинный список одним `<file>**/*.src.md</file>`, NRG раскроет<!--ru-->
 паттерн сам. Параметр `<failFast>true</failFast>` (или `-DfailFast=true`)<!--ru-->
-прерывает обработку на первом ненулевом результате; по умолчанию `false` —<!--ru-->
-сохраняется сегодняшнее поведение с агрегированием диагностик по всем<!--ru-->
-найденным файлам.<!--ru-->
+прерывает обработку на первом ненулевом результате; со значением по умолчанию<!--ru-->
+`false` диагностики собираются по всем найденным файлам.<!--ru-->
 
 `<noHeader>true</noHeader>` (or `-DnoHeader=true`) drops the auto-generated<!--en-->
 two-line head comment from every output file; `<headerText>...</headerText>`<!--en-->
@@ -619,28 +617,28 @@ two-line head comment from every output file; `<headerText>...</headerText>`<!--
 line breaks. The two parameters are mutually exclusive — passing both<!--en-->
 fails the build with a CLI parse error.<!--en-->
 `<noHeader>true</noHeader>` (или `-DnoHeader=true`) убирает автоматический<!--ru-->
-двухстрочный head-комментарий из каждого выходного файла;<!--ru-->
+двухстрочный комментарий-заголовок из каждого выходного файла;<!--ru-->
 `<headerText>...</headerText>` (или `-DheaderText="..."`) заменяет его<!--ru-->
 произвольным текстом. Используйте `\n` для перевода строк. Параметры<!--ru-->
-взаимно исключающие — одновременная передача роняет сборку с ошибкой<!--ru-->
+взаимно исключающие: если задать оба, сборка падает с ошибкой<!--ru-->
 разбора аргументов CLI.<!--ru-->
 
 > [!NOTE]<!--en-->
 > **Multi-module (aggregator) projects:** the `create-files` goal is declared<!--en-->
 > with `inheritByDefault = false`, so child modules of a `<packaging>pom</packaging>`<!--en-->
-> aggregator do **not** re-run NRG in their own working directory by default<!--en-->
+> aggregator do not re-run NRG in their own working directory by default<!--en-->
 > (where `README.src.md` typically does not exist). Declare the plugin once in<!--en-->
 > the parent POM and the goal runs only at the root. A child module that<!--en-->
-> genuinely needs its own README generation must opt in explicitly with<!--en-->
+> needs its own README opts in with<!--en-->
 > `<inherited>true</inherited>` in its own POM.<!--en-->
 
 > [!NOTE]<!--ru-->
 > **Многомодульные (aggregator) проекты:** цель `create-files` объявлена с<!--ru-->
 > `inheritByDefault = false`, поэтому дочерние модули агрегатора с<!--ru-->
-> `<packaging>pom</packaging>` **не** перезапускают NRG в собственном каталоге<!--ru-->
+> `<packaging>pom</packaging>` не перезапускают NRG в собственном каталоге<!--ru-->
 > по умолчанию (где `README.src.md` обычно отсутствует). Объявите плагин один<!--ru-->
 > раз в родительском POM, и цель отработает только в корне. Если дочернему<!--ru-->
-> модулю всё же нужна собственная генерация README, явно включите её через<!--ru-->
+> модулю всё же нужен свой README, включите цель через<!--ru-->
 > `<inherited>true</inherited>` в его POM.<!--ru-->
 
 The `<widgets>` entries must name public classes that implement `NRGWidget`<!--en-->
@@ -650,14 +648,14 @@ On a name collision, POM-declared widgets override those declared via the<!--en-
 `nrg.widgets` template property.<!--en-->
 Элементы `<widgets>` должны указывать на публичные классы, реализующие<!--ru-->
 `NRGWidget` и имеющие публичный конструктор без аргументов; их артефакт<!--ru-->
-необходимо подключить через `<dependencies>` самого плагина, чтобы<!--ru-->
+нужно подключить через `<dependencies>` самого плагина, чтобы<!--ru-->
 Maven мог их найти. При совпадении имён виджеты из POM имеют приоритет<!--ru-->
 над объявленными через свойство шаблона `nrg.widgets`.<!--ru-->
 
 Set `<check>true</check>` (or pass `-Dcheck=true` on the command line)<!--en-->
 to run the plugin in verification mode: no files are written, and the<!--en-->
 build fails with a `MojoExecutionException` and a diff in the log when<!--en-->
-the generated output diverges from the committed files. Handy for a<!--en-->
+the generated output differs from the files on disk. Handy for a<!--en-->
 `mvn verify` step in CI to guard against stale READMEs.<!--en-->
 Параметр `<check>true</check>` (или `-Dcheck=true` из командной строки)<!--ru-->
 переключает плагин в режим проверки: файлы не записываются, при<!--ru-->
@@ -665,7 +663,7 @@ the generated output diverges from the committed files. Handy for a<!--en-->
 в лог. Удобно для шага `mvn verify` в CI, чтобы не пропустить устаревший<!--ru-->
 README.<!--ru-->
 
-Set `<validate>true</validate>` (or pass `-Dvalidate=true`) to scan<!--en-->
+`<validate>true</validate>` (or `-Dvalidate=true`) scans<!--en-->
 the templates for authoring mistakes (the checks listed in<!--en-->
 [Validating source templates](#validating-source-templates)) without<!--en-->
 generating any output. The build fails with a `MojoExecutionException`<!--en-->
@@ -676,12 +674,12 @@ when an error is reported; warnings are only logged. Mutually exclusive with `<c
 файлов. Сборка падает с `MojoExecutionException`, если найдена ошибка;<!--ru-->
 предупреждения только выводятся в лог. Несовместим с `<check>`.<!--ru-->
 
-`<format>json</format>` (or `-Dformat=json`) passes `--format` through — see<!--en-->
+`<format>json</format>` (or `-Dformat=json`) passes `--format` through; see<!--en-->
 [Machine-readable output](#machine-readable-output). The build fails on exit code `1`<!--en-->
 (`<check>`), `2` and `64` with a message that names which of them it was.<!--en-->
 `<format>json</format>` (или `-Dformat=json`) передаёт `--format` — см.<!--ru-->
 [«Машиночитаемый вывод»](#машиночитаемый-вывод). Сборка падает на кодах `1`<!--ru-->
-(`<check>`), `2` и `64` с сообщением, называющим, какой из них это был.<!--ru-->
+(`<check>`), `2` и `64`, и сообщение называет, какой из них вернулся.<!--ru-->
 
 `<fileNamePattern>` and `<defaultLanguageFileNamePattern>` (or<!--en-->
 `-DfileNamePattern=...` / `-DdefaultLanguageFileNamePattern=...`) mirror<!--en-->
@@ -694,8 +692,8 @@ CLI-флаги `--file-name-pattern` / `--default-language-file-name-pattern` и
 переопределяют свойства шаблона `nrg.fileNamePattern` /<!--ru-->
 `nrg.defaultLanguageFileNamePattern`, если заданы.<!--ru-->
 
-Для использования SNAPSHOT-версий также необходимо добавить в `pom.xml` следующий код:<!--ru-->
-To use SNAPSHOT versions, you also need to add the following code to your `pom.xml`:<!--en-->
+Чтобы использовать SNAPSHOT-версии, добавьте в `pom.xml` ещё и этот код:<!--ru-->
+To use SNAPSHOT versions, also add the following to your `pom.xml`:<!--en-->
 
 ```xml
 
@@ -743,19 +741,19 @@ Add it to your project's classpath.<!--en-->
 Скачайте JAR из [Maven Central](${mavenCentral})<!--ru-->
 и добавьте его в classpath проекта.<!--ru-->
 
-After this, you can call the file generation function in your project by passing <!--en-->
-the same parameters as in the console application, for example:<!--en-->
-После этого вы можете в своем проекте вызывать функцию создания файлов, <!--ru-->
-передав те же параметры, что и в консольном приложении, например:<!--ru-->
+Then call NRG from your code with <!--en-->
+the same arguments as on the command line, for example:<!--en-->
+После этого NRG можно вызывать из своего кода <!--ru-->
+с теми же аргументами, что и в командной строке, например:<!--ru-->
 
 ```java
 NRG.main("-f","path-to-file","--charset","UTF-8");
 ```
 
-An alternative approach — and a more flexible one for configuring program <!--en-->
-behavior — is to use the `Generator` class:<!--en-->
-Альтернативным вариантом, а также более гибким в плане настройки поведения <!--ru-->
-программы, является использование класса `Generator`:<!--ru-->
+The `Generator` class gives more control <!--en-->
+over the configuration:<!--en-->
+Больше возможностей для настройки <!--ru-->
+даёт класс `Generator`:<!--ru-->
 
 ```java
 ${widget:import(path='../nrg/src/test/java/com/nanolaba/nrg/examples/GeneratorExample.java')}

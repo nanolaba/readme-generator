@@ -7,7 +7,7 @@ Templates are `*.src.md` files; the `*.md` files they produce are build output a
 ## Docs
 
 - [Syntax card](https://raw.githubusercontent.com/nanolaba/readme-generator/main/skills/nrg/SYNTAX.md): the whole template syntax and every widget's parameters on one page
-- [Using NRG with AI coding agents](https://github.com/nanolaba/readme-generator#using-nrg-with-ai-coding-agents): the validate / generate / check loop, an AGENTS.md block, edit-guard hooks, the nrgw wrapper
+- [Agent-driven development](https://github.com/nanolaba/readme-generator#agent-driven-development): the validate / generate / check loop, an AGENTS.md block, edit-guard hooks, the nrgw wrapper
 - [README](https://raw.githubusercontent.com/nanolaba/readme-generator/main/README.md): full documentation
 - [Template syntax](https://github.com/nanolaba/readme-generator#template-syntax): languages, properties, escapes, ignore and frozen regions
 - [Widgets](https://github.com/nanolaba/readme-generator#widgets): import, tableOfContents, if, details, alert, badge, date, todo, math, exec, fileTree, languages

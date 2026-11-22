@@ -2,15 +2,15 @@
 
 This component renders LaTeX math formulas. GitHub's inline `$…$` /<!--en-->
 block `$$…$$` support can be flaky around `\text`, punctuation, or<!--en-->
-table cells — when that bites, switch to the SVG renderer to get a<!--en-->
-pre-rendered image via a LaTeX-to-SVG endpoint.<!--en-->
+table cells — in those cases switch to the SVG renderer, which emits an<!--en-->
+image rendered by a LaTeX-to-SVG service.<!--en-->
 Этот компонент отображает формулы LaTeX. Встроенная поддержка<!--ru-->
 `$…$` / `$$…$$` в GitHub иногда капризничает с `\text`,<!--ru-->
 знаками пунктуации и содержимым таблиц — в таких случаях<!--ru-->
-переключайтесь на SVG-рендерер, который возвращает готовую<!--ru-->
-картинку через LaTeX-to-SVG сервис.<!--ru-->
+переключайтесь на SVG-рендерер, который вставляет картинку,<!--ru-->
+отрисованную LaTeX-to-SVG сервисом.<!--ru-->
 
-${en:'Inline LaTeX with the default native renderer:', ru:'Инлайновая формула LaTeX через стандартный native-рендерер:'}
+${en:'Inline LaTeX with the default native renderer:', ru:'Формула LaTeX внутри строки через стандартный native-рендерер:'}
 
 ```markdown
 \${widget:math(expr = '\\pi r^2')}
@@ -26,7 +26,7 @@ ${en:'Block-level LaTeX (use `display = ''block''` to wrap with `$$…$$`):', ru
 
 ---
 
-${en:'SVG fallback (`renderer = ''svg''`) for cases where GitHub''s native MathJax mis-parses the formula. The full time-dependent Schrödinger equation, with nested fractions, partial derivatives, and Greek letters, renders as a single image that GitHub displays inline:', ru:'SVG-фолбэк (`renderer = ''svg''`) для случаев, когда встроенный GitHub MathJax неправильно разбирает формулу. Полное нестационарное уравнение Шрёдингера со вложенными дробями, частными производными и греческими буквами рендерится как одна картинка, которую GitHub показывает прямо в тексте:'}
+${en:'SVG fallback (`renderer = ''svg''`) for cases where GitHub''s native MathJax mis-parses the formula. The full time-dependent Schrödinger equation, with nested fractions, partial derivatives, and Greek letters, renders as a single image that GitHub displays inline:', ru:'Запасной SVG-рендерер (`renderer = ''svg''`) для случаев, когда встроенный в GitHub MathJax неправильно разбирает формулу. Полное нестационарное уравнение Шрёдингера со вложенными дробями, частными производными и греческими буквами выводится одной картинкой, которую GitHub показывает прямо в тексте:'}
 
 ```markdown
 \${widget:math(expr = 'i\\hbar\\,\\frac{\\partial\\Psi}{\\partial t}=-\\frac{\\hbar^2}{2m}\\,\\nabla^2\\Psi+V\\Psi', renderer = 'svg', display = 'block')}
@@ -59,8 +59,8 @@ Tips / caveats:<!--en-->
 
 - Фигурные скобки `{` / `}` внутри `expr` работают как в LaTeX (подстрочные/надстрочные индексы, `\\text`, `\\frac` и т. п.).<!--ru-->
 - Круглые скобки `(` / `)` внутри значения `expr` в кавычках — часть значения: `f(x) = (a + b)^2` пишется как есть. (До версии 1.2 включительно первая `)` обрывала тег виджета, и группировать можно было только через `\\left(` / `\\right)`.)<!--ru-->
-- svg-рендерер зависит от внешнего сервиса — если сервис исчезнет, картинки перестанут отображаться. Для долгоживущей документации имеет смысл поднять собственный сервис и указать его через `service`.<!--ru-->
-- Пре-рендеринг, вывод MathML и проверка синтаксиса LaTeX не поддерживаются.<!--ru-->
+- svg-рендерер зависит от внешнего сервиса — если сервис исчезнет, картинки перестанут отображаться. Если документация должна прожить долго, поднимите собственный сервис или укажите в `service` проверенный URL.<!--ru-->
+- Предварительная отрисовка, вывод MathML и проверка синтаксиса LaTeX не поддерживаются.<!--ru-->
 
 ---
 

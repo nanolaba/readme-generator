@@ -1,8 +1,26 @@
+## ${en:'Installation', ru:'Установка'}
+
+NRG needs Java 8 or newer ([download](https://adoptium.net/)). Pick the way that fits where it runs:<!--en-->
+NRG нужна Java 8 или новее ([скачать](https://adoptium.net/)). Выберите способ по тому, где NRG будет запускаться:<!--ru-->
+
+| ${en:'Where', ru:'Где'} | ${en:'How', ru:'Как'} | ${en:'Details', ru:'Подробнее'} |
+|---|---|---|
+| Command line | unzip `readme-generator-${stableVersion}.zip` from [the release page](https://github.com/nanolaba/readme-generator/releases/tag/v${stableVersion}) and run `nrg.sh` / `nrg.bat` | [CLI](#using-the-command-line-interface) |<!--en-->
+| Командная строка | распакуйте `readme-generator-${stableVersion}.zip` со [страницы релиза](https://github.com/nanolaba/readme-generator/releases/tag/v${stableVersion}) и запустите `nrg.sh` / `nrg.bat` | [CLI](#запуск-из-командной-строки) |<!--ru-->
+| A repository: CI, contributors, agents | `nrg --init-wrapper`, then commit `nrgw`, `nrgw.cmd` and `.nrg/` | [nrgw](#pinned-wrapper-nrgw) |<!--en-->
+| Репозиторий: CI, контрибьюторы, агенты | `nrg --init-wrapper`, затем закоммитьте `nrgw`, `nrgw.cmd` и `.nrg/` | [nrgw](#обёртка-nrgw-с-закреплённой-версией) |<!--ru-->
+| A Maven build | `com.nanolaba:nrg-maven-plugin:${stableVersion}`, goal `create-files` | [Maven plugin](#use-as-maven-plugin) |<!--en-->
+| Сборка Maven | `com.nanolaba:nrg-maven-plugin:${stableVersion}`, цель `create-files` | [Maven-плагин](#использование-как-плагина-для-maven) |<!--ru-->
+| GitHub Actions | `uses: nanolaba/nrg-action@v1` | [GitHub Action](#use-as-a-github-action) |<!--en-->
+| GitHub Actions | `uses: nanolaba/nrg-action@v1` | [GitHub Action](#использование-в-качестве-github-action) |<!--ru-->
+| Java code | `com.nanolaba:readme-generator:${stableVersion}` | [Java library](#use-as-a-java-library) |<!--en-->
+| Java-код | `com.nanolaba:readme-generator:${stableVersion}` | [Java-библиотека](#использование-в-качестве-java-библиотеки) |<!--ru-->
+| Claude Code | `/plugin marketplace add nanolaba/readme-generator`, then `/plugin install nrg@nanolaba` | [Plugin](#claude-code-plugin-and-the-nrg-skill) |<!--en-->
+| Claude Code | `/plugin marketplace add nanolaba/readme-generator`, затем `/plugin install nrg@nanolaba` | [Плагин](#плагин-для-claude-code-и-навык-nrg) |<!--ru-->
+
 ## ${en:'Quick start', ru:'Быстрый старт'}
 
-**${en:'Prerequisites', ru:'Что нужно'}:** ${en:'Java 8 or higher', ru:'Java 8 или выше'} ([${en:'download', ru:'скачать'}](https://www.java.com/en/download/)).
-
-**${en:'Step 1: Create a minimal template', ru:'Шаг 1: Создайте минимальный шаблон'} (`README.src.md`)**
+**${en:'Step 1: write the template', ru:'Шаг 1: напишите шаблон'} (`README.src.md`)**
 
 ```markdown
 <\!--@nrg.languages=en,ru-->
@@ -12,22 +30,24 @@
 
 English text<\!--en-->
 Русский текст<\!--ru-->
+
+The same line in both files.
 ```
 
-Lines tagged `<\!--en-->` go to `README.md`; lines tagged `<\!--ru-->` go to `README.ru.md`.<!--en-->
-Строки, помеченные `<\!--en-->`, попадут в `README.md`; строки с `<\!--ru-->` — в `README.ru.md`.<!--ru-->
+Lines tagged `<\!--en-->` go to `README.md`, lines tagged `<\!--ru-->` go to `README.ru.md`, and untagged lines go to both.<!--en-->
+Строки с `<\!--en-->` попадут в `README.md`, строки с `<\!--ru-->` — в `README.ru.md`, а строки без маркера — в оба файла.<!--ru-->
 
-**${en:'Step 2: Generate the files', ru:'Шаг 2: Сгенерируйте файлы'}**
+**${en:'Step 2: generate the files', ru:'Шаг 2: сгенерируйте файлы'}**
 
-**Option A — CLI.** [Download](https://github.com/nanolaba/readme-generator/releases/tag/v${stableVersion}) the standalone jar, unzip it, then run:<!--en-->
-**Вариант A — CLI.** [Скачайте](https://github.com/nanolaba/readme-generator/releases/tag/v${stableVersion}) автономный jar, распакуйте архив и запустите:<!--ru-->
+With the CLI:<!--en-->
+Из командной строки:<!--ru-->
 
 ```bash
-nrg -f /path/to/README.src.md
+nrg -f README.src.md
 ```
 
-**Option B — Maven plugin.** Add this to your `pom.xml` (full configuration in the [Maven plugin](#use-as-maven-plugin) section below):<!--en-->
-**Вариант B — Maven-плагин.** Добавьте в `pom.xml` (полная конфигурация ниже, в разделе [«Использование как плагина для maven»](#использование-как-плагина-для-maven)):<!--ru-->
+Or in a Maven build (the full configuration is in [Maven plugin](#use-as-maven-plugin)):<!--en-->
+Или в сборке Maven (полная конфигурация — в разделе [«Использование как плагина для maven»](#использование-как-плагина-для-maven)):<!--ru-->
 
 ```xml
 <plugin>
@@ -46,10 +66,8 @@ nrg -f /path/to/README.src.md
 </plugin>
 ```
 
-**${en:'Step 3: Check the result', ru:'Шаг 3: Проверьте результат'}**
-
-Two files appear next to the template — `README.md` and `README.ru.md`:<!--en-->
-Рядом с шаблоном появятся два файла — `README.md` и `README.ru.md`:<!--ru-->
+Two files appear next to the template:<!--en-->
+Рядом с шаблоном появятся два файла:<!--ru-->
 
 <table>
 <tr><th><b>README.md</b></th><th><b>README.ru.md</b></th></tr>
@@ -59,6 +77,8 @@ Two files appear next to the template — `README.md` and `README.ru.md`:<!--en-
 # Hello
 
 English text
+
+The same line in both files.
 ```
 
 </td><td>
@@ -67,16 +87,42 @@ English text
 # Привет
 
 Русский текст
+
+The same line in both files.
 ```
 
 </td></tr></table>
 
+**${en:'Step 3: check in CI', ru:'Шаг 3: проверка в CI'}**
+
+Commit the template together with the generated files, and add a check to CI that fails when someone edits `README.md` by hand or forgets to regenerate:<!--en-->
+Закоммитьте шаблон вместе со сгенерированными файлами и добавьте в CI проверку, которая падает, если кто-то поправил `README.md` руками или забыл перегенерировать:<!--ru-->
+
+```yaml
+- uses: nanolaba/nrg-action@v1
+  with:
+    file: README.src.md
+    mode: check
+```
+
+Outside GitHub Actions the same check is `nrg --check -f README.src.md`, see [Verifying generated files](#verifying-generated-files-ci-mode).<!--en-->
+Вне GitHub Actions та же проверка — `nrg --check -f README.src.md`, см. [«Проверка сгенерированных файлов»](#проверка-сгенерированных-файлов-режим-ci).<!--ru-->
+
+**${en:'Step 4: tell the coding agent', ru:'Шаг 4: расскажите о шаблоне агенту'}**
+
+```bash
+nrg --agent-rules --write AGENTS.md
+```
+
+This adds a block to `AGENTS.md` that names the generated files, the templates to edit, the languages and the commands to run after a change. Use `CLAUDE.md`, `GEMINI.md` or `.github/copilot-instructions.md` for other agents, see [Agent-driven development](#agent-driven-development).<!--en-->
+Команда добавит в `AGENTS.md` блок, который перечисляет сгенерированные файлы, шаблоны для правки, языки и команды, которые нужно запускать после изменения. Для других агентов укажите `CLAUDE.md`, `GEMINI.md` или `.github/copilot-instructions.md`, см. [«Агентная разработка»](#агентная-разработка).<!--ru-->
+
 **${en:'What comes next', ru:'Что дальше'}**
 
-- Variables, language constructs, and escapes — see [Template syntax](#template-syntax).<!--en-->
-- Built-in widgets (table of contents, import, languages, date, todo, alert, badge, math, exec, if, fileTree, details) — see [Widgets](#widgets).<!--en-->
-- Переменные, многоязычный синтаксис и экранирование — см. [«Синтаксис шаблона»](#синтаксис-шаблона).<!--ru-->
-- Готовые виджеты (оглавление, импорт, языки, дата, todo, alert, badge, math, exec, if, fileTree, details) — см. [«Виджеты»](#виджеты).<!--ru-->
+- Variables, language constructs and escapes: [Template syntax](#template-syntax).<!--en-->
+- Built-in widgets (table of contents, import, languages, date, todo, alert, badge, math, exec, if, fileTree, details): [Widgets](#widgets).<!--en-->
+- Переменные, многоязычные конструкции и экранирование: [«Синтаксис шаблона»](#синтаксис-шаблона).<!--ru-->
+- Готовые виджеты (оглавление, импорт, языки, дата, todo, alert, badge, math, exec, if, fileTree, details): [«Виджеты»](#виджеты).<!--ru-->
 
 <details>
 <summary><b>${en:'Full template example (all widgets)', ru:'Полный пример шаблона (все виджеты)'}</b></summary>

@@ -1,7 +1,7 @@
 #### ${en:'Widget', ru:'Виджет'} 'date'
 
-This component allows you to insert the current date into a document.<!--en-->
-Этот компонент позволяет вставить в документ текущую дату.<!--ru-->
+This component inserts the current date into a document.<!--en-->
+Этот компонент вставляет в документ текущую дату.<!--ru-->
 
 <table>
 <tr><th>${en:'Usage example', ru:'Пример использования'}</th><th>${en:'Result', ru:'Результат'}</th></tr>
@@ -38,7 +38,7 @@ ${en:'Widget parameters', ru:'Свойства виджета'}:
 <!-- nrg:begin:reference --><!--nrg.ignore-->
 | ${en:'Name', ru:'Наименование'} | ${en:'Description', ru:'Описание'}                                                                                              | ${en:'Default value', ru:'Значение по умолчанию'} |
 |:-------------------------------:|---------------------------------------------------------------------------------------------------------------------------------|:-------------------------------------------------:|
-|             pattern             | ${en:'Pattern according to which the date will be formatted', ru:'Шаблон, в соответствии с котором будет отформатирована дата'} |               `dd.MM.yyyy HH:mm:ss`               |
+|             pattern             | ${en:'Pattern the date is formatted with', ru:'Шаблон, по которому форматируется дата'}                                         |               `dd.MM.yyyy HH:mm:ss`               |
 <!-- nrg:end:reference --><!--nrg.ignore-->
 
 You can read more about date pattern syntax in the<!--en-->

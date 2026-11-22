@@ -2,16 +2,15 @@
 
 ### ${en:'Variables', ru:'Переменные'}
 
-The template syntax supports the use of variables. Variables are defined using the following construct:<!--en-->
-Синтаксис шаблона поддерживает использование переменных.<!--ru-->
-Определение переменных происходит при помощи конструкции:<!--ru-->
+A variable is defined like this:<!--en-->
+Переменная задаётся так:<!--ru-->
 
 ```markdown
 <!--\@variable_name=variable value-->
 ```
 
-The output of variable values is done using the following construct:<!--en-->
-Вывод значения переменных происходит при помощи конструкции вида:<!--ru-->
+A variable's value is output like this:<!--en-->
+Значение переменной выводится так:<!--ru-->
 
 ```markdown
 \${variable_name}
@@ -20,7 +19,7 @@ The output of variable values is done using the following construct:<!--en-->
 To display a construct like *\${...}* without replacing it with <!--en-->
 the variable's value, precede it with the '\\' character:<!--en-->
 Чтобы вывести в файл конструкцию вида *\${...}*, не заменяя ее значением<!--ru-->
-переменной, предварите ее символом '\\':<!--ru-->
+переменной, поставьте перед ней '\\':<!--ru-->
 
 ```markdown
 \\${variable_name}
@@ -56,10 +55,10 @@ ${app_descr}
 ### ${en:'Backslash escapes', ru:'Обратные слэши и экранирование'}
 
 After every substitution and widget has run, the root generator does one final pass over the<!--en-->
-output and strips a backslash in **only** these three patterns; every other `\\X` reaches the<!--en-->
+output and strips a backslash in only these three patterns; every other `\\X` reaches the<!--en-->
 output verbatim.<!--en-->
 После того как все подстановки и виджеты отработали, корневой генератор делает один финальный<!--ru-->
-проход и убирает обратный слэш только в этих трёх шаблонах; любая другая последовательность<!--ru-->
+проход и убирает обратный слэш только в этих трёх случаях; любая другая последовательность<!--ru-->
 `\\X` остаётся в выводе как есть.<!--ru-->
 
 <!-- nrg:begin:escapes --><!--nrg.ignore-->
@@ -67,13 +66,13 @@ output verbatim.<!--en-->
 |---|---|---|
 | <code>&#92;$</code>        | <code>$</code>        | ${en:'suppress any `\\${…}` reference (property / language / env / pom / npm / gradle / widget). Applies to **any** `\\$`, not only `\\${…}`.', ru:'подавить любую ссылку `\\${…}` (свойство / язык / env / pom / npm / gradle / widget). Срабатывает на **любое** `\\$`, не только на `\\${…}`.'} |
 | <code>&lt;&#92;!--</code>  | <code>&lt;!--</code>  | ${en:'suppress any HTML-comment marker — language tag, `nrg.ignore`, `nrg.freeze`, property declaration. Use it to put a literal `<\!--…-->` into the output.', ru:'подавить любой HTML-маркер — языковой тег, `nrg.ignore`, `nrg.freeze`, объявление свойства. Используется, чтобы вывести литерал `<\!--…-->`.'} |
-| <code>&lt;!--&#92;@</code> | <code>&lt;!--@</code> | ${en:'render `<\!--@key=value-->` cleanly inside an example — **cosmetic only**, does **not** stop NRG from parsing the line as a real property declaration. To actually suppress parsing, escape the comment opener with rule 2: <code>&lt;&#92;!--@key=value--&gt;</code>.', ru:'красиво вывести `<\!--@key=value-->` в примере — **только косметика**, **не** мешает NRG распарсить строку как настоящее объявление свойства. Чтобы реально подавить разбор, экранируйте открытие комментария по правилу 2: <code>&lt;&#92;!--@key=value--&gt;</code>.'} |
+| <code>&lt;!--&#92;@</code> | <code>&lt;!--@</code> | ${en:'render `<\!--@key=value-->` cleanly inside an example — **cosmetic only**, does **not** stop NRG from parsing the line as a real property declaration. To suppress parsing, escape the comment opener with rule 2: <code>&lt;&#92;!--@key=value--&gt;</code>.', ru:'красиво вывести `<\!--@key=value-->` в примере — **только косметика**, **не** мешает NRG разобрать строку как настоящее объявление свойства. Чтобы подавить разбор, экранируйте открытие комментария по правилу 2: <code>&lt;&#92;!--@key=value--&gt;</code>.'} |
 <!-- nrg:end:escapes --><!--nrg.ignore-->
 
 Markdown's own escape sequences (`\(`, `\)`, `\_`, `\*`, `\\`, `` \` ``, etc.) are not on this<!--en-->
-list — they pass through NRG unchanged and reach the markdown renderer untouched.<!--en-->
-Эскейпы самого Markdown (`\(`, `\)`, `\_`, `\*`, `\\`, `` \` `` и т. п.) в этот список<!--ru-->
-не входят — они проходят NRG без изменений и попадают на рендерер Markdown как есть.<!--ru-->
+list — NRG passes them to the Markdown renderer unchanged.<!--en-->
+Экранирующие последовательности самого Markdown (`\(`, `\)`, `\_`, `\*`, `\\`, `` \` `` и т. п.) в этот список<!--ru-->
+не входят — NRG передаёт их рендереру Markdown без изменений.<!--ru-->
 
 > [!TIP]<!--en-->
 > Rule 1 strips the backslash from **any** `\\$`, not only `\\${…}`. To keep a literal `\\$` in the<!--en-->
@@ -87,9 +86,8 @@ list — they pass through NRG unchanged and reach the markdown renderer untouch
 
 ### ${en:'Properties', ru:'Свойства'}
 
-Using the syntax for setting variable values in the template,<!--en-->
-you can specify application properties, for example:<!--en-->
-При помощи синтаксиса установки значений переменных в шаблоне можно указывать свойства приложения, например:<!--ru-->
+The same syntax sets application properties, for example:<!--en-->
+Тем же синтаксисом задаются свойства приложения, например:<!--ru-->
 
 ```markdown
 <\!--@nrg.languages=en,ru-->
@@ -100,22 +98,20 @@ you can specify application properties, for example:<!--en-->
 
 ***nrg.languages***
 
-For each language, except the default language, a file will be generated with the name in the<!--en-->
-format *source.language.md*, where *source* is the name of the original file and *language* is the<!--en-->
-name of the language. The default value of this property is "en"<!--en-->
-Перечень языков, для которых будут сгенерированы файлы.<!--ru-->
-Для каждого языка, за исключением языка по-умолчанию, будет сгенерирован файл с<!--ru-->
-наименованием вида *source.language.md*, где source - наименование исходного файла, language - наименование<!--ru-->
-языка. Значение этого свойства по умолчанию - "en".<!--ru-->
+The languages to generate files for. For each language except the default one, NRG writes a file<!--en-->
+named *source.language.md*, where *source* is the name of the source file and *language* is the<!--en-->
+language code. The default value of this property is "en".<!--en-->
+Языки, для которых генерируются файлы.<!--ru-->
+Для каждого языка, кроме языка по умолчанию, создаётся файл<!--ru-->
+*source.language.md*, где source — имя исходного файла, language — код<!--ru-->
+языка. Значение этого свойства по умолчанию — "en".<!--ru-->
 
 ***nrg.defaultLanguage***
 
-The language in which the main documentation file will be generated. The language name should be<!--en-->
-included in the list defined by the property *nrg.languages*. The default value of this property is<!--en-->
-the first element in the *nrg.languages* list.<!--en-->
-Язык, на котором будет сгенерирован главный файл документации.<!--ru-->
-Название языка должно содержаться в перечне, определенным в свойстве *nrg.languages*.<!--ru-->
-Значение этого свойства по умолчанию - первый элемент списка из свойства *nrg.languages*.<!--ru-->
+The language of the main documentation file. It must be one of the languages in<!--en-->
+*nrg.languages*. The default value of this property is the first element of *nrg.languages*.<!--en-->
+Язык главного файла документации. Он должен входить в *nrg.languages*.<!--ru-->
+Значение этого свойства по умолчанию — первый элемент *nrg.languages*.<!--ru-->
 
 ***nrg.widgets***
 
@@ -123,8 +119,8 @@ Comma-separated fully-qualified class names of custom `NRGWidget` implementation
 to register alongside the built-ins. Each class must be on the runtime classpath<!--en-->
 and declare a public no-argument constructor. Equivalent to the CLI<!--en-->
 `--widgets <FQCN,FQCN,...>` flag and the `<widgets>` parameter of the Maven plugin.<!--en-->
-Comma-separated полные имена классов реализаций `NRGWidget`, которые нужно<!--ru-->
-зарегистрировать дополнительно к встроенным виджетам. Каждый класс должен быть<!--ru-->
+Перечисленные через запятую полные имена классов-реализаций `NRGWidget`,<!--ru-->
+которые нужно зарегистрировать дополнительно к встроенным виджетам. Каждый класс должен быть<!--ru-->
 доступен на runtime-classpath и иметь публичный конструктор без аргументов.<!--ru-->
 Эквивалентно CLI-флагу `--widgets <FQCN,FQCN,...>` и параметру `<widgets>` Maven-плагина.<!--ru-->
 
@@ -137,7 +133,7 @@ template uses `\${pom.…}` references.<!--en-->
 Переопределяет путь к `pom.xml`, используемый подстановкой `\${pom.NAME}`.<!--ru-->
 Относительные пути разрешаются относительно каталога исходного файла; абсолютные<!--ru-->
 используются как есть. По умолчанию — `pom.xml` рядом с исходным файлом.<!--ru-->
-Учитывается только когда в шаблоне есть ссылки `\${pom.…}`.<!--ru-->
+Учитывается, только когда в шаблоне есть ссылки `\${pom.…}`.<!--ru-->
 
 ***nrg.npm.path***
 
@@ -148,7 +144,7 @@ the template uses `\${npm.…}` references.<!--en-->
 Переопределяет путь к `package.json`, используемый подстановкой `\${npm.NAME}`.<!--ru-->
 Относительные пути разрешаются относительно каталога исходного файла; абсолютные<!--ru-->
 используются как есть. По умолчанию — `package.json` рядом с исходным файлом.<!--ru-->
-Учитывается только когда в шаблоне есть ссылки `\${npm.…}`.<!--ru-->
+Учитывается, только когда в шаблоне есть ссылки `\${npm.…}`.<!--ru-->
 
 ***nrg.gradle.path***
 
@@ -161,7 +157,7 @@ directory. Only consulted when the template uses `\${gradle.…}` references.<!-
 Может указывать либо на каталог (с `gradle.properties` и/или `build.gradle{,.kts}`),<!--ru-->
 либо на конкретный build-скрипт. Относительные пути разрешаются относительно<!--ru-->
 каталога исходного файла; абсолютные используются как есть. По умолчанию —<!--ru-->
-каталог исходного файла. Учитывается только когда в шаблоне есть ссылки `\${gradle.…}`.<!--ru-->
+каталог исходного файла. Учитывается, только когда в шаблоне есть ссылки `\${gradle.…}`.<!--ru-->
 
 ***nrg.fileNamePattern***
 
@@ -181,7 +177,7 @@ for the others. Examples: `<base>_<LANG>.md`, `<base>-<lang>.md`, `docs/<lang>/<
 Override `nrg.fileNamePattern` for the default language only. Useful when the<!--en-->
 default language should keep the bare `README.md` while other languages get a<!--en-->
 suffix: `nrg.fileNamePattern=<base>_<LANG>.md` plus `nrg.defaultLanguageFileNamePattern=<base>.md`.<!--en-->
-Переопределяет `nrg.fileNamePattern` только для языка по умолчанию. Удобно когда<!--ru-->
+Переопределяет `nrg.fileNamePattern` только для языка по умолчанию. Удобно, когда<!--ru-->
 основной язык должен лежать как `README.md`, а остальные — с суффиксом:<!--ru-->
 `nrg.fileNamePattern=<base>_<LANG>.md` + `nrg.defaultLanguageFileNamePattern=<base>.md`.<!--ru-->
 
@@ -193,17 +189,17 @@ Most-specific-first resolution: per-language → default-language → global →
 If two configured languages would resolve to the same output path, generation aborts.<!--en-->
 Переопределение для конкретного языка (например `nrg.fileNamePattern.zh-CN=README_<LANG>.md`).<!--ru-->
 Имеет приоритет и над `nrg.fileNamePattern`, и над `nrg.defaultLanguageFileNamePattern`<!--ru-->
-для указанного языка. Порядок разрешения: per-language → default-language → global → встроенный.<!--ru-->
-Если два сконфигурированных языка попадают в один и тот же файл, генерация прерывается.<!--ru-->
+для указанного языка. Порядок разрешения: для языка → для языка по умолчанию → общий → встроенный.<!--ru-->
+Если два объявленных языка попадают в один и тот же файл, генерация прерывается.<!--ru-->
 
 ### ${en:'Per-language overrides', ru:'Переопределения для разных языков'}
 
-Any property may declare a per-language override by suffixing its name with `.<lang>`.<!--en-->
+Any property can be overridden for one language by suffixing its name with `.<lang>`.<!--en-->
 When the template is rendered for a specific language, `\${name}` first resolves to the value of `name.<lang>` if defined,<!--en-->
 otherwise it falls back to the bare `name`. If neither is defined, the literal `\${name}` is left in the output.<!--en-->
-Любое свойство может объявить переопределение для конкретного языка с помощью суффикса `.<lang>`.<!--ru-->
+Любое свойство можно переопределить для одного языка, добавив к имени суффикс `.<lang>`.<!--ru-->
 При рендере шаблона на конкретный язык `\${name}` сначала ищет значение `name.<lang>`,<!--ru-->
-а при его отсутствии — голый ключ `name`. Если ни то, ни другое не задано, в выводе остаётся литерал `\${name}`.<!--ru-->
+а если его нет — ключ `name` без суффикса. Если ни то, ни другое не задано, в выводе остаётся литерал `\${name}`.<!--ru-->
 
 ```markdown
 <\!--@nrg.languages=en,ru,ja-->
@@ -218,8 +214,8 @@ ${en:'Result for `en`', ru:'Результат для `en`'}: `<img src="./publi
 ${en:'Result for `ru`', ru:'Результат для `ru`'}: `<img src="./public/show-ru.png" />`<br>
 ${en:'Result for `ja` (no per-language override)', ru:'Результат для `ja` (нет переопределения)'}: `<img src="./public/show.png" />`
 
-The same convention is also used by built-in NRG properties such as `nrg.fileNamePattern.<lang>`.<!--en-->
-Эта же конвенция используется встроенными свойствами NRG, например `nrg.fileNamePattern.<lang>`.<!--ru-->
+Built-in NRG properties such as `nrg.fileNamePattern.<lang>` follow the same convention.<!--en-->
+Так же устроены встроенные свойства NRG, например `nrg.fileNamePattern.<lang>`.<!--ru-->
 
 ### ${en:'Environment variables', ru:'Переменные окружения'}
 
@@ -228,8 +224,8 @@ from the process environment. Resolution happens before language and<!--en-->
 property substitution, so `\${env.NAME}` works in raw body text, inside<!--en-->
 `<\!--@key=value-->` declaration values, and inside widget parameters.<!--en-->
 Внутри любой ссылки `\${…}` зарезервированное пространство имён `env.` подставляет<!--ru-->
-значение из переменных окружения процесса. Разрешение происходит до языковой<!--ru-->
-и обычной property-подстановки, поэтому `\${env.NAME}` работает и в обычном тексте,<!--ru-->
+значение из переменных окружения процесса. Такие ссылки подставляются раньше языковых<!--ru-->
+конструкций и обычных свойств, поэтому `\${env.NAME}` работает и в обычном тексте,<!--ru-->
 и в значениях `<\!--@key=value-->`, и в параметрах виджетов.<!--ru-->
 
 ```markdown
@@ -250,8 +246,8 @@ Behaviour:<!--en-->
 
 - `\${env.NAME}` — подставляет значение переменной `NAME`. Если переменная не задана, выводит одно предупреждение на каждое уникальное имя за прогон и подставляет пустую строку.<!--ru-->
 - `\${env.NAME:default}` — подставляет значение из окружения, если переменная задана (даже пустой строкой), иначе — литерал после первого `:`.<!--ru-->
-- Имена должны соответствовать POSIX-идентификатору `[A-Za-z_][A-Za-z0-9_]*`. Имена с точкой, например `\${app.version}`, обрабатываются обычным property-резолвером.<!--ru-->
-- Эскейп обратным слэшем работает как для любой другой `\${…}`-конструкции: `\\\${env.NAME}` выводится как литерал.<!--ru-->
+- Имена должны соответствовать POSIX-идентификатору `[A-Za-z_][A-Za-z0-9_]*`. Имена с точкой, например `\${app.version}`, разрешаются как обычные свойства.<!--ru-->
+- Экранирование обратным слэшем работает так же, как для любой другой конструкции `\${…}`: `\\\${env.NAME}` выводится как литерал.<!--ru-->
 
 > [!WARNING]<!--en-->
 > The substitution reads whatever `System.getenv()` exposes. On shared CI<!--en-->
@@ -267,14 +263,14 @@ Behaviour:<!--en-->
 
 ### ${en:'Maven POM values', ru:'Значения из Maven POM'}
 
-The reserved `pom.` namespace inside `\${…}` reads values directly from<!--en-->
+The reserved `pom.` namespace inside `\${…}` reads values from<!--en-->
 the project's `pom.xml`. Resolution happens after env substitution but<!--en-->
 before language and property substitution, so the same `\${pom.…}`<!--en-->
 reference works in body text, in `<\!--@key=value-->` declaration values,<!--en-->
 and inside widget parameters.<!--en-->
 Зарезервированное пространство имён `pom.` внутри `\${…}` читает<!--ru-->
-значения непосредственно из `pom.xml` проекта. Разрешение происходит<!--ru-->
-после env-подстановки, но до языковой и обычной property-подстановки,<!--ru-->
+значения из `pom.xml` проекта. Такие ссылки подставляются<!--ru-->
+после `env.`, но до языковых конструкций и обычных свойств,<!--ru-->
 поэтому одна и та же `\${pom.…}`-ссылка работает и в основном тексте,<!--ru-->
 и в значениях `<\!--@key=value-->`, и в параметрах виджетов.<!--ru-->
 
@@ -292,9 +288,9 @@ Behaviour:<!--en-->
 
 - The path is interpreted as a walk from the implicit `<project>` root: `pom.X` reads `<X>`, `pom.X.Y` reads `<X><Y>`, and so on.<!--en-->
 - `pom.properties.KEY` is a flat-map lookup: the remainder of the path is used verbatim as the `<properties>` child element name (so dotted keys like `java.version` work).<!--en-->
-- `pom.parent.X` reads the local `<parent>` block as written. Cross-file parent POM traversal is out of scope.<!--en-->
+- `pom.parent.X` reads the local `<parent>` block as written. NRG does not read the parent POM file itself.<!--en-->
 - For unqualified `pom.groupId`, `pom.version`, and `pom.name`: if the element is absent under `<project>`, the value is taken from `<project><parent>` (Maven's standard inheritance rules).<!--en-->
-- POM values may themselves reference `\${prop}`, `\${project.X}`, and `\${env.NAME}` / `\${env.NAME:default}` — NRG resolves a single pass against the same POM and the template-level env provider.<!--en-->
+- POM values may themselves reference `\${prop}`, `\${project.X}`, and `\${env.NAME}` / `\${env.NAME:default}` — NRG resolves them in a single pass against the same POM and the template-level env provider.<!--en-->
 - `\${pom.path:default}` substitutes the literal default after the first `:` when the path is missing. Without a default, the substitution renders empty and one warning per distinct path is logged.<!--en-->
 - Backslash escapes work as for any other `\${…}` reference: `\\\${pom.version}` renders as the literal text.<!--en-->
 - The `pom.xml` location defaults to the source-file directory; override with `<\!--\@nrg.pom.path=relative/or/absolute/pom.xml-->`.<!--en-->
@@ -302,24 +298,24 @@ Behaviour:<!--en-->
 Поведение:<!--ru-->
 
 - Путь интерпретируется как обход дерева от неявного корня `<project>`: `pom.X` — `<X>`, `pom.X.Y` — `<X><Y>` и так далее.<!--ru-->
-- `pom.properties.KEY` — плоский lookup: остаток пути после `properties.` используется как имя дочернего элемента `<properties>` (поэтому ключи с точками вроде `java.version` работают).<!--ru-->
-- `pom.parent.X` читает локальный блок `<parent>`. Чтение parent-POM из других файлов — за рамками v1.<!--ru-->
-- Для безпрефиксных `pom.groupId`, `pom.version` и `pom.name`: если элемент отсутствует в `<project>`, значение берётся из `<project><parent>` (стандартное Maven-наследование).<!--ru-->
+- `pom.properties.KEY` — плоский поиск по ключу: остаток пути после `properties.` используется как имя дочернего элемента `<properties>` (поэтому ключи с точками вроде `java.version` работают).<!--ru-->
+- `pom.parent.X` читает локальный блок `<parent>`. Сам файл родительского POM NRG не читает.<!--ru-->
+- Для беспрефиксных `pom.groupId`, `pom.version` и `pom.name`: если элемент отсутствует в `<project>`, значение берётся из `<project><parent>` (стандартное Maven-наследование).<!--ru-->
 - Значения POM сами могут содержать `\${prop}`, `\${project.X}` и `\${env.NAME}` / `\${env.NAME:default}` — NRG разрешает их одним проходом по тому же POM и через тот же env-провайдер.<!--ru-->
 - `\${pom.path:default}` подставляет литерал после первого `:`, если путь отсутствует. Без default подставляется пустая строка и логируется по одному предупреждению на каждый уникальный путь.<!--ru-->
-- Эскейп обратным слэшем работает как для любой другой `\${…}`-конструкции: `\\\${pom.version}` выводится как литерал.<!--ru-->
+- Экранирование обратным слэшем работает так же, как для любой другой конструкции `\${…}`: `\\\${pom.version}` выводится как литерал.<!--ru-->
 - Расположение `pom.xml` по умолчанию — каталог исходного файла; переопределяется через `<\!--\@nrg.pom.path=relative/or/absolute/pom.xml-->`.<!--ru-->
 
 ### ${en:'npm package values', ru:'Значения из package.json'}
 
-The reserved `npm.` namespace inside `\${…}` reads values directly from<!--en-->
+The reserved `npm.` namespace inside `\${…}` reads values from<!--en-->
 the project's `package.json`. Resolution happens after pom substitution but<!--en-->
 before language and property substitution, so the same `\${npm.…}` reference<!--en-->
 works in body text, in `<\!--@key=value-->` declaration values, and inside<!--en-->
 widget parameters.<!--en-->
 Зарезервированное пространство имён `npm.` внутри `\${…}` читает значения<!--ru-->
-непосредственно из `package.json` проекта. Разрешение происходит после<!--ru-->
-pom-подстановки, но до языковой и обычной property-подстановки, поэтому<!--ru-->
+из `package.json` проекта. Такие ссылки подставляются после<!--ru-->
+`pom.`, но до языковых конструкций и обычных свойств, поэтому<!--ru-->
 одна и та же `\${npm.…}`-ссылка работает и в основном тексте, и в значениях<!--ru-->
 `<\!--@key=value-->`, и в параметрах виджетов.<!--ru-->
 
@@ -344,7 +340,7 @@ Behaviour:<!--en-->
 - Путь интерпретируется как обход JSON-дерева: `npm.X` читает поле верхнего уровня, `npm.X.Y` спускается во вложенный объект и так далее.<!--ru-->
 - Строковые, числовые и булевы значения приводятся к строке. Объекты, массивы и `null` подставляются как пустая строка (с предупреждением).<!--ru-->
 - `\${npm.path:default}` подставляет литерал после первого `:`, если путь отсутствует. Без default подставляется пустая строка и логируется по одному предупреждению на каждый уникальный путь.<!--ru-->
-- Эскейп обратным слэшем работает как для любой другой `\${…}`-конструкции: `\\\${npm.version}` выводится как литерал.<!--ru-->
+- Экранирование обратным слэшем работает так же, как для любой другой конструкции `\${…}`: `\\\${npm.version}` выводится как литерал.<!--ru-->
 - Расположение `package.json` по умолчанию — каталог исходного файла; переопределяется через `<\!--\@nrg.npm.path=relative/or/absolute/package.json-->`.<!--ru-->
 
 ### ${en:'Gradle values', ru:'Значения из Gradle'}
@@ -354,9 +350,9 @@ The reserved `gradle.` namespace inside `\${…}` reads values from the project'
 of `version` / `group` from `build.gradle` or `build.gradle.kts`. Resolution<!--en-->
 happens after npm substitution but before language and property substitution.<!--en-->
 Зарезервированное пространство имён `gradle.` внутри `\${…}` читает значения<!--ru-->
-из `gradle.properties` (плоский lookup по ключу) с fallback на regex-извлечение<!--ru-->
-`version` / `group` из `build.gradle` или `build.gradle.kts`. Разрешение<!--ru-->
-происходит после npm-подстановки, но до языковой и обычной property-подстановки.<!--ru-->
+из `gradle.properties` (плоский поиск по ключу), а если ключа там нет, извлекает регулярным выражением<!--ru-->
+`version` / `group` из `build.gradle` или `build.gradle.kts`. Такие ссылки<!--ru-->
+подставляются после `npm.`, но до языковых конструкций и обычных свойств.<!--ru-->
 
 ```markdown
 \${gradle.version}
@@ -368,46 +364,44 @@ happens after npm substitution but before language and property substitution.<!-
 Behaviour:<!--en-->
 
 - `gradle.X` first looks up the verbatim key `X` in `gradle.properties`. If not found and `X` is `version` or `group`, NRG regex-extracts `X = '...'` from the build script (works for both Groovy and Kotlin DSLs).<!--en-->
-- `gradle.properties` always wins over the build script when the same key is defined in both places.<!--en-->
 - Other Gradle DSL constructs are intentionally not parsed — define values in `gradle.properties` if you need them in the README.<!--en-->
-- `\${gradle.path:default}`, backslash escapes, and warn-once-per-missing-path semantics match `\${pom.…}` and `\${npm.…}`.<!--en-->
+- `\${gradle.path:default}`, backslash escapes, and the single warning per missing path work as for `\${pom.…}` and `\${npm.…}`.<!--en-->
 - Override the Gradle location with `<\!--\@nrg.gradle.path=core/-->` (a directory) or `<\!--\@nrg.gradle.path=core/build.gradle.kts-->` (an explicit file).<!--en-->
 
 Поведение:<!--ru-->
 
 - `gradle.X` сначала ищет ключ `X` в `gradle.properties`. Если ключ не найден и `X` — это `version` или `group`, NRG извлекает `X = '...'` из build-скрипта регулярным выражением (работает и для Groovy DSL, и для Kotlin DSL).<!--ru-->
-- `gradle.properties` всегда побеждает build-скрипт, если ключ определён в обоих местах.<!--ru-->
-- Прочие конструкции Gradle DSL намеренно не парсятся — определяйте значения в `gradle.properties`, если они нужны в README.<!--ru-->
-- `\${gradle.path:default}`, эскейп обратным слэшем и семантика «warn-once-per-missing-path» совпадают с `\${pom.…}` и `\${npm.…}`.<!--ru-->
+- Прочие конструкции Gradle DSL намеренно не разбираются — определяйте значения в `gradle.properties`, если они нужны в README.<!--ru-->
+- `\${gradle.path:default}`, экранирование обратным слэшем и одно предупреждение на каждый отсутствующий путь работают так же, как у `\${pom.…}` и `\${npm.…}`.<!--ru-->
 - Переопределяйте расположение Gradle через `<\!--\@nrg.gradle.path=core/-->` (каталог) или `<\!--\@nrg.gradle.path=core/build.gradle.kts-->` (конкретный файл).<!--ru-->
 
-### Multilanguage support
+### ${en:'Multilanguage support', ru:'Поддержка нескольких языков'}
 
-To write text in different languages, there are two methods available.<!--en-->
-The first one involves using comments at the end of the line, for example:<!--en-->
-Для написания текста на различных языках предусмотрено два способа.<!--ru-->
-Первый заключается в использовании комментариев в конце строки, например:<!--ru-->
+There are two ways to write text in different languages.<!--en-->
+The first is a comment at the end of the line, for example:<!--en-->
+Текст на разных языках можно задать двумя способами.<!--ru-->
+Первый — комментарий в конце строки, например:<!--ru-->
 
 ```markdown
 Some text<\!--en-->
 Некоторый текст<\!--ru-->
 ```
 
-The second method involves using a special construct:<!--en-->
-Второй способ заключается в использовании особой конструкции:<!--ru-->
+The second is a special construct:<!--en-->
+Второй — специальная конструкция:<!--ru-->
 
 ```markdown
 \${en:"Some text", ru:"Некоторый текст"}
 \${en:'Some text', ru:'Некоторый текст'} 
 ```
 
-Для экранирования кавычек используйте задвоение символа, например:<!--ru-->
-To escape quotes, use character doubling, for example:<!--en-->
+Чтобы экранировать кавычку, удвойте её, например:<!--ru-->
+To escape a quote, double it, for example:<!--en-->
 
 - `\${en:'It''s working'}` → `${en:'It''s working', ru:'It''s working'}`
 - `\${en:"Text with ""quotes"""}` → `${en:"Text with ""quotes""", ru:"Text with ""quotes"""}`
 
-`--validate` checks that the languages stay together (see [Validating source templates](#validating-source-templates)): every run of language-tagged lines must have lines for each language in `nrg.languages`, and every `\${en:…, ru:…}` construct must name each language the line is shown in. A line that is meant for one language only is marked with `<\!--nrg.parity.ignore-->` (removed from the output); `<\!--\@nrg.validate.parity=false-->` turns these checks off for a template.<!--en-->
+`--validate` checks that the languages stay together (see [Validating source templates](#validating-source-templates)): every run of language-tagged lines must have lines for each language in `nrg.languages`, and every `\${en:…, ru:…}` construct must name each language the line is shown in. A line meant for one language only is marked with `<\!--nrg.parity.ignore-->` (the marker is removed from the output); `<\!--\@nrg.validate.parity=false-->` turns these checks off for a template.<!--en-->
 `--validate` проверяет, что языки не расходятся (см. [«Валидация исходных шаблонов»](#валидация-исходных-шаблонов)): у каждой серии строк с языковыми маркерами должны быть строки для каждого языка из `nrg.languages`, а каждая конструкция `\${en:…, ru:…}` должна содержать все языки, в которых строка выводится. Строку, предназначенную только для одного языка, помечают `<\!--nrg.parity.ignore-->` (маркер удаляется из вывода); `<\!--\@nrg.validate.parity=false-->` отключает эти проверки для шаблона.<!--ru-->
 
 ### ${en:'Output variants', ru:'Варианты вывода'}
@@ -488,14 +482,14 @@ Frozen regions let NRG-generated files coexist with third-party tools that<!--en
 mutate the **generated** file directly — for example<!--en-->
 [`akhilmhdh/contributors-readme-action`](https://github.com/akhilmhdh/contributors-readme-action),<!--en-->
 GitHub Sponsors widgets, or RSS embedders. On regeneration, NRG copies the<!--en-->
-**current on-disk** content between the freeze markers into the freshly-generated<!--en-->
-output instead of materialising whatever the template contains in the same span.<!--en-->
+current on-disk content between the freeze markers into the freshly-generated<!--en-->
+output instead of what the template has in that place.<!--en-->
 Замороженные области позволяют файлам, сгенерированным NRG, сосуществовать со<!--ru-->
 сторонними инструментами, которые правят **сгенерированный** файл напрямую — например,<!--ru-->
 [`akhilmhdh/contributors-readme-action`](https://github.com/akhilmhdh/contributors-readme-action),<!--ru-->
 виджетами GitHub Sponsors или RSS-эмбеддерами. При перегенерации NRG копирует<!--ru-->
-**текущее содержимое с диска** между маркерами заморозки в свежесгенерированный<!--ru-->
-вывод вместо того, чтобы материализовать туда то, что находится в шаблоне.<!--ru-->
+текущее содержимое с диска между маркерами заморозки в свежесгенерированный<!--ru-->
+вывод вместо того, что стоит на этом месте в шаблоне.<!--ru-->
 
 ```markdown
 ## Contributors
@@ -517,23 +511,23 @@ overwritten as usual.<!--en-->
 только при первой генерации (когда выходного файла ещё нет на диске). При каждом<!--ru-->
 следующем запуске NRG читает существующий выходной файл, находит совпадающий<!--ru-->
 `id` и подставляет его текущее содержимое в новый вывод — поэтому любые<!--ru-->
-правки внешнего инструмента внутри блока переживают перегенерацию. Правки<!--ru-->
-*вне* блока всё так же перетираются.<!--ru-->
+правки внешнего инструмента внутри блока сохраняются при перегенерации. Правки<!--ru-->
+*вне* блока перезаписываются как обычно.<!--ru-->
 
 **${en:'Attributes', ru:'Атрибуты'}:**
 
 ***id*** — ${en:'required, non-empty, must be unique within a template.', ru:'обязательный, непустой, должен быть уникален в пределах шаблона.'}
 
-***source-lang*** — ${en:'optional. Names a single language declared in `nrg.languages`. When present, the block content for *every* language is sourced from that one language\\'s output file.', ru:'опциональный. Указывает один язык из `nrg.languages`. Когда указан, содержимое блока для *каждого* языка берётся из выходного файла этого одного языка.'}
+***source-lang*** — ${en:'optional. Names a single language declared in `nrg.languages`. When present, the block content for *every* language is sourced from that one language\\'s output file.', ru:'необязательный. Указывает один язык из `nrg.languages`. Когда указан, содержимое блока для *каждого* языка берётся из выходного файла этого языка.'}
 
 The `source-lang` mode covers the common case where an external tool only<!--en-->
 writes to one language's output (e.g. contributors-action only knows about<!--en-->
 `README.md`), but the resulting content (an HTML table of avatars, etc.) is<!--en-->
 language-agnostic and should appear in every language file:<!--en-->
-Режим `source-lang` покрывает типовой кейс, когда внешний инструмент пишет<!--ru-->
+Режим `source-lang` нужен для частого случая, когда внешний инструмент пишет<!--ru-->
 только в один языковой файл (например, contributors-action знает только про<!--ru-->
 `README.md`), но получившееся содержимое (HTML-таблица аватарок и т.п.)<!--ru-->
-language-agnostic и должно появиться во всех языковых файлах:<!--ru-->
+от языка не зависит и должно появиться во всех языковых файлах:<!--ru-->
 
 ```markdown
 <\!--nrg.freeze id="contributors" source-lang="en"-->
@@ -546,7 +540,7 @@ placeholder
 | ${en:'Attributes', ru:'Атрибуты'}              | ${en:'Behaviour', ru:'Поведение'} |
 |------------------------------------------------|----------------------------------|
 | `id="X"`                                       | ${en:'Each language file is independent: when generating `README.md` NRG reads the freeze content from `README.md`, when generating `README.ru.md` from `README.ru.md`.', ru:'Каждый языковой файл независим: при сборке `README.md` NRG читает содержимое заморозки из `README.md`, при сборке `README.ru.md` — из `README.ru.md`.'} |
-| `id="X" source-lang="en"`                      | ${en:'The block appears in **every** language file, but the content for **all** of them is sourced from the `en` output (`README.md`).', ru:'Блок появляется в **каждом** языковом файле, но содержимое **для всех** берётся из вывода языка `en` (`README.md`).'} |
+| `id="X" source-lang="en"`                      | ${en:'The block appears in every language file, but the content for all of them is sourced from the `en` output (`README.md`).', ru:'Блок появляется в каждом языковом файле, но содержимое для всех берётся из вывода языка `en` (`README.md`).'} |
 
 **${en:'Restricting a freeze to one language', ru:'Ограничение заморозки одним языком'}:**
 
@@ -554,8 +548,8 @@ placeholder
 appear only in one language, wrap it in a `\${widget:if}` block driven by a<!--en-->
 per-language property:<!--en-->
 У `<\!--nrg.freeze-->` нет атрибута `lang`. Чтобы заморозка появлялась только<!--ru-->
-в одном языке, оберните её в `\${widget:if}`-блок, управляемый per-language<!--ru-->
-свойством:<!--ru-->
+в одном языке, оберните её в блок `\${widget:if}`, управляемый свойством,<!--ru-->
+переопределённым для языка:<!--ru-->
 
 ```markdown
 <\!--\@onlyEn.en=1-->
@@ -571,25 +565,25 @@ When generating `README.md` (`en`), `\${onlyEn}` resolves to `1` (truthy) and<!-
 the block stays. When generating `README.ru.md`, `\${onlyEn}` resolves to the<!--en-->
 empty string (falsy) and the entire block is dropped before NRG even sees the<!--en-->
 freeze markers.<!--en-->
-При сборке `README.md` (`en`) `\${onlyEn}` резолвится в `1` (truthy), блок<!--ru-->
-остаётся. При сборке `README.ru.md` `\${onlyEn}` резолвится в пустую строку<!--ru-->
+При сборке `README.md` (`en`) `\${onlyEn}` даёт `1` (truthy), блок<!--ru-->
+остаётся. При сборке `README.ru.md` `\${onlyEn}` даёт пустую строку<!--ru-->
 (falsy), и весь блок выбрасывается ещё до того, как NRG видит маркеры<!--ru-->
 заморозки.<!--ru-->
 
-**${en:'Important properties', ru:'Важные свойства'}:**
+**${en:'Details', ru:'Особенности'}:**
 
 - ${en:'Open and close markers must each be on their own line.', ru:'Открывающий и закрывающий маркеры должны быть каждый на своей строке.'}
 - ${en:'Markers must not nest. Nesting is a validation error.', ru:'Маркеры нельзя вкладывать друг в друга. Вложенность — ошибка валидации.'}
-- ${en:'Disk content is opaque to NRG: `\${...}` references and `<\!--\@key=value-->` declarations *inside* the freeze block content from disk are **not** interpreted. Only the bootstrap placeholder in the template goes through the rendering pipeline (once, at first generation).', ru:'Содержимое с диска для NRG непрозрачно: ссылки `\${...}` и декларации `<\!--\@key=value-->` *внутри* содержимого блока, прочитанного с диска, **не** интерпретируются. Через рендеринг проходит только bootstrap-плейсхолдер в шаблоне (один раз, при первой генерации).'}
-- ${en:'Markers themselves are written to the output verbatim, including original whitespace — they have to be there for the next regeneration to find the block.', ru:'Сами маркеры выводятся в файл verbatim, с оригинальными пробелами — они должны там быть, чтобы следующая перегенерация нашла блок.'}
-- ${en:'Freeze blocks work transparently across `\${widget:import(...)}` — markers in imported files bubble up to the root output and are resolved against the root output file.', ru:'Заморозки работают прозрачно через `\${widget:import(...)}` — маркеры из импортированных файлов всплывают в корневой вывод и резолвятся по корневому выходному файлу.'}
+- ${en:'Disk content is opaque to NRG: `\${...}` references and `<\!--\@key=value-->` declarations *inside* the freeze block content from disk are not interpreted. Only the bootstrap placeholder in the template goes through the rendering pipeline (once, at first generation).', ru:'Содержимое с диска для NRG непрозрачно: ссылки `\${...}` и объявления `<\!--\@key=value-->` *внутри* содержимого блока, прочитанного с диска, не интерпретируются. Через рендеринг проходит только bootstrap-плейсхолдер в шаблоне (один раз, при первой генерации).'}
+- ${en:'Markers themselves are written to the output verbatim, including original whitespace — they have to be there for the next regeneration to find the block.', ru:'Сами маркеры выводятся в файл как есть, с исходными пробелами — они должны там быть, чтобы следующая перегенерация нашла блок.'}
+- ${en:'Freeze blocks work through `\${widget:import(...)}`: markers in imported files reach the root output and are resolved against the root output file.', ru:'Заморозки работают и через `\${widget:import(...)}`: маркеры из импортированных файлов попадают в корневой вывод и разрешаются по корневому выходному файлу.'}
 
 **${en:'Validation', ru:'Валидация'}:**
 
 The following are **template authoring errors** — they fail generation with<!--en-->
-exit 1 and are reported by `--validate`:<!--en-->
-Это **ошибки авторинга шаблона** — они валят генерацию с exit 1 и сообщаются<!--ru-->
-через `--validate`:<!--ru-->
+exit code 2 and are reported by `--validate`:<!--en-->
+Это **ошибки автора шаблона** — генерация с ними завершается с кодом 2, и `--validate`<!--ru-->
+о них сообщает:<!--ru-->
 
 - ${en:'missing or empty `id`;', ru:'отсутствующий или пустой `id`;'}
 - ${en:'duplicate `id` within the same template;', ru:'дубль `id` в одном шаблоне;'}
@@ -601,9 +595,9 @@ exit 1 and are reported by `--validate`:<!--en-->
 The following are **on-disk anomalies** caused by the external tool or manual<!--en-->
 edits — they emit `LOG.warn` once and fall back to the bootstrap placeholder,<!--en-->
 without aborting generation:<!--en-->
-Это **on-disk-аномалии**, вызванные внешним инструментом или ручными правками —<!--ru-->
-они логируются `LOG.warn` один раз и откатываются на bootstrap-плейсхолдер<!--ru-->
-без прерывания генерации:<!--ru-->
+Это **аномалии файла на диске**, вызванные внешним инструментом или ручными правками —<!--ru-->
+NRG один раз пишет `LOG.warn` и берёт bootstrap-плейсхолдер, генерация<!--ru-->
+не прерывается:<!--ru-->
 
 - ${en:'`id` declared in the template not found in the on-disk file;', ru:'`id`, объявленный в шаблоне, не найден в файле на диске;'}
 - ${en:'malformed disk block (e.g. missing close);', ru:'битый блок на диске (например, отсутствует закрытие);'}

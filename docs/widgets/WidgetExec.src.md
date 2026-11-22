@@ -5,10 +5,10 @@ into the generated document — useful for pasting in `--help` output,<!--en-->
 version dumps, a CLI banner, or whatever else a build tool will print.<!--en-->
 Этот компонент запускает внешнюю программу и вставляет её stdout<!--ru-->
 в итоговый документ — удобно для `--help`, вывода версии,<!--ru-->
-баннера CLI и всего, что может быть получено через консоль.<!--ru-->
+баннера CLI и всего, что печатает инструмент сборки.<!--ru-->
 
 > [!WARNING]<!--en-->
-> **Opt-in for security.** Execution is disabled by default.<!--en-->
+> Execution is disabled by default.<!--en-->
 > The widget only runs commands when the caller explicitly asks for it<!--en-->
 > via the `--allow-exec` CLI flag (or `<allowExec>true</allowExec>` in<!--en-->
 > the Maven plugin). Running `nrg` over an untrusted template without<!--en-->
@@ -16,9 +16,9 @@ version dumps, a CLI banner, or whatever else a build tool will print.<!--en-->
 > renders empty output.<!--en-->
 
 > [!WARNING]<!--ru-->
-> **Opt-in ради безопасности.** По умолчанию выполнение запрещено.<!--ru-->
-> Виджет запускает команды только если вызывающая сторона явно<!--ru-->
-> разрешила это через CLI-флаг `--allow-exec` (либо<!--ru-->
+> По умолчанию выполнение запрещено.<!--ru-->
+> Виджет запускает команды, только если это явно разрешено при вызове NRG:<!--ru-->
+> CLI-флагом `--allow-exec` (либо<!--ru-->
 > `<allowExec>true</allowExec>` в Maven-плагине). Запуск `nrg`<!--ru-->
 > над недоверенным шаблоном без этого флага безопасен: каждый<!--ru-->
 > вызов `\${widget:exec(...)}` логирует ошибку и возвращает пустой вывод.<!--ru-->
@@ -44,7 +44,7 @@ ${en:'Runs `java -jar nrg.jar --help`, inlines stdout verbatim (with trailing wh
 
 </td><td>
 
-${en:'Runs the command and wraps stdout in a fenced code block tagged `text`.', ru:'Выполняет команду и оборачивает stdout в fenced-блок с тегом `text`.'}
+${en:'Runs the command and wraps stdout in a fenced code block tagged `text`.', ru:'Выполняет команду и оборачивает stdout в блок кода с тегом `text`.'}
 
 </td></tr>
 <tr><td>
@@ -55,7 +55,7 @@ ${en:'Runs the command and wraps stdout in a fenced code block tagged `text`.', 
 
 </td><td>
 
-${en:'Runs the script from the `docs/` sub-directory of the source file, kills it if it exceeds 5 seconds.', ru:'Запускает скрипт из каталога `docs/` рядом с исходным файлом, убивает процесс при превышении 5 секунд.'}
+${en:'Runs the script from the `docs/` sub-directory of the source file and kills it if it runs longer than 5 seconds.', ru:'Запускает скрипт из каталога `docs/` рядом с исходным файлом и завершает его, если он работает дольше 5 секунд.'}
 
 </td></tr>
 </table>
@@ -69,7 +69,7 @@ ${en:'Widget parameters', ru:'Свойства виджета'}:
 |               cwd               | ${en:'Working directory. Relative paths are resolved against the source-file directory; absolute paths are used as-is. Missing directory logs an error and produces no output.', ru:'Рабочий каталог. Относительные пути разрешаются от каталога исходного файла; абсолютные — используются как есть. Отсутствующий каталог приводит к ошибке и пустому выводу.'}                                                                                 | ${en:'source-file directory', ru:'каталог исходного файла'}  |
 |             timeout             | ${en:'Maximum duration in seconds (positive integer). The subprocess is force-killed on timeout and a warning is logged; output is empty.', ru:'Максимальная длительность в секундах (положительное целое). При превышении процесс принудительно завершается с предупреждением; вывод пустой.'}                                                                                                                                                   |                             `30`                             |
 |              trim               | ${en:'`true` strips trailing whitespace/newlines from stdout; `false` preserves them.', ru:'`true` удаляет хвостовые пробелы и переводы строк из stdout; `false` сохраняет их как есть.'}                                                                                                                                                                                                                                                         |                            `true`                            |
-|            codeblock            | ${en:'When present, wraps stdout in a fenced code block with this language tag (`codeblock=""` wraps without a tag). When absent, stdout is inlined raw.', ru:'Если указан, оборачивает stdout в fenced-блок с данным тегом языка (`codeblock=""` — без тега). Если параметр отсутствует, stdout вставляется как есть.'}                                                                                                                          | ${en:'absent (no wrapping)', ru:'отсутствует (без обёртки)'} |
+|            codeblock            | ${en:'When present, wraps stdout in a fenced code block with this language tag (`codeblock=""` wraps without a tag). When absent, stdout is inlined raw.', ru:'Если указан, оборачивает stdout в блок кода с этим тегом языка (`codeblock=""` — без тега). Если параметр отсутствует, stdout вставляется как есть.'}                                                                                                                          | ${en:'absent (no wrapping)', ru:'отсутствует (без обёртки)'} |
 <!-- nrg:end:reference --><!--nrg.ignore-->
 
 ${en:'Enabling execution', ru:'Как включить выполнение'}:<!--en-->
@@ -97,7 +97,7 @@ ${en:'Error handling', ru:'Обработка ошибок'}:<!--en-->
 
 Обработка ошибок:<!--ru-->
 
-- Ненулевой exit-код → ошибка в логе (с кодом и фрагментом stderr) + пустой вывод.<!--ru-->
+- Ненулевой код возврата → ошибка в логе (с кодом и фрагментом stderr) + пустой вывод.<!--ru-->
 - Команда не найдена / ошибка ввода-вывода → ошибка в логе + пустой вывод.<!--ru-->
 - Превышение `timeout` → предупреждение в логе + пустой вывод.<!--ru-->
 - Некорректные `timeout` или `trim` → ошибка в логе + пустой вывод (команда не запускается).<!--ru-->

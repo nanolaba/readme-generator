@@ -5,139 +5,203 @@
 
 [ **en** | [ru](README.ru.md) ]
 
-# Nanolaba Readme Generator (NRG) - Automated Markdown Documentation Tool
-
 [![NRG continuous integration build status](https://github.com/nanolaba/readme-generator/actions/workflows/ci.yml/badge.svg)](https://github.com/nanolaba/readme-generator/actions/workflows/ci.yml)
 [![NRG release on Maven Central](https://img.shields.io/maven-central/v/com.nanolaba/readme-generator?label=Maven%20Central)](https://central.sonatype.com/artifact/com.nanolaba/readme-generator)
-[![NRG is open source under the Apache 2.0 license](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
 ![Built with Java 8+](https://img.shields.io/badge/Java-8+-orange.svg)
+[![NRG is open source under the Apache 2.0 license](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
+[![GitHub stars](https://img.shields.io/github/stars/nanolaba/readme-generator?style=social)](https://github.com/nanolaba/readme-generator)
+
+# Nanolaba Readme Generator (NRG): one template for README in every language, for AI coding agents and CI
+
+**NRG** generates `README.md`, `README.ru.md` and a file for every other language from one `README.src.md` template.
+A translation sits on the line next to its original, versions are read from `pom.xml`, `package.json` or `build.gradle`,
+and code samples are imported from real source files. When an AI coding agent maintains the docs, it edits one file
+instead of one per language: `nrg --validate` names the template line it broke, and `nrg --check` fails CI when a generated
+file differs from what its template produces. Under Claude Code a hook refuses an edit of a generated file and names the template to change.
+
+NRG runs on Java 8+ and ships as a [CLI](#using-the-command-line-interface), a [Maven plugin](#use-as-maven-plugin),
+a [GitHub Action](#use-as-a-github-action) and a [Java library](#use-as-a-java-library). A template is Markdown with
+language markers, `${…}` variables and widgets: table of contents, import, badges, `if` blocks, alerts, math and others.
+This README and its [Russian translation](README.ru.md) are generated from [`README.src.md`](README.src.md).
+
+**Questions and feedback:** [Discussions](https://github.com/nanolaba/readme-generator/discussions) · **bugs:** [Issues](https://github.com/nanolaba/readme-generator/issues/new/choose) · English or Russian
 
 ![NRG demo: generating README.md and README.ru.md from a single .src.md template](assets/demo.gif)
 
-**Stop hand-editing the same README in 5 languages.** NRG generates `README.md`, `README.ru.md`, `README.zh.md`, and any other localized variant from one `.src.md` source. The built-in CI drift-check guarantees they never silently drift apart again.
+## Try it
 
-**NRG** is a **README generator** and **Markdown template engine** that builds **multi-language** README files from a single `.src.md` source. Open-source Java 8+, ships as a [CLI](#using-the-command-line-interface), a [Maven plugin](#use-as-maven-plugin), a [GitHub Action](#use-as-a-github-action), and a [Java library](#use-as-a-java-library).
+Download `readme-generator-1.4.zip` from [the release page](https://github.com/nanolaba/readme-generator/releases/tag/v1.4) and unzip it; it needs only Java 8+. Then write `README.src.md`:
 
-**Built for agentic development.** When a coding agent maintains your docs, NRG gives it one file to edit instead of five, facts read from `pom.xml` / `package.json` instead of recalled from memory, and `--validate` / `--check` to verify its own work. See [Using NRG with AI coding agents](#using-nrg-with-ai-coding-agents).
+```markdown
+<!--@nrg.languages=en,ru-->
 
-## Overview
+${widget:languages}
 
-Using **Nanolaba Readme Generator (NRG)**, you can: 
+# ${en:'Hello', ru:'Привет'}
 
-- Generate professional README files in multiple languages 
-- Automate documentation with dynamic templates 
-- Create maintainable Markdown with variables and widgets 
-- Streamline GitHub project documentation 
+Install with `make install`.<!--en-->
+Установка: `make install`.<!--ru-->
+```
 
-> 💡 **Example**: This document was generated from [this template](README.src.md). 
-> Try our **[Quick Start Guide](#quick-start)** to begin!
+```bash
+nrg -f README.src.md
+```
 
-## Key Features 
+NRG writes `README.md` and `README.ru.md` next to the template. Here is `README.md`; `README.ru.md` is the same with the Russian lines:
 
-- **Multi-language READMEs** - Support for EN/ZN/RU and any other languages
-- **CI drift detection** - the `--check` flag (CLI) and `mode: check` (GitHub Action) fail the build with a unified diff if generated `.md` files drift from the template — so a contributor's hand-edit can never silently land in `main`
-- **Agent-ready** - one source of truth for AI coding agents, with `--validate` and `--check` they can run to verify their own edits — see [Using NRG with AI coding agents](#using-nrg-with-ai-coding-agents)
-- **Smart Variables** - Reusable content blocks
-- **Prebuilt Widgets** - Table of contents, file import, TODOs, alerts, badges, and more
-- **LaTeX math** - Reliable formula rendering via `$…$` / `$$…$$` or an SVG fallback for places where GitHub's native MathJax breaks
-- **Flexible Integration** - CLI, Maven plugin, or Java library 
-- **Extensibility** - Supports the ability to create custom widgets for content generation 
+```markdown
+<!-- This file was automatically generated by Nanolaba Readme Generator (NRG) from README.src.md -->
+<!-- Do not edit it by hand: change README.src.md and regenerate. See https://github.com/nanolaba/readme-generator -->
 
+[ **en** | [ru](README.ru.md) ]
 
+# Hello
 
-> 💡 **Nanolaba Readme Generator (NRG)** is written in Java and requires **Java 8** or higher to run.
+Install with `make install`.
+```
 
-The latest stable version of the program is **1.4**.
-The current development version is **1.5-SNAPSHOT**.
+The header names the template, so an agent that opens `README.md` first learns where the change belongs. If it edits `README.md` anyway, or changes the English line and leaves the Russian one, a command catches it:
 
-### Used by
+```text
+$ nrg --check -f README.src.md
+--- README.md (on disk)
++++ README.md (generated)
+@@ line 8 @@
+ 
+ # Hello
+ 
+-Install with `make install PREFIX=~`.
++Install with `make install`.
+ 
+Regenerate with: nrg -f /home/me/hello/README.src.md
 
-This very README is generated with NRG — see [`README.src.md`](README.src.md). The same template is also used to keep `README.ru.md` in sync.
+$ nrg --stale-translations HEAD -f README.src.md
+README.src.md:7-8: 'en' changed since HEAD, 'ru' did not
+    en was: Install with `make install`.
+    en now: Install with `make install PREFIX=~`.
+Update the other languages, or mark an intentional one-sided edit with <!--nrg.translation.ok-->
+```
+
+Both commands exit with `1`, so CI fails on either mistake. Under Claude Code the [plugin](#claude-code-plugin-and-the-nrg-skill) stops the edit of a generated file before it happens and hands the agent this message:
+
+```text
+README.ru.md is generated by NRG from README.src.md. Edit README.src.md (or the fragment it imports; nrg --locate README.ru.md:LINE names the line) and regenerate with: nrg -f README.src.md
+```
+
+More in [Quick start](#quick-start) and [Agent-driven development](#agent-driven-development).
+
+## Why NRG
+
+- **One file to edit, not one per language.** Every language lives in one `.src.md`, each translation on the line next to its original, so an agent reads and edits them together and one diff shows both. Lines without a language marker are shared: code blocks, tables and links are written once. See [Multilanguage support](#multilanguage-support).
+- **Facts come from the build, not from memory.** `${pom.version}`, `${npm.version}` and `${gradle.version}` are read from the build descriptor on every generation, and `${widget:import(path='…', region='…')}` embeds a region of a source file that is compiled and tested. No version number in the README is typed by hand or recalled from memory. See [Maven POM values](#maven-pom-values) and [Widget 'import'](#widget-import).
+- **A hand edit does not reach `main`.** `nrg --check` exits with `1` and prints a unified diff when a generated file differs from what its template produces; the GitHub Action does the same with `mode: check`. See [Verifying generated files](#verifying-generated-files-ci-mode).
+- **The agent checks its own work.** `--validate` writes nothing and prints `ERROR: README.src.md:3: unknown widget 'language'; did you mean 'languages'?`. The exit code says what to do next: `1` regenerate, `2` fix the template, `64` fix the command. `--format json` returns the same diagnostics with a stable `code` and a `hint`. See [The agent loop](#the-agent-loop).
+- **Translations that fell behind are listed.** `nrg --stale-translations origin/main` names every place where one language changed since that revision and another did not, with the old and the new text: the work list for updating the translation. See [Translations that fell behind](#translations-that-fell-behind).
+- **Agent instructions are generated too.** `nrg --agent-rules --write AGENTS.md` writes the block that tells an agent which files are generated, which templates to edit and which commands to run, from the real configuration; with `--check` CI keeps it current. See [Instructions for the agent](#instructions-for-the-agent).
+- **A template is untrusted data.** Every path it names stays inside the project root, `exec` runs commands only with `--allow-exec`, and `--sandbox` hides environment variables and closes the network, for pull requests from strangers and agents that run unattended. See [Untrusted templates](#untrusted-templates).
+- **Twelve widgets.** Table of contents, import of a file or a region, badges, `if` blocks, collapsible sections, alerts, LaTeX math, file trees, command output, dates, TODOs and the language switcher. A widget of your own is one Java class. See [Widgets](#widgets).
+- **Output of other tools survives regeneration.** A frozen region keeps what contributors-readme-action, a sponsors widget or an RSS feed wrote into the generated file. See [Frozen regions](#frozen-regions).
+- **The same NRG everywhere.** The `nrgw` wrapper pins a release and its sha256 in the repository, as `mvnw` does for Maven, so a contributor, a CI job and an agent in a fresh sandbox run the same version with nothing installed but Java. See [Pinned wrapper: nrgw](#pinned-wrapper-nrgw).
+
+How NRG compares with multilingual-markdown, doctoc, embedme, cog, markdown-magic and others: [Related projects](#related-projects).
+
+The latest stable version is **1.4**; the version under development is **1.5-SNAPSHOT** (see [Changelog](#changelog)).
 
 
 ## Table of contents
-- 1 [Quick start](#quick-start)
-- 2 [Using NRG with AI coding agents](#using-nrg-with-ai-coding-agents)
-	- 2.1 [The agent loop](#the-agent-loop)
-	- 2.2 [Instructions for the agent](#instructions-for-the-agent)
-	- 2.3 [Claude Code plugin and the NRG skill](#claude-code-plugin-and-the-nrg-skill)
-	- 2.4 [Other agents](#other-agents)
-	- 2.5 [Guarding generated files with a hook](#guarding-generated-files-with-a-hook)
-	- 2.6 [One template for every agent](#one-template-for-every-agent)
-	- 2.7 [Reviewing translations](#reviewing-translations)
-	- 2.8 [Running unattended](#running-unattended)
-- 3 [Usage](#usage)
-	- 3.1 [Using the Command Line Interface](#using-the-command-line-interface)
-		- 3.1.1 [Pinned wrapper: nrgw](#pinned-wrapper-nrgw)
-		- 3.1.2 [Verifying generated files (CI mode)](#verifying-generated-files-ci-mode)
-		- 3.1.3 [Validating source templates](#validating-source-templates)
-		- 3.1.4 [Translations that fell behind](#translations-that-fell-behind)
-		- 3.1.5 [Print to stdout](#print-to-stdout)
-		- 3.1.6 [Machine-readable output](#machine-readable-output)
-		- 3.1.7 [Exit codes](#exit-codes)
-		- 3.1.8 [What a template writes and reads](#what-a-template-writes-and-reads)
-		- 3.1.9 [Logging verbosity](#logging-verbosity)
-		- 3.1.10 [Customising output filenames](#customising-output-filenames)
-		- 3.1.11 [Project root](#project-root)
-		- 3.1.12 [Untrusted templates](#untrusted-templates)
-		- 3.1.13 [Line endings](#line-endings)
-		- 3.1.14 [Header customisation](#header-customisation)
-		- 3.1.15 [Multiple files and glob patterns](#multiple-files-and-glob-patterns)
-	- 3.2 [Use as maven plugin](#use-as-maven-plugin)
-	- 3.3 [Use as a GitHub Action](#use-as-a-github-action)
-		- 3.3.1 [Quickstart](#quickstart)
-		- 3.3.2 [Inputs](#inputs)
-		- 3.3.3 [Outputs](#outputs)
-		- 3.3.4 [Examples](#examples)
-			- 3.3.4.1 [Basic generate](#basic-generate)
-			- 3.3.4.2 [Drift check on PR](#drift-check-on-pr)
-			- 3.3.4.3 [Drift check on a subset of outputs](#drift-check-on-a-subset-of-outputs)
-		- 3.3.5 [Multi-file projects](#multi-file-projects)
-		- 3.3.6 [Skipping the built-in setup-java](#skipping-the-built-in-setup-java)
-		- 3.3.7 [Pinning the action version](#pinning-the-action-version)
-		- 3.3.8 [Troubleshooting](#troubleshooting)
-	- 3.4 [Use as a java-library](#use-as-a-java-library)
-- 4 [Template syntax](#template-syntax)
-	- 4.1 [Variables](#variables)
-	- 4.2 [Backslash escapes](#backslash-escapes)
-	- 4.3 [Properties](#properties)
-	- 4.4 [Per-language overrides](#per-language-overrides)
-	- 4.5 [Environment variables](#environment-variables)
-	- 4.6 [Maven POM values](#maven-pom-values)
-	- 4.7 [npm package values](#npm-package-values)
-	- 4.8 [Gradle values](#gradle-values)
-	- 4.9 [Multilanguage support](#multilanguage-support)
-	- 4.10 [Output variants](#output-variants)
-	- 4.11 [Ignoring content](#ignoring-content)
-	- 4.12 [Frozen regions](#frozen-regions)
-	- 4.13 [Widgets](#widgets)
-		- 4.13.1 [Widget 'languages'](#widget-languages)
-		- 4.13.2 [Widget 'import'](#widget-import)
-		- 4.13.3 [Widget 'tableOfContents'](#widget-tableofcontents)
-		- 4.13.4 [Widget 'date'](#widget-date)
-		- 4.13.5 [Widget 'todo'](#widget-todo)
-		- 4.13.6 [Widget 'alert'](#widget-alert)
-		- 4.13.7 [Widget 'badge'](#widget-badge)
-		- 4.13.8 [Widget 'math'](#widget-math)
-		- 4.13.9 [Widget 'exec'](#widget-exec)
-		- 4.13.10 [Widget 'if'](#widget-if)
-		- 4.13.11 [Widget 'fileTree'](#widget-filetree)
-		- 4.13.12 [Widget 'details'](#widget-details)
-- 5 [Advanced features](#advanced-features)
-	- 5.1 [Creating a widget](#creating-a-widget)
-- 6 [Related projects](#related-projects)
-- 7 [Changelog](#changelog)
-- 8 [Feedback & Support](#feedback-support)
-	- 8.1 [Community Support](#community-support)
-	- 8.2 [Direct Communication](#direct-communication)
-	- 8.3 [Contribution Guide](#contribution-guide)
+- 1 [Installation](#installation)
+- 2 [Quick start](#quick-start)
+- 3 [Agent-driven development](#agent-driven-development)
+	- 3.1 [The agent loop](#the-agent-loop)
+	- 3.2 [Instructions for the agent](#instructions-for-the-agent)
+	- 3.3 [Claude Code plugin and the NRG skill](#claude-code-plugin-and-the-nrg-skill)
+	- 3.4 [Other agents](#other-agents)
+	- 3.5 [Guarding generated files with a hook](#guarding-generated-files-with-a-hook)
+	- 3.6 [One template for every agent](#one-template-for-every-agent)
+	- 3.7 [Reviewing translations](#reviewing-translations)
+	- 3.8 [Running unattended](#running-unattended)
+- 4 [Usage](#usage)
+	- 4.1 [Using the Command Line Interface](#using-the-command-line-interface)
+		- 4.1.1 [Pinned wrapper: nrgw](#pinned-wrapper-nrgw)
+		- 4.1.2 [Verifying generated files (CI mode)](#verifying-generated-files-ci-mode)
+		- 4.1.3 [Validating source templates](#validating-source-templates)
+		- 4.1.4 [Translations that fell behind](#translations-that-fell-behind)
+		- 4.1.5 [Print to stdout](#print-to-stdout)
+		- 4.1.6 [Machine-readable output](#machine-readable-output)
+		- 4.1.7 [Exit codes](#exit-codes)
+		- 4.1.8 [What a template writes and reads](#what-a-template-writes-and-reads)
+		- 4.1.9 [Logging verbosity](#logging-verbosity)
+		- 4.1.10 [Customising output filenames](#customising-output-filenames)
+		- 4.1.11 [Project root](#project-root)
+		- 4.1.12 [Untrusted templates](#untrusted-templates)
+		- 4.1.13 [Line endings](#line-endings)
+		- 4.1.14 [Header customisation](#header-customisation)
+		- 4.1.15 [Multiple files and glob patterns](#multiple-files-and-glob-patterns)
+	- 4.2 [Use as maven plugin](#use-as-maven-plugin)
+	- 4.3 [Use as a GitHub Action](#use-as-a-github-action)
+		- 4.3.1 [Quickstart](#quickstart)
+		- 4.3.2 [Inputs](#inputs)
+		- 4.3.3 [Outputs](#outputs)
+		- 4.3.4 [Examples](#examples)
+			- 4.3.4.1 [Basic generate](#basic-generate)
+			- 4.3.4.2 [Drift check on PR](#drift-check-on-pr)
+			- 4.3.4.3 [Drift check on a subset of outputs](#drift-check-on-a-subset-of-outputs)
+		- 4.3.5 [Multi-file projects](#multi-file-projects)
+		- 4.3.6 [Skipping the built-in setup-java](#skipping-the-built-in-setup-java)
+		- 4.3.7 [Pinning the action version](#pinning-the-action-version)
+		- 4.3.8 [Troubleshooting](#troubleshooting)
+	- 4.4 [Use as a java-library](#use-as-a-java-library)
+- 5 [Template syntax](#template-syntax)
+	- 5.1 [Variables](#variables)
+	- 5.2 [Backslash escapes](#backslash-escapes)
+	- 5.3 [Properties](#properties)
+	- 5.4 [Per-language overrides](#per-language-overrides)
+	- 5.5 [Environment variables](#environment-variables)
+	- 5.6 [Maven POM values](#maven-pom-values)
+	- 5.7 [npm package values](#npm-package-values)
+	- 5.8 [Gradle values](#gradle-values)
+	- 5.9 [Multilanguage support](#multilanguage-support)
+	- 5.10 [Output variants](#output-variants)
+	- 5.11 [Ignoring content](#ignoring-content)
+	- 5.12 [Frozen regions](#frozen-regions)
+	- 5.13 [Widgets](#widgets)
+		- 5.13.1 [Widget 'languages'](#widget-languages)
+		- 5.13.2 [Widget 'import'](#widget-import)
+		- 5.13.3 [Widget 'tableOfContents'](#widget-tableofcontents)
+		- 5.13.4 [Widget 'date'](#widget-date)
+		- 5.13.5 [Widget 'todo'](#widget-todo)
+		- 5.13.6 [Widget 'alert'](#widget-alert)
+		- 5.13.7 [Widget 'badge'](#widget-badge)
+		- 5.13.8 [Widget 'math'](#widget-math)
+		- 5.13.9 [Widget 'exec'](#widget-exec)
+		- 5.13.10 [Widget 'if'](#widget-if)
+		- 5.13.11 [Widget 'fileTree'](#widget-filetree)
+		- 5.13.12 [Widget 'details'](#widget-details)
+- 6 [Advanced features](#advanced-features)
+	- 6.1 [Creating a widget](#creating-a-widget)
+- 7 [Related projects](#related-projects)
+	- 7.1 [When another tool fits better](#when-another-tool-fits-better)
+- 8 [Changelog](#changelog)
+- 9 [Contributing](#contributing)
+- 10 [License](#license)
 
+
+## Installation
+
+NRG needs Java 8 or newer ([download](https://adoptium.net/)). Pick the way that fits where it runs:
+
+| Where | How | Details |
+|---|---|---|
+| Command line | unzip `readme-generator-1.4.zip` from [the release page](https://github.com/nanolaba/readme-generator/releases/tag/v1.4) and run `nrg.sh` / `nrg.bat` | [CLI](#using-the-command-line-interface) |
+| A repository: CI, contributors, agents | `nrg --init-wrapper`, then commit `nrgw`, `nrgw.cmd` and `.nrg/` | [nrgw](#pinned-wrapper-nrgw) |
+| A Maven build | `com.nanolaba:nrg-maven-plugin:1.4`, goal `create-files` | [Maven plugin](#use-as-maven-plugin) |
+| GitHub Actions | `uses: nanolaba/nrg-action@v1` | [GitHub Action](#use-as-a-github-action) |
+| Java code | `com.nanolaba:readme-generator:1.4` | [Java library](#use-as-a-java-library) |
+| Claude Code | `/plugin marketplace add nanolaba/readme-generator`, then `/plugin install nrg@nanolaba` | [Plugin](#claude-code-plugin-and-the-nrg-skill) |
 
 ## Quick start
 
-**Prerequisites:** Java 8 or higher ([download](https://www.java.com/en/download/)).
-
-**Step 1: Create a minimal template (`README.src.md`)**
+**Step 1: write the template (`README.src.md`)**
 
 ```markdown
 <!--@nrg.languages=en,ru-->
@@ -147,19 +211,21 @@ This very README is generated with NRG — see [`README.src.md`](README.src.md).
 
 English text<!--en-->
 Русский текст<!--ru-->
+
+The same line in both files.
 ```
 
-Lines tagged `<!--en-->` go to `README.md`; lines tagged `<!--ru-->` go to `README.ru.md`.
+Lines tagged `<!--en-->` go to `README.md`, lines tagged `<!--ru-->` go to `README.ru.md`, and untagged lines go to both.
 
-**Step 2: Generate the files**
+**Step 2: generate the files**
 
-**Option A — CLI.** [Download](https://github.com/nanolaba/readme-generator/releases/tag/v1.4) the standalone jar, unzip it, then run:
+With the CLI:
 
 ```bash
-nrg -f /path/to/README.src.md
+nrg -f README.src.md
 ```
 
-**Option B — Maven plugin.** Add this to your `pom.xml` (full configuration in the [Maven plugin](#use-as-maven-plugin) section below):
+Or in a Maven build (the full configuration is in [Maven plugin](#use-as-maven-plugin)):
 
 ```xml
 <plugin>
@@ -178,9 +244,7 @@ nrg -f /path/to/README.src.md
 </plugin>
 ```
 
-**Step 3: Check the result**
-
-Two files appear next to the template — `README.md` and `README.ru.md`:
+Two files appear next to the template:
 
 <table>
 <tr><th><b>README.md</b></th><th><b>README.ru.md</b></th></tr>
@@ -190,6 +254,8 @@ Two files appear next to the template — `README.md` and `README.ru.md`:
 # Hello
 
 English text
+
+The same line in both files.
 ```
 
 </td><td>
@@ -198,14 +264,37 @@ English text
 # Привет
 
 Русский текст
+
+The same line in both files.
 ```
 
 </td></tr></table>
 
+**Step 3: check in CI**
+
+Commit the template together with the generated files, and add a check to CI that fails when someone edits `README.md` by hand or forgets to regenerate:
+
+```yaml
+- uses: nanolaba/nrg-action@v1
+  with:
+    file: README.src.md
+    mode: check
+```
+
+Outside GitHub Actions the same check is `nrg --check -f README.src.md`, see [Verifying generated files](#verifying-generated-files-ci-mode).
+
+**Step 4: tell the coding agent**
+
+```bash
+nrg --agent-rules --write AGENTS.md
+```
+
+This adds a block to `AGENTS.md` that names the generated files, the templates to edit, the languages and the commands to run after a change. Use `CLAUDE.md`, `GEMINI.md` or `.github/copilot-instructions.md` for other agents, see [Agent-driven development](#agent-driven-development).
+
 **What comes next**
 
-- Variables, language constructs, and escapes — see [Template syntax](#template-syntax).
-- Built-in widgets (table of contents, import, languages, date, todo, alert, badge, math, exec, if, fileTree, details) — see [Widgets](#widgets).
+- Variables, language constructs and escapes: [Template syntax](#template-syntax).
+- Built-in widgets (table of contents, import, languages, date, todo, alert, badge, math, exec, if, fileTree, details): [Widgets](#widgets).
 
 <details>
 <summary><b>Full template example (all widgets)</b></summary>
@@ -259,34 +348,40 @@ ${widget:details(summary='Click', content='Short hidden text', open='true')}
 
 </details>
 
-## Using NRG with AI coding agents
+<a name="using-nrg-with-ai-coding-agents"></a>
 
-More and more documentation is written by coding agents — Claude Code, Codex, Cursor, Copilot. They are quick at it, and they keep making the same few mistakes: they update `README.md` and leave `README.ru.md` as it was, quote a version number from memory, paste a code sample that stops compiling a week later, or "fix" a generated file directly. **Nanolaba Readme Generator (NRG)** makes the README a build artifact, so each of these mistakes either cannot happen or is caught by a command the agent runs itself.
+## Agent-driven development
+
+When a coding agent (Claude Code, Codex, Cursor, Copilot and others) maintains the docs, it makes the same few mistakes: it updates `README.md` and leaves `README.ru.md` as it was, quotes a version number from memory, pastes a code sample that stops compiling a week later, or fixes a generated file directly. With **Nanolaba Readme Generator (NRG)** the README is a build artifact, so each of these mistakes either cannot happen or is caught by a command the agent runs itself.
 
 | What goes wrong | What NRG does about it |
 |---|---|
-| One language is updated, the others are forgotten | All languages live in one `.src.md` with translations on adjacent lines: the agent reads and edits them together, and a single diff shows both |
+| One language is updated, the others are forgotten | All languages live in one `.src.md` with translations on adjacent lines: the agent reads and edits them together, and one diff shows both. `--stale-translations` lists what was left behind |
 | Versions and coordinates quoted from memory | `${pom.version}`, `${npm.version}`, `${gradle.version}` are read from the build descriptor on every generation |
-| Code samples that no longer match the code | `${widget:import(path='…', region='…')}` embeds a region of a real source file — one that is compiled and tested |
-| A generated file is edited by hand | `--check` exits with `1` and prints a unified diff, so CI fails on the edit |
-| A mistake in template syntax | `--validate` reports `ERROR: file.src.md:LINE: message` without generating anything |
-| The whole README is loaded to change one section | The template is split into small fragments joined by `import`; the agent opens only the fragment it needs |
+| Code samples that no longer match the code | `${widget:import(path='…', region='…')}` embeds a region of a real source file, one that is compiled and tested |
+| A generated file is edited by hand | The header of the file names its template; the Claude Code hook refuses the edit; `--check` exits with `1` and prints a unified diff, so CI fails |
+| A mistake in template syntax | `--validate` prints `ERROR: file.src.md:LINE: message` and writes nothing |
+| The whole README is loaded to change one section | The template is split into fragments joined by `import`, and the agent opens only the one it needs. `--locate README.md:LINE` names the template line behind a line of the output |
+
+The repository is maintained the same way: [AGENTS.md](AGENTS.md) describes the build, the invariants and the test requirements (JUnit and a 100% mutation-coverage gate), and CI runs `--validate` over this README's templates and `--check` over the syntax card and `llms.txt`.
 
 ### The agent loop
 
-Three commands let an agent check its own work — each ends with an exit code and a message that says where to look:
+Three commands let an agent check its own work. Each ends with an exit code and a message that says where to look:
 
 ```bash
-nrg --validate -f README.src.md   # template mistakes: ERROR: README.src.md:42: unknown widget 'tocc'
+nrg --validate -f README.src.md   # template mistakes: ERROR: README.src.md:3: unknown widget 'language'; did you mean 'languages'?
 nrg -f README.src.md              # regenerate every language
 nrg --check -f README.src.md      # exit 1 and a unified diff when files on disk are stale
 ```
 
-`--validate`, `--check` and `--stdout` never write files. The exit code tells the agent what to do next: `1` — regenerate, `2` — fix the template, `64` — fix the command ([Exit codes](#exit-codes)). Add `--format json` to get files and diagnostics (with a stable `code` and a `hint` naming the fix) as one JSON document instead of log lines — see [Machine-readable output](#machine-readable-output). Details: [Validating source templates](#validating-source-templates), [Verifying generated files](#verifying-generated-files-ci-mode).
+`--validate`, `--check` and `--stdout` never write files. The exit code tells the agent what to do next: `1` regenerate, `2` fix the template, `64` fix the command ([Exit codes](#exit-codes)). With `--format json` the files and the diagnostics, each with a stable `code` and a `hint` naming the fix, come as one JSON document instead of log lines, see [Machine-readable output](#machine-readable-output). Details: [Validating source templates](#validating-source-templates), [Verifying generated files](#verifying-generated-files-ci-mode).
+
+*1.5-SNAPSHOT:* NRG logs through [nanolog](https://github.com/nanolaba/nanolog). When an agent runs it, nanolog's agent mode adds a `[NANOLOG]` line and a run summary on stderr and keeps the full log in `target/nanolog/` (`.nanolog/` outside a Maven or Gradle project); `NANOLOG_AGENT=off` turns this off.
 
 ### Instructions for the agent
 
-An agent does not know that `README.md` is generated until something tells it. Put this into `AGENTS.md`, `CLAUDE.md`, or whichever instruction file your agent reads:
+An agent does not know that `README.md` is generated until something tells it. Put this into `AGENTS.md`, `CLAUDE.md` or whichever instruction file your agent reads:
 
 ```markdown
 ## Documentation
@@ -299,36 +394,51 @@ An agent does not know that `README.md` is generated until something tells it. P
 - Commit the template together with the regenerated files.
 ```
 
-Rather than adapting this snippet by hand, let NRG write it from the real configuration — which outputs exist, which templates and fragments to edit, which source files are embedded, the languages and the exact commands:
+Or let NRG write the block from the real configuration: which outputs exist, which templates and fragments to edit, which source files are embedded, the languages and the exact commands:
 
 ```bash
 nrg --agent-rules --write AGENTS.md            # insert or update the block, keep the rest of the file
 nrg --agent-rules --write AGENTS.md --check    # exit 1 and a diff when the block is out of date
 ```
 
-The block sits between `<!-- nrg:agent-rules:begin -->` and `<!-- nrg:agent-rules:end -->`; `--agent-rules` alone prints it. Run the `--check` form in CI and the instructions can no longer drift from the templates.
+For the template from [Try it](#try-it) the block reads:
 
-`./nrgw` is the [pinned wrapper](#pinned-wrapper-nrgw): commit it once (`nrg --init-wrapper`) and the instruction works in any sandbox that has Java, with no NRG installed. This repository's own agent instructions follow the same pattern — see its [AGENTS.md](AGENTS.md).
+```markdown
+<!-- nrg:agent-rules:begin -->
+## Generated documentation (NRG)
 
-An agent that opens `README.md` first is sent to the right file by the header of the generated file itself — it names the template and says to regenerate instead of editing:
+_This block is generated by `nrg --agent-rules`; do not edit it by hand._
+
+- Generated by NRG, never edit by hand: `README.md`, `README.ru.md` (from `README.src.md`).
+- Edit the templates instead: `README.src.md`.
+- Languages: `en`, `ru`. A line tagged `<!--en-->` has a counterpart for `<!--ru-->` next to it; update all of them, and give every `${en:'...'}` construct an entry for each language.
+- After a change: `nrg --validate README.src.md && nrg README.src.md`. Commit the templates together with the regenerated files.
+<!-- nrg:agent-rules:end -->
+```
+
+The block sits between `<!-- nrg:agent-rules:begin -->` and `<!-- nrg:agent-rules:end -->`; `--agent-rules` alone prints it. Run the `--check` form in CI, and the instructions can no longer drift from the templates.
+
+`./nrgw` is the [pinned wrapper](#pinned-wrapper-nrgw): commit it once (`nrg --init-wrapper`), and the instruction works in any sandbox that has Java, with no NRG installed.
+
+An agent that opens `README.md` first is sent to the right file by the header of the generated file. It names the template and says to regenerate instead of editing:
 
 ```markdown
 <!-- This file was automatically generated by Nanolaba Readme Generator (NRG) from README.src.md -->
 <!-- Do not edit it by hand: change README.src.md and regenerate. See https://github.com/nanolaba/readme-generator -->
 ```
 
-To put the exact command there, use `nrg.headerText` with the `<source>` placeholder — see [Header customisation](#header-customisation).
+To put the exact command there, use `nrg.headerText` with the `<source>` placeholder, see [Header customisation](#header-customisation).
 
 ### Claude Code plugin and the NRG skill
 
-This repository is also a Claude Code plugin marketplace. The plugin brings the NRG [Agent Skill](skills/nrg/SKILL.md) — when to use NRG, the rules, the commands, and the full [syntax card](skills/nrg/SYNTAX.md) — and two hooks: before an `Edit` / `Write` of a generated file it refuses the edit and names the template to change; after a template or an imported file changes it runs `--validate` and regenerates the outputs, feeding errors back to the agent.
+This repository is also a Claude Code plugin marketplace. The plugin brings the NRG [Agent Skill](skills/nrg/SKILL.md) (when to use NRG, the rules, the commands and the full [syntax card](skills/nrg/SYNTAX.md)) and two hooks. Before an `Edit` / `Write` of a generated file, one refuses the edit and names the template to change; after a template or an imported file changes, the other runs `--validate`, regenerates the outputs and feeds errors back to the agent.
 
 ```text
 /plugin marketplace add nanolaba/readme-generator
 /plugin install nrg@nanolaba
 ```
 
-The hooks need NRG 1.5-SNAPSHOT or newer: `nrg` from `PATH`, or the command line in the `NRG_HOOK_COMMAND` environment variable (for example `java -jar /opt/nrg/nrg.jar`). They run in every project you open, so they never execute anything the project supplies — not even its `./nrgw`: a repository you clone must not be able to run code through an installed plugin. In a project without `*.src.md` files they do nothing and start no JVM. The same syntax card is printed offline, for the installed version, by `nrg --help syntax`; other tools find the docs through [llms.txt](llms.txt).
+The hooks need NRG 1.5-SNAPSHOT or newer: `nrg` from `PATH`, or the command line in the `NRG_HOOK_COMMAND` environment variable (for example `java -jar /opt/nrg/nrg.jar`). They run in every project you open, so they never execute anything the project supplies, not even its `./nrgw`: a repository you clone must not be able to run code through an installed plugin. In a project without `*.src.md` files they do nothing and start no JVM. `nrg --help syntax` prints the same syntax card offline, for the installed version; other tools find the docs through [llms.txt](llms.txt).
 
 ### Other agents
 
@@ -346,7 +456,7 @@ For Cursor, start the `.mdc` file with its front matter (`description`, `globs: 
 
 ### Guarding generated files with a hook
 
-Instructions can be overlooked; a hook cannot. Without the plugin, the same two hooks go into the project's `.claude/settings.json` — `--claude-hook` reads the hook event from stdin, so nothing else (no `jq`) is needed:
+An agent may miss an instruction; a hook runs on every edit. Without the plugin, the same two hooks go into the project's `.claude/settings.json`. `--claude-hook` reads the hook event from stdin, so nothing else, `jq` included, is needed:
 
 ```json
 {
@@ -363,11 +473,18 @@ Instructions can be overlooked; a hook cannot. Without the plugin, the same two 
 }
 ```
 
-`pre-edit` exits with `2` for a generated file, which blocks the edit and hands the agent the name of the template. `post-edit` validates the templates that read the edited file and regenerates them; validation errors come back to the agent the same way. For other harnesses, `--is-generated` and `nrg $(nrg --affected <file>)` are the building blocks — see [What a template writes and reads](#what-a-template-writes-and-reads).
+`pre-edit` exits with `2` for a generated file, which blocks the edit and hands the agent the name of the template. `post-edit` validates the templates that read the edited file and regenerates them; validation errors reach the agent the same way:
+
+```text
+NRG: the edit leaves a template invalid; fix it before going on:
+ERROR: README.src.md:3: unknown widget 'language'; did you mean 'languages'?
+```
+
+For other harnesses, `--is-generated` and `nrg $(nrg --affected <file>)` are the building blocks, see [What a template writes and reads](#what-a-template-writes-and-reads).
 
 ### One template for every agent
 
-Agents read different files — `AGENTS.md`, `CLAUDE.md`, `GEMINI.md`, `.github/copilot-instructions.md` — whose content is mostly the same. Declare them as [output variants](#output-variants) of one template:
+Agents read different files, `AGENTS.md`, `CLAUDE.md`, `GEMINI.md`, `.github/copilot-instructions.md`, and their content is mostly the same. Declare them as [output variants](#output-variants) of one template:
 
 ```markdown
 <!--@nrg.variants=agents,claude,gemini,copilot-->
@@ -382,17 +499,17 @@ A note for Claude Code and Gemini CLI.<!--variant:claude,gemini-->
 Everyone except Copilot.<!--variant:!copilot-->
 ```
 
-`nrg -f AGENTS.src.md` writes all four files: untagged lines go to every variant, tagged lines to the variants they name. With `import`, the instruction files and the README can share a fragment — the build commands, for instance — and can no longer contradict each other. Variants combine with languages, so a translated `AGENTS.ru.md` is one more line in `nrg.languages`.
+`nrg -f AGENTS.src.md` writes all four files: untagged lines go to every variant, tagged lines to the variants they name. With `import`, the instruction files and the README can share a fragment, the build commands for instance, and stop contradicting each other. Variants combine with languages, so a translated `AGENTS.ru.md` is one more language in `nrg.languages`.
 
 ### Reviewing translations
 
-An agent that rewrites a paragraph tends to rewrite it in one language. `nrg --stale-translations origin/main` turns "keep the translations in sync" from an instruction it may forget into a failing check with a precise work list: every group and construct where one language changed and another did not, with the old and the new text — exactly the context needed to update the translation. See [Translations that fell behind](#translations-that-fell-behind).
+An agent that rewrites a paragraph tends to rewrite it in one language. `nrg --stale-translations origin/main` makes "keep the translations in sync" a failing check instead of an instruction the agent may forget. It lists every group and construct where one language changed and another did not, with the old and the new text, which is the context needed to update the translation. See [Translations that fell behind](#translations-that-fell-behind).
 
 ### Running unattended
 
-An agent runs commands on templates it did not write — a pull request, a freshly cloned repository. **Nanolaba Readme Generator (NRG)** treats a template as untrusted data: every path it names must stay inside the [project root](#project-root), and no command is executed unless `--allow-exec` is given on the command line.
+An agent runs commands on templates it did not write: a pull request, a freshly cloned repository. **Nanolaba Readme Generator (NRG)** treats a template as untrusted data. Every path it names must stay inside the [project root](#project-root), and no command is executed unless `--allow-exec` is given on the command line.
 
-Two more channels are closed with `--sandbox`: `${env.NAME}` can read any environment variable of the process, and a template can switch remote imports on for itself (`nrg.allowRemoteImports`). With `--sandbox` no variable is visible and no connection is opened — see [Untrusted templates](#untrusted-templates). An agent harness can pass it on every run that touches a pull request.
+`--sandbox` closes two more channels: `${env.NAME}` can read any environment variable of the process, and a template can switch remote imports on for itself (`nrg.allowRemoteImports`). With `--sandbox` no variable is visible and no connection is opened, see [Untrusted templates](#untrusted-templates). An agent harness can pass it on every run that touches a pull request.
 
 ## Usage
 
@@ -402,21 +519,21 @@ Two more channels are closed with `--sandbox`: `${env.NAME}` can read any enviro
 [Install](https://www.java.com/en/download/) Java if it’s not already present on your system.
 
 [Download](https://github.com/nanolaba/readme-generator/releases/tag/v1.4) the latest
-stable version of the application.
+stable version.
 
-Unzip the downloaded archive. If you're using a Unix-like system, make the `nrg.sh` file executable:
+Unzip the downloaded archive. On a Unix-like system, make `nrg.sh` executable:
 
 ```bash
 chmod +x nrg.sh  
 ```
 
-Now you can run the program to generate the files:
+Run the program to generate the files:
 
 ```bash
 nrg -f /path/to/README.src.md
 ```
 
-To see the list of available options for the console application, type:
+To list the available options, type:
 
 ```bash
 nrg --help
@@ -424,9 +541,9 @@ nrg --help
 
 #### Pinned wrapper: nrgw
 
-`nrg --init-wrapper` writes three files into the current directory — `nrgw`, `nrgw.cmd` and
+`nrg --init-wrapper` writes three files into the current directory: `nrgw`, `nrgw.cmd` and
 `.nrg/wrapper.properties` with the release version and the sha256 of its zip. Commit them, and
-anyone who clones the repository — a contributor, a CI job, a coding agent in a fresh sandbox —
+anyone who clones the repository (a contributor, a CI job, a coding agent in a fresh sandbox)
 runs that exact NRG with one command and nothing installed but Java, the same idea as `mvnw` / `gradlew`:
 
 ```bash
@@ -443,12 +560,12 @@ NRG's version, and the checksum is taken from the `.sha256` file published with 
 
 #### Verifying generated files (CI mode)
 
-Use `--check` to verify that files on disk match what NRG would
+`--check` verifies that files on disk match what NRG would
 generate right now. The flag is meant for CI / pre-commit hooks:
 no files are written, a missing or out-of-date target file prints
 a diff to stderr, and the process exits with status `1`.
 
-The diff shows generated content, so anything a template pulls in — including values of `${env.NAME}` — ends up in the CI log when the check fails. Keep secrets out of templates.
+The diff shows generated content, so anything a template pulls in, including values of `${env.NAME}`, ends up in the CI log when the check fails. Keep secrets out of templates.
 
 ```bash
 nrg --check -f README.src.md && echo "README is up to date"
@@ -459,9 +576,9 @@ and is mutually exclusive with `--stdout`.
 
 `--check-paths <pattern>` (repeatable) limits the check to outputs whose
 path matches one of the supplied glob patterns. Patterns use the same
-`glob:` syntax as multi-file source globs (`**/` matches zero or more
+`glob:` syntax as source file globs (`**/` matches zero or more
 directories) and are resolved against the current working directory.
-Outputs that don't match any pattern are skipped from both the diff and
+Outputs that don't match any pattern are left out of both the diff and
 the missing-file check — useful when only some generated files are tracked
 in git and the rest are regenerated by a bot. A pattern that matches
 nothing prints a stderr `WARN` (still exits `0`) so typos do not silently
@@ -473,7 +590,7 @@ nrg --check --check-paths README.md -f README.src.md
 
 #### Validating source templates
 
-Use `--validate` to scan the template (and every reachable
+`--validate` scans the template (and every reachable
 `${widget:import}`-imported template) for authoring mistakes without
 generating any output. Errors:
 
@@ -503,7 +620,7 @@ message ends with it (`unknown widget 'tocc'; did you mean 'toc'?`).
 With no diagnostics, NRG exits silently with status `0`. All diagnostics
 go to stderr; the process exits with status `2` when at least one of them
 is an error. An import with `run-generator='false'` is only checked for
-existence — its content is not a template. `--validate` is mutually
+existence; its content is not a template. `--validate` is mutually
 exclusive with `--check` and `--stdout`.
 
 A line meant for one language only is left out of the translation checks with
@@ -515,7 +632,7 @@ A line meant for one language only is left out of the translation checks with
 `--validate` notices a missing translation, not an outdated one: the English sentence is
 rewritten, the Russian line next to it stays as it was, and every check is green.
 `--stale-translations <git-ref>` compares each template and the template fragments it imports
-with their version at a git revision — typically the base of a pull request — and reports every
+with their version at a git revision (typically the base of a pull request) and reports every
 translation group, and every `${en:'…', ru:'…'}` construct, where some languages changed and
 others did not, with the old and the new text of the changed side:
 
@@ -527,15 +644,15 @@ docs/Overview.src.md:22-25: 'en' changed since origin/main, 'ru' did not
 ```
 
 The run exits with `1` when it reports anything, so it works as a pull request gate (the
-checkout needs the history: `fetch-depth: 0`). A one-sided edit that needs no counterpart — a
-typo fix — is acknowledged with `<!--nrg.translation.ok-->` on the line (removed from the output).
+checkout needs the history: `fetch-depth: 0`). A one-sided edit that needs no counterpart (a
+typo fix) is acknowledged with `<!--nrg.translation.ok-->` on the line (removed from the output).
 `--format json` prints `{"findings": [{"file", "line", "lastLine", "kind", "changed", "unchanged", "old", "new"}]}`.
 
 #### Print to stdout
 
-Use `--stdout` to stream generated output to standard output instead
-of writing files to disk. Combine with `--language <code>` to print
-only a single language variant; without it, every configured variant
+`--stdout` prints the generated output to standard output instead
+of writing files to disk. With `--language <code>` it prints
+only one language variant; without it, every configured variant
 is printed, prefixed with a separator line like `=== README.ru.md ===`
 so the output can be split by downstream tools.
 
@@ -544,8 +661,8 @@ nrg --stdout -f README.src.md
 nrg --stdout --language en -f README.src.md
 ```
 
-The `--language` flag is only meaningful with `--stdout` — using it
-on its own logs a warning and the flag is ignored.
+`--language` works only with `--stdout`; on its own it
+logs a warning and is ignored.
 
 #### Machine-readable output
 
@@ -601,8 +718,7 @@ text-mode `--check` ends with the command that fixes it (`Regenerate with: nrg -
 
 #### What a template writes and reads
 
-Four read-only queries answer what a tool has to know before it edits a file; none of them
-writes anything:
+Four read-only queries answer what a tool has to know before it edits a file:
 
 ```bash
 nrg --manifest                          # outputs and inputs of every template
@@ -635,11 +751,11 @@ The templates are the source files given with `-f` or as arguments; without them
 
 #### Logging verbosity
 
-Control how much NRG prints to the console with `--log-level`. Accepted
-values are `trace`, `debug`, `info` (default), `warn`, and `error` —
-each level suppresses messages below it. The environment variable
-`NRG_LOG_LEVEL` is consulted when `--log-level` is not supplied, which
-is convenient for CI and the Maven plugin. Invalid values abort the
+`--log-level` sets how much NRG prints to the console. Accepted
+values are `trace`, `debug`, `info` (default), `warn`, and `error`;
+each level suppresses messages below it. Without `--log-level`, NRG reads
+the environment variable `NRG_LOG_LEVEL`, which
+is convenient for CI and the Maven plugin. An invalid value stops the
 run with a usage error on stderr.
 
 ```bash
@@ -649,15 +765,15 @@ NRG_LOG_LEVEL=warn nrg -f /path/to/README.src.md
 
 #### Customising output filenames
 
-Use `--file-name-pattern <PATTERN>` to override the output filename layout.
+`--file-name-pattern <PATTERN>` overrides the output filename layout.
 Placeholders: `<base>` (source filename without `.src.md`), `<lang>` (language
-code as written), `<LANG>` (uppercased). Patterns may contain `/` separators —
+code as written), `<LANG>` (uppercased). Patterns may contain `/` separators;
 intermediate directories are created on demand. Equivalent to setting
 `<!--@nrg.fileNamePattern=PATTERN-->` in the template; the CLI flag wins.
 Use `--default-language-file-name-pattern <PATTERN>` to override the default
 language only (mirrors `<!--@nrg.defaultLanguageFileNamePattern=PATTERN-->`).
 Per-language overrides (`<!--@nrg.fileNamePattern.<lang>=...-->`) are
-template-only and have no CLI counterpart.
+template-only.
 
 ```bash
 nrg --file-name-pattern '<base>_<LANG>.md' -f README.src.md
@@ -669,7 +785,7 @@ nrg --file-name-pattern 'docs/<lang>/<base>.md' --default-language-file-name-pat
 A template is confined to a **project root**: every path it names must stay inside that directory — the output files it asks for, the files it imports (`import`), the directories it lists (`fileTree`), and the descriptors behind `${pom.*}` / `${npm.*}` / `${gradle.*}` (`nrg.pom.path`, `nrg.npm.path`, `nrg.gradle.path`).
 The root is the nearest ancestor of the source file that contains a `.git` entry, or the source file's own directory when there is none. It is never taken from the template.
 A path that resolves outside the root (for example `../../somewhere/<base>.md` as a file name pattern, or `path='../../other-project/file.md'` in an import) stops the run with an error; nothing is read from there and nothing is written. `--validate` reports such imports as errors without opening the files.
-This is what keeps a template you did not write — a pull request, a freshly cloned repository — from copying your files into a README or overwriting files on your machine. Environment variables are a different matter: `${env.NAME}` reads any variable of the process — run untrusted templates with `--sandbox` (see [Untrusted templates](#untrusted-templates)).
+This is what keeps a template you did not write (a pull request, a freshly cloned repository) from copying your files into a README or overwriting files on your machine. Environment variables are a different matter: `${env.NAME}` reads any variable of the process, so run untrusted templates with `--sandbox` (see [Untrusted templates](#untrusted-templates)).
 If your layout legitimately needs a wider root, name it explicitly with `--root <dir>` (Maven plugin: `<root>`, GitHub Action: `root`).
 
 ```bash
@@ -679,7 +795,7 @@ nrg --root /path/to/workspace -f docs/README.src.md
 #### Untrusted templates
 
 The project root keeps a template away from your files. Two switches, set on the command line
-only — no template property can turn them off — close the remaining channels when you run NRG on
+only (no template property can turn them off), close the remaining channels when you run NRG on
 a template you did not write, such as a pull request:
 
 - `--no-env` — templates cannot read environment variables: every `${env.NAME}` renders its fallback or nothing. `--env-allow NAME,PREFIX_*` makes only the listed variables visible.
@@ -699,18 +815,18 @@ Maven plugin: `<sandbox>`, `<noEnv>`, `<envAllow>`, `<offline>`; GitHub Action: 
 generated output. Default `auto` preserves the existing on-disk file's
 convention (CRLF stays CRLF, LF stays LF) and falls back to the platform
 default for first-time generation. Use `lf` or `crlf` to pin the output
-unconditionally — useful for Windows contributors regenerating Linux-LF
-repos and vice versa.
+unconditionally — useful for Windows contributors regenerating LF
+repositories and vice versa.
 
 ```bash
 nrg --line-ending lf -f README.src.md
 nrg --line-ending crlf -f README.src.md
 ```
 
-In `--check` mode, `auto` ignores LE-only differences against the on-disk
-file (regen would have preserved the existing convention anyway), so a
-mixed-OS contributor base does not trip CI. Explicit `lf` / `crlf` does
-flag a mismatch — that's the user-asked-for invariant.
+In `--check` mode, `auto` ignores differences from the on-disk file that are
+only in line endings (regeneration would have kept the existing convention anyway), so
+contributors on different operating systems do not trip CI. An explicit `lf` / `crlf` does
+flag a mismatch: the user asked for that convention.
 
 #### Header customisation
 
@@ -723,7 +839,7 @@ the template it was generated from and ask not to hand-edit the output:
 ```
 
 The template path is relative to the generated file (`../../README.src.md` for
-`docs/ru/README.md`), so a reader — or a coding agent — that opens the output first
+`docs/ru/README.md`), so a reader or a coding agent that opens the output first
 goes straight to the file to edit. The NRG version is not part of the default
 header, so upgrading NRG does not change every generated file.
 
@@ -731,9 +847,9 @@ Two flags override the header: `--no-header` strips the comment entirely;
 `--header-text "..."` replaces it with arbitrary text (use `\n` for line breaks,
 also `\r`, `\t`, `\\`). The text may contain the placeholders `<source>` (the
 template path, as above), `<lang>` (language code) and `<version>` (NRG version).
-The two flags are mutually exclusive. Equivalent template properties
-`<!--@nrg.noHeader=true-->` and `<!--@nrg.headerText=...-->` work the
-same way; the CLI flag wins when both are set.
+The two flags are mutually exclusive. The template properties
+`<!--@nrg.noHeader=true-->` and `<!--@nrg.headerText=...-->` do the
+same; the CLI flag wins when both are set.
 
 ```bash
 nrg --no-header -f README.src.md
@@ -757,9 +873,9 @@ nrg "docs/**/*.src.md"
 
 Glob expansion uses `java.nio.file.PathMatcher` with `glob:` syntax, so
 behavior is identical on Windows, Linux, and macOS regardless of the shell.
-Quote the pattern to keep it from being expanded by the shell first.
+Quote the pattern so the shell does not expand it first.
 The legacy `-f <file>` flag is still supported as a single-file alias and
-is mutually exclusive with positional arguments — passing both prints
+is mutually exclusive with positional arguments; passing both prints
 an error and exits with status `64`.
 
 By default each input is processed independently: an error on one file
@@ -823,8 +939,8 @@ Each `<file>` entry can be a literal path or a glob pattern (same `glob:`
 syntax as the CLI). Multi-doc projects can replace a long list with
 `<file>**/*.src.md</file>` and let NRG expand it. Set
 `<failFast>true</failFast>` (or `-DfailFast=true`) to abort on the first
-non-zero result; default `false` preserves today's behavior of aggregating
-diagnostics across every matched file.
+non-zero result; with the default `false`, diagnostics are aggregated
+across every matched file.
 
 `<noHeader>true</noHeader>` (or `-DnoHeader=true`) drops the auto-generated
 two-line head comment from every output file; `<headerText>...</headerText>`
@@ -835,10 +951,10 @@ fails the build with a CLI parse error.
 > [!NOTE]
 > **Multi-module (aggregator) projects:** the `create-files` goal is declared
 > with `inheritByDefault = false`, so child modules of a `<packaging>pom</packaging>`
-> aggregator do **not** re-run NRG in their own working directory by default
+> aggregator do not re-run NRG in their own working directory by default
 > (where `README.src.md` typically does not exist). Declare the plugin once in
 > the parent POM and the goal runs only at the root. A child module that
-> genuinely needs its own README generation must opt in explicitly with
+> needs its own README opts in with
 > `<inherited>true</inherited>` in its own POM.
 
 
@@ -851,16 +967,16 @@ On a name collision, POM-declared widgets override those declared via the
 Set `<check>true</check>` (or pass `-Dcheck=true` on the command line)
 to run the plugin in verification mode: no files are written, and the
 build fails with a `MojoExecutionException` and a diff in the log when
-the generated output diverges from the committed files. Handy for a
+the generated output differs from the files on disk. Handy for a
 `mvn verify` step in CI to guard against stale READMEs.
 
-Set `<validate>true</validate>` (or pass `-Dvalidate=true`) to scan
+`<validate>true</validate>` (or `-Dvalidate=true`) scans
 the templates for authoring mistakes (the checks listed in
 [Validating source templates](#validating-source-templates)) without
 generating any output. The build fails with a `MojoExecutionException`
 when an error is reported; warnings are only logged. Mutually exclusive with `<check>`.
 
-`<format>json</format>` (or `-Dformat=json`) passes `--format` through — see
+`<format>json</format>` (or `-Dformat=json`) passes `--format` through; see
 [Machine-readable output](#machine-readable-output). The build fails on exit code `1`
 (`<check>`), `2` and `64` with a message that names which of them it was.
 
@@ -870,7 +986,7 @@ the `--file-name-pattern` / `--default-language-file-name-pattern` CLI flags
 and override `nrg.fileNamePattern` / `nrg.defaultLanguageFileNamePattern`
 template properties when set.
 
-To use SNAPSHOT versions, you also need to add the following code to your `pom.xml`:
+To use SNAPSHOT versions, also add the following to your `pom.xml`:
 
 ```xml
 
@@ -895,7 +1011,7 @@ NRG ships as a composite GitHub Action so any repository can regenerate
 multi-language README files in CI without installing Maven or Java
 locally. The action optionally sets up Java, downloads the requested NRG
 release zip, extracts `nrg.jar`, and runs it against the templates you
-list — README maintenance becomes a single workflow step.
+list.
 
 #### Quickstart
 
@@ -986,7 +1102,7 @@ jobs:
 
 ##### Drift check on a subset of outputs
 
-When only some generated files are tracked in git (e.g. only the canonical `README.md` is committed and translations are bot-managed), `check-paths` limits the comparison to those files. Patterns are cwd-relative `glob:` globs (`**/` matches zero or more directories). A pattern that matches no generated output prints a `WARN` to stderr but still exits `0`, so typos do not silently disable the check:
+When only some generated files are tracked in git (e.g. only the canonical `README.md` is committed and translations are bot-managed), `check-paths` limits the comparison to those files. Patterns are `glob:` patterns relative to the working directory (`**/` matches zero or more directories). If no generated output matches them, NRG prints a `WARN` to stderr, so a typo does not silently disable the check; the exit code stays `0`:
 
 ```yaml
 - uses: nanolaba/nrg-action@v1
@@ -998,7 +1114,7 @@ When only some generated files are tracked in git (e.g. only the canonical `READ
       docs/canonical/*.md
 ```
 
-Validate-only and auto-commit-via-PR recipes are in the [`nrg-action/examples`](https://github.com/nanolaba/readme-generator/tree/main/nrg-action/examples) directory of this repository.
+An auto-commit-via-PR recipe is in the [`nrg-action/examples`](https://github.com/nanolaba/readme-generator/tree/main/nrg-action/examples) directory of this repository.
 
 #### Multi-file projects
 
@@ -1014,7 +1130,7 @@ Pass a multi-line list to the `files:` input (one path per line). All files are 
 
 #### Skipping the built-in setup-java
 
-If the surrounding workflow already installs Java (for example, for a Maven build), opt out of the built-in `actions/setup-java@v4` step. Composite-action inputs are strings, so use the quoted `"false"`, not the YAML boolean:
+If the surrounding workflow already installs Java (for example, for a Maven build), opt out of the built-in `actions/setup-java` step. Composite-action inputs are strings, so use the quoted `"false"`, not the YAML boolean:
 
 ```yaml
 - uses: actions/setup-java@v4
@@ -1050,7 +1166,7 @@ Most CI failures fall into three buckets: download issues (verify the `nrg-versi
 - **Line-ending drift on Windows runners** — add a `.gitattributes` line `* text=auto eol=lf` and re-commit the regenerated files.
 - **Windows: `unzip: command not found`** — git-bash on `windows-latest` normally ships `unzip`; on rare images install it via `choco install unzip` in a preceding step.
 
-The action is published as a standalone repository [`nanolaba/nrg-action`](https://github.com/nanolaba/nrg-action) (tags `v1.0` and rolling `v1`) — that is the address consumers reference via `uses:`. This `nrg-action/` subdirectory is the dev workspace where the action and its regression tests live; releases are mirrored to the standalone repo. A GitHub Marketplace listing is the next step.
+The action is published as a standalone repository [`nanolaba/nrg-action`](https://github.com/nanolaba/nrg-action) (tags `v1.0` and rolling `v1`) — that is the address consumers reference via `uses:`. The `nrg-action/` directory of this repository holds the action and its regression tests; releases are mirrored to the standalone repo. The action is not listed on GitHub Marketplace yet.
 
 
 ### Use as a java-library
@@ -1077,15 +1193,15 @@ implementation 'com.nanolaba:readme-generator:1.4'
 Get the JAR from [Maven Central](https://repo1.maven.org/maven2/com/nanolaba/readme-generator/1.4).
 Add it to your project's classpath.
 
-After this, you can call the file generation function in your project by passing 
-the same parameters as in the console application, for example:
+Then call NRG from your code with 
+the same arguments as on the command line, for example:
 
 ```java
 NRG.main("-f","path-to-file","--charset","UTF-8");
 ```
 
-An alternative approach — and a more flexible one for configuring program 
-behavior — is to use the `Generator` class:
+The `Generator` class gives more control 
+over the configuration:
 
 ```java
 package com.nanolaba.nrg.examples;
@@ -1120,13 +1236,13 @@ public class GeneratorExample {
 
 ### Variables
 
-The template syntax supports the use of variables. Variables are defined using the following construct:
+A variable is defined like this:
 
 ```markdown
 <!--@variable_name=variable value-->
 ```
 
-The output of variable values is done using the following construct:
+A variable's value is output like this:
 
 ```markdown
 ${variable_name}
@@ -1166,17 +1282,17 @@ ${app_descr}
 ### Backslash escapes
 
 After every substitution and widget has run, the root generator does one final pass over the
-output and strips a backslash in **only** these three patterns; every other `\\X` reaches the
+output and strips a backslash in only these three patterns; every other `\\X` reaches the
 output verbatim.
 
 | In your template | In the output | Use it to |
 |---|---|---|
 | <code>&#92;$</code>        | <code>$</code>        | suppress any `\${…}` reference (property / language / env / pom / npm / gradle / widget). Applies to **any** `\$`, not only `\${…}`. |
 | <code>&lt;&#92;!--</code>  | <code>&lt;!--</code>  | suppress any HTML-comment marker — language tag, `nrg.ignore`, `nrg.freeze`, property declaration. Use it to put a literal `<!--…-->` into the output. |
-| <code>&lt;!--&#92;@</code> | <code>&lt;!--@</code> | render `<!--@key=value-->` cleanly inside an example — **cosmetic only**, does **not** stop NRG from parsing the line as a real property declaration. To actually suppress parsing, escape the comment opener with rule 2: <code>&lt;&#92;!--@key=value--&gt;</code>. |
+| <code>&lt;!--&#92;@</code> | <code>&lt;!--@</code> | render `<!--@key=value-->` cleanly inside an example — **cosmetic only**, does **not** stop NRG from parsing the line as a real property declaration. To suppress parsing, escape the comment opener with rule 2: <code>&lt;&#92;!--@key=value--&gt;</code>. |
 
 Markdown's own escape sequences (`\(`, `\)`, `\_`, `\*`, `\\`, `` \` ``, etc.) are not on this
-list — they pass through NRG unchanged and reach the markdown renderer untouched.
+list — NRG passes them to the Markdown renderer unchanged.
 
 > [!TIP]
 > Rule 1 strips the backslash from **any** `\$`, not only `\${…}`. To keep a literal `\$` in the
@@ -1186,8 +1302,7 @@ list — they pass through NRG unchanged and reach the markdown renderer untouch
 
 ### Properties
 
-Using the syntax for setting variable values in the template,
-you can specify application properties, for example:
+The same syntax sets application properties, for example:
 
 ```markdown
 <!--@nrg.languages=en,ru-->
@@ -1198,15 +1313,14 @@ you can specify application properties, for example:
 
 ***nrg.languages***
 
-For each language, except the default language, a file will be generated with the name in the
-format *source.language.md*, where *source* is the name of the original file and *language* is the
-name of the language. The default value of this property is "en"
+The languages to generate files for. For each language except the default one, NRG writes a file
+named *source.language.md*, where *source* is the name of the source file and *language* is the
+language code. The default value of this property is "en".
 
 ***nrg.defaultLanguage***
 
-The language in which the main documentation file will be generated. The language name should be
-included in the list defined by the property *nrg.languages*. The default value of this property is
-the first element in the *nrg.languages* list.
+The language of the main documentation file. It must be one of the languages in
+*nrg.languages*. The default value of this property is the first element of *nrg.languages*.
 
 ***nrg.widgets***
 
@@ -1260,7 +1374,7 @@ If two configured languages would resolve to the same output path, generation ab
 
 ### Per-language overrides
 
-Any property may declare a per-language override by suffixing its name with `.<lang>`.
+Any property can be overridden for one language by suffixing its name with `.<lang>`.
 When the template is rendered for a specific language, `${name}` first resolves to the value of `name.<lang>` if defined,
 otherwise it falls back to the bare `name`. If neither is defined, the literal `${name}` is left in the output.
 
@@ -1277,7 +1391,7 @@ Result for `en`: `<img src="./public/show-en.png" />`<br>
 Result for `ru`: `<img src="./public/show-ru.png" />`<br>
 Result for `ja` (no per-language override): `<img src="./public/show.png" />`
 
-The same convention is also used by built-in NRG properties such as `nrg.fileNamePattern.<lang>`.
+Built-in NRG properties such as `nrg.fileNamePattern.<lang>` follow the same convention.
 
 ### Environment variables
 
@@ -1311,7 +1425,7 @@ Behaviour:
 
 ### Maven POM values
 
-The reserved `pom.` namespace inside `${…}` reads values directly from
+The reserved `pom.` namespace inside `${…}` reads values from
 the project's `pom.xml`. Resolution happens after env substitution but
 before language and property substitution, so the same `${pom.…}`
 reference works in body text, in `<!--@key=value-->` declaration values,
@@ -1331,9 +1445,9 @@ Behaviour:
 
 - The path is interpreted as a walk from the implicit `<project>` root: `pom.X` reads `<X>`, `pom.X.Y` reads `<X><Y>`, and so on.
 - `pom.properties.KEY` is a flat-map lookup: the remainder of the path is used verbatim as the `<properties>` child element name (so dotted keys like `java.version` work).
-- `pom.parent.X` reads the local `<parent>` block as written. Cross-file parent POM traversal is out of scope.
+- `pom.parent.X` reads the local `<parent>` block as written. NRG does not read the parent POM file itself.
 - For unqualified `pom.groupId`, `pom.version`, and `pom.name`: if the element is absent under `<project>`, the value is taken from `<project><parent>` (Maven's standard inheritance rules).
-- POM values may themselves reference `${prop}`, `${project.X}`, and `${env.NAME}` / `${env.NAME:default}` — NRG resolves a single pass against the same POM and the template-level env provider.
+- POM values may themselves reference `${prop}`, `${project.X}`, and `${env.NAME}` / `${env.NAME:default}` — NRG resolves them in a single pass against the same POM and the template-level env provider.
 - `${pom.path:default}` substitutes the literal default after the first `:` when the path is missing. Without a default, the substitution renders empty and one warning per distinct path is logged.
 - Backslash escapes work as for any other `${…}` reference: `\\${pom.version}` renders as the literal text.
 - The `pom.xml` location defaults to the source-file directory; override with `<!--@nrg.pom.path=relative/or/absolute/pom.xml-->`.
@@ -1342,7 +1456,7 @@ Behaviour:
 
 ### npm package values
 
-The reserved `npm.` namespace inside `${…}` reads values directly from
+The reserved `npm.` namespace inside `${…}` reads values from
 the project's `package.json`. Resolution happens after pom substitution but
 before language and property substitution, so the same `${npm.…}` reference
 works in body text, in `<!--@key=value-->` declaration values, and inside
@@ -1383,36 +1497,35 @@ ${gradle.version:0.0.0-SNAPSHOT}
 Behaviour:
 
 - `gradle.X` first looks up the verbatim key `X` in `gradle.properties`. If not found and `X` is `version` or `group`, NRG regex-extracts `X = '...'` from the build script (works for both Groovy and Kotlin DSLs).
-- `gradle.properties` always wins over the build script when the same key is defined in both places.
 - Other Gradle DSL constructs are intentionally not parsed — define values in `gradle.properties` if you need them in the README.
-- `${gradle.path:default}`, backslash escapes, and warn-once-per-missing-path semantics match `${pom.…}` and `${npm.…}`.
+- `${gradle.path:default}`, backslash escapes, and the single warning per missing path work as for `${pom.…}` and `${npm.…}`.
 - Override the Gradle location with `<!--@nrg.gradle.path=core/-->` (a directory) or `<!--@nrg.gradle.path=core/build.gradle.kts-->` (an explicit file).
 
 
 
 ### Multilanguage support
 
-To write text in different languages, there are two methods available.
-The first one involves using comments at the end of the line, for example:
+There are two ways to write text in different languages.
+The first is a comment at the end of the line, for example:
 
 ```markdown
 Some text<!--en-->
 Некоторый текст<!--ru-->
 ```
 
-The second method involves using a special construct:
+The second is a special construct:
 
 ```markdown
 ${en:"Some text", ru:"Некоторый текст"}
 ${en:'Some text', ru:'Некоторый текст'} 
 ```
 
-To escape quotes, use character doubling, for example:
+To escape a quote, double it, for example:
 
 - `${en:'It''s working'}` → `It's working`
 - `${en:"Text with ""quotes"""}` → `Text with "quotes"`
 
-`--validate` checks that the languages stay together (see [Validating source templates](#validating-source-templates)): every run of language-tagged lines must have lines for each language in `nrg.languages`, and every `${en:…, ru:…}` construct must name each language the line is shown in. A line that is meant for one language only is marked with `<!--nrg.parity.ignore-->` (removed from the output); `<!--@nrg.validate.parity=false-->` turns these checks off for a template.
+`--validate` checks that the languages stay together (see [Validating source templates](#validating-source-templates)): every run of language-tagged lines must have lines for each language in `nrg.languages`, and every `${en:…, ru:…}` construct must name each language the line is shown in. A line meant for one language only is marked with `<!--nrg.parity.ignore-->` (the marker is removed from the output); `<!--@nrg.validate.parity=false-->` turns these checks off for a template.
 
 ### Output variants
 
@@ -1478,8 +1591,8 @@ Frozen regions let NRG-generated files coexist with third-party tools that
 mutate the **generated** file directly — for example
 [`akhilmhdh/contributors-readme-action`](https://github.com/akhilmhdh/contributors-readme-action),
 GitHub Sponsors widgets, or RSS embedders. On regeneration, NRG copies the
-**current on-disk** content between the freeze markers into the freshly-generated
-output instead of materialising whatever the template contains in the same span.
+current on-disk content between the freeze markers into the freshly-generated
+output instead of what the template has in that place.
 
 ```markdown
 ## Contributors
@@ -1502,7 +1615,7 @@ overwritten as usual.
 
 ***id*** — required, non-empty, must be unique within a template.
 
-***source-lang*** — ${en:'optional. Names a single language declared in `nrg.languages`. When present, the block content for *every* language is sourced from that one language\\'s output file.', ru:'опциональный. Указывает один язык из `nrg.languages`. Когда указан, содержимое блока для *каждого* языка берётся из выходного файла этого одного языка.'}
+***source-lang*** — ${en:'optional. Names a single language declared in `nrg.languages`. When present, the block content for *every* language is sourced from that one language\\'s output file.', ru:'необязательный. Указывает один язык из `nrg.languages`. Когда указан, содержимое блока для *каждого* языка берётся из выходного файла этого языка.'}
 
 The `source-lang` mode covers the common case where an external tool only
 writes to one language's output (e.g. contributors-action only knows about
@@ -1520,7 +1633,7 @@ placeholder
 | Attributes              | Behaviour |
 |------------------------------------------------|----------------------------------|
 | `id="X"`                                       | Each language file is independent: when generating `README.md` NRG reads the freeze content from `README.md`, when generating `README.ru.md` from `README.ru.md`. |
-| `id="X" source-lang="en"`                      | The block appears in **every** language file, but the content for **all** of them is sourced from the `en` output (`README.md`). |
+| `id="X" source-lang="en"`                      | The block appears in every language file, but the content for all of them is sourced from the `en` output (`README.md`). |
 
 **Restricting a freeze to one language:**
 
@@ -1543,18 +1656,18 @@ the block stays. When generating `README.ru.md`, `${onlyEn}` resolves to the
 empty string (falsy) and the entire block is dropped before NRG even sees the
 freeze markers.
 
-**Important properties:**
+**Details:**
 
 - Open and close markers must each be on their own line.
 - Markers must not nest. Nesting is a validation error.
-- Disk content is opaque to NRG: `${...}` references and `<!--@key=value-->` declarations *inside* the freeze block content from disk are **not** interpreted. Only the bootstrap placeholder in the template goes through the rendering pipeline (once, at first generation).
+- Disk content is opaque to NRG: `${...}` references and `<!--@key=value-->` declarations *inside* the freeze block content from disk are not interpreted. Only the bootstrap placeholder in the template goes through the rendering pipeline (once, at first generation).
 - Markers themselves are written to the output verbatim, including original whitespace — they have to be there for the next regeneration to find the block.
-- Freeze blocks work transparently across `${widget:import(...)}` — markers in imported files bubble up to the root output and are resolved against the root output file.
+- Freeze blocks work through `${widget:import(...)}`: markers in imported files reach the root output and are resolved against the root output file.
 
 **Validation:**
 
 The following are **template authoring errors** — they fail generation with
-exit 1 and are reported by `--validate`:
+exit code 2 and are reported by `--validate`:
 
 - missing or empty `id`;
 - duplicate `id` within the same template;
@@ -1574,9 +1687,8 @@ without aborting generation:
 
 ### Widgets
 
-Widgets allow you to insert programmatically generated text into a document.
-If you are using **Nanolaba Readme Generator (NRG)** as a Java library, you can write your own widget.
-How to do this is explained in the [Advanced Features](#advanced-features) section.
+Widgets insert programmatically generated text into a document.
+If you use **Nanolaba Readme Generator (NRG)** as a Java library, you can write your own widget; see [Advanced Features](#advanced-features).
 
 Widget parameters are written as `name='value'` pairs separated by commas (a space after the comma is optional); a value is quoted with either `'` or `"`. Everything between the quotes belongs to the value, including parentheses and the other quote character: `cond='endsWith(${version}, -SNAPSHOT)'`, `text="it's done (really)"`.
 
@@ -1584,7 +1696,7 @@ When a widget that produces several lines (`import`, `alert`, `fileTree`, `exec`
 
 #### Widget 'languages'
 
-This component allows you to generate links to other versions of a document (written in other languages).
+This component generates links to the versions of the document in other languages.
 
 <table>
 <tr>
@@ -1617,8 +1729,8 @@ ${widget:languages}
 
 #### Widget 'import'
 
-This component enables text import from another document, code file, or template.
-Optionally selects a fragment by line range or named region, and wraps the result in a fenced code block.
+This component imports text from another document, code file, or template.
+It can select a fragment by line range or named region and wrap the result in a fenced code block.
 
 <table>
 <tr><th>Basic usage example</th></tr>
@@ -1655,7 +1767,7 @@ Widget parameters:
 |:-------------------------------:|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:-------------------------------------------------:|
 |              path               | Path to the imported file, relative to the importing file. Must lie inside the [project root](#project-root) |                                                   |
 |             charset             | File encoding                                                                                                                 |                      `UTF-8`                      |
-|          run-generator          | Should the system perform text generation when importing template files                          |                      `true`                       |
+|          run-generator          | Whether to process the imported text as a template                          |                      `true`                       |
 |              lines              | Line range(s) to extract: e.g. `10-20`, `10-`, `-20`, `15`, `10-20,30-35` |                                                   |
 |             region              | Name of a region marked in the source file                                                                  |                                                   |
 |              wrap               | Wrap output in a code fence: `true`, `false`                                                               |                      `false`                      |
@@ -1667,25 +1779,25 @@ Widget parameters:
 |             timeout             | HTTP timeout: `<int>{s,m,h,d}` (cannot be `none`)                                                        |                      `60s`                        |
 |             sha256              | 64 hex chars; verifies fetched bytes; recommended for reproducibility |                                                   |
 
-When importing a template file, generation is performed using variables declared in the parent file.
-This allows defining global variables in the root file and reusing them across all imported templates.
+An imported template is rendered with the variables declared in the parent file,
+so variables from the root file are available in every imported template.
 
 **Wrapping in a code fence**
 
-By default (`wrap='false'`), the widget emits the selected content as-is, which preserves the behavior of existing template-composition imports (`*.src.md` files).
-To wrap a code fragment in a fenced block, set `wrap='true'` explicitly. The fence language is taken from `lang`, or detected from the file extension when `lang='auto'` (the default).
+By default (`wrap='false'`), the widget emits the selected content as-is.
+To wrap a code fragment in a fenced block, set `wrap='true'`. The fence language is taken from `lang`, or detected from the file extension when `lang='auto'` (the default).
 
 The widget can sit on an indented line, for example inside a list item: every emitted line — both fences and the code between them — gets the indentation of the widget line, so the block stays inside the item.
 
 **Auto-dedent**
 
-When `dedent='auto'` (the default), common leading whitespace is stripped automatically if `lines` or `region` is set, and left untouched otherwise.
-Use `dedent='true'` or `dedent='false'` to force the behavior explicitly.
+When `dedent='auto'` (the default), common leading whitespace is stripped if `lines` or `region` is set, and left untouched otherwise.
+Use `dedent='true'` or `dedent='false'` to force the behavior.
 
 **Region markers**
 
 Mark a region in the source file using `nrg:begin:NAME` and `nrg:end:NAME` tokens inside any comment.
-The matching is language-agnostic — the widget recognizes the markers regardless of the surrounding comment syntax:
+Any comment syntax works:
 
 <table>
 <tr><th>Comment style examples</th></tr>
@@ -1707,8 +1819,8 @@ Nested regions are supported — when extracting an outer region, inner region m
 
 **Heading offset**
 
-`heading-offset='N'` shifts every ATX heading (`#`, `##`, …, `######`) in the imported content by `N` levels — useful when an imported `.src.md` owns its own heading hierarchy but is being included under a parent section.
-Levels are clamped to `[1, 6]`; clamped headings emit a single aggregated warning per import call.
+`heading-offset='N'` shifts every ATX heading (`#`, `##`, …, `######`) in the imported content by `N` levels — useful when an imported `.src.md` has its own heading hierarchy but is included under a parent section.
+Levels are clamped to `[1, 6]`; an import that clamps any heading logs one warning.
 Lines inside fenced code blocks (```` ``` ```` or `~~~`) are not shifted, so a `# bash comment` inside a fence stays a `# bash comment`. A fence line may carry a language marker (`` ```<!--en--> ``); the marker is ignored when fences are matched.
 Setext-style headings (`====` / `----`) and indented (4-space) code blocks are not detected — prefer ATX headings and fenced code blocks in imports that use this parameter.
 Combining `heading-offset` with a non-zero value and `wrap='true'` fails the build.
@@ -1716,12 +1828,12 @@ Combining `heading-offset` with a non-zero value and `wrap='true'` fails the bui
 **Remote imports**
 
 The `url` parameter fetches content over HTTP(S) and is mutually exclusive with `path`.
-Remote imports are opt-in: the template must set `nrg.allowRemoteImports=true` as a standard NRG property marker, otherwise any `url=` invocation fails the build with a clear error.
+Remote imports are opt-in: the template must set `nrg.allowRemoteImports=true`, otherwise any `url=` call fails the build.
 
-The cache directory defaults to `~/.nrg/cache` and can be overridden by setting the `nrg.cacheDir` template property to the desired path.
-The `cache` parameter sets the TTL using the grammar `<int>{s,m,h,d}` (or `none` to disable caching), and `timeout` accepts the same grammar but cannot be `none` (default `60s`).
+The cache directory defaults to `~/.nrg/cache`; the template property `nrg.cacheDir` sets another path.
+The `cache` parameter sets the TTL in the form `<int>{s,m,h,d}` (or `none` to disable caching), and `timeout` accepts the same form but cannot be `none` (default `60s`).
 
-The `sha256` parameter (64 hex chars) is strongly recommended — it pins the fetched bytes for reproducible builds and supply-chain safety.
+The `sha256` parameter (64 hex chars) is recommended: it pins the fetched bytes, so the build is reproducible and fails if the content on the server changes.
 When `sha256` is omitted, NRG logs an INFO line with the actual hash so it can be copied back into the widget call.
 For CI gates, set the system property `-Dnrg.requireSha256ForRemote=true` (default `false`) — remote imports without `sha256` will then fail the build.
 
@@ -1746,22 +1858,22 @@ ${widget:import(url='https://raw.githubusercontent.com/myorg/shared-docs/main/CO
 
 **Error semantics**
 
-All import errors — both local and remote — now fail the build with a non-zero exit code.
-This is a behavior change from earlier NRG versions, where local-import errors silently produced empty content.
-The only non-throw cases are stale-cache fallback when the network is unreachable (warn-only) and cache filesystem hiccups (cache is skipped, fetch continues).
+All import errors — both local and remote — fail the build with a non-zero exit code.
+In earlier NRG versions a failed local import silently produced empty content.
+Two cases only log a warning: the network is unreachable and a stale cache entry exists (NRG uses it), or a cache entry cannot be read or written (NRG skips the cache and fetches).
 
 ---
 
 #### Widget 'tableOfContents'
 
-This component allows you to generate a table of contents for a document.
-The table of contents is created from headers formed using the hashtag symbol (`#`).
-Headers located above the widget in the text are ignored.
+This component generates a table of contents for the document.
+It is built from the headings that start with the hash sign (`#`).
+Headings above the widget are ignored.
 
-Also addressable as `${widget:toc(...)}` — both names render identically.
+The short name `${widget:toc(...)}` works the same way.
 
-If you need to exclude a header from the table of contents, you should
-mark it with a comment `<!--toc.ignore-->`.
+To exclude a heading from the table of contents,
+mark it with the comment `<!--toc.ignore-->`.
 
 Lines that look like headings but are part of a fenced code block (opened with three or more backticks or tildes), of an indented code block (4+ leading spaces), of an inline code span, or of a backslash-escaped heading are not treated as headings and do not appear in the table of contents. A fence line may carry a language marker (`` ```<!--en--> ``, or a wrapped `import` on a line tagged with one): the marker is ignored when fences are matched, exactly as in the generated file.
 
@@ -1834,12 +1946,12 @@ Widget parameters:
 | Name | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    | Default value |
 |:-------------------------------:|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:-------------------------------------------------:|
 |              title              | Title of the table of contents                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |                                                   |
-|             ordered             | Should the items in the table of contents be numbered                                                                                                                                                                                                                                                                                                                                                                                                                                                    |                      `false`                      |
+|             ordered             | Whether to number the items of the table of contents                                                                                                                                                                                                                                                                                                                                                                                                                                                    |                      `false`                      |
 |            min-depth            | Minimum heading level to include (1–6). Headings shallower than this are skipped. 1 includes top-level `#` headings.                                                                                                                                                                                                                                                                                                |                        `2`                        |
 |            max-depth            | Maximum heading level to include (1–6). Headings deeper than this are skipped.                                                                                                                                                                                                                                                                                                                                                                                      |                        `6`                        |
 |            min-items            | Minimum number of headings (after depth and `<!--toc.ignore-->` filters) required to render the widget. Below this threshold the widget produces no output (no title, no items).                                                                                                                                                                        |                        `1`                        |
 |          anchor-style           | Anchor-slugification style: `github` (default), `gitlab`, or `bitbucket`. GitLab preserves underscores and does not collapse consecutive hyphens; Bitbucket prefixes anchors with `markdown-header-`. An unknown value logs an error and causes the widget to render nothing. |                     `github`                      |
-|         numbering-style         | Counter-prefix style when `ordered=true`: `default` (today's `1.` markers — byte-identical to omitting the parameter), hierarchical `dotted` (`1`, `1.1`, `1.1.1`), `legal` (`1.`, `1.1.`, `1.1.1.`), `appendix` (`A`, `A.1`, `A.1.1`), or flat global counters `arabic` / `roman` / `roman-upper` / `alpha` / `alpha-upper`. Unknown values log an error and fall back to `default`. No effect when `ordered=false`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |                     `default`                     |
+|         numbering-style         | Counter-prefix style when `ordered=true`: `default` (plain `1.` markers, the same output as omitting the parameter), hierarchical `dotted` (`1`, `1.1`, `1.1.1`), `legal` (`1.`, `1.1.`, `1.1.1.`), `appendix` (`A`, `A.1`, `A.1.1`), or flat global counters `arabic` / `roman` / `roman-upper` / `alpha` / `alpha-upper`. Unknown values log an error and fall back to `default`. No effect when `ordered=false`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |                     `default`                     |
 |              start              | First top-level counter value. Type-matched to `numbering-style`: digits for `dotted` / `legal` / `arabic`, roman numeral for `roman` / `roman-upper`, single letter for `alpha` / `alpha-upper` / `appendix`. Invalid input logs an error and falls back to the natural first value. Ignored when `numbering-style=default`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |                                                   |
 
 Numbering styles:
@@ -1949,7 +2061,7 @@ ${widget:tableOfContents(ordered = "true", numbering-style = "arabic")}
 
 #### Widget 'date'
 
-This component allows you to insert the current date into a document.
+This component inserts the current date into a document.
 
 <table>
 <tr><th>Usage example</th><th>Result</th></tr>
@@ -1962,7 +2074,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 22.11.2026 07:40:04
+Last updated: 22.11.2026 14:02:09
 ```
 
 </td></tr>
@@ -1985,7 +2097,7 @@ Widget parameters:
 
 | Name | Description                                                                                              | Default value |
 |:-------------------------------:|---------------------------------------------------------------------------------------------------------------------------------|:-------------------------------------------------:|
-|             pattern             | Pattern according to which the date will be formatted |               `dd.MM.yyyy HH:mm:ss`               |
+|             pattern             | Pattern the date is formatted with                                         |               `dd.MM.yyyy HH:mm:ss`               |
 
 You can read more about date pattern syntax in the
 [Java documentation](https://docs.oracle.com/javase/8/docs/api/java/text/SimpleDateFormat.html).
@@ -1994,8 +2106,8 @@ You can read more about date pattern syntax in the
 
 #### Widget 'todo'
 
-This component allows you to insert prominently highlighted text into the document,
-indicating that work on this fragment has not yet been done.
+This component inserts prominently highlighted text into the document
+to mark a fragment that is not finished yet.
 
 
 <table>
@@ -2072,7 +2184,7 @@ Widget parameters:
 | Name | Description                                                                                                                                                                                                                                                                                                                                                                                                                       | Default value |
 |:-------------------------------:|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:-------------------------------------------------:|
 |              type               | Alert kind: `note`, `tip`, `important`, `warning`, or `caution` (case-insensitive). Unknown values log an error and produce empty output.                                                                                                                                                      |                                                   |
-|              text               | Body of the alert. Use `\n` to split into multiple quoted lines and `\\` for a literal backslash. Language-substitution constructs in the outer template are resolved before the widget runs, so per-language text works naturally. |                       `''`                        |
+|              text               | Body of the alert. Use `\n` to split into multiple quoted lines and `\\` for a literal backslash. Language-substitution constructs in the outer template are resolved before the widget runs, so per-language text works.           |                       `''`                        |
 
 ---
 
@@ -2097,15 +2209,15 @@ Supported types and their parameters:
 |       type        | Required parameters                                                                                                                                                                                           | Optional parameters                                                                                                                                                                                                        |
 |:-----------------:|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 |  `maven-central`  | `coordinates` — Maven coordinates `groupId:artifactId`.                                                                                                                                       | `alt` — override the default alt-text `Maven Central`.                                                                                                                                      |
-|     `license`     | `value` — license identifier (e.g. `Apache-2.0`).                                                                                                                                   | `url` — link target; omitted → non-clickable badge.  `alt` — override the default alt-text `License: <value>`.              |
+|     `license`     | `value` — license identifier (e.g. `Apache-2.0`).                                                                                                                                   | `url` — link target; without it the badge is not clickable.  `alt` — override the default alt-text `License: <value>`.      |
 | `github-release`  | `repo` — repository `owner/name`.                                                                                                                                                                          | `alt` — override the default alt-text `GitHub release`.                                                                                                                                    |
 |  `github-stars`   | `repo` — repository `owner/name`.                                                                                                                                                                          | `alt` — override the default alt-text `GitHub stars`.                                                                                                                                        |
 | `github-workflow` | `repo` — repository `owner/name`;  `workflow` — workflow filename (e.g. `ci.yml`).                                                                 | `name` — alt text; defaults to the workflow filename without extension.  `branch` — filter by branch, appended as `?branch=...`.  `alt` — override the alt-text (wins over `name`). |
-|     `custom`      | `label` — left side of the badge;  `message` — right side of the badge;  `color` — shields.io color keyword or hex. | `url` — link target; omitted → non-clickable badge.  `alt` — override the default alt-text (defaults to `label`).              |
+|     `custom`      | `label` — left side of the badge;  `message` — right side of the badge;  `color` — shields.io color keyword or hex. | `url` — link target; without it the badge is not clickable.  `alt` — override the default alt-text (defaults to `label`).      |
 
 The optional `alt` parameter sets the Markdown image alt-text without
-changing the visible badge label rendered by shields.io. Useful for SEO
-and accessibility — search engines and screen readers see phrases like
+changing the visible badge label rendered by shields.io. Search engines
+and screen readers see phrases like
 `NRG continuous integration build status` instead of bare labels like
 `CI`. Empty `alt=''` falls back to the type's default.
 
@@ -2118,8 +2230,8 @@ and produce no output.
 
 This component renders LaTeX math formulas. GitHub's inline `$…$` /
 block `$$…$$` support can be flaky around `\text`, punctuation, or
-table cells — when that bites, switch to the SVG renderer to get a
-pre-rendered image via a LaTeX-to-SVG endpoint.
+table cells — in those cases switch to the SVG renderer, which emits an
+image rendered by a LaTeX-to-SVG service.
 
 Inline LaTeX with the default native renderer:
 
@@ -2175,7 +2287,7 @@ into the generated document — useful for pasting in `--help` output,
 version dumps, a CLI banner, or whatever else a build tool will print.
 
 > [!WARNING]
-> **Opt-in for security.** Execution is disabled by default.
+> Execution is disabled by default.
 > The widget only runs commands when the caller explicitly asks for it
 > via the `--allow-exec` CLI flag (or `<allowExec>true</allowExec>` in
 > the Maven plugin). Running `nrg` over an untrusted template without
@@ -2215,7 +2327,7 @@ ${widget:exec(cmd = './scripts/list-langs.sh', cwd = 'docs', timeout = '5')}
 
 </td><td>
 
-Runs the script from the `docs/` sub-directory of the source file, kills it if it exceeds 5 seconds.
+Runs the script from the `docs/` sub-directory of the source file and kills it if it runs longer than 5 seconds.
 
 </td></tr>
 </table>
@@ -2254,12 +2366,12 @@ Error handling:
 
 #### Widget 'if'
 
-This widget controls whether content reaches the output based on a condition.
-It comes in two forms: a **block form** spanning an opening `${widget:if(cond='…')}` tag
-and a matching `${widget:endIf}` tag (the lines between them appear in the output only
-when the condition is truthy — when false, the entire block, including inner widgets, is
-dropped before the per-line pipeline runs, so widgets in dead branches never execute);
-and an **inline form** `${widget:if(cond='…', text='…')}` that emits `text` on one line when
+This widget keeps or drops content depending on a condition.
+It comes in two forms. The **block form** is an opening `${widget:if(cond='…')}` tag
+and a matching `${widget:endIf}` tag; the lines between them appear in the output only
+when the condition is truthy. When it is false, the entire block, including inner widgets, is
+dropped before the per-line pipeline runs, so widgets in dead branches never execute.
+The **inline form** `${widget:if(cond='…', text='…')}` emits `text` on one line when
 the condition is truthy, or an empty string otherwise.
 
 The block is kept when `${devVersion}` ends with `-SNAPSHOT`; otherwise the entire block (the markers and the body) is removed:
@@ -2326,7 +2438,7 @@ Errors:
 
 
 
-Out of scope (v1): numeric comparisons (`>`, `<`, …), regex matching, `else`/`elif`, scripting engine integration, `${…}` resolution inside the *default* of `${env.X:default}` references on the right-hand side of an `==`.
+Not supported: numeric comparisons (`>`, `<`, …), regex matching, `else`/`elif`, scripting engines, `${…}` resolution inside the *default* of `${env.X:default}` references on the right-hand side of an `==`.
 
 ---
 
@@ -2395,12 +2507,12 @@ Behaviour:
 
 #### Widget 'details'
 
-This component renders a GitHub-flavored collapsible disclosure block
+This component renders a collapsible block
 (`<details><summary>…</summary>…</details>`) so verbose tables, long examples,
 and troubleshooting sections can hide behind a click without hand-writing HTML.
 Two forms are supported: a **block form** with paired markers around inner
 markdown (which keeps rendering through the normal pipeline — nested widgets,
-variables, and language tags work inside), and a **single-tag form** for short
+variables, and language tags work inside), and a **single-tag form** for
 one-liners where the body fits in a `content=` parameter.
 
 <table>
@@ -2419,7 +2531,7 @@ ${widget:endDetails}
 <details>
 <summary>Advanced</summary>
 
-inner *markdown* and 22.11.2026 07:40:04
+inner *markdown* and 22.11.2026 14:02:09
 
 </details>
 ```
@@ -2446,7 +2558,7 @@ Widget parameters:
 |:-------------------------------:|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:-------------------------------------------------:|
 |             summary             | Always-visible title text. `${var}` substitution is applied in both forms.                                                                                                                                                                                                                                                                                                                                                                                                                              |                                                   |
 |              open               | Initial state. `'true'` emits `<details open>`; any other value (including `'false'`, empty, missing) emits plain `<details>`. Parsed via `Boolean.parseBoolean`.                                                                                                                                                                                                                   |                      `false`                      |
-|             content             | Single-tag form only. Body of the disclosure block. Presence of this parameter switches to the compact-inline single-tag form; the block form (with `${widget:endDetails}`) MUST NOT set it. `\n` and `\\` are interpreted (other backslashes are preserved verbatim). |                                                   |
+|             content             | Single-tag form only. Body of the disclosure block. Setting this parameter selects the single-tag form, so the block form (with `${widget:endDetails}`) must not set it. `\n` and `\\` are interpreted (other backslashes are preserved verbatim). |                                                   |
 
 ---
 
@@ -2455,7 +2567,7 @@ Widget parameters:
 
 ### Creating a widget
 
-To create a widget, you need to implement the `NRGWidget` interface or 
+To create a widget, implement the `NRGWidget` interface or 
 extend an existing widget (e.g., `DefaultWidget`):
 
 ```java
@@ -2482,7 +2594,7 @@ Now you can use the widget in your template:
 ${widget:exampleWidget(name='World')}
 ```
 
-Before running the generator, the widget must be registered with NRG. There are two ways to do this:
+Before running the generator, the widget must be registered with NRG. There are three ways to do this:
 
 **Option 1:** via the `NRG.addWidget` static method:
 
@@ -2521,7 +2633,7 @@ nrg --classpath my-widgets.jar --widgets com.acme.widgets.Tag,com.acme.widgets.B
 ```
 
 Each widget class must be public and expose a public no-argument
-constructor. NRG falls back to a helpful error message on the console
+constructor. NRG prints an error to the console
 if the class cannot be found, doesn't implement `NRGWidget`, or throws
 during instantiation.
 
@@ -2532,7 +2644,7 @@ without parameters). The default `null` turns the check off for that widget.
 
 ## Related projects
 
-Other tools in the same space — useful if **Nanolaba Readme Generator (NRG)** does not fit your stack or workflow. ✅ = supported, ➖ = partial, ❌ = not supported.
+Other tools that generate or update Markdown. ✅ = supported, ➖ = partial, ❌ = not supported.
 
 | Feature | **NRG** | [ml-md][ml-md] | [doctoc][doctoc] | [embedme][embedme] | [cog][cog] | [gitdown][gitdown] | [md-magic][md-magic] | [remark][remark] |
 |---|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
@@ -2549,6 +2661,13 @@ Other tools in the same space — useful if **Nanolaba Readme Generator (NRG)** 
 ¹ one source → many language files (`README.md`, `README.ru.md`, …).<br>
 ² cog runs arbitrary Python — extensible by definition, but no widget API.<br>
 ³ preserve content written by external tools (contributors-readme-action, sponsors widgets, RSS) across regenerations.
+
+### When another tool fits better
+
+- **A README in one language that only needs a table of contents.** doctoc updates the TOC inside `README.md` itself, with no template and no second file.
+- **You want to keep editing `README.md` directly.** embedme, cog and markdown-magic regenerate marked blocks inside the file they live in, so there is no `.src.md`. NRG keeps the source and the output in separate files, and `--check` and the edit hook rely on that.
+- **No JVM in the toolchain.** NRG needs Java 8+. multilingual-markdown, in Python, also builds one file per language from one source.
+- **Linting and reformatting Markdown.** remark works on the syntax tree, with plugins for lint rules and formatting; NRG only generates.
 
 [ml-md]: https://github.com/ryul1206/multilingual-markdown "multilingual-markdown"
 [doctoc]: https://github.com/thlorenz/doctoc "doctoc"
@@ -2677,36 +2796,18 @@ First public release.
 - Maven plugin (`nrg-maven-plugin`) with the `create-files` goal.
 - Java 8 compatibility and publication to Maven Central.
 
-## Feedback & Support
+## Contributing
 
-We value your input! Here are the best ways to connect with us:
+- **Questions and ideas:** [Discussions](https://github.com/nanolaba/readme-generator/discussions) · **bugs and feature requests:** [Issues](https://github.com/nanolaba/readme-generator/issues/new/choose) · English or Russian. Search the [existing issues](https://github.com/nanolaba/readme-generator/issues) first.
+- Building, testing and changing the code or the docs: [CONTRIBUTING.md](CONTRIBUTING.md). Community rules: [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md).
+- Vulnerabilities are reported privately, by email with `[SECURITY]` in the subject: see [SECURITY.md](SECURITY.md).
+- Anything else: nrg@nanolaba.com.
 
-### Community Support
+If **Nanolaba Readme Generator (NRG)** keeps your READMEs in sync, star it on [GitHub](https://github.com/nanolaba/readme-generator): that is how the next maintainer with the same problem finds it.
 
-- [GitHub Discussions](https://github.com/nanolaba/readme-generator/discussions) -
-  Ask questions, share ideas, and discuss best practices
-- [GitHub Issues](https://github.com/nanolaba/readme-generator/issues) -
-  For bug reports and feature requests
+## License
 
-### Direct Communication
-
-- **Email**: nrg@nanolaba.com (for sensitive matters or private discussions)
-- **Security Issues**: see [SECURITY.md](SECURITY.md) for the full disclosure policy. Use email and prefix the subject with "[SECURITY]".
-
-### Contribution Guide
-
-See [CONTRIBUTING.md](CONTRIBUTING.md) for the full contributor workflow and [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) for community expectations.
-
-Before submitting feedback:
-
-1. Check [existing issues](https://github.com/nanolaba/readme-generator/issues) to avoid duplicates
-2. Use clear, descriptive titles for your requests 
-
-We welcome all constructive feedback to make **NRG** better! 
-
----
-
-If **Nanolaba Readme Generator (NRG)** keeps your multi-language READMEs in sync — please give it a ⭐ on [GitHub](https://github.com/nanolaba/readme-generator). It's the single biggest signal that lands NRG in front of the next maintainer with the same problem.
+[Apache License 2.0](LICENSE).
 
 
 ---

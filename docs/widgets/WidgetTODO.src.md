@@ -1,9 +1,9 @@
 #### ${en:'Widget', ru:'Виджет'} 'todo'
 
-This component allows you to insert prominently highlighted text into the document,<!--en-->
-indicating that work on this fragment has not yet been done.<!--en-->
-Этот компонент позволяет вставить в документ ярко выделенный текст, с пометкой<!--ru-->
-о том, что работа над данным фрагментом еще не проведена.<!--ru-->
+This component inserts prominently highlighted text into the document<!--en-->
+to mark a fragment that is not finished yet.<!--en-->
+Этот компонент вставляет в документ ярко выделенный текст —<!--ru-->
+пометку о том, что фрагмент ещё не готов.<!--ru-->
 
 
 <table>

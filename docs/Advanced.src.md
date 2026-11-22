@@ -2,9 +2,9 @@
 
 ### ${en:'Creating a widget', ru:'Создание виджета'}
 
-Для создания виджета вам нужно реализовать интерфейс `NRGWidget`, или создать<!--ru-->
-наследника существующего виджета, например `DefaultWidget`:<!--ru-->
-To create a widget, you need to implement the `NRGWidget` interface or <!--en-->
+Чтобы создать виджет, реализуйте интерфейс `NRGWidget` или унаследуйте<!--ru-->
+существующий виджет, например `DefaultWidget`:<!--ru-->
+To create a widget, implement the `NRGWidget` interface or <!--en-->
 extend an existing widget (e.g., `DefaultWidget`):<!--en-->
 
 ${widget:import(path='../nrg/src/test/java/com/nanolaba/nrg/examples/ExampleWidget.java', region='example', wrap='true')}
@@ -16,8 +16,8 @@ Now you can use the widget in your template:<!--en-->
 \${widget:exampleWidget(name='World')}
 ```
 
-Прежде чем запускать генерацию, виджет нужно зарегистрировать в NRG. Это можно сделать двумя способами:<!--ru-->
-Before running the generator, the widget must be registered with NRG. There are two ways to do this:<!--en-->
+Прежде чем запускать генерацию, виджет нужно зарегистрировать в NRG. Это можно сделать тремя способами:<!--ru-->
+Before running the generator, the widget must be registered with NRG. There are three ways to do this:<!--en-->
 
 **Вариант 1:** через статический метод `NRG.addWidget`:<!--ru-->
 **Option 1:** via the `NRG.addWidget` static method:<!--en-->
@@ -58,12 +58,12 @@ nrg --classpath my-widgets.jar --widgets com.acme.widgets.Tag,com.acme.widgets.B
 ```
 
 Each widget class must be public and expose a public no-argument<!--en-->
-constructor. NRG falls back to a helpful error message on the console<!--en-->
+constructor. NRG prints an error to the console<!--en-->
 if the class cannot be found, doesn't implement `NRGWidget`, or throws<!--en-->
 during instantiation.<!--en-->
 Каждый класс-виджет должен быть публичным и иметь публичный конструктор<!--ru-->
 без аргументов. Если класс не найден, не реализует `NRGWidget` или выбрасывает<!--ru-->
-исключение при создании, NRG выводит понятное сообщение в консоль.<!--ru-->
+исключение при создании, NRG выводит сообщение об ошибке в консоль.<!--ru-->
 
 To let `--validate` catch a misspelt parameter of your widget, override<!--en-->
 `getParameterNames()` and return the names it understands<!--en-->

@@ -18,7 +18,7 @@ Templates are `*.src.md` files; the `*.md` files they produce are build output a
 ## Docs
 
 - [Syntax card](${raw}/skills/nrg/SYNTAX.md): the whole template syntax and every widget's parameters on one page
-- [Using NRG with AI coding agents](${repo}#using-nrg-with-ai-coding-agents): the validate / generate / check loop, an AGENTS.md block, edit-guard hooks, the nrgw wrapper
+- [Agent-driven development](${repo}#agent-driven-development): the validate / generate / check loop, an AGENTS.md block, edit-guard hooks, the nrgw wrapper
 - [README](${raw}/README.md): full documentation
 - [Template syntax](${repo}#template-syntax): languages, properties, escapes, ignore and frozen regions
 - [Widgets](${repo}#widgets): import, tableOfContents, if, details, alert, badge, date, todo, math, exec, fileTree, languages

@@ -6,7 +6,7 @@
     "name": "Nanolaba",
     "url": "https://github.com/nanolaba"
   },
-  "homepage": "https://github.com/nanolaba/readme-generator#using-nrg-with-ai-coding-agents",
+  "homepage": "https://github.com/nanolaba/readme-generator#agent-driven-development",
   "repository": "https://github.com/nanolaba/readme-generator",
   "license": "Apache-2.0",
   "keywords": ["readme", "markdown", "i18n", "documentation", "nrg"]

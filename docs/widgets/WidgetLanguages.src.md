@@ -1,7 +1,7 @@
 #### ${en:'Widget', ru:'Виджет'} 'languages'
 
-This component allows you to generate links to other versions of a document (written in other languages).<!--en-->
-Этот компонент позволяет генерировать ссылки на другие версии документа (написанные на других языках).<!--ru-->
+This component generates links to the versions of the document in other languages.<!--en-->
+Этот компонент формирует ссылки на версии документа на других языках.<!--ru-->
 
 <table>
 <tr>

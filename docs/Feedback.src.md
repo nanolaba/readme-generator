@@ -1,42 +1,17 @@
-## ${en:'Feedback & Support', ru:'Обратная связь и поддержка'}
+## ${en:'Contributing', ru:'Участие в разработке'}
 
-We value your input! Here are the best ways to connect with us:<!--en-->
-Мы ценим ваше мнение! Вот лучшие способы связаться с нами:<!--ru-->
+- **Questions and ideas:** [Discussions](https://github.com/nanolaba/readme-generator/discussions) · **bugs and feature requests:** [Issues](https://github.com/nanolaba/readme-generator/issues/new/choose) · English or Russian. Search the [existing issues](https://github.com/nanolaba/readme-generator/issues) first.<!--en-->
+- **Вопросы и идеи:** [Discussions](https://github.com/nanolaba/readme-generator/discussions) · **ошибки и запросы функций:** [Issues](https://github.com/nanolaba/readme-generator/issues/new/choose) · на русском или английском. Сначала поищите среди [существующих issues](https://github.com/nanolaba/readme-generator/issues).<!--ru-->
+- Building, testing and changing the code or the docs: [CONTRIBUTING.md](CONTRIBUTING.md). Community rules: [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md).<!--en-->
+- Сборка, тесты, правка кода и документации: [CONTRIBUTING.ru.md](CONTRIBUTING.ru.md). Правила сообщества: [CODE_OF_CONDUCT.ru.md](CODE_OF_CONDUCT.ru.md).<!--ru-->
+- Vulnerabilities are reported privately, by email with `[SECURITY]` in the subject: see [SECURITY.md](SECURITY.md).<!--en-->
+- Об уязвимостях сообщают закрыто, письмом с `[SECURITY]` в теме: см. [SECURITY.ru.md](SECURITY.ru.md).<!--ru-->
+- Anything else: nrg@nanolaba.com.<!--en-->
+- По остальным вопросам: nrg@nanolaba.com.<!--ru-->
 
-### ${en:'Community Support', ru:'Поддержка сообщества'}
+If ${name} keeps your READMEs in sync, star it on [GitHub](https://github.com/nanolaba/readme-generator): that is how the next maintainer with the same problem finds it.<!--en-->
+Если ${name} держит ваши README в синхроне, поставьте ему звезду на [GitHub](https://github.com/nanolaba/readme-generator): так его найдёт следующий мейнтейнер с той же задачей.<!--ru-->
 
-- [GitHub Discussions](https://github.com/nanolaba/readme-generator/discussions) -
-  Ask questions, share ideas, and discuss best practices<!--en-->
-  Задавайте вопросы, делитесь идеями и обсуждайте лучшие практики<!--ru-->
-- [GitHub Issues](https://github.com/nanolaba/readme-generator/issues) -
-  For bug reports and feature requests<!--en-->
-  Для сообщений об ошибках и запросов новых функций<!--ru-->
+## ${en:'License', ru:'Лицензия'}
 
-### ${en:'Direct Communication', ru:'Прямая связь'}
-
-- **Email**: nrg@nanolaba.com (for sensitive matters or private discussions)<!--en-->
-- **Email**: nrg@nanolaba.com (для конфиденциальных вопросов)<!--ru-->
-- **Security Issues**: see [SECURITY.md](SECURITY.md) for the full disclosure policy. Use email and prefix the subject with "[SECURITY]".<!--en-->
-- **Проблемы безопасности**: политика раскрытия описана в [SECURITY.ru.md](SECURITY.ru.md). Используйте email с пометкой "[SECURITY]" в теме.<!--ru-->
-
-### ${en:'Contribution Guide', ru:'Рекомендации'}
-
-See [CONTRIBUTING.md](CONTRIBUTING.md) for the full contributor workflow and [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) for community expectations.<!--en-->
-См. [CONTRIBUTING.ru.md](CONTRIBUTING.ru.md) — полное руководство контрибьютора, и [CODE_OF_CONDUCT.ru.md](CODE_OF_CONDUCT.ru.md) — правила сообщества.<!--ru-->
-
-Before submitting feedback:<!--en-->
-Перед тем как оставить обратную связь:<!--ru-->
-
-1. Check [existing issues](https://github.com/nanolaba/readme-generator/issues) to avoid duplicates<!--en-->
-1. Проверьте [существующие issues](https://github.com/nanolaba/readme-generator/issues), <!--ru-->
-   чтобы избежать дублирования<!--ru-->
-2. Use clear, descriptive titles for your requests <!--en-->
-2. Используйте понятные, описательные заголовки <!--ru-->
-
-We welcome all constructive feedback to make **NRG** better! <!--en-->
-Мы приветствуем любую конструктивную обратную связь!<!--ru-->
-
----
-
-If ${name} keeps your multi-language READMEs in sync — please give it a ⭐ on [GitHub](https://github.com/nanolaba/readme-generator). It's the single biggest signal that lands NRG in front of the next maintainer with the same problem.<!--en-->
-Если ${name} помогает держать ваши многоязычные README в синхроне — поставьте ⭐ на [GitHub](https://github.com/nanolaba/readme-generator). Это главный сигнал, по которому следующий мейнтейнер с такой же задачей найдёт NRG.<!--ru-->
+[Apache License 2.0](LICENSE).
