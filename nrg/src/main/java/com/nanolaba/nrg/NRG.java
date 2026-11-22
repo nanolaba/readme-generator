@@ -881,8 +881,7 @@ public class NRG {
             printToStdout(generator, languageFilter, perFileStdoutHeader);
             return EXIT_OK;
         }
-        createFiles(generator, lineEndingMode, report);
-        return EXIT_OK;
+        return createFiles(generator, lineEndingMode, report);
     }
 
     private static int performCheck(Generator generator, LineEndings.Mode lineEndingMode,
@@ -981,9 +980,15 @@ public class NRG {
         return Arrays.asList(s.split("\\R", -1));
     }
 
-    private static void createFiles(Generator generator, LineEndings.Mode lineEndingMode, RunReport report)
+    /**
+     * Writes every language's output of {@code generator}. An output whose directory cannot be
+     * created is reported and skipped, so the other languages are still written, but the run
+     * fails with {@link #EXIT_TEMPLATE_ERROR} like any other write failure.
+     */
+    private static int createFiles(Generator generator, LineEndings.Mode lineEndingMode, RunReport report)
             throws IOException {
         File sourceFile = generator.getConfig().getSourceFile();
+        int code = EXIT_OK;
         for (String language : generator.getConfig().getLanguages()) {
             File readmeFile = getReadmeFile(language, generator.getConfig());
             LOG.debug("Generating file for language \"{}\" - {}", language, readmeFile.getAbsolutePath());
@@ -991,8 +996,8 @@ public class NRG {
             if (parent != null && !parent.exists()) {
                 if (!parent.mkdirs() && !parent.isDirectory()) {
                     LOG.error("Cannot create directory for output file: {}", parent.getAbsolutePath());
-                    report.addDiagnostic(new Validator.Diagnostic(sourceFile, 0, Validator.Severity.ERROR,
-                            "generation-failed", "cannot create directory " + parent.getPath(), null));
+                    code = generationFailed(sourceFile, report, "generation-failed",
+                            "cannot create directory " + parent.getPath());
                     continue;
                 }
             }
@@ -1005,6 +1010,7 @@ public class NRG {
             report.addFile(sourceFile, readmeFile, language, unchanged ? "unchanged" : "written");
             LOG.info("File \"{}\" created, total size {}", readmeFile.getName(), FileUtils.byteCountToDisplaySize(readmeFile.length()));
         }
+        return code;
     }
 
     /**

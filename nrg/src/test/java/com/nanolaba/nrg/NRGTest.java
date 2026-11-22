@@ -565,16 +565,21 @@ public class NRGTest extends DefaultNRGTest {
     }
 
     @Test
-    public void testAnOutputDirectoryThatCannotBeCreatedIsReported() throws IOException {
-        Path src = write("README.src.md", "<!--@nrg.languages=en-->\nx\n");
+    public void testAnOutputDirectoryThatCannotBeCreatedFailsTheRun() throws IOException {
+        Path src = write("README.src.md", "<!--@nrg.languages=en,ru-->\nx\n");
         write("blocker", "a file where a directory should be");
 
         try (MemoryLogger log = MemoryLogger.capture()) {
-            NRG.run("--format", "json", "--file-name-pattern", "blocker/sub/<base>.md", "-f", src.toString());
+            assertEquals(NRG.EXIT_TEMPLATE_ERROR, NRG.run("--format", "json",
+                    "--default-language-file-name-pattern", "blocker/sub/<base>.md", "-f", src.toString()));
             log.assertLogged(ERROR, "Cannot create directory for output file");
-            assertFalse(log.contains(ERROR, "Generation failed"), "reported, not failed: " + log.getMessages());
+            assertFalse(log.contains(ERROR, "Generation failed"), "the other outputs are still written: " + log.getMessages());
         }
-        assertTrue(getOutAndClear().contains("cannot create directory "));
+        String json = getOutAndClear();
+        assertTrue(json.contains("\"ok\": false"), json);
+        assertTrue(json.contains("\"exitCode\": 2"), json);
+        assertTrue(json.contains("\"message\": \"cannot create directory "), json);
+        assertTrue(Files.isRegularFile(tempDir.resolve("README.ru.md")), "the other language is still written");
     }
 
     @Test
