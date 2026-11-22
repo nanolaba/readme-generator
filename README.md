@@ -377,7 +377,7 @@ nrg --check -f README.src.md      # exit 1 and a unified diff when files on disk
 
 `--validate`, `--check` and `--stdout` never write files. The exit code tells the agent what to do next: `1` regenerate, `2` fix the template, `64` fix the command ([Exit codes](#exit-codes)). With `--format json` the files and the diagnostics, each with a stable `code` and a `hint` naming the fix, come as one JSON document instead of log lines, see [Machine-readable output](#machine-readable-output). Details: [Validating source templates](#validating-source-templates), [Verifying generated files](#verifying-generated-files-ci-mode).
 
-*1.5-SNAPSHOT:* NRG logs through [nanolog](https://github.com/nanolaba/nanolog). When an agent runs it, nanolog's agent mode adds a `[NANOLOG]` line and a run summary on stderr and keeps the full log in `target/nanolog/` (`.nanolog/` outside a Maven or Gradle project); `NANOLOG_AGENT=off` turns this off.
+*1.5-SNAPSHOT:* NRG logs through [nanolog](https://github.com/nanolaba/nanolog). The command-line tool keeps nanolog's agent mode off, so an agent that runs `nrg` sees only what NRG prints; `NANOLOG_AGENT=on` turns it on to debug NRG itself, with a `[NANOLOG]` line and a run summary on stderr and the full log in `.nanolog/` (`target/nanolog/` in a Maven or Gradle project). The Maven plugin runs NRG inside the build and leaves agent mode to it: when an agent starts the build, the `[NANOLOG]` line appears among Maven's output and the log goes to `target/nanolog/`; `NANOLOG_AGENT=off` turns this off.
 
 ### Instructions for the agent
 
@@ -2079,7 +2079,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 22.11.2026 15:14:21
+Last updated: 22.11.2026 15:17:22
 ```
 
 </td></tr>
@@ -2536,7 +2536,7 @@ ${widget:endDetails}
 <details>
 <summary>Advanced</summary>
 
-inner *markdown* and 22.11.2026 15:14:21
+inner *markdown* and 22.11.2026 15:17:22
 
 </details>
 ```
@@ -2688,7 +2688,7 @@ This section summarises the main user-visible changes in each release. For full 
 
 ### Unreleased (1.5-SNAPSHOT)
 
-- **Updated runtime dependencies**: `nanolog` 1.1 → 1.5-SNAPSHOT, `commons-lang3` 3.21.0 → 3.22.0. Log output, `--log-level` / `NRG_LOG_LEVEL` and the stderr-only logging of `--format json` are unchanged. When a coding agent runs NRG (`AI_AGENT`, `CLAUDECODE` and similar variables), nanolog's agent mode adds a `[NANOLOG]` notice and a run summary on stderr and keeps a run log in `target/nanolog/` (`.nanolog/` outside a Maven or Gradle project); `NANOLOG_AGENT=off` turns it off. `--claude-hook` turns it off by itself, so the hook output Claude Code shows the agent stays the same.
+- **Updated runtime dependencies**: `nanolog` 1.1 → 1.5-SNAPSHOT, `commons-lang3` 3.21.0 → 3.22.0. Log output, `--log-level` / `NRG_LOG_LEVEL` and the stderr-only logging of `--format json` are unchanged. The command-line tool, `--claude-hook` included, keeps nanolog's agent mode off, so a coding agent that runs `nrg` sees the same output as before; `NANOLOG_AGENT=on` turns it on to debug NRG itself. The Maven plugin runs NRG inside the build and leaves agent mode to it: when a coding agent starts the build (`AI_AGENT`, `CLAUDECODE` and similar variables), nanolog adds a `[NANOLOG]` notice and a run summary on stderr and keeps a run log in `target/nanolog/`; `NANOLOG_AGENT=off` turns it off. Closes [#88](https://github.com/nanolaba/readme-generator/issues/88).
 - **`--validate` says why a template cannot be read**: a root template without read permission was reported as `cannot read the template configuration: null`; the message is now `cannot read README.src.md: access denied` (code `config-error`, as before). An imported template that cannot be read used to be skipped without a word, so `--validate` passed and the generation failed afterwards; it is now an `import-unreadable` error at the line of the import. Closes [#85](https://github.com/nanolaba/readme-generator/issues/85).
 - **Block widget errors print the marker as it is written**: the errors of `if`, `details` and custom `BlockWidget` subclasses showed the marker with doubled braces — `unmatched stray ${{widget:endIf}} at line 3` — which is not NRG syntax and cannot be copied back into a template. They now print `${widget:endIf}`. Closes [#84](https://github.com/nanolaba/readme-generator/issues/84).
 - **An output directory that cannot be created fails the run**: when the directory of an output file could not be created, NRG logged the error and added a `generation-failed` diagnostic but still exited `0`, and `--format json` reported `"ok": true` next to that error. The run now exits `2`, as for any other write failure; the outputs of the other languages are still written. Closes [#82](https://github.com/nanolaba/readme-generator/issues/82).

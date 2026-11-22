@@ -161,38 +161,6 @@ public class ClaudeHookTest extends DefaultNRGTest {
     }
 
     @Test
-    public void testHookTurnsNanologAgentModeOffUnlessSetExplicitly() {
-        String saved = System.getProperty("nanolog.agent");
-        try {
-            System.clearProperty("nanolog.agent");
-            NRG.quietAgentModeForHook(new String[]{"-f", "README.src.md"}, name -> null);
-            assertNull(System.getProperty("nanolog.agent"), "only the hook is quieted");
-
-            NRG.quietAgentModeForHook(new String[]{"--claude-hook", "pre-edit"}, name -> null);
-            assertEquals("off", System.getProperty("nanolog.agent"));
-
-            System.clearProperty("nanolog.agent");
-            NRG.quietAgentModeForHook(new String[]{"--claude-hook=post-edit"}, name -> null);
-            assertEquals("off", System.getProperty("nanolog.agent"));
-
-            System.clearProperty("nanolog.agent");
-            NRG.quietAgentModeForHook(new String[]{"--claude-hook", "pre-edit"},
-                    name -> "NANOLOG_AGENT".equals(name) ? "on" : null);
-            assertNull(System.getProperty("nanolog.agent"), "NANOLOG_AGENT set by the user wins");
-
-            System.setProperty("nanolog.agent", "on");
-            NRG.quietAgentModeForHook(new String[]{"--claude-hook", "pre-edit"}, name -> null);
-            assertEquals("on", System.getProperty("nanolog.agent"), "-Dnanolog.agent set by the user wins");
-        } finally {
-            if (saved == null) {
-                System.clearProperty("nanolog.agent");
-            } else {
-                System.setProperty("nanolog.agent", saved);
-            }
-        }
-    }
-
-    @Test
     public void testHelpSyntaxPrintsTheBundledCard() {
         assertEquals(NRG.EXIT_OK, NRG.run("--help", "syntax"));
         assertTrue(getOutAndClear().contains("# NRG syntax card"));

@@ -377,7 +377,7 @@ nrg --check -f README.src.md      # код 1 и unified diff, если файл�
 
 `--validate`, `--check` и `--stdout` никогда не пишут файлы. Код возврата подсказывает агенту следующий шаг: `1` — перегенерировать, `2` — исправить шаблон, `64` — исправить команду ([«Коды возврата»](#коды-возврата)). С `--format json` файлы и диагностики, у каждой из которых есть стабильный `code` и подсказка `hint`, приходят одним JSON-документом вместо строк лога, см. [«Машиночитаемый вывод»](#машиночитаемый-вывод). Подробнее: [«Валидация исходных шаблонов»](#валидация-исходных-шаблонов), [«Проверка сгенерированных файлов»](#проверка-сгенерированных-файлов-режим-ci).
 
-*1.5-SNAPSHOT:* NRG пишет лог через [nanolog](https://github.com/nanolaba/nanolog). Когда NRG запускает агент, режим агента nanolog добавляет в stderr строку `[NANOLOG]` и сводку запуска и сохраняет полный лог в `target/nanolog/` (вне проекта Maven или Gradle — в `.nanolog/`); `NANOLOG_AGENT=off` это отключает.
+*1.5-SNAPSHOT:* NRG пишет лог через [nanolog](https://github.com/nanolaba/nanolog). Утилита командной строки держит режим агента nanolog выключенным, так что агент, запустивший `nrg`, видит только то, что печатает NRG; `NANOLOG_AGENT=on` включает его для отладки самого NRG — со строкой `[NANOLOG]` и сводкой запуска в stderr и полным логом в `.nanolog/` (в проекте Maven или Gradle — в `target/nanolog/`). Maven-плагин запускает NRG внутри сборки и оставляет режим агента на её усмотрение: когда сборку запускает агент, строка `[NANOLOG]` появляется среди вывода Maven, а лог пишется в `target/nanolog/`; `NANOLOG_AGENT=off` это отключает.
 
 ### Инструкция для агента
 
@@ -2086,7 +2086,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 22.11.2026 15:14:21
+Last updated: 22.11.2026 15:17:22
 ```
 
 </td></tr>
@@ -2544,7 +2544,7 @@ ${widget:endDetails}
 <details>
 <summary>Advanced</summary>
 
-inner *markdown* and 22.11.2026 15:14:22
+inner *markdown* and 22.11.2026 15:17:23
 
 </details>
 ```
@@ -2695,7 +2695,7 @@ nrg --classpath my-widgets.jar --widgets com.acme.widgets.Tag,com.acme.widgets.B
 
 ### В разработке (1.5-SNAPSHOT)
 
-- **Обновлены runtime-зависимости**: `nanolog` 1.1 → 1.5-SNAPSHOT, `commons-lang3` 3.21.0 → 3.22.0. Вывод лога, `--log-level` / `NRG_LOG_LEVEL` и логирование только в stderr при `--format json` не изменились. Когда NRG запускает ИИ-агент (переменные `AI_AGENT`, `CLAUDECODE` и подобные), режим агента nanolog добавляет в stderr строку `[NANOLOG]` и сводку запуска и ведёт журнал запуска в `target/nanolog/` (вне проекта Maven или Gradle — в `.nanolog/`); `NANOLOG_AGENT=off` его отключает. `--claude-hook` отключает его сам, так что вывод хука, который Claude Code показывает агенту, не меняется.
+- **Обновлены runtime-зависимости**: `nanolog` 1.1 → 1.5-SNAPSHOT, `commons-lang3` 3.21.0 → 3.22.0. Вывод лога, `--log-level` / `NRG_LOG_LEVEL` и логирование только в stderr при `--format json` не изменились. Утилита командной строки, включая `--claude-hook`, держит режим агента nanolog выключенным, так что ИИ-агент, запустивший `nrg`, видит тот же вывод, что и раньше; `NANOLOG_AGENT=on` включает его для отладки самого NRG. Maven-плагин запускает NRG внутри сборки и оставляет режим агента на её усмотрение: когда сборку запускает ИИ-агент (переменные `AI_AGENT`, `CLAUDECODE` и подобные), nanolog добавляет в stderr строку `[NANOLOG]` и сводку запуска и ведёт журнал запуска в `target/nanolog/`; `NANOLOG_AGENT=off` его отключает. Закрывает [#88](https://github.com/nanolaba/readme-generator/issues/88).
 - **`--validate` сообщает, почему шаблон не читается**: корневой шаблон без права на чтение сообщался как `cannot read the template configuration: null`; теперь сообщение — `cannot read README.src.md: access denied` (код `config-error`, как и раньше). Импортируемый шаблон, который нельзя прочитать, раньше молча пропускался: `--validate` проходил, а генерация потом падала; теперь это ошибка `import-unreadable` в строке импорта. Закрывает [#85](https://github.com/nanolaba/readme-generator/issues/85).
 - **Ошибки блочных виджетов печатают маркер так, как он пишется**: ошибки `if`, `details` и пользовательских наследников `BlockWidget` показывали маркер с удвоенными фигурными скобками — `unmatched stray ${{widget:endIf}} at line 3`, — а такого синтаксиса в NRG нет, и скопировать его обратно в шаблон нельзя. Теперь они печатают `${widget:endIf}`. Закрывает [#84](https://github.com/nanolaba/readme-generator/issues/84).
 - **Каталог выходного файла, который не удалось создать, проваливает запуск**: если каталог выходного файла не удавалось создать, NRG писал ошибку в лог и добавлял диагностику `generation-failed`, но завершался с кодом `0`, а `--format json` сообщал `"ok": true` рядом с этой ошибкой. Теперь запуск завершается с кодом `2`, как при любой другой ошибке записи; файлы остальных языков по-прежнему записываются. Закрывает [#82](https://github.com/nanolaba/readme-generator/issues/82).

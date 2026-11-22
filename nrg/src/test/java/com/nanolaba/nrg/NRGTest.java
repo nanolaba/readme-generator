@@ -121,14 +121,26 @@ public class NRGTest extends DefaultNRGTest {
     }
 
     @Test
-    public void testMainQuietsNanologAgentModeForTheHook() {
+    public void testMainTurnsNanologAgentModeOffUnlessSetExplicitly() {
         String saved = System.getProperty("nanolog.agent");
         try {
             System.clearProperty("nanolog.agent");
-            NRG.launch(new String[]{"--claude-hook", "pre-edit", "--no-such-option"}, name -> null, code -> {
+            NRG.launch(new String[]{"--no-such-option"}, name -> null, code -> {
             });
-            assertEquals("off", System.getProperty("nanolog.agent"));
+            assertEquals("off", System.getProperty("nanolog.agent"), "every command-line run, not only the hook");
             assertTrue(getErrAndClear().contains("Incorrect command line arguments"));
+
+            System.clearProperty("nanolog.agent");
+            NRG.quietAgentMode(name -> "NANOLOG_AGENT".equals(name) ? "on" : null);
+            assertNull(System.getProperty("nanolog.agent"), "NANOLOG_AGENT set by the user wins");
+
+            System.setProperty("nanolog.agent", "on");
+            NRG.quietAgentMode(name -> null);
+            assertEquals("on", System.getProperty("nanolog.agent"), "-Dnanolog.agent set by the user wins");
+
+            System.clearProperty("nanolog.agent");
+            assertEquals(NRG.EXIT_USAGE, NRG.run("--no-such-option"));
+            assertNull(System.getProperty("nanolog.agent"), "run() leaves agent mode to the JVM it runs in");
         } finally {
             if (saved == null) {
                 System.clearProperty("nanolog.agent");

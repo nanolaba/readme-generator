@@ -104,20 +104,24 @@ public class NRG {
     private static final String NANOLOG_AGENT_ENV = "NANOLOG_AGENT";
 
     /**
-     * Turns nanolog's agent mode off for {@code --claude-hook}, unless {@code nanolog.agent} /
-     * {@code NANOLOG_AGENT} is set explicitly.
+     * Turns nanolog's agent mode off for a command-line run, unless {@code nanolog.agent} /
+     * {@code NANOLOG_AGENT} is set explicitly: {@code NANOLOG_AGENT=on} brings back the run log of
+     * NRG, for debugging NRG itself.
      * <p>
-     * Claude Code starts the hook in its own environment, so nanolog always sees a coding agent
-     * there. Since nanolog 1.5 a run that logs nothing gets nothing from agent mode, a refused edit
-     * included, but a post-edit regeneration that logs an error, such as an {@code exec} widget
-     * without {@code --allow-exec}, would print a {@code [NANOLOG]} run summary on stderr and write
-     * a run log into the user's project. NRG installs its own console logger anyway, so agent mode
-     * changes nothing else in a hook. nanolog decides on agent mode once, when {@code LOG}
-     * initialises: this has to run before anything logs.
+     * Agent mode serves the code an agent works on. When an agent runs {@code nrg}, it would print a
+     * {@code [NANOLOG]} notice and a run summary naming call sites inside NRG on stderr and write a
+     * {@code .nanolog/} directory into the user's project: nothing a user of NRG can act on, and
+     * NRG prints its own errors. Claude Code starts {@code --claude-hook} in its own environment,
+     * so there nanolog always sees an agent. NRG installs its own console logger anyway, so agent
+     * mode changes nothing else.
+     * <p>
+     * Only {@code main} does this. The Maven plugin and the tests call {@link #run(String...)} in a
+     * JVM of their own and keep agent mode: the property is JVM-wide and would change it for
+     * everything else there that logs through nanolog. nanolog decides on agent mode once, when
+     * {@code LOG} initialises: this has to run before anything logs.
      */
-    static void quietAgentModeForHook(String[] args, Function<String, String> env) {
-        boolean hook = Arrays.stream(args).anyMatch(a -> a.equals("--claude-hook") || a.startsWith("--claude-hook="));
-        if (hook && System.getProperty(NANOLOG_AGENT_PROPERTY) == null && env.apply(NANOLOG_AGENT_ENV) == null) {
+    static void quietAgentMode(Function<String, String> env) {
+        if (System.getProperty(NANOLOG_AGENT_PROPERTY) == null && env.apply(NANOLOG_AGENT_ENV) == null) {
             System.setProperty(NANOLOG_AGENT_PROPERTY, "off");
         }
     }
@@ -144,7 +148,7 @@ public class NRG {
      * what {@code main} does around {@link #run(String...)} can be checked in-process.
      */
     static void launch(String[] args, Function<String, String> env, IntConsumer exit) {
-        quietAgentModeForHook(args, env);
+        quietAgentMode(env);
         int code = run(args);
         if (code != 0 && exitOnFailure) {
             exit.accept(code);
