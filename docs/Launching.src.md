@@ -211,24 +211,29 @@ typo fix) is acknowledged with `<\!--nrg.translation.ok-->` on the line (removed
 
 `--stdout` prints the generated output to standard output instead<!--en-->
 of writing files to disk. With `--language <code>` it prints<!--en-->
-only one language variant; without it, every configured variant<!--en-->
-is printed, prefixed with a separator line like `=== README.ru.md ===`<!--en-->
-so the output can be split by downstream tools.<!--en-->
+only that language; without it, every language is printed,<!--en-->
+prefixed with a separator line like `=== README.ru.md ===`<!--en-->
+so the output can be split by downstream tools. For a template with<!--en-->
+[output variants](#output-variants), `--variant <name>` prints only that variant;<!--en-->
+a name the template does not declare is reported on stderr and the file is skipped.<!--en-->
 Флаг `--stdout` перенаправляет сгенерированный вывод в stdout,<!--ru-->
-файлы на диск при этом не создаются. В сочетании с `--language <код>`<!--ru-->
-печатается только один языковой вариант; без него выводятся все<!--ru-->
-настроенные варианты, перед каждым стоит строка-разделитель вида<!--ru-->
-`=== README.ru.md ===`, чтобы вывод можно было разрезать во внешних инструментах.<!--ru-->
+файлы на диск при этом не создаются. С `--language <код>`<!--ru-->
+печатается только этот язык; без него выводятся все языки,<!--ru-->
+и перед каждым стоит строка-разделитель вида `=== README.ru.md ===`,<!--ru-->
+чтобы вывод можно было разрезать во внешних инструментах. Для шаблона<!--ru-->
+с [вариантами вывода](#варианты-вывода) `--variant <имя>` печатает только этот вариант;<!--ru-->
+об имени, которого шаблон не объявляет, NRG сообщает в stderr и пропускает файл.<!--ru-->
 
 ```bash
 nrg --stdout -f README.src.md
 nrg --stdout --language en -f README.src.md
+nrg --stdout --variant claude -f AGENTS.src.md
 ```
 
-`--language` works only with `--stdout`; on its own it<!--en-->
-logs a warning and is ignored.<!--en-->
-Флаг `--language` работает только вместе с `--stdout`; без него<!--ru-->
-NRG выводит предупреждение и игнорирует флаг.<!--ru-->
+`--language` and `--variant` work only with `--stdout`; on their own they<!--en-->
+log a warning and are ignored.<!--en-->
+Флаги `--language` и `--variant` работают только вместе с `--stdout`; без него<!--ru-->
+NRG выводит предупреждение и игнорирует их.<!--ru-->
 
 #### ${en:'Machine-readable output', ru:'Машиночитаемый вывод'}
 
@@ -523,14 +528,14 @@ nrg "docs/**/*.src.md"
 Glob expansion uses `java.nio.file.PathMatcher` with `glob:` syntax, so<!--en-->
 behavior is identical on Windows, Linux, and macOS regardless of the shell.<!--en-->
 Quote the pattern so the shell does not expand it first.<!--en-->
-The legacy `-f <file>` flag is still supported as a single-file alias and<!--en-->
+The `-f <file>` flag names exactly one file, without glob expansion, and<!--en-->
 is mutually exclusive with positional arguments; passing both prints<!--en-->
 an error and exits with status `64`.<!--en-->
 Glob-паттерн раскрывается через `java.nio.file.PathMatcher`<!--ru-->
 с синтаксисом `glob:` — поведение одинаково на Windows, Linux и macOS<!--ru-->
 независимо от командной оболочки. Заключайте паттерн в кавычки, чтобы<!--ru-->
-сначала его не раскрыл сам шелл. Старый флаг `-f <file>` остаётся как<!--ru-->
-алиас для единственного файла и несовместим с позиционными аргументами:<!--ru-->
+сначала его не раскрыл сам шелл. Флаг `-f <file>` задаёт ровно один файл, без<!--ru-->
+раскрытия glob-паттернов, и несовместим с позиционными аргументами:<!--ru-->
 если передать и то и другое, NRG выводит ошибку и завершается с кодом `64`.<!--ru-->
 
 By default each input is processed independently: an error on one file<!--en-->
@@ -747,8 +752,11 @@ the same arguments as on the command line, for example:<!--en-->
 с теми же аргументами, что и в командной строке, например:<!--ru-->
 
 ```java
-NRG.main("-f","path-to-file","--charset","UTF-8");
+int exitCode = NRG.run("-f", "path-to-file", "--charset", "UTF-8");
 ```
+
+`NRG.run` returns the [exit code](#exit-codes). Don't call `NRG.main` from an application: like the command line, it ends the JVM with `System.exit` when the run fails.<!--en-->
+`NRG.run` возвращает [код возврата](#коды-возврата). Не вызывайте из приложения `NRG.main`: как и командная строка, при неудаче он завершает JVM через `System.exit`.<!--ru-->
 
 The `Generator` class gives more control <!--en-->
 over the configuration:<!--en-->

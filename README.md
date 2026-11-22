@@ -438,7 +438,7 @@ This repository is also a Claude Code plugin marketplace. The plugin brings the 
 /plugin install nrg@nanolaba
 ```
 
-The hooks need NRG 1.5-SNAPSHOT or newer: `nrg` from `PATH`, or the command line in the `NRG_HOOK_COMMAND` environment variable (for example `java -jar /opt/nrg/nrg.jar`). They run in every project you open, so they never execute anything the project supplies, not even its `./nrgw`: a repository you clone must not be able to run code through an installed plugin. In a project without `*.src.md` files they do nothing and start no JVM. `nrg --help syntax` prints the same syntax card offline, for the installed version; other tools find the docs through [llms.txt](llms.txt).
+The hooks need NRG 1.4 or newer: `nrg` from `PATH`, or the command line in the `NRG_HOOK_COMMAND` environment variable (for example `java -jar /opt/nrg/nrg.jar`). They run in every project you open, so they never execute anything the project supplies, not even its `./nrgw`: a repository you clone must not be able to run code through an installed plugin. In a project without `*.src.md` files they do nothing and start no JVM. `nrg --help syntax` prints the same syntax card offline, for the installed version; other tools find the docs through [llms.txt](llms.txt).
 
 ### Other agents
 
@@ -652,17 +652,20 @@ typo fix) is acknowledged with `<!--nrg.translation.ok-->` on the line (removed 
 
 `--stdout` prints the generated output to standard output instead
 of writing files to disk. With `--language <code>` it prints
-only one language variant; without it, every configured variant
-is printed, prefixed with a separator line like `=== README.ru.md ===`
-so the output can be split by downstream tools.
+only that language; without it, every language is printed,
+prefixed with a separator line like `=== README.ru.md ===`
+so the output can be split by downstream tools. For a template with
+[output variants](#output-variants), `--variant <name>` prints only that variant;
+a name the template does not declare is reported on stderr and the file is skipped.
 
 ```bash
 nrg --stdout -f README.src.md
 nrg --stdout --language en -f README.src.md
+nrg --stdout --variant claude -f AGENTS.src.md
 ```
 
-`--language` works only with `--stdout`; on its own it
-logs a warning and is ignored.
+`--language` and `--variant` work only with `--stdout`; on their own they
+log a warning and are ignored.
 
 #### Machine-readable output
 
@@ -874,7 +877,7 @@ nrg "docs/**/*.src.md"
 Glob expansion uses `java.nio.file.PathMatcher` with `glob:` syntax, so
 behavior is identical on Windows, Linux, and macOS regardless of the shell.
 Quote the pattern so the shell does not expand it first.
-The legacy `-f <file>` flag is still supported as a single-file alias and
+The `-f <file>` flag names exactly one file, without glob expansion, and
 is mutually exclusive with positional arguments; passing both prints
 an error and exits with status `64`.
 
@@ -1197,8 +1200,10 @@ Then call NRG from your code with
 the same arguments as on the command line, for example:
 
 ```java
-NRG.main("-f","path-to-file","--charset","UTF-8");
+int exitCode = NRG.run("-f", "path-to-file", "--charset", "UTF-8");
 ```
+
+`NRG.run` returns the [exit code](#exit-codes). Don't call `NRG.main` from an application: like the command line, it ends the JVM with `System.exit` when the run fails.
 
 The `Generator` class gives more control 
 over the configuration:
@@ -1411,7 +1416,7 @@ Behaviour:
 
 - `${env.NAME}` — substitutes the value of `NAME` from the environment. If unset, logs one warning per distinct name per generation and renders an empty string.
 - `${env.NAME:default}` — substitutes the env value when set (even if empty), otherwise the literal default after the first `:`.
-- Names must match the POSIX identifier pattern `[A-Za-z_][A-Za-z0-9_]*`. Dotted names like `${app.version}` fall through to the regular property resolver.
+- Names must match the POSIX identifier pattern `[A-Za-z_][A-Za-z0-9_]*`. Dotted names like `${env.app.version}` fall through to the regular property resolver.
 - Backslash escapes work as for any other `${…}` reference: `\\${env.NAME}` renders as the literal text.
 
 
@@ -1645,7 +1650,7 @@ per-language property:
 <!--@onlyEn.en=1-->
 
 ${widget:if(cond='${onlyEn}')}
-<!--nrg.freeze id="ru-only-block"-->
+<!--nrg.freeze id="en-only-block"-->
 placeholder
 <!--/nrg.freeze-->
 ${widget:endIf}
@@ -2074,7 +2079,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 22.11.2026 14:02:09
+Last updated: 22.11.2026 14:36:08
 ```
 
 </td></tr>
@@ -2531,7 +2536,7 @@ ${widget:endDetails}
 <details>
 <summary>Advanced</summary>
 
-inner *markdown* and 22.11.2026 14:02:09
+inner *markdown* and 22.11.2026 14:36:08
 
 </details>
 ```
@@ -2600,7 +2605,7 @@ Before running the generator, the widget must be registered with NRG. There are 
 
 ```java
 NRG.addWidget(new ExampleWidget());
-NRG.main("--charset", "UTF-8", "-f", "/path/to/your/file.src.md");
+NRG.run("--charset", "UTF-8", "-f", "/path/to/your/file.src.md");
 ```
 
 **Option 2:** via the `Generator` class constructor that accepts a widget list:

@@ -2,6 +2,8 @@
 <!--@nrg.defaultLanguage=en-->
 <!--@nrg.pom.path=../../pom.xml-->
 <!--@nrgVersion=${pom.version}-->
+<!--@projectRootLink=https://github.com/nanolaba/readme-generator#project-root-->
+<!--@projectRootLink.ru=https://github.com/nanolaba/readme-generator/blob/main/README.ru.md#корень-проекта-->
 
 # ${en:'NRG syntax card', ru:'Шпаргалка по синтаксису NRG'}
 

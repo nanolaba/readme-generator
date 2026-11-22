@@ -6,6 +6,8 @@
 <!--@name=**Nanolaba Readme Generator (NRG)**-->
 <!--@stableVersion=${pom.properties.stableVersion}-->
 <!--@devVersion=${pom.version}-->
+<!--@projectRootLink=#project-root-->
+<!--@projectRootLink.ru=#корень-проекта-->
 
 ${widget:languages}
 

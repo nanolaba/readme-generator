@@ -239,14 +239,14 @@ Behaviour:<!--en-->
 
 - `\${env.NAME}` — substitutes the value of `NAME` from the environment. If unset, logs one warning per distinct name per generation and renders an empty string.<!--en-->
 - `\${env.NAME:default}` — substitutes the env value when set (even if empty), otherwise the literal default after the first `:`.<!--en-->
-- Names must match the POSIX identifier pattern `[A-Za-z_][A-Za-z0-9_]*`. Dotted names like `\${app.version}` fall through to the regular property resolver.<!--en-->
+- Names must match the POSIX identifier pattern `[A-Za-z_][A-Za-z0-9_]*`. Dotted names like `\${env.app.version}` fall through to the regular property resolver.<!--en-->
 - Backslash escapes work as for any other `\${…}` reference: `\\\${env.NAME}` renders as the literal text.<!--en-->
 
 Поведение:<!--ru-->
 
 - `\${env.NAME}` — подставляет значение переменной `NAME`. Если переменная не задана, выводит одно предупреждение на каждое уникальное имя за прогон и подставляет пустую строку.<!--ru-->
 - `\${env.NAME:default}` — подставляет значение из окружения, если переменная задана (даже пустой строкой), иначе — литерал после первого `:`.<!--ru-->
-- Имена должны соответствовать POSIX-идентификатору `[A-Za-z_][A-Za-z0-9_]*`. Имена с точкой, например `\${app.version}`, разрешаются как обычные свойства.<!--ru-->
+- Имена должны соответствовать POSIX-идентификатору `[A-Za-z_][A-Za-z0-9_]*`. Имена с точкой, например `\${env.app.version}`, разрешаются как обычные свойства.<!--ru-->
 - Экранирование обратным слэшем работает так же, как для любой другой конструкции `\${…}`: `\\\${env.NAME}` выводится как литерал.<!--ru-->
 
 > [!WARNING]<!--en-->
@@ -555,7 +555,7 @@ per-language property:<!--en-->
 <\!--\@onlyEn.en=1-->
 
 \${widget:if(cond='\${onlyEn}')}
-<\!--nrg.freeze id="ru-only-block"-->
+<\!--nrg.freeze id="en-only-block"-->
 placeholder
 <\!--/nrg.freeze-->
 \${widget:endIf}

@@ -24,7 +24,7 @@ Before running the generator, the widget must be registered with NRG. There are 
 
 ```java
 NRG.addWidget(new ExampleWidget());
-NRG.main("--charset", "UTF-8", "-f", "/path/to/your/file.src.md");
+NRG.run("--charset", "UTF-8", "-f", "/path/to/your/file.src.md");
 ```
 
 **Вариант 2:** через конструктор класса `Generator`, принимающий список виджетов:<!--ru-->
