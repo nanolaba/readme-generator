@@ -61,7 +61,7 @@ A change to a widget's parameter table, to the escapes table or to the POM versi
 
 The README footer renders `${widget:date}`, so a regeneration always changes the "Last updated" line — that is expected, and it is also why CI gates the README with `--validate` rather than `--check`.
 
-The `nrg` module's `package` phase produces two artifacts in `nrg/target/`: `nrg.jar` (executable jar-with-dependencies, `Main-Class` = `com.nanolaba.nrg.NRG`) and a release zip bundling the jar with `nrg.sh` / `nrg.bat`.
+The `nrg` module's `package` phase produces two artifacts in `nrg/target/`: `nrg.jar` (executable jar-with-dependencies, `Main-Class` = `com.nanolaba.nrg.NRG`) and a release zip bundling the jar with `nrg.sh` / `nrg.bat`. `nrg.jar` is not attached to the build (`<attach>false</attach>`): the main artifact deployed to Maven Central is the plain `readme-generator-X.Y.jar`, whose POM brings the dependencies. `ReadmeGeneratorArtifactTest` in `nrg-maven-plugin` fails the reactor build if the jar with dependencies takes its place again (#90).
 
 The parent build configures `maven-source-plugin`, `maven-javadoc-plugin`, `maven-gpg-plugin`, and `central-publishing-maven-plugin` for releases — these run on every build, so local builds without GPG keys will fail at the `verify` phase. Use `-Dgpg.skip=true` (or stay at the `package` phase) when iterating locally. CI runs `mvn verify -Dgpg.skip=true -Dmaven.javadoc.skip=true` on JDK 8 and JDK 17 (tests and the 100% mutation gate); changes must pass on both.
 

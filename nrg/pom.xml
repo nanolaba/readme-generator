@@ -94,6 +94,10 @@
                             </descriptorRefs>
                             <finalName>nrg</finalName>
                             <appendAssemblyId>false</appendAssemblyId>
+                            <!-- target/nrg.jar is only for the release zip (execution e2). Attached
+                                 without an assembly id, it would replace the main artifact, and
+                                 Maven Central would serve every dependency twice (issue #90). -->
+                            <attach>false</attach>
                         </configuration>
                     </execution>
                     <execution>

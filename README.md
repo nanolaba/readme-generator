@@ -2079,7 +2079,7 @@ Last updated: ${widget:date}
 </td><td>
 
 ```markdown
-Last updated: 22.11.2026 18:31:22
+Last updated: 22.11.2026 18:51:20
 ```
 
 </td></tr>
@@ -2536,7 +2536,7 @@ ${widget:endDetails}
 <details>
 <summary>Advanced</summary>
 
-inner *markdown* and 22.11.2026 18:31:23
+inner *markdown* and 22.11.2026 18:51:20
 
 </details>
 ```
@@ -2697,6 +2697,7 @@ This section summarises the main user-visible changes in each release. For full 
 - **Everything NRG prints on stdout is UTF-8**: `--stdout`, the reports of `--format json` and `--format github`, `--help syntax`, the queries (`--manifest`, `--affected`, `--locate`, `--stale-translations`, `--agent-rules` and the others) and the JSON of `--claude-hook post-edit` were written in the platform charset, which Java 8 to 17 use for `System.out`. On Windows, or under `LANG=C` as in many Docker images and CI runners, every character outside it became `?`, so `nrg --stdout README.src.md > README.md` did not produce the file that `nrg README.src.md` writes. They are now UTF-8, like the generated files. Log lines and the messages on stderr keep the platform charset. Closes [#87](https://github.com/nanolaba/readme-generator/issues/87).
 - **Template properties in import paths work in `--validate`, `--manifest`, `--affected`, `--agent-rules` and the hook**: generation substitutes properties in widget parameters, so `${widget:import(path='${dir}/part.md')}` imports `docs/part.md`, but the commands that read a template without rendering it took the path as written. `--validate` reported `import-not-found` for a template that generates without an error, so `--claude-hook post-edit` rejected every edit of it, and `--manifest` listed `${dir}/part.md` as an input, so `--affected docs/part.md` named no template. Import and `fileTree` paths now get the same substitution, once per language: a `name.<lang>` property gives one input per language. A path that uses an undefined property is reported as an `undefined-variable` error at the import, not as a missing file. Closes [#86](https://github.com/nanolaba/readme-generator/issues/86).
 - **`--agent-rules --write` no longer writes `null` into a file without a line break**: when the target file (`AGENTS.md`, say) held text but no newline, such as a single `# Rules` line, NRG took `null` for its line ending and wrote `# Rulesnullnull<!-- nrg:agent-rules:begin -->`, with another `null` after the block. Such a file now gets the platform line ending, like a new one.
+- **The `readme-generator` jar on Maven Central holds only the classes of NRG**: the executable jar with dependencies had taken the place of the main artifact, so the jar on Central carried copies of nanolog, sugar and the commons libraries while its POM declared them as dependencies too. A project that uses NRG as a library got two copies of each class, and the one that won depended on the order of the classpath, so a newer commons-lang3 or nanolog in the project could lose to the old copy inside NRG. `nrg-maven-plugin` ran the nanolog classes copied into NRG at build time instead of the nanolog Maven resolved. The executable `nrg.jar` is still built for the release zip that `nrgw` and the GitHub Action download. Closes [#90](https://github.com/nanolaba/readme-generator/issues/90).
 
 ### 1.4
 
